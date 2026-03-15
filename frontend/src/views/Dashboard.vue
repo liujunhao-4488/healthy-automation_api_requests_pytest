@@ -2,7 +2,7 @@
   <div class="dashboard-container">
     <el-container style="height: 100%;">
       <!-- 侧边栏 -->
-      <el-aside width="200px" class="sidebar">
+      <el-aside width="220px" class="sidebar">
         <div class="logo">
           <h2>健康饮食</h2>
         </div>
@@ -11,9 +11,6 @@
           class="el-menu-vertical-demo"
           router
           @select="handleMenuSelect"
-          background-color="#409EFF"
-          text-color="#fff"
-          active-text-color="#fff"
         >
           <!-- 健康信息 -->
           <el-menu-item index="/dashboard/health-info">
@@ -50,7 +47,7 @@
             <el-icon><Reading /></el-icon>
             <template #title>健康知识</template>
           </el-menu-item>
-          <!-- 退出登录：增加index，避免选中状态异常 -->
+          <!-- 退出登录 -->
           <el-menu-item index="/logout" @click="logout">
             <el-icon><SwitchButton /></el-icon>
             <template #title>退出登录</template>
@@ -133,63 +130,77 @@ onMounted(() => {
 /* 侧边栏样式 */
 .sidebar {
   height: 100%;
-  background-color: #409EFF !important;
+  background-color: #3D4A3E !important;
 }
 
 .logo {
-  padding: 20px;
+  padding: 24px 20px;
   text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo h2 {
   margin: 0;
-  color: #fff;
+  color: #F7FAF8;
+  font-family: 'Noto Serif SC', serif;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 2px;
 }
 
 /* 菜单样式优化 */
 :deep(.el-menu-vertical-demo) {
   border-right: none !important;
+  background-color: transparent !important;
 }
 
 :deep(.el-menu-item) {
-  color: rgba(255, 255, 255, 0.9) !important;
-  height: 50px !important;
-  line-height: 50px !important;
+  color: rgba(247, 250, 248, 0.7) !important;
+  height: 48px !important;
+  line-height: 48px !important;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 14px;
+  margin: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.25s ease;
 }
 
 :deep(.el-menu-item:hover) {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(123, 160, 136, 0.3) !important;
+  color: #F7FAF8 !important;
 }
 
 :deep(.el-menu-item.is-active) {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  color: #fff !important;
+  background-color: #7BA088 !important;
+  color: #FFF !important;
+}
+
+:deep(.el-menu-item .el-icon) {
+  color: inherit;
 }
 
 /* 头部样式 */
 .header {
-  background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: #FFF;
+  border-bottom: 1px solid #E8F0EA;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 0 20px;
-  height: 60px !important;
+  padding: 0 24px;
+  height: 56px !important;
 }
 
 .user-info {
+  font-family: 'Noto Sans SC', sans-serif;
   font-size: 14px;
-  color: #333;
+  color: #5A6B5C;
 }
 
 /* 主内容区样式 */
 .main-content {
-  padding: 20px;
-  background-color: #f5f5f5;
-  height: calc(100% - 60px) !important;
+  padding: 24px;
+  background-color: #F7FAF8;
+  height: calc(100% - 56px) !important;
   overflow-y: auto;
 }
 </style>

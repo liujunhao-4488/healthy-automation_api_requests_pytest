@@ -2,40 +2,40 @@ import axios from '../utils/axios';
 
 const recipeApi = {
   getRecommendations: (userId) => {
-    return axios.get(`/api/recommend/recipes`, { params: { userId } });
+    return axios.get(`/recommend/recipes`, { params: { userId } });
   },
   getSubstitutes: (ingredient) => {
-    return axios.post('/api/recommend/ingredient/substitute', { ingredientName: ingredient });
+    return axios.post('/recommend/ingredient/substitute', { ingredientName: ingredient });
   },
   getRecipesByGoal: (goalData) => {
-    return axios.post('/api/recommend/recipes/by-goal', goalData);
+    return axios.post('/recommend/recipes/by-goal', goalData);
   },
   getTodayRecipes: () => {
-    return axios.get('/api/recommend/recipes/today');
+    return axios.get('/recommend/recipes/today');
   },
   getAllRecipes: () => {
-    return axios.get('/api/recipe/list');
+    return axios.get('/recipe/list');
   },
   getRecipeDetail: (id) => {
-    return axios.get(`/api/recipe/detail/${id}`);
+    return axios.get(`/recipe/detail/${id}`);
   },
   getCustomRecipes: () => {
-    return axios.get('/api/recipe/custom');
+    return axios.get('/recipe/custom');
   },
   searchRecipes: (keyword) => {
-    return axios.get('/api/recipe/search', { params: { keyword } });
+    return axios.get('/recipe/search', { params: { keyword } });
   },
   saveRecipe: (recipe) => {
-    return axios.post('/api/recipe/save', recipe);
+    return axios.post('/recipe/save', recipe);
   },
   updateRecipe: (recipe) => {
-    return axios.put('/api/recipe/update', recipe);
+    return axios.put('/recipe/update', recipe);
   },
   deleteRecipe: (id) => {
-    return axios.delete(`/api/recipe/delete/${id}`);
+    return axios.delete(`/recipe/delete/${id}`);
   },
   analyzeNutrition: (id) => {
-    return axios.get(`/api/recipe/nutrition/${id}`);
+    return axios.get(`/recipe/nutrition/${id}`);
   }
 };
 

@@ -276,22 +276,77 @@ onMounted(() => {
 
 <style scoped>
 .health-info-container {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  background-color: #FFF;
+  padding: 32px;
+  border-radius: 4px;
+  box-shadow: 8px 8px 24px rgba(61, 74, 62, 0.08);
+}
+
+.health-info-container :deep(.el-form-item__label) {
+  font-family: 'Noto Sans SC', sans-serif;
+  color: #5A6B5C;
+  font-size: 13px;
+}
+
+.health-info-container :deep(.el-input-number) {
+  width: 100%;
+}
+
+.health-info-container :deep(.el-input-number .el-input__wrapper) {
+  background-color: #F7FAF8;
+  border: 1px solid #D8E4DC;
+  border-radius: 4px;
+  padding: 0 12px;
+  min-height: 40px;
+}
+
+.health-info-container :deep(.el-input-number .el-input__inner) {
+  text-align: center;
+}
+
+.health-info-container :deep(.el-input__wrapper) {
+  background-color: #F7FAF8;
+  border: 1px solid #D8E4DC;
+  border-radius: 4px;
+  padding: 8px 12px;
+  min-height: 40px;
+}
+
+.health-info-container :deep(.el-select) {
+  width: 100%;
+}
+
+.health-info-container :deep(.el-checkbox-group),
+.health-info-container :deep(.el-radio-group) {
+  font-family: 'Noto Sans SC', sans-serif;
 }
 
 h2 {
-  margin-bottom: 20px;
-  color: #303133;
+  margin-bottom: 24px;
+  color: #3D4A3E;
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 500;
+  font-size: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #E8F0EA;
 }
 
 .el-form-item {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .el-form-item:last-child {
-  margin-top: 30px;
+  margin-top: 32px;
+}
+
+.el-form-item:last-child :deep(.el-button--primary) {
+  background-color: #7BA088;
+  border-color: #7BA088;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.el-form-item:last-child :deep(.el-button--primary:hover) {
+  background-color: #6A9177;
+  border-color: #6A9177;
 }
 </style>

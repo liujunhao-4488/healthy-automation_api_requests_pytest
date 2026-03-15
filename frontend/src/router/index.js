@@ -16,10 +16,24 @@ const routes = [
     component: () => import('../views/Register.vue')
   },
   {
+    path: '/health-info-basic',
+    name: 'HealthInfoBasic',
+    component: () => import('../views/HealthInfoBasic.vue')
+  },
+  {
+    path: '/health-info-detail',
+    name: 'HealthInfoDetail',
+    component: () => import('../views/HealthInfoDetail.vue')
+  },
+  {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('../views/Dashboard.vue'),
     children: [
+      {
+        path: '',
+        redirect: 'health-info'
+      },
       {
         path: 'health-info',
         name: 'HealthInfo',

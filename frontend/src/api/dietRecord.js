@@ -2,23 +2,23 @@ import axios from '../utils/axios';
 
 const dietRecordApi = {
   submitRecord: (record) => {
-    return axios.post('/api/record/submit', record);
+    return axios.post('/record/submit', record);
   },
   getDietRecords: (startDate, endDate, page, pageSize) => {
-    return axios.get('/api/record/list', {
+    return axios.get('/record/list', {
       params: { startDate, endDate, page, pageSize }
     });
   },
   getDietAnalysis: (startDate, endDate) => {
-    return axios.get('/api/record/analysis/trend', {
+    return axios.get('/record/analysis/trend', {
       params: { startDate, endDate }
     });
   },
   getDietSuggestions: () => {
-    return axios.get('/api/record/suggestions');
+    return axios.get('/record/suggestions');
   },
   deleteRecord: (recordId) => {
-    return axios.delete(`/api/record/${recordId}`);
+    return axios.delete(`/record/${recordId}`);
   }
 };
 

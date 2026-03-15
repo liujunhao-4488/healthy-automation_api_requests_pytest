@@ -2,13 +2,13 @@ import axios from '../utils/axios';
 
 const healthInfoApi = {
   getHealthInfo: () => {
-    return axios.get('/api/health/info');
+    return axios.get('/health/info');
   },
   saveHealthInfo: (healthInfo) => {
-    return axios.post('/api/health/info', healthInfo);
+    return axios.post('/health/info', healthInfo);
   },
   updateHealthInfo: (healthInfo) => {
-    return axios.put('/api/health/info', healthInfo);
+    return axios.put('/health/info', healthInfo);
   }
 };
 

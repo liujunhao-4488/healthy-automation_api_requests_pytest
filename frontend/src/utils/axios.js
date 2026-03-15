@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// 创建axios实例
+// 创建 axios 实例
 const service = axios.create({
-  baseURL: '',
+  baseURL: 'http://127.0.0.1:8080/api',
   timeout: 10000
 });
 
@@ -14,6 +14,7 @@ service.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+    console.log('发送请求:', config);
     return config;
   },
   error => {

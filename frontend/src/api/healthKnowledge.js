@@ -2,16 +2,16 @@ import axios from '../utils/axios';
 
 const healthKnowledgeApi = {
   getKnowledgeList: (page, size) => {
-    return axios.get('/api/article/list', { params: { page, size } });
+    return axios.get('/article/list', { params: { page, size } });
   },
   getRecommendedArticles: (articleCount) => {
-    return axios.post('/api/article/recommend', { articleCount });
+    return axios.post('/article/recommend', { articleCount });
   },
   getArticleDetail: (articleId) => {
-    return axios.get(`/api/article/detail/${articleId}`);
+    return axios.get(`/article/detail/${articleId}`);
   },
   searchArticles: (keyword) => {
-    return axios.get('/api/article/search', { params: { keyword } });
+    return axios.get('/article/search', { params: { keyword } });
   }
 };
 
