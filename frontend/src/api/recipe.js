@@ -1,11 +1,19 @@
 import axios from '../utils/axios';
 
 const recipeApi = {
-  getRecommendations: (userId) => {
-    return axios.get(`/recommend/recipes`, { params: { userId } });
+  getRecommendations: (params = {}) => {
+    return axios.get('/recommend/recipes', { params });
   },
-  getSubstitutes: (ingredient) => {
-    return axios.post('/recommend/ingredient/substitute', { ingredientName: ingredient });
+  getSubstitutes: (payload) => {
+    const prompt = typeof payload === 'string' ? payload : payload?.prompt;
+    const rawPrompt = typeof payload === 'object' && payload ? (payload.rawPrompt || payload.prompt) : prompt;
+    return axios.post('/recommend/ingredient/substitute', {
+      ...(typeof payload === 'object' && payload ? payload : {}),
+      ingredientName: rawPrompt,
+      prompt
+    }, {
+      timeout: 60000
+    });
   },
   getRecipesByGoal: (goalData) => {
     return axios.post('/recommend/recipes/by-goal', goalData);
@@ -18,6 +26,18 @@ const recipeApi = {
   },
   getRecipeDetail: (id) => {
     return axios.get(`/recipe/detail/${id}`);
+  },
+  collectRecipe: (id) => {
+    return axios.post(`/recipe/collect/${id}`);
+  },
+  cancelCollectRecipe: (id) => {
+    return axios.delete(`/recipe/collect/${id}`);
+  },
+  getRecipeCollectStatus: (id) => {
+    return axios.get(`/recipe/collect/status/${id}`);
+  },
+  getCollectedRecipes: () => {
+    return axios.get('/recipe/collect/list');
   },
   getCustomRecipes: () => {
     return axios.get('/recipe/custom');

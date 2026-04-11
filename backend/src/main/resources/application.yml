@@ -28,3 +28,8 @@ jwt:
 
 algorithm:
   base-url: http://localhost:5000/api
+
+deepseek:
+  api-key: sk-797df8f8cb56472eabd235adf1195225
+  base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+  model: ${DEEPSEEK_MODEL:deepseek-chat}

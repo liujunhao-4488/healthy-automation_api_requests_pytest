@@ -45,9 +45,12 @@ public class RecommendationController {
 
     // 获取食材替代建议
     @PostMapping("/ingredient/substitute")
-    public ResponseEntity<?> getIngredientSubstitutes(@Valid @RequestBody Map<String, Object> ingredientData) {
+    public ResponseEntity<?> getIngredientSubstitutes(Principal principal, @Valid @RequestBody Map<String, Object> ingredientData) {
         try {
-            List<Map<String, Object>> substitutes = recipeService.getIngredientSubstitutes(ingredientData);
+            if (principal != null) {
+                ingredientData.put("userId", Long.parseLong(principal.getName()));
+            }
+            Map<String, Object> substitutes = recipeService.getIngredientSubstitutes(ingredientData);
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
             response.put("message", "获取食材替代建议成功");

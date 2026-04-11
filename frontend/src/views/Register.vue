@@ -5,42 +5,46 @@
         <h1>健康饮食推荐</h1>
         <p class="auth-subtitle">开启您的健康生活</p>
       </div>
-      
+
       <div class="auth-form">
         <h2>创建账号</h2>
         <el-form :model="registerForm" :rules="rules" ref="registerFormRef" label-position="top">
           <el-form-item label="用户名" prop="username">
             <el-input v-model="registerForm.username" placeholder="请输入用户名" />
           </el-form-item>
-          
+
           <el-form-item label="邮箱" prop="email">
             <el-input v-model="registerForm.email" placeholder="请输入邮箱" />
           </el-form-item>
-          
+
           <el-form-item label="手机号" prop="phone">
             <el-input v-model="registerForm.phone" placeholder="请输入手机号" />
           </el-form-item>
-          
+
           <el-form-item label="密码" prop="password">
             <el-input v-model="registerForm.password" type="password" placeholder="请输入密码" />
           </el-form-item>
-          
+
           <el-form-item label="确认密码" prop="confirmPassword">
-            <el-input v-model="registerForm.confirmPassword" type="password" placeholder="请确认密码" />
+            <el-input
+              v-model="registerForm.confirmPassword"
+              type="password"
+              placeholder="请再次输入密码"
+            />
           </el-form-item>
-          
+
           <el-form-item>
             <el-button class="btn-primary" @click="register" :loading="loading">下一步</el-button>
           </el-form-item>
         </el-form>
-        
+
         <div class="auth-footer">
           <span>已有账号？</span>
           <el-link class="link-text" @click="goToLogin">立即登录</el-link>
         </div>
       </div>
     </div>
-    
+
     <div class="auth-decor">
       <div class="decor-line"></div>
       <div class="decor-circle"></div>
@@ -74,7 +78,7 @@ const rules = {
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少6位', trigger: 'blur' }
+    { min: 6, message: '密码长度至少 6 位', trigger: 'blur' }
   ],
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
@@ -111,31 +115,55 @@ const rules = {
 
 const register = async () => {
   await registerFormRef.value.validate(async (valid) => {
-    if (valid) {
-      loading.value = true;
-      try {
-        const response = await authApi.register({
-          username: registerForm.username,
-          password: registerForm.password,
-          email: registerForm.email,
-          phone: registerForm.phone
-        });
-        if (response.code === 200) {
-          ElMessage.success('注册成功，请继续完善健康信息');
-          userStore.setUser({
-            userId: response.data.userId,
-            username: response.data.username,
-            token: response.data.token
-          });
-          router.push('/health-info-basic');
-        } else {
-          ElMessage.error(response.message || '注册失败');
-        }
-      } catch (error) {
-        ElMessage.error('注册失败，请检查网络连接');
-      } finally {
-        loading.value = false;
+    if (!valid) {
+      return;
+    }
+
+    loading.value = true;
+    const registerPayload = {
+      username: registerForm.username,
+      password: registerForm.password,
+      email: registerForm.email,
+      phone: registerForm.phone
+    };
+
+    try {
+      const response = await authApi.register(registerPayload);
+      if (response.code !== 200) {
+        ElMessage.error(response.message || '注册失败');
+        return;
       }
+
+      let authData = response.data;
+      if (!authData?.token) {
+        const loginResponse = await authApi.login({
+          email: registerPayload.email,
+          password: registerPayload.password
+        });
+
+        if (loginResponse.code !== 200) {
+          throw new Error(loginResponse.message || '自动登录失败');
+        }
+
+        authData = loginResponse.data;
+      }
+
+      userStore.setUser({
+        userId: authData.userId,
+        username: authData.username,
+        email: authData.email,
+        phone: authData.phone,
+        avatar: authData.avatar,
+        role: authData.role,
+        token: authData.token
+      });
+
+      ElMessage.success('注册成功，请继续完善健康信息');
+      router.push('/health-info-basic');
+    } catch (error) {
+      ElMessage.error(error.message || '注册失败，请检查网络连接');
+    } finally {
+      loading.value = false;
     }
   });
 };
@@ -189,7 +217,7 @@ const goToLogin = () => {
   background: #FFF;
   padding: 40px 36px;
   border-radius: 4px;
-  box-shadow: 
+  box-shadow:
     8px 8px 24px rgba(61, 74, 62, 0.08),
     -2px -2px 8px rgba(255, 255, 255, 0.6);
 }
@@ -322,11 +350,11 @@ const goToLogin = () => {
   .auth-wrapper {
     padding: 24px 16px;
   }
-  
+
   .auth-header h1 {
     font-size: 26px;
   }
-  
+
   .auth-form {
     padding: 28px 20px;
   }

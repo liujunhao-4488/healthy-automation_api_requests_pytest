@@ -1,7 +1,9 @@
 package com.health.controller;
 
 import com.health.entity.Ingredient;
+import com.health.entity.User;
 import com.health.service.IngredientService;
+import com.health.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.security.Principal;
 
 /**
  * 食材控制器
@@ -22,6 +25,9 @@ public class IngredientController {
 
     @Autowired
     private IngredientService ingredientService;
+
+    @Autowired
+    private UserService userService;
 
     // 获取所有食材
     @GetMapping("/list")
@@ -101,8 +107,9 @@ public class IngredientController {
 
     // 保存食材
     @PostMapping("/save")
-    public ResponseEntity<?> saveIngredient(@RequestBody Ingredient ingredient) {
+    public ResponseEntity<?> saveIngredient(@RequestBody Ingredient ingredient, Principal principal) {
         try {
+            requireAdmin(principal);
             Ingredient savedIngredient = ingredientService.saveIngredient(ingredient);
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
@@ -120,8 +127,9 @@ public class IngredientController {
 
     // 更新食材
     @PutMapping("/update")
-    public ResponseEntity<?> updateIngredient(@RequestBody Ingredient ingredient) {
+    public ResponseEntity<?> updateIngredient(@RequestBody Ingredient ingredient, Principal principal) {
         try {
+            requireAdmin(principal);
             Ingredient updatedIngredient = ingredientService.updateIngredient(ingredient);
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
@@ -139,8 +147,9 @@ public class IngredientController {
 
     // 删除食材
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteIngredient(@PathVariable Long id) {
+    public ResponseEntity<?> deleteIngredient(@PathVariable Long id, Principal principal) {
         try {
+            requireAdmin(principal);
             boolean deleted = ingredientService.deleteIngredient(id);
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
@@ -210,6 +219,16 @@ public class IngredientController {
             response.put("code", 400);
             response.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    private void requireAdmin(Principal principal) {
+        if (principal == null) {
+            throw new RuntimeException("未登录或登录已过期");
+        }
+        User user = userService.findById(Long.parseLong(principal.getName()));
+        if (!userService.isAdmin(user)) {
+            throw new RuntimeException("仅管理员可执行该操作");
         }
     }
 }

@@ -2,24 +2,25 @@ package com.health.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.health.entity.DietRecordDetail;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+
 import java.util.List;
 
-/**
- * 饮食记录详情Mapper接口
- */
+@Mapper
 public interface DietRecordDetailMapper extends BaseMapper<DietRecordDetail> {
 
-    /**
-     * 根据记录ID查询详情
-     * @param recordId 记录ID
-     * @return 详情列表
-     */
+    @Select("SELECT id, record_id, ingredient_id, food_name, category, quantity, unit, " +
+            "calories, protein, carbs, fat, recipe_id, is_custom, is_deleted " +
+            "FROM diet_record_detail " +
+            "WHERE record_id = #{recordId} AND is_deleted = 0 " +
+            "ORDER BY id ASC")
     List<DietRecordDetail> selectByRecordId(Long recordId);
 
-    /**
-     * 根据食谱ID查询详情
-     * @param recipeId 食谱ID
-     * @return 详情列表
-     */
+    @Select("SELECT id, record_id, ingredient_id, food_name, category, quantity, unit, " +
+            "calories, protein, carbs, fat, recipe_id, is_custom, is_deleted " +
+            "FROM diet_record_detail " +
+            "WHERE recipe_id = #{recipeId} AND is_deleted = 0 " +
+            "ORDER BY id ASC")
     List<DietRecordDetail> selectByRecipeId(Long recipeId);
 }

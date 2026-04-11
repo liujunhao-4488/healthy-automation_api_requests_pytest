@@ -1,352 +1,817 @@
-<template>
-  <div class="health-info-container">
-    <h2>健康信息管理</h2>
-    <el-form :model="healthInfoForm" :rules="rules" ref="healthInfoFormRef" label-width="140px">
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="年龄" prop="age">
-            <el-input-number v-model="healthInfoForm.age" :min="1" :max="150" placeholder="请输入年龄"></el-input-number>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="性别" prop="gender">
-            <el-radio-group v-model="healthInfoForm.gender">
-              <el-radio label="男">男</el-radio>
-              <el-radio label="女">女</el-radio>
-            </el-radio-group>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="身高(cm)" prop="height">
-            <el-input-number v-model="healthInfoForm.height" :min="50" :max="250" :precision="1" placeholder="请输入身高"></el-input-number>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="体重(kg)" prop="weight">
-            <el-input-number v-model="healthInfoForm.weight" :min="20" :max="300" :precision="1" placeholder="请输入体重"></el-input-number>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="腰围(cm)" prop="waistCircumference">
-            <el-input-number v-model="healthInfoForm.waistCircumference" :min="40" :max="200" :precision="1" placeholder="请输入腰围"></el-input-number>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="血型" prop="bloodType">
-            <el-select v-model="healthInfoForm.bloodType" placeholder="请选择血型">
-              <el-option label="A型" value="A"></el-option>
-              <el-option label="B型" value="B"></el-option>
-              <el-option label="AB型" value="AB"></el-option>
-              <el-option label="O型" value="O"></el-option>
-              <el-option label="未知" value="未知"></el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="血压(mmHg)" prop="bloodPressure">
-            <el-input v-model="healthInfoForm.bloodPressure" placeholder="如: 120/80"></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="血糖(mmol/L)" prop="bloodSugar">
-            <el-input-number v-model="healthInfoForm.bloodSugar" :min="0" :max="30" :precision="1" placeholder="请输入血糖"></el-input-number>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="BMI" prop="bmi">
-            <el-input v-model="healthInfoForm.bmi" placeholder="自动计算" disabled></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="基础代谢率(kcal)" prop="bmr">
-            <el-input v-model="healthInfoForm.bmr" placeholder="自动计算" disabled></el-input>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="活动水平" prop="activityLevel">
-            <el-select v-model="healthInfoForm.activityLevel" placeholder="请选择活动水平">
-              <el-option label="久坐不动 (办公室工作，几乎无运动)" value="sedentary"></el-option>
-              <el-option label="轻度活动 (每周1-3天运动)" value="lightly_active"></el-option>
-              <el-option label="中度活动 (每周3-5天运动)" value="moderately_active"></el-option>
-              <el-option label="高度活动 (每周6-7天运动)" value="very_active"></el-option>
-              <el-option label="极高活动 (体力劳动或高强度训练)" value="extra_active"></el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="每日运动时长(分钟)" prop="exerciseDuration">
-            <el-input-number v-model="healthInfoForm.exerciseDuration" :min="0" :max="480" :step="10" placeholder="请输入运动时长"></el-input-number>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      
-      <el-form-item label="运动类型" prop="exerciseType">
-        <el-checkbox-group v-model="healthInfoForm.exerciseTypeArr">
-          <el-checkbox label="跑步">跑步</el-checkbox>
-          <el-checkbox label="游泳">游泳</el-checkbox>
-          <el-checkbox label="骑行">骑行</el-checkbox>
-          <el-checkbox label="健身">健身</el-checkbox>
-          <el-checkbox label="瑜伽">瑜伽</el-checkbox>
-          <el-checkbox label="球类">球类</el-checkbox>
-          <el-checkbox label="其他">其他</el-checkbox>
-        </el-checkbox-group>
-      </el-form-item>
-      
-      <el-form-item label="过敏食物" prop="allergies">
-        <el-input v-model="healthInfoForm.allergies" type="textarea" :rows="2" placeholder="请输入过敏食物，多个用逗号分隔"></el-input>
-      </el-form-item>
-      
-      <el-form-item label="慢性疾病" prop="chronicDiseases">
-        <el-input v-model="healthInfoForm.chronicDiseases" type="textarea" :rows="2" placeholder="请输入慢性疾病，如无则填写无"></el-input>
-      </el-form-item>
-      
-      <el-form-item label="健康状况" prop="healthCondition">
-        <el-input v-model="healthInfoForm.healthCondition" type="textarea" :rows="2" placeholder="请描述您的健康状况"></el-input>
-      </el-form-item>
-      
-      <el-form-item>
-        <el-button type="primary" @click="saveHealthInfo" :loading="loading">保存</el-button>
-        <el-button @click="resetForm">重置</el-button>
-      </el-form-item>
-    </el-form>
+﻿<template>
+  <div class="health-overview">
+    <section class="hero-card">
+      <div>
+        <p class="eyebrow">HEALTH PROFILE</p>
+        <h2>健康信息档案</h2>
+        <p class="hero-copy">
+          集中查看基础体征、运动习惯和健康状态，趋势图支持按日与按周查看长期体重和 BMI 变化。
+        </p>
+      </div>
+      <div class="hero-actions">
+        <el-button class="edit-button" type="primary" @click="goToEdit">
+          <el-icon><EditPen /></el-icon>
+          <span>修改信息</span>
+        </el-button>
+      </div>
+    </section>
+
+    <el-row :gutter="20" class="summary-grid">
+      <el-col :xs="24" :sm="8">
+        <div class="summary-card accent-sand">
+          <div class="summary-meta">
+            <el-icon class="summary-icon"><User /></el-icon>
+            <span>当前体重</span>
+          </div>
+          <strong>{{ displayValue(healthInfo.weight, 'kg') }}</strong>
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="8">
+        <div class="summary-card accent-green">
+          <div class="summary-meta">
+            <el-icon class="summary-icon"><TrendCharts /></el-icon>
+            <span>BMI 指数</span>
+          </div>
+          <strong>{{ displayValue(healthInfo.bmi) }}</strong>
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="8">
+        <div class="summary-card accent-cream">
+          <div class="summary-meta">
+            <el-icon class="summary-icon"><Timer /></el-icon>
+            <span>基础代谢</span>
+          </div>
+          <strong>{{ displayValue(healthInfo.bmr, 'kcal') }}</strong>
+        </div>
+      </el-col>
+    </el-row>
+
+    <el-card class="chart-card" shadow="never">
+      <template #header>
+        <div class="section-head">
+          <div class="section-title">
+            <el-icon><TrendCharts /></el-icon>
+            <span>体重 / BMI 历史趋势</span>
+            <small>累计 {{ healthHistory.length || 0 }} 条历史记录</small>
+          </div>
+          <el-radio-group v-model="trendView" size="small" class="trend-toggle">
+            <el-radio-button label="daily">按日</el-radio-button>
+            <el-radio-button label="weekly">按周</el-radio-button>
+          </el-radio-group>
+        </div>
+      </template>
+      <div ref="trendChartRef" class="trend-chart"></div>
+    </el-card>
+
+    <el-card v-if="healthAnalysis" class="analysis-card" shadow="never">
+      <template #header>
+        <div class="section-title">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>系统分析</span>
+        </div>
+      </template>
+      <div class="analysis-overview">
+        <div class="analysis-badge">
+          <span>综合状态</span>
+          <strong>{{ healthAnalysis.overallLevel || '--' }}</strong>
+        </div>
+        <p>{{ healthAnalysis.summary || '暂无分析结果' }}</p>
+      </div>
+      <div v-if="healthAnalysis.tags?.length" class="analysis-tags">
+        <el-tag
+          v-for="tag in healthAnalysis.tags"
+          :key="tag"
+          effect="plain"
+          round
+          type="success"
+        >
+          {{ tag }}
+        </el-tag>
+      </div>
+      <div class="analysis-grid">
+        <div class="analysis-item">
+          <label>BMI评价</label>
+          <strong>{{ healthAnalysis.bmiCategory || '--' }}</strong>
+          <p>{{ healthAnalysis.bmiAdvice || '--' }}</p>
+        </div>
+        <div class="analysis-item">
+          <label>血压评价</label>
+          <strong>{{ healthAnalysis.bloodPressureStatus || '--' }}</strong>
+          <p>{{ healthAnalysis.bloodPressureAdvice || '--' }}</p>
+        </div>
+        <div class="analysis-item">
+          <label>血糖评价</label>
+          <strong>{{ healthAnalysis.bloodSugarStatus || '--' }}</strong>
+          <p>{{ healthAnalysis.bloodSugarAdvice || '--' }}</p>
+        </div>
+        <div class="analysis-item">
+          <label>运动评价</label>
+          <strong>{{ healthAnalysis.activityStatus || '--' }}</strong>
+          <p>{{ healthAnalysis.activityAdvice || '--' }}</p>
+        </div>
+      </div>
+      <div v-if="healthAnalysis.goalInsight || healthAnalysis.recommendations?.length" class="analysis-recommendations">
+        <h3>建议摘要</h3>
+        <p v-if="healthAnalysis.goalInsight">{{ healthAnalysis.goalInsight }}</p>
+        <ul v-if="healthAnalysis.recommendations?.length">
+          <li v-for="item in healthAnalysis.recommendations" :key="item">{{ item }}</li>
+        </ul>
+      </div>
+    </el-card>
+
+    <div class="info-grid">
+      <el-card class="info-card" shadow="never">
+        <template #header>
+          <div class="section-title">
+            <el-icon><Memo /></el-icon>
+            <span>基础信息</span>
+          </div>
+        </template>
+        <div class="info-list">
+          <div class="info-item">
+            <label>年龄</label>
+            <span>{{ displayValue(healthInfo.age, '岁') }}</span>
+          </div>
+          <div class="info-item">
+            <label>性别</label>
+            <span>{{ displayValue(healthInfo.gender) }}</span>
+          </div>
+          <div class="info-item">
+            <label>身高</label>
+            <span>{{ displayValue(healthInfo.height, 'cm') }}</span>
+          </div>
+          <div class="info-item">
+            <label>体重</label>
+            <span>{{ displayValue(healthInfo.weight, 'kg') }}</span>
+          </div>
+          <div class="info-item">
+            <label>血压</label>
+            <span>{{ displayValue(healthInfo.bloodPressure) }}</span>
+          </div>
+          <div class="info-item">
+            <label>血糖</label>
+            <span>{{ displayValue(healthInfo.bloodSugar, 'mmol/L') }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card class="info-card" shadow="never">
+        <template #header>
+          <div class="section-title">
+            <el-icon><DataAnalysis /></el-icon>
+            <span>运动与习惯</span>
+          </div>
+        </template>
+        <div class="info-list">
+          <div class="info-item">
+            <label>活动水平</label>
+            <span>{{ activityLevelLabel }}</span>
+          </div>
+          <div class="info-item">
+            <label>每日运动时长</label>
+            <span>{{ displayValue(healthInfo.exerciseDuration, '分钟') }}</span>
+          </div>
+          <div class="info-item wide">
+            <label>运动类型</label>
+            <span>{{ exerciseTypesLabel }}</span>
+          </div>
+          <div class="info-item wide">
+            <label>过敏食物</label>
+            <span>{{ displayValue(healthInfo.allergies) }}</span>
+          </div>
+          <div class="info-item wide">
+            <label>慢性疾病</label>
+            <span>{{ displayValue(healthInfo.chronicDiseases) }}</span>
+          </div>
+          <div class="info-item wide">
+            <label>健康状况</label>
+            <span>{{ displayValue(healthInfo.healthCondition) }}</span>
+          </div>
+        </div>
+      </el-card>
+    </div>
   </div>
 </template>
-
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { DataAnalysis, EditPen, Memo, Timer, TrendCharts, User } from '@element-plus/icons-vue';
+import * as echarts from 'echarts';
 import { useUserStore } from '../stores/user';
-import { ElMessage } from 'element-plus';
 import healthInfoApi from '../api/healthInfo';
 
+const router = useRouter();
 const userStore = useUserStore();
-const healthInfoFormRef = ref(null);
-const loading = ref(false);
+const trendChartRef = ref(null);
+const chartInstance = ref(null);
+const healthHistory = ref([]);
+const trendView = ref('daily');
 
-const healthInfoForm = reactive({
-  userId: userStore.userId,
-  age: null,
-  gender: '',
-  height: null,
-  weight: null,
-  waistCircumference: null,
-  bmi: '',
-  bmr: '',
-  bloodType: '',
-  bloodPressure: '',
-  bloodSugar: null,
-  activityLevel: '',
-  exerciseDuration: null,
-  exerciseTypeArr: [],
-  exerciseType: '',
-  allergies: '',
-  chronicDiseases: '',
-  healthCondition: ''
+const activityLevelMap = {
+  sedentary: '久坐少动',
+  lightly_active: '轻度活动',
+  moderately_active: '中度活动',
+  very_active: '高度活动',
+  extra_active: '高强度活动'
+};
+
+const healthInfo = computed(() => userStore.healthInfo || {});
+const healthAnalysis = computed(() => userStore.healthAnalysis || null);
+
+const parseHistoryDate = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  if (Array.isArray(value)) {
+    const [year, month, day, hour = 0, minute = 0, second = 0] = value;
+    const parsed = new Date(year, (month || 1) - 1, day || 1, hour, minute, second);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  const parsed = new Date(typeof value === 'string' ? value.replace(/-/g, '/') : value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const displayValue = (value, unit = '') => {
+  if (value === null || value === undefined || value === '') {
+    return '--';
+  }
+
+  const normalizedValue =
+    typeof value === 'number'
+      ? Number.isInteger(value)
+        ? value
+        : value.toFixed(1)
+      : value;
+
+  return `${normalizedValue}${unit ? ` ${unit}` : ''}`;
+};
+
+const exerciseTypesLabel = computed(() => {
+  if (!healthInfo.value.exerciseType) {
+    return '--';
+  }
+
+  return healthInfo.value.exerciseType
+    .split(',')
+    .filter(Boolean)
+    .join('、');
 });
 
-const rules = {
-  age: [
-    { required: true, message: '请输入年龄', trigger: 'blur' }
-  ],
-  gender: [
-    { required: true, message: '请选择性别', trigger: 'change' }
-  ],
-  height: [
-    { required: true, message: '请输入身高', trigger: 'blur' }
-  ],
-  weight: [
-    { required: true, message: '请输入体重', trigger: 'blur' }
-  ],
-  activityLevel: [
-    { required: true, message: '请选择活动水平', trigger: 'change' }
-  ]
-};
+const activityLevelLabel = computed(() => activityLevelMap[healthInfo.value.activityLevel] || '--');
 
-// 计算BMI
-const calculateBMI = () => {
-  if (healthInfoForm.height && healthInfoForm.weight) {
-    const heightInMeters = Number(healthInfoForm.height) / 100;
-    const weight = Number(healthInfoForm.weight);
-    const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(2);
-    healthInfoForm.bmi = bmi;
-    calculateBMR();
-  }
-};
-
-// 计算BMR (基础代谢率)
-const calculateBMR = () => {
-  if (healthInfoForm.height && healthInfoForm.weight && healthInfoForm.age && healthInfoForm.gender) {
-    let bmr = 0;
-    if (healthInfoForm.gender === '男') {
-      bmr = 88.362 + (13.397 * healthInfoForm.weight) + (4.799 * healthInfoForm.height) - (5.677 * healthInfoForm.age);
-    } else {
-      bmr = 447.593 + (9.247 * healthInfoForm.weight) + (3.098 * healthInfoForm.height) - (4.330 * healthInfoForm.age);
-    }
-    healthInfoForm.bmr = Math.round(bmr);
-  }
-};
-
-// 监听身高和体重变化，自动计算BMI和BMR
-watch(
-  [() => healthInfoForm.height, () => healthInfoForm.weight, () => healthInfoForm.age, () => healthInfoForm.gender],
-  () => {
-    calculateBMI();
-  }
+const normalizedHistory = computed(() =>
+  [...healthHistory.value]
+    .map((item) => {
+      const parsedDate = parseHistoryDate(item.createTime || item.recordDate);
+      return {
+        ...item,
+        parsedDate,
+        weight: Number(item.weight ?? 0),
+        bmi: Number(item.bmi ?? 0)
+      };
+    })
+    .filter((item) => item.parsedDate)
+    .sort((a, b) => a.parsedDate - b.parsedDate)
 );
 
-const saveHealthInfo = async () => {
-  healthInfoFormRef.value.validate(async (valid) => {
-    if (valid) {
-      calculateBMI();
-      healthInfoForm.exerciseType = healthInfoForm.exerciseTypeArr.join(',');
-      
-      const formData = {
-        ...healthInfoForm,
-        age: Number(healthInfoForm.age),
-        height: Number(healthInfoForm.height),
-        weight: Number(healthInfoForm.weight),
-        waistCircumference: healthInfoForm.waistCircumference ? Number(healthInfoForm.waistCircumference) : null,
-        bloodSugar: healthInfoForm.bloodSugar ? Number(healthInfoForm.bloodSugar) : null,
-        exerciseDuration: healthInfoForm.exerciseDuration ? Number(healthInfoForm.exerciseDuration) : null
-      };
-      
-      loading.value = true;
-      try {
-        let response;
-        if (userStore.hasHealthInfo) {
-          response = await healthInfoApi.updateHealthInfo(formData);
-        } else {
-          response = await healthInfoApi.saveHealthInfo(formData);
-        }
-        if (response.code === 200) {
-          userStore.setHealthInfo(formData);
-          ElMessage.success('保存成功');
-        } else {
-          ElMessage.error(response.message || '保存失败');
-        }
-      } catch (error) {
-        ElMessage.error('保存失败，请检查网络连接');
-      } finally {
-        loading.value = false;
-      }
-    }
+const formatDailyAxis = (date) =>
+  date.toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
   });
+
+const getWeekKey = (date) => {
+  const current = new Date(date);
+  current.setHours(0, 0, 0, 0);
+  const day = current.getDay() || 7;
+  current.setDate(current.getDate() + 4 - day);
+  const yearStart = new Date(current.getFullYear(), 0, 1);
+  const weekNo = Math.ceil((((current - yearStart) / 86400000) + 1) / 7);
+  return `${current.getFullYear()}-W${String(weekNo).padStart(2, '0')}`;
 };
 
-const resetForm = () => {
-  healthInfoFormRef.value.resetFields();
-  healthInfoForm.exerciseTypeArr = [];
+const chartSource = computed(() => {
+  if (trendView.value === 'daily') {
+    return normalizedHistory.value.map((item) => ({
+      label: formatDailyAxis(item.parsedDate),
+      weight: Number(item.weight.toFixed(1)),
+      bmi: Number(item.bmi.toFixed(1))
+    }));
+  }
+
+  const grouped = normalizedHistory.value.reduce((result, item) => {
+    const key = getWeekKey(item.parsedDate);
+    if (!result[key]) {
+      result[key] = {
+        label: key,
+        weightTotal: 0,
+        bmiTotal: 0,
+        count: 0
+      };
+    }
+
+    result[key].weightTotal += item.weight;
+    result[key].bmiTotal += item.bmi;
+    result[key].count += 1;
+    return result;
+  }, {});
+
+  return Object.values(grouped).map((item) => ({
+    label: item.label,
+    weight: Number((item.weightTotal / item.count).toFixed(1)),
+    bmi: Number((item.bmiTotal / item.count).toFixed(1))
+  }));
+});
+
+const goToEdit = () => {
+  router.push('/dashboard/health-info/edit');
+};
+
+const renderTrendChart = async () => {
+  await nextTick();
+
+  if (!trendChartRef.value) {
+    return;
+  }
+
+  if (!chartInstance.value) {
+    chartInstance.value = echarts.init(trendChartRef.value);
+  }
+
+  const chart = chartInstance.value;
+  const source = chartSource.value;
+
+  if (!source.length) {
+    chart.clear();
+    chart.setOption({
+      title: {
+        text: '暂无历史记录',
+        left: 'center',
+        top: 'middle',
+        textStyle: {
+          color: '#8b8175',
+          fontSize: 14,
+          fontWeight: 'normal'
+        }
+      }
+    });
+    return;
+  }
+
+  chart.clear();
+  chart.setOption({
+    color: ['#8b7355', '#6f8f72'],
+    tooltip: {
+      show: true,
+      trigger: 'item',
+      triggerOn: 'mousemove|click',
+      renderMode: 'html',
+      appendToBody: true,
+      confine: false,
+      backgroundColor: 'rgba(255, 255, 255, 0.98)',
+      borderColor: '#e7ddd0',
+      borderWidth: 1,
+      extraCssText:
+        'z-index:9999;box-shadow:0 8px 24px rgba(60,45,34,0.12);border-radius:12px;padding:10px 12px;',
+      textStyle: {
+        color: '#4c4034'
+      },
+      formatter: (param) => {
+        const unit = param.seriesName === '体重趋势' ? ' kg' : '';
+        const value = typeof param.value === 'number' ? param.value.toFixed(1) : param.value;
+        return `
+          <div style="font-weight:600;margin-bottom:6px;">${param.name}</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${param.color};"></span>
+            <span>${param.seriesName}: ${value}${unit}</span>
+          </div>
+        `;
+      }
+    },
+    grid: { left: 48, right: 40, top: 36, bottom: 48 },
+    legend: {
+      data: ['体重趋势', 'BMI'],
+      top: 8,
+      textStyle: {
+        color: '#6f6255'
+      }
+    },
+    xAxis: {
+      type: 'category',
+      axisLine: { lineStyle: { color: '#d8d0c6' } },
+      axisLabel: {
+        color: '#7f7060',
+        formatter: (value) => value.replace(' ', '\n')
+      },
+      data: source.map((item) => item.label)
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '体重',
+        splitLine: { lineStyle: { color: '#f1ece5' } }
+      },
+      {
+        type: 'value',
+        name: 'BMI',
+        splitLine: { show: false }
+      }
+    ],
+    series: [
+      {
+        name: '体重趋势',
+        type: 'line',
+        smooth: true,
+        showSymbol: true,
+        showAllSymbol: true,
+        symbol: 'circle',
+        symbolSize: 10,
+        emphasis: {
+          focus: 'series',
+          scale: true,
+          itemStyle: {
+            borderWidth: 3,
+            borderColor: '#fff'
+          }
+        },
+        label: { show: false },
+        data: source.map((item) => item.weight)
+      },
+      {
+        name: 'BMI',
+        type: 'line',
+        smooth: true,
+        yAxisIndex: 1,
+        showSymbol: true,
+        showAllSymbol: true,
+        symbol: 'circle',
+        symbolSize: 10,
+        emphasis: {
+          focus: 'series',
+          scale: true,
+          itemStyle: {
+            borderWidth: 3,
+            borderColor: '#fff'
+          }
+        },
+        label: { show: false },
+        data: source.map((item) => item.bmi)
+      }
+    ]
+  }, true);
 };
 
 const loadHealthInfo = async () => {
-  if (userStore.userId) {
-    try {
-      const response = await healthInfoApi.getHealthInfo();
-      if (response.code === 200 && response.data) {
-        Object.assign(healthInfoForm, response.data);
-        if (response.data.exerciseType) {
-          healthInfoForm.exerciseTypeArr = response.data.exerciseType.split(',');
-        }
-        userStore.setHealthInfo(response.data);
-      }
-    } catch (error) {
-      console.error('获取健康信息失败:', error);
+  try {
+    const response = await healthInfoApi.getHealthInfo();
+    if (response.code === 200 && response.data) {
+      userStore.setHealthInfo(response.data);
+      userStore.setHealthAnalysis(response.analysis || null);
     }
+  } catch (error) {
+    console.error('获取健康信息失败:', error);
   }
 };
 
-onMounted(() => {
-  loadHealthInfo();
+const loadHealthHistory = async () => {
+  try {
+    const response = await healthInfoApi.getHealthHistory();
+    if (response.code === 200 && Array.isArray(response.data)) {
+      healthHistory.value = response.data;
+    } else {
+      healthHistory.value = [];
+    }
+  } catch (error) {
+    console.error('获取健康历史失败:', error);
+    healthHistory.value = [];
+  } finally {
+    renderTrendChart();
+  }
+};
+
+watch([healthHistory, trendView], () => renderTrendChart(), { deep: true });
+
+onMounted(async () => {
+  await loadHealthInfo();
+  await loadHealthHistory();
+  window.addEventListener('resize', renderTrendChart);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', renderTrendChart);
+  if (chartInstance.value) {
+    chartInstance.value.dispose();
+    chartInstance.value = null;
+  }
 });
 </script>
 
 <style scoped>
-.health-info-container {
-  background-color: #FFF;
-  padding: 32px;
-  border-radius: 4px;
-  box-shadow: 8px 8px 24px rgba(61, 74, 62, 0.08);
+.health-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 
-.health-info-container :deep(.el-form-item__label) {
-  font-family: 'Noto Sans SC', sans-serif;
-  color: #5A6B5C;
+.hero-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  padding: 28px 30px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(212, 198, 175, 0.35), transparent 42%),
+    linear-gradient(135deg, #fffaf4 0%, #f5efe5 100%);
+  border: 1px solid #eee4d7;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8b7355;
+}
+
+.hero-card h2 {
+  margin: 0;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 30px;
+  color: #43372b;
+}
+
+.hero-copy {
+  max-width: 560px;
+  margin: 12px 0 0;
+  color: #736557;
+  line-height: 1.7;
+}
+
+.edit-button {
+  min-width: 124px;
+  height: 44px;
+  border: none;
+  background: linear-gradient(135deg, #8b7355 0%, #6f8f72 100%);
+}
+
+.summary-grid {
+  margin: 0;
+}
+
+.summary-card {
+  min-height: 126px;
+  padding: 22px;
+  border-radius: 22px;
+  color: #3f342a;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 12px 28px rgba(67, 55, 43, 0.06);
+}
+
+.summary-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-card span {
+  color: #7f7060;
+}
+
+.summary-icon {
+  font-size: 18px;
+}
+
+.summary-card strong {
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.accent-sand {
+  background: linear-gradient(180deg, #fff8ef 0%, #f2e4d3 100%);
+}
+
+.accent-green {
+  background: linear-gradient(180deg, #f4fbf5 0%, #deecdf 100%);
+}
+
+.accent-cream {
+  background: linear-gradient(180deg, #fffdf8 0%, #efe8db 100%);
+}
+
+.chart-card,
+.info-card,
+.analysis-card {
+  border: 1px solid #eee6da;
+  border-radius: 22px;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  font-weight: 600;
+  color: #43372b;
+}
+
+.section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title .el-icon {
+  color: #8b7355;
+}
+
+.section-head small {
+  display: block;
+  margin-top: 4px;
+  font-weight: 400;
+  color: #8b8175;
+}
+
+.trend-toggle {
+  flex-shrink: 0;
+}
+
+.trend-chart {
+  width: 100%;
+  height: 320px;
+}
+
+.analysis-overview {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f7fbf8 0%, #eef7ef 100%);
+}
+
+.analysis-badge {
+  min-width: 132px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(80, 104, 84, 0.06);
+}
+
+.analysis-badge span {
+  display: block;
+  margin-bottom: 8px;
+  color: #8b8175;
   font-size: 13px;
 }
 
-.health-info-container :deep(.el-input-number) {
-  width: 100%;
+.analysis-badge strong {
+  color: #43372b;
+  font-size: 24px;
 }
 
-.health-info-container :deep(.el-input-number .el-input__wrapper) {
-  background-color: #F7FAF8;
-  border: 1px solid #D8E4DC;
-  border-radius: 4px;
-  padding: 0 12px;
-  min-height: 40px;
+.analysis-overview p {
+  margin: 0;
+  color: #6f675f;
+  line-height: 1.8;
 }
 
-.health-info-container :deep(.el-input-number .el-input__inner) {
-  text-align: center;
+.analysis-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
 }
 
-.health-info-container :deep(.el-input__wrapper) {
-  background-color: #F7FAF8;
-  border: 1px solid #D8E4DC;
-  border-radius: 4px;
-  padding: 8px 12px;
-  min-height: 40px;
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
 }
 
-.health-info-container :deep(.el-select) {
-  width: 100%;
+.analysis-item {
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: #faf7f2;
 }
 
-.health-info-container :deep(.el-checkbox-group),
-.health-info-container :deep(.el-radio-group) {
-  font-family: 'Noto Sans SC', sans-serif;
+.analysis-item label {
+  display: block;
+  margin-bottom: 8px;
+  color: #8b8175;
+  font-size: 13px;
 }
 
-h2 {
-  margin-bottom: 24px;
-  color: #3D4A3E;
-  font-family: 'Noto Serif SC', serif;
-  font-weight: 500;
-  font-size: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #E8F0EA;
+.analysis-item strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #43372b;
+  font-size: 18px;
 }
 
-.el-form-item {
-  margin-bottom: 20px;
+.analysis-item p {
+  margin: 0;
+  color: #6f675f;
+  line-height: 1.8;
 }
 
-.el-form-item:last-child {
-  margin-top: 32px;
+.analysis-recommendations {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  background: #fffaf4;
 }
 
-.el-form-item:last-child :deep(.el-button--primary) {
-  background-color: #7BA088;
-  border-color: #7BA088;
-  font-family: 'Noto Sans SC', sans-serif;
+.analysis-recommendations h3 {
+  margin: 0 0 10px;
+  color: #43372b;
+  font-size: 18px;
 }
 
-.el-form-item:last-child :deep(.el-button--primary:hover) {
-  background-color: #6A9177;
-  border-color: #6A9177;
+.analysis-recommendations p {
+  margin: 0 0 10px;
+  color: #6f675f;
+  line-height: 1.8;
+}
+
+.analysis-recommendations ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #5f695f;
+  line-height: 1.9;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.info-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.info-item {
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: #faf7f2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item.wide {
+  grid-column: 1 / -1;
+}
+
+.info-item label {
+  font-size: 13px;
+  color: #8b8175;
+}
+
+.info-item span {
+  color: #43372b;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+@media (max-width: 900px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-card,
+  .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .info-list {
+    grid-template-columns: 1fr;
+  }
+
+  .analysis-overview {
+    flex-direction: column;
+  }
 }
 </style>
+

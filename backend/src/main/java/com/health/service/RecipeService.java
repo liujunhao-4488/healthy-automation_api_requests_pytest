@@ -72,7 +72,7 @@ public interface RecipeService {
      * @param recipeId 食谱ID
      * @return 营养成分分析
      */
-    Map<String, Double> analyzeRecipeNutrition(Long recipeId);
+    Map<String, Object> analyzeRecipeNutrition(Long recipeId);
 
     /**
      * 获取推荐食谱
@@ -98,7 +98,7 @@ public interface RecipeService {
      * @param ingredientData 食材数据
      * @return 替代建议列表
      */
-    List<Map<String, Object>> getIngredientSubstitutes(Map<String, Object> ingredientData);
+    Map<String, Object> getIngredientSubstitutes(Map<String, Object> ingredientData);
 
     /**
      * 根据目标获取推荐食谱

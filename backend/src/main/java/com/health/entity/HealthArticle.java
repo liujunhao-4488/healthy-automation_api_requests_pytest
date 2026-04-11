@@ -1,27 +1,32 @@
 package com.health.entity;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * 健康文章实体类
- */
 @TableName("health_article")
 public class HealthArticle implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     @TableField("title")
     private String title;
 
+    @TableField("summary")
+    private String summary;
+
     @TableField("content")
     private String content;
+
+    @TableField("cover_image")
+    private String coverImage;
 
     @TableField("category")
     private String category;
@@ -29,11 +34,32 @@ public class HealthArticle implements Serializable {
     @TableField("tags")
     private String tags;
 
+    @TableField("author")
+    private String author;
+
+    @TableField("suitable_for")
+    private String suitableFor;
+
+    @TableField("goal_type")
+    private String goalType;
+
     @TableField("read_count")
     private Integer readCount;
 
+    @TableField("like_count")
+    private Integer likeCount;
+
+    @TableField("comment_count")
+    private Integer commentCount;
+
+    @TableField("share_count")
+    private Integer shareCount;
+
     @TableField("publish_date")
     private Date publishDate;
+
+    @TableField("status")
+    private Integer status;
 
     @TableField("create_time")
     private Date createTime;
@@ -41,7 +67,9 @@ public class HealthArticle implements Serializable {
     @TableField("update_time")
     private Date updateTime;
 
-    // Getter and Setter methods
+    @TableField(exist = false)
+    private Integer collectCount;
+
     public Long getId() {
         return id;
     }
@@ -58,12 +86,28 @@ public class HealthArticle implements Serializable {
         this.title = title;
     }
 
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
     public String getContent() {
         return content;
     }
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
     }
 
     public String getCategory() {
@@ -82,6 +126,30 @@ public class HealthArticle implements Serializable {
         this.tags = tags;
     }
 
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getSuitableFor() {
+        return suitableFor;
+    }
+
+    public void setSuitableFor(String suitableFor) {
+        this.suitableFor = suitableFor;
+    }
+
+    public String getGoalType() {
+        return goalType;
+    }
+
+    public void setGoalType(String goalType) {
+        this.goalType = goalType;
+    }
+
     public Integer getReadCount() {
         return readCount;
     }
@@ -90,12 +158,44 @@ public class HealthArticle implements Serializable {
         this.readCount = readCount;
     }
 
+    public Integer getLikeCount() {
+        return likeCount;
+    }
+
+    public void setLikeCount(Integer likeCount) {
+        this.likeCount = likeCount;
+    }
+
+    public Integer getCommentCount() {
+        return commentCount;
+    }
+
+    public void setCommentCount(Integer commentCount) {
+        this.commentCount = commentCount;
+    }
+
+    public Integer getShareCount() {
+        return shareCount;
+    }
+
+    public void setShareCount(Integer shareCount) {
+        this.shareCount = shareCount;
+    }
+
     public Date getPublishDate() {
         return publishDate;
     }
 
     public void setPublishDate(Date publishDate) {
         this.publishDate = publishDate;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 
     public Date getCreateTime() {
@@ -112,5 +212,13 @@ public class HealthArticle implements Serializable {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Integer getCollectCount() {
+        return collectCount;
+    }
+
+    public void setCollectCount(Integer collectCount) {
+        this.collectCount = collectCount;
     }
 }

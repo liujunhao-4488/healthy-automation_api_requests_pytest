@@ -19,10 +19,8 @@ public class HealthInfoDTO {
     @NotNull(message = "体重不能为空")
     private Double weight;
 
-    private Double waistCircumference;
     private Double bmi;
     private Double bmr;
-    private String bloodType;
     private String bloodPressure;
     private Double bloodSugar;
     private String activityLevel;

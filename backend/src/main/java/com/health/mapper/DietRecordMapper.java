@@ -2,38 +2,28 @@ package com.health.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.health.entity.DietRecord;
-import java.util.List;
-import java.util.Date;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
-/**
- * 饮食记录Mapper接口
- */
+import java.util.Date;
+import java.util.List;
+
 public interface DietRecordMapper extends BaseMapper<DietRecord> {
 
-    /**
-     * 根据用户ID和日期查询饮食记录
-     * @param userId 用户ID
-     * @param recordDate 记录日期
-     * @return 饮食记录列表
-     */
-    List<DietRecord> selectByUserIdAndDate(Long userId, Date recordDate);
+    @Select("SELECT id, user_id, record_date, meal_type, meal_time, total_calories, total_protein, total_carbs, total_fat, total_fiber, water_intake, notes, is_deleted, create_time, update_time " +
+        "FROM diet_record WHERE user_id = #{userId} AND is_deleted = 0 AND record_date = #{recordDate} ORDER BY create_time DESC")
+    List<DietRecord> selectByUserIdAndDate(@Param("userId") Long userId, @Param("recordDate") Date recordDate);
 
-    /**
-     * 查询用户指定日期范围内的饮食记录
-     * @param userId 用户ID
-     * @param startDate 开始日期
-     * @param endDate 结束日期
-     * @return 饮食记录列表
-     */
-    List<DietRecord> selectByUserIdAndDateRange(Long userId, Date startDate, Date endDate);
+    @Select("SELECT id, user_id, record_date, meal_type, meal_time, total_calories, total_protein, total_carbs, total_fat, total_fiber, water_intake, notes, is_deleted, create_time, update_time " +
+        "FROM diet_record WHERE user_id = #{userId} AND is_deleted = 0 AND record_date BETWEEN #{startDate} AND #{endDate} ORDER BY record_date DESC, create_time DESC")
+    List<DietRecord> selectByUserIdAndDateRange(@Param("userId") Long userId, @Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
-    /**
-     * 根据用户ID和餐型查询饮食记录
-     * @param userId 用户ID
-     * @param mealType 餐型
-     * @param startDate 开始日期
-     * @param endDate 结束日期
-     * @return 饮食记录列表
-     */
-    List<DietRecord> selectByUserIdAndMealType(Long userId, String mealType, Date startDate, Date endDate);
+    @Select("SELECT id, user_id, record_date, meal_type, meal_time, total_calories, total_protein, total_carbs, total_fat, total_fiber, water_intake, notes, is_deleted, create_time, update_time " +
+        "FROM diet_record WHERE user_id = #{userId} AND is_deleted = 0 AND meal_type = #{mealType} AND record_date BETWEEN #{startDate} AND #{endDate} ORDER BY record_date DESC, create_time DESC")
+    List<DietRecord> selectByUserIdAndMealType(
+        @Param("userId") Long userId,
+        @Param("mealType") String mealType,
+        @Param("startDate") Date startDate,
+        @Param("endDate") Date endDate
+    );
 }

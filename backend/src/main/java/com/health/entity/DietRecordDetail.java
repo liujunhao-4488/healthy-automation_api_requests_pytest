@@ -24,5 +24,6 @@ public class DietRecordDetail {
     private Double fiber;
     private Long recipeId;
     private Integer isCustom;
+    private Integer isDeleted;
 
 }

@@ -60,8 +60,7 @@
             <span class="bmi-status">{{ bmiStatus }}</span>
           </div>
           
-          <div class="form-actions">
-            <el-button class="btn-secondary" @click="skipStep">跳过</el-button>
+          <div class="form-actions single-action">
             <el-button class="btn-primary" @click="nextStep" :loading="loading">下一步</el-button>
           </div>
         </el-form>
@@ -71,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '../stores/user';
@@ -123,6 +122,12 @@ const bmiStatus = computed(() => {
   return '肥胖';
 });
 
+onMounted(() => {
+  if (userStore.hasCompletedHealthProfile) {
+    router.replace('/dashboard/health-info');
+  }
+});
+
 const nextStep = async () => {
   await healthFormRef.value.validate(async (valid) => {
     if (valid) {
@@ -136,7 +141,8 @@ const nextStep = async () => {
         });
         if (response.code === 200) {
           ElMessage.success('信息已保存');
-          userStore.setHealthInfo(healthForm);
+          userStore.setHealthInfo(response.data || healthForm);
+          userStore.setHealthAnalysis(response.analysis || null);
           router.push('/health-info-detail');
         } else {
           ElMessage.error(response.message || '保存失败');
@@ -150,9 +156,6 @@ const nextStep = async () => {
   });
 };
 
-const skipStep = () => {
-  router.push('/health-info-detail');
-};
 </script>
 
 <style scoped>
@@ -347,6 +350,10 @@ const skipStep = () => {
   display: flex;
   gap: 16px;
   margin-top: 32px;
+}
+
+.single-action {
+  justify-content: flex-end;
 }
 
 .btn-secondary {

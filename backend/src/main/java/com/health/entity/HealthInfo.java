@@ -17,10 +17,8 @@ public class HealthInfo {
     private String gender;
     private Double height;
     private Double weight;
-    private Double waistCircumference;
     private Double bmi;
     private Double bmr;
-    private String bloodType;
     private String bloodPressure;
     private Double bloodSugar;
     private String activityLevel;

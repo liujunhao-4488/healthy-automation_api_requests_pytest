@@ -1,53 +1,44 @@
 <template>
   <div class="dashboard-container">
     <el-container style="height: 100%;">
-      <!-- 侧边栏 -->
       <el-aside width="220px" class="sidebar">
         <div class="logo">
           <h2>健康饮食</h2>
         </div>
-        <el-menu
-          :default-active="activeMenu"
-          class="el-menu-vertical-demo"
-          router
-          @select="handleMenuSelect"
-        >
-          <!-- 健康信息 -->
+
+        <el-menu :default-active="activeMenu" class="menu" router @select="handleMenuSelect">
           <el-menu-item index="/dashboard/health-info">
             <el-icon><UserFilled /></el-icon>
             <template #title>健康信息</template>
           </el-menu-item>
-          <!-- 饮食目标 -->
+          <el-menu-item index="/dashboard/profile">
+            <el-icon><User /></el-icon>
+            <template #title>个人中心</template>
+          </el-menu-item>
           <el-menu-item index="/dashboard/diet-goal">
             <el-icon><BellFilled /></el-icon>
             <template #title>饮食目标</template>
           </el-menu-item>
-          <!-- 食谱推荐 -->
           <el-menu-item index="/dashboard/recipe-recommend">
             <el-icon><StarFilled /></el-icon>
             <template #title>食谱推荐</template>
           </el-menu-item>
-          <!-- 食材替代 -->
           <el-menu-item index="/dashboard/ingredient-substitute">
             <el-icon><Refresh /></el-icon>
-            <template #title>食材替代</template>
+            <template #title>食材小助手</template>
           </el-menu-item>
-          <!-- 自定义食谱 -->
           <el-menu-item index="/dashboard/custom-recipe">
             <el-icon><Edit /></el-icon>
             <template #title>自定义食谱</template>
           </el-menu-item>
-          <!-- 饮食记录 -->
           <el-menu-item index="/dashboard/diet-record">
             <el-icon><Notebook /></el-icon>
             <template #title>饮食记录</template>
           </el-menu-item>
-          <!-- 健康知识 -->
           <el-menu-item index="/dashboard/health-knowledge">
             <el-icon><Reading /></el-icon>
             <template #title>健康知识</template>
           </el-menu-item>
-          <!-- 退出登录 -->
           <el-menu-item index="/logout" @click="logout">
             <el-icon><SwitchButton /></el-icon>
             <template #title>退出登录</template>
@@ -55,15 +46,25 @@
         </el-menu>
       </el-aside>
 
-      <!-- 主内容区 -->
       <el-container style="height: 100%;">
         <el-header class="header">
-          <div class="user-info">
-            <span>欢迎，{{ username }}</span>
+          <button class="notification-trigger" type="button" @click="router.push('/dashboard/notifications')">
+            <el-badge :value="unreadNotificationCount" :hidden="unreadNotificationCount === 0" :max="99">
+              <el-icon :size="18"><Bell /></el-icon>
+            </el-badge>
+          </button>
+
+          <div class="header-user" @click="router.push('/dashboard/profile')">
+            <el-avatar :size="36" :src="avatarSrc">{{ avatarFallback }}</el-avatar>
+            <div class="header-user-copy">
+              <strong>{{ username }}</strong>
+              <span>{{ userStore.email || '未设置邮箱' }}</span>
+            </div>
           </div>
         </el-header>
+
         <el-main class="main-content">
-          <router-view></router-view>
+          <router-view />
         </el-main>
       </el-container>
     </el-container>
@@ -71,66 +72,112 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { useUserStore } from '../stores/user';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-// 导入Element Plus图标（确认所有图标都存在）
-import { 
-  UserFilled, BellFilled, StarFilled, 
-  Refresh, Notebook, Reading, SwitchButton, Edit 
+import {
+  Bell,
+  BellFilled,
+  Edit,
+  Notebook,
+  Reading,
+  Refresh,
+  StarFilled,
+  SwitchButton,
+  User,
+  UserFilled
 } from '@element-plus/icons-vue';
+import { useUserStore } from '../stores/user';
+import notificationApi from '../api/notification';
 
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
+const unreadNotificationCount = ref(0);
 
-// 计算属性：获取用户名（增加空值兜底）
 const username = computed(() => userStore.username || '用户');
-// 计算属性：当前激活的菜单（匹配路由路径）
-const activeMenu = computed(() => route.path);
+const avatarSrc = computed(() => userStore.avatar || '');
+const avatarFallback = computed(() => (userStore.username || 'U').trim().charAt(0).toUpperCase());
 
-// 菜单选中事件
-const handleMenuSelect = (key, keyPath) => {
-  console.log('选中菜单：', key, keyPath);
-  // 排除退出登录的index，避免路由跳转
+const activeMenu = computed(() => {
+  if (route.path.startsWith('/dashboard/health-info')) {
+    return '/dashboard/health-info';
+  }
+
+  if (
+    route.path.startsWith('/dashboard/profile') ||
+    route.path.startsWith('/dashboard/notifications') ||
+    route.path.startsWith('/dashboard/collected-articles') ||
+    route.path.startsWith('/dashboard/collected-recipes')
+  ) {
+    return '/dashboard/profile';
+  }
+
+  if (route.path.startsWith('/dashboard/diet-goal')) {
+    return '/dashboard/diet-goal';
+  }
+
+  return route.path;
+});
+
+const handleMenuSelect = (key) => {
   if (key !== '/logout') {
     router.push(key);
   }
 };
 
-// 退出登录逻辑
-const logout = () => {
+const loadUnreadNotificationCount = async () => {
+  if (!userStore.isLoggedIn) {
+    unreadNotificationCount.value = 0;
+    return;
+  }
+
   try {
-    userStore.logout();
-    ElMessage.success('退出登录成功');
-    router.push('/login');
+    const response = await notificationApi.getNotifications();
+    const notifications = response.code === 200 && Array.isArray(response.data) ? response.data : [];
+    unreadNotificationCount.value = notifications.filter((item) => !item.isRead).length;
   } catch (error) {
-    ElMessage.error('退出登录失败：' + error.message);
+    unreadNotificationCount.value = 0;
   }
 };
 
-// 挂载时检查登录状态
+const logout = () => {
+  userStore.logout();
+  unreadNotificationCount.value = 0;
+  ElMessage.success('退出登录成功');
+  router.push('/login');
+};
+
 onMounted(() => {
   if (!userStore.isLoggedIn) {
     router.push('/login');
     ElMessage.warning('请先登录');
+    return;
   }
+
+  loadUnreadNotificationCount();
 });
+
+watch(
+  () => route.fullPath,
+  () => {
+    if (route.path.startsWith('/dashboard')) {
+      loadUnreadNotificationCount();
+    }
+  }
+);
 </script>
 
 <style scoped>
-/* 容器样式：确保100%高度 */
 .dashboard-container {
   height: 100vh;
   width: 100%;
   overflow: hidden;
 }
 
-/* 侧边栏样式 */
 .sidebar {
   height: 100%;
-  background-color: #3D4A3E !important;
+  background-color: #3d4a3e !important;
 }
 
 .logo {
@@ -141,15 +188,14 @@ onMounted(() => {
 
 .logo h2 {
   margin: 0;
-  color: #F7FAF8;
+  color: #f7faf8;
   font-family: 'Noto Serif SC', serif;
   font-size: 18px;
   font-weight: 500;
   letter-spacing: 2px;
 }
 
-/* 菜单样式优化 */
-:deep(.el-menu-vertical-demo) {
+:deep(.menu) {
   border-right: none !important;
   background-color: transparent !important;
 }
@@ -167,39 +213,73 @@ onMounted(() => {
 
 :deep(.el-menu-item:hover) {
   background-color: rgba(123, 160, 136, 0.3) !important;
-  color: #F7FAF8 !important;
+  color: #f7faf8 !important;
 }
 
 :deep(.el-menu-item.is-active) {
-  background-color: #7BA088 !important;
-  color: #FFF !important;
+  background-color: #7ba088 !important;
+  color: #fff !important;
 }
 
-:deep(.el-menu-item .el-icon) {
-  color: inherit;
-}
-
-/* 头部样式 */
 .header {
-  background-color: #FFF;
-  border-bottom: 1px solid #E8F0EA;
+  background-color: #fff;
+  border-bottom: 1px solid #e8f0ea;
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  gap: 10px;
   padding: 0 24px;
   height: 56px !important;
 }
 
-.user-info {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 14px;
-  color: #5A6B5C;
+.notification-trigger {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #dfe8df;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fbf8;
+  color: #4a5f50;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 2px;
 }
 
-/* 主内容区样式 */
+.notification-trigger:hover {
+  border-color: #a6c3ab;
+  background: #eef7f0;
+  box-shadow: 0 10px 22px rgba(80, 108, 86, 0.08);
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.header-user-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.3;
+}
+
+.header-user-copy strong {
+  color: #425248;
+  font-size: 14px;
+}
+
+.header-user-copy span {
+  color: #8a988d;
+  font-size: 12px;
+}
+
 .main-content {
   padding: 24px;
-  background-color: #F7FAF8;
+  background-color: #f7faf8;
   height: calc(100% - 56px) !important;
   overflow-y: auto;
 }

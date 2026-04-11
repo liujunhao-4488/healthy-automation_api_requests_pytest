@@ -1,330 +1,711 @@
 <template>
-  <div class="auth-wrapper">
-    <div class="auth-main">
-      <div class="auth-header">
-        <h1>健康饮食推荐</h1>
-        <p class="auth-subtitle">科学搭配 · 健康生活</p>
-      </div>
-      
-      <div class="auth-form">
-        <h2>登录账号</h2>
-        <el-form :model="loginForm" :rules="rules" ref="loginFormRef" label-position="top">
+  <div class="login-page">
+    <div class="login-shell">
+      <section class="login-brand">
+        <div class="brand-icon">
+          <div class="brand-icon-inner">
+            <span class="brand-monitor"></span>
+          </div>
+        </div>
+
+        <div class="brand-copy">
+          <h1>基于人工智能的个人饮食健康管理系统</h1>
+          <p>基于健康档案、饮食目标和智能推荐能力打造的一体化健康饮食平台。</p>
+        </div>
+
+        <ul class="brand-points">
+          <li>个性化食谱推荐</li>
+          <li>健康目标管理</li>
+          <li>饮食记录与分析</li>
+        </ul>
+      </section>
+
+      <section class="login-panel">
+        <div class="panel-head">
+          <h2>欢迎登录</h2>
+          <p>请输入您的账号信息</p>
+        </div>
+
+        <div class="login-tabs">
+          <button type="button" class="tab-item active">账号登录</button>
+        </div>
+
+        <el-form ref="loginFormRef" :model="loginForm" :rules="rules" label-position="top" class="login-form">
           <el-form-item label="邮箱" prop="email">
-            <el-input v-model="loginForm.email" placeholder="请输入邮箱地址" />
+            <el-input v-model="loginForm.email" placeholder="请输入邮箱地址" class="login-input">
+              <template v-if="recentAccounts.length" #suffix>
+                <el-popover
+                  placement="bottom-end"
+                  :width="340"
+                  trigger="click"
+                  popper-class="recent-account-popper"
+                >
+                  <template #reference>
+                    <button type="button" class="recent-trigger" aria-label="最近登录账号">
+                      <span class="recent-trigger-icon">⌄</span>
+                    </button>
+                  </template>
+
+                  <div class="recent-dropdown">
+                    <div class="recent-dropdown-head">
+                      <strong>最近登录</strong>
+                      <span>最多保留 5 个账号</span>
+                    </div>
+
+                    <div class="recent-dropdown-list">
+                      <div
+                        v-for="account in recentAccounts"
+                        :key="account.email"
+                        class="recent-dropdown-item"
+                      >
+                        <div class="recent-item-main" @click="quickLogin(account)">
+                          <div class="recent-badge">{{ getAccountInitial(account) }}</div>
+                          <div class="recent-meta">
+                            <strong>{{ account.username || account.email }}</strong>
+                            <span>{{ account.email }}</span>
+                            <em>上次登录：{{ formatRecentTime(account.lastLoginAt) }}</em>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          class="recent-remove"
+                          :disabled="loading"
+                          @click.stop="removeRecent(account.email)"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </el-popover>
+              </template>
+            </el-input>
           </el-form-item>
+
           <el-form-item label="密码" prop="password">
-            <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" />
+            <el-input
+              v-model="loginForm.password"
+              type="password"
+              show-password
+              placeholder="请输入密码"
+              class="login-input"
+            />
           </el-form-item>
-          <el-form-item>
-            <el-button class="btn-primary" @click="login" :loading="loading">登录</el-button>
+
+          <el-form-item class="login-submit">
+            <el-button class="submit-button" @click="login" :loading="loading">登录</el-button>
           </el-form-item>
+
           <div class="form-footer">
-            <el-button text @click="resetForm" class="btn-text">重置</el-button>
+            <el-button text @click="resetForm" class="reset-link">重置</el-button>
           </div>
         </el-form>
-        
+
         <div class="auth-footer">
           <span>还没有账号？</span>
-          <el-link class="link-text" @click="goToRegister">立即注册</el-link>
+          <el-link class="register-link" @click="goToRegister">立即注册</el-link>
         </div>
-      </div>
-    </div>
-    
-    <div class="auth-decor">
-      <div class="decor-line"></div>
-      <div class="decor-circle"></div>
-      <div class="decor-dot"></div>
+      </section>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-import { useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
-import authApi from '../api/auth';
-import { useUserStore } from '../stores/user';
+import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import authApi from '../api/auth'
+import healthInfoApi from '../api/healthInfo'
+import { useUserStore } from '../stores/user'
 
-const router = useRouter();
-const userStore = useUserStore();
-const loginFormRef = ref(null);
-const loading = ref(false);
+const router = useRouter()
+const userStore = useUserStore()
+const loginFormRef = ref(null)
+const loading = ref(false)
+const recentAccounts = ref(userStore.getRecentAccounts())
 
 const loginForm = reactive({
-  email: '2311697186@qq.com',
-  password: '123456'
-});
+  email: '',
+  password: ''
+})
 
 const rules = {
   email: [
     { required: true, message: '请输入邮箱', trigger: 'blur' },
     { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
   ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' }
-  ]
-};
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+}
+
+const refreshRecentAccounts = () => {
+  recentAccounts.value = userStore.getRecentAccounts()
+}
+
+const navigateAfterLogin = () => {
+  ElMessage.success('登录成功')
+
+  if (userStore.isAdmin) {
+    router.push('/admin/overview')
+    return
+  }
+
+  if (userStore.hasCompletedHealthProfile) {
+    router.push('/dashboard/health-info')
+    return
+  }
+
+  router.push('/health-info-basic')
+}
+
+const fetchHealthInfo = async () => {
+  try {
+    const healthResponse = await healthInfoApi.getHealthInfo()
+    if (healthResponse.code === 200 && healthResponse.data) {
+      userStore.setHealthInfo(healthResponse.data)
+      userStore.setHealthAnalysis(healthResponse.analysis || null)
+    } else {
+      userStore.setHealthInfo(null)
+      userStore.setHealthAnalysis(null)
+    }
+  } catch (error) {
+    userStore.setHealthInfo(null)
+    userStore.setHealthAnalysis(null)
+  }
+}
+
+const submitLogin = async ({ email, password }) => {
+  loading.value = true
+
+  try {
+    const response = await authApi.login({ email, password })
+
+    if (response.code !== 200) {
+      ElMessage.error(response.message || '登录失败')
+      return
+    }
+
+    userStore.setUser({
+      userId: response.data.userId,
+      username: response.data.username,
+      email: response.data.email,
+      phone: response.data.phone,
+      avatar: response.data.avatar,
+      role: response.data.role,
+      token: response.data.token
+    })
+
+    userStore.saveRecentAccount({
+      email,
+      password,
+      username: response.data.username,
+      role: response.data.role
+    })
+    refreshRecentAccounts()
+
+    await fetchHealthInfo()
+    navigateAfterLogin()
+  } catch (error) {
+    ElMessage.error(error?.message || '登录失败，请检查网络连接')
+  } finally {
+    loading.value = false
+  }
+}
 
 const login = () => {
   loginFormRef.value.validate((valid) => {
     if (valid) {
-      loading.value = true;
-      authApi.login({
+      submitLogin({
         email: loginForm.email,
         password: loginForm.password
       })
-        .then(response => {
-          if (response.code === 200) {
-            userStore.setUser({
-              userId: response.data.userId,
-              username: response.data.username,
-              token: response.data.token
-            });
-            ElMessage.success('登录成功');
-            if (userStore.hasHealthInfo) {
-              router.push('/dashboard/health-info');
-            } else {
-              router.push('/health-info-basic');
-            }
-          } else {
-            ElMessage.error(response.message || '登录失败');
-          }
-        })
-        .catch(error => {
-          ElMessage.error(error.message || '登录失败，请检查网络连接');
-        })
-        .finally(() => {
-          loading.value = false;
-        });
     }
-  });
-};
+  })
+}
+
+const quickLogin = (account) => {
+  loginForm.email = account.email
+  loginForm.password = account.password
+  submitLogin({
+    email: account.email,
+    password: account.password
+  })
+}
+
+const removeRecent = (email) => {
+  userStore.removeRecentAccount(email)
+  refreshRecentAccounts()
+  ElMessage.success('已移除历史账号')
+}
 
 const resetForm = () => {
-  loginFormRef.value.resetFields();
-};
+  loginFormRef.value?.resetFields()
+}
 
 const goToRegister = () => {
-  router.push('/register');
-};
+  router.push('/register')
+}
+
+const getAccountInitial = (account) => {
+  const source = account.username || account.email || '?'
+  return source.trim().charAt(0).toUpperCase()
+}
+
+const formatRecentTime = (value) => {
+  if (!value) return '未知'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '未知'
+
+  return date.toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 </script>
 
 <style scoped>
-.auth-wrapper {
+.login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #F7FAF8;
-  padding: 40px 20px;
-  position: relative;
+  padding: 32px;
+  background:
+    radial-gradient(circle at top left, rgba(123, 160, 136, 0.18), transparent 28%),
+    linear-gradient(180deg, #f4f8f6 0%, #edf3ef 100%);
+}
+
+.login-shell {
+  width: min(1180px, 100%);
+  min-height: 720px;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  background: #ffffff;
+  border-radius: 32px;
   overflow: hidden;
+  box-shadow: 0 28px 80px rgba(77, 104, 88, 0.14);
+  border: 1px solid rgba(221, 232, 227, 0.9);
 }
 
-.auth-main {
-  width: 100%;
-  max-width: 360px;
+.login-brand {
   position: relative;
-  z-index: 2;
-  animation: fadeInUp 0.6s ease-out;
+  padding: 72px 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.12), transparent 16%),
+    linear-gradient(180deg, #6f9580 0%, #86ab95 100%);
+  color: #fff;
 }
 
-.auth-header {
-  margin-bottom: 40px;
-  text-align: left;
+.brand-icon {
+  display: flex;
+  justify-content: center;
 }
 
-.auth-header h1 {
-  font-family: 'Noto Serif SC', 'Source Han Serif SC', serif;
-  font-size: 30px;
-  font-weight: 600;
-  color: #3D4A3E;
-  letter-spacing: 2px;
-  margin: 0 0 6px 0;
+.brand-icon-inner {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(4px);
 }
 
-.auth-subtitle {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 13px;
-  color: #8A9A8C;
+.brand-monitor {
+  width: 54px;
+  height: 40px;
+  border: 4px solid #fff;
+  border-radius: 8px;
+  position: relative;
+  display: block;
+}
+
+.brand-monitor::before {
+  content: '';
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  width: 22px;
+  height: 4px;
+  background: #fff;
+  transform: translateX(-50%);
+  border-radius: 999px;
+}
+
+.brand-monitor::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  width: 4px;
+  height: 12px;
+  background: #fff;
+  transform: translateX(-50%);
+  border-radius: 999px;
+}
+
+.brand-copy {
+  text-align: center;
+}
+
+.brand-copy h1 {
+  margin: 0 0 14px;
+  font-size: 44px;
+  line-height: 1.2;
+  font-weight: 700;
   letter-spacing: 1px;
 }
 
-.auth-form {
-  background: #FFF;
-  padding: 36px 32px;
-  border-radius: 4px;
-  box-shadow: 
-    8px 8px 24px rgba(61, 74, 62, 0.08),
-    -2px -2px 8px rgba(255, 255, 255, 0.6);
-  animation: scaleIn 0.5s ease-out 0.1s both;
+.brand-copy p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.88);
 }
 
-.auth-form h2 {
-  font-family: 'Noto Serif SC', 'Source Han Serif SC', serif;
-  font-size: 20px;
-  font-weight: 500;
-  color: #3D4A3E;
-  margin: 0 0 28px 0;
+.brand-points {
+  list-style: none;
+  margin: 8px auto 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: fit-content;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 18px;
+}
+
+.brand-points li {
+  position: relative;
+  padding-left: 28px;
+}
+
+.brand-points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.login-panel {
+  padding: 78px 54px 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: 46px;
+  line-height: 1.15;
+  color: #1d3b2f;
+  font-weight: 700;
+}
+
+.panel-head p {
+  margin: 14px 0 0;
+  color: #7d9082;
+  font-size: 18px;
+}
+
+.login-tabs {
+  display: flex;
+  gap: 32px;
+  margin-top: 40px;
   padding-bottom: 14px;
-  border-bottom: 1px solid #E8F0EA;
+  border-bottom: 1px solid #dde5ef;
 }
 
-.auth-form :deep(.el-form-item__label) {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 13px;
-  color: #5A6B5C;
-  padding-bottom: 6px;
-}
-
-.auth-form :deep(.el-input__wrapper) {
-  background-color: #F7FAF8;
-  border: 1px solid #D8E4DC;
-  border-radius: 4px;
-  box-shadow: none;
-  padding: 8px 12px;
-  min-height: 40px;
-  transition: all 0.3s ease;
-}
-
-.auth-form :deep(.el-input__wrapper:hover) {
-  border-color: #B8C8B8;
-}
-
-.auth-form :deep(.el-input__wrapper.is-focus) {
-  border-color: #9BC1A8;
-  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.04);
-}
-
-.auth-form :deep(.el-input__inner) {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 14px;
-  color: #3D4A3E;
-}
-
-.auth-form :deep(.el-input__inner::placeholder) {
-  color: #A8B8A8;
-}
-
-.btn-primary {
-  width: 100%;
-  height: 44px;
-  background-color: #7BA088;
+.tab-item {
   border: none;
-  border-radius: 4px;
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: #FFF;
+  background: transparent;
+  padding: 0 0 12px;
+  font-size: 20px;
+  color: #6b7f71;
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-top: 8px;
 }
 
-.btn-primary:hover {
-  background-color: #6A9177;
-  transform: scale(1.02);
-  box-shadow: 4px 4px 12px rgba(123, 160, 136, 0.25);
+.tab-item.active {
+  color: #7ba088;
+  font-weight: 600;
+  border-bottom: 3px solid #7ba088;
 }
 
-.btn-primary:active {
-  transform: scale(0.98);
+.tab-item.disabled {
+  opacity: 0.62;
+  cursor: default;
+}
+
+.login-form {
+  margin-top: 28px;
+}
+
+.login-form :deep(.el-form-item__label) {
+  font-size: 15px;
+  color: #5d7163;
+  padding-bottom: 8px;
+}
+
+.login-input :deep(.el-input__wrapper) {
+  min-height: 54px;
+  border-radius: 14px;
+  box-shadow: none;
+  background: #fff;
+  border: 1px solid #d8e2ef;
+  padding: 0 16px;
+}
+
+.login-input :deep(.el-input__wrapper:hover) {
+  border-color: #bdd1c3;
+}
+
+.login-input :deep(.el-input__wrapper.is-focus) {
+  border-color: #7ba088;
+  box-shadow: 0 0 0 3px rgba(123, 160, 136, 0.14);
+}
+
+.login-input :deep(.el-input__inner) {
+  font-size: 16px;
+  color: #2d4335;
+}
+
+.login-submit {
+  margin-top: 12px;
+}
+
+.submit-button {
+  width: 100%;
+  height: 54px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #7ba088 0%, #6b9078 100%);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.submit-button:hover {
+  background: linear-gradient(180deg, #739982 0%, #62866f 100%);
 }
 
 .form-footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 8px;
+  margin-top: 2px;
 }
 
-.btn-text {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 13px;
-  color: #8A9A8C;
-}
-
-.btn-text:hover {
-  color: #5A6B5C;
+.reset-link {
+  color: #7d9082;
+  font-size: 14px;
 }
 
 .auth-footer {
-  margin-top: 24px;
+  margin-top: 36px;
   text-align: center;
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 13px;
-  color: #8A9A8C;
+  color: #839587;
+  font-size: 15px;
 }
 
-.link-text {
-  color: #7BA088;
-  font-weight: 500;
-  margin-left: 4px;
+.register-link {
+  margin-left: 6px;
+  color: #7ba088;
+  font-size: 15px;
+  font-weight: 600;
 }
 
-.link-text:hover {
-  color: #6A9177;
+.recent-trigger {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #7b9280;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
 }
 
-.auth-decor {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 45%;
-  height: 100%;
-  pointer-events: none;
+.recent-trigger:hover {
+  color: #6d9079;
 }
 
-.decor-line {
-  position: absolute;
-  top: 12%;
-  right: 18%;
-  width: 100px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #C8D8CC, transparent);
+.recent-trigger-icon {
+  font-size: 16px;
+  line-height: 1;
 }
 
-.decor-line:nth-child(2) {
-  top: 22%;
-  right: 24%;
-  width: 70px;
+.recent-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.decor-circle {
-  position: absolute;
-  bottom: 12%;
-  right: 8%;
-  width: 180px;
-  height: 180px;
-  border: 1px solid #E8F0EA;
+.recent-dropdown-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recent-dropdown-head strong {
+  color: #344c3b;
+  font-size: 14px;
+}
+
+.recent-dropdown-head span {
+  color: #8aa08f;
+  font-size: 12px;
+}
+
+.recent-dropdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recent-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #dce7df;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fbfdfb 0%, #f4f8f5 100%);
+  padding: 10px 12px;
+}
+
+.recent-item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.recent-badge {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7ba088 0%, #92b39d 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
-.decor-dot {
-  position: absolute;
-  top: 40%;
-  right: 30%;
-  width: 6px;
-  height: 6px;
-  background-color: #B8C8B8;
+.recent-meta {
+  min-width: 0;
+}
+
+.recent-meta strong {
+  display: block;
+  color: #344c3b;
+  font-size: 14px;
+}
+
+.recent-meta span,
+.recent-meta em {
+  display: block;
+  color: #7d9082;
+  font-size: 12px;
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.recent-remove {
+  width: 28px;
+  height: 28px;
+  border: none;
   border-radius: 50%;
+  background: #edf4ef;
+  color: #7d9082;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-@media (max-width: 480px) {
-  .auth-wrapper {
-    padding: 24px 16px;
+.recent-remove:hover {
+  background: #e4ede7;
+  color: #5e7264;
+}
+
+@media (max-width: 980px) {
+  .login-shell {
+    grid-template-columns: 1fr;
+    min-height: auto;
   }
-  
-  .auth-header h1 {
-    font-size: 24px;
+
+  .login-brand {
+    padding: 48px 30px;
   }
-  
-  .auth-form {
-    padding: 28px 20px;
+
+  .login-panel {
+    padding: 44px 28px 36px;
   }
-  
-  .auth-decor {
-    display: none;
+
+  .brand-copy h1 {
+    font-size: 36px;
+  }
+
+  .panel-head h2 {
+    font-size: 38px;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-page {
+    padding: 14px;
+  }
+
+  .login-shell {
+    border-radius: 22px;
+  }
+
+  .login-brand {
+    padding: 38px 22px;
+  }
+
+  .login-panel {
+    padding: 34px 20px 28px;
+  }
+
+  .brand-copy h1 {
+    font-size: 30px;
+  }
+
+  .brand-copy p,
+  .brand-points {
+    font-size: 15px;
+  }
+
+  .panel-head h2 {
+    font-size: 32px;
+  }
+
+  .panel-head p {
+    font-size: 15px;
+  }
+
+  .login-tabs {
+    gap: 20px;
+  }
+
+  .tab-item {
+    font-size: 17px;
   }
 }
 </style>
