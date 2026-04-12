@@ -26,8 +26,6 @@ public class HealthInfoDTO {
     private String activityLevel;
     private Integer exerciseDuration;
     private String exerciseType;
-    private String allergies;
     private String chronicDiseases;
-    private String healthCondition;
 
 }

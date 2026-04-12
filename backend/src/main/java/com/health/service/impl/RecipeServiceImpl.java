@@ -379,9 +379,12 @@ public class RecipeServiceImpl implements RecipeService {
 
         HealthInfo healthInfo = userId == null ? null : healthInfoMapper.findByUserId(userId);
         DietGoal dietGoal = userId == null ? null : dietGoalMapper.findByUserId(userId);
+        UserDietPreference preference = userId == null ? null : userDietPreferenceMapper.selectOne(
+            new QueryWrapper<UserDietPreference>().eq("user_id", userId).last("LIMIT 1")
+        );
         Map<String, Object> healthInfoPayload = extractMap(ingredientData.get("healthInfo"));
         Map<String, Object> dietGoalPayload = extractMap(ingredientData.get("dietGoal"));
-        String assistantContext = buildIngredientAssistantContext(healthInfo, dietGoal, healthInfoPayload, dietGoalPayload);
+        String assistantContext = buildIngredientAssistantContext(healthInfo, dietGoal, preference, healthInfoPayload, dietGoalPayload);
 
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -421,7 +424,7 @@ public class RecipeServiceImpl implements RecipeService {
         }
     }
 
-    private String buildIngredientAssistantContext(HealthInfo healthInfo, DietGoal dietGoal) {
+    private String buildIngredientAssistantContext(HealthInfo healthInfo, DietGoal dietGoal, UserDietPreference preference) {
         StringBuilder context = new StringBuilder("以下是用户当前信息。");
         if (healthInfo != null) {
             context.append(" 年龄=").append(valueOrDash(healthInfo.getAge()));
@@ -431,9 +434,10 @@ public class RecipeServiceImpl implements RecipeService {
             context.append("，BMI=").append(valueOrDash(healthInfo.getBmi()));
             context.append("，基础代谢=").append(valueOrDash(healthInfo.getBmr())).append("kcal");
             context.append("，活动水平=").append(valueOrDash(healthInfo.getActivityLevel()));
-            context.append("，过敏食物=").append(valueOrDash(healthInfo.getAllergies()));
-            context.append("，慢性疾病=").append(valueOrDash(healthInfo.getChronicDiseases()));
-            context.append("，健康状况=").append(valueOrDash(healthInfo.getHealthCondition())).append("。");
+            context.append("，慢性疾病=").append(valueOrDash(healthInfo.getChronicDiseases())).append("。");
+        }
+        if (preference != null) {
+            context.append(" 饮食偏好中的过敏/忌口=").append(valueOrDash(preference.getAllergies())).append("。");
         }
         if (dietGoal != null) {
             context.append(" 当前饮食目标=").append(valueOrDash(dietGoal.getGoalType()));
@@ -443,17 +447,18 @@ public class RecipeServiceImpl implements RecipeService {
             context.append("，脂肪目标=").append(valueOrDash(dietGoal.getFatTarget())).append("g");
             context.append("，饮水目标=").append(valueOrDash(dietGoal.getWaterTarget())).append("ml。");
         }
-        context.append(" 请在回答时优先考虑健康限制、目标热量和宏量营养素方向。");
+        context.append(" 请在回答时优先考虑饮食偏好中的过敏/忌口、慢性疾病、目标热量和宏量营养素方向。");
         return context.toString();
     }
 
     private String buildIngredientAssistantContext(
         HealthInfo healthInfo,
         DietGoal dietGoal,
+        UserDietPreference preference,
         Map<String, Object> healthInfoPayload,
         Map<String, Object> dietGoalPayload
     ) {
-        if ((healthInfoPayload != null && !healthInfoPayload.isEmpty()) || (dietGoalPayload != null && !dietGoalPayload.isEmpty())) {
+        if ((healthInfoPayload != null && !healthInfoPayload.isEmpty()) || (dietGoalPayload != null && !dietGoalPayload.isEmpty()) || preference != null) {
             StringBuilder context = new StringBuilder("以下是用户当前信息。");
             if (healthInfoPayload != null && !healthInfoPayload.isEmpty()) {
                 context.append(" 健康档案：")
@@ -464,9 +469,13 @@ public class RecipeServiceImpl implements RecipeService {
                     .append("，BMI=").append(valueOrDash(readPayloadValue(healthInfoPayload, "bmi")))
                     .append("，基础代谢=").append(valueOrDash(readPayloadValue(healthInfoPayload, "bmr"))).append("kcal")
                     .append("，活动水平=").append(valueOrDash(readPayloadValue(healthInfoPayload, "activityLevel")))
-                    .append("，过敏信息=").append(valueOrDash(readPayloadValue(healthInfoPayload, "allergies")))
                     .append("，慢病情况=").append(valueOrDash(readPayloadValue(healthInfoPayload, "chronicDiseases")))
-                    .append("，健康状况=").append(valueOrDash(readPayloadValue(healthInfoPayload, "healthCondition")))
+                    .append("。");
+            }
+            if (preference != null) {
+                context.append(" 饮食偏好：")
+                    .append("过敏/忌口=").append(valueOrDash(preference.getAllergies()))
+                    .append("，不喜欢食物=").append(valueOrDash(preference.getDislikes()))
                     .append("。");
             }
             if (dietGoalPayload != null && !dietGoalPayload.isEmpty()) {
@@ -479,10 +488,10 @@ public class RecipeServiceImpl implements RecipeService {
                     .append("，饮水目标=").append(valueOrDash(readPayloadValue(dietGoalPayload, "waterTarget"))).append("ml")
                     .append("。");
             }
-            context.append(" 请在回答时优先考虑健康限制、目标热量和宏量营养素方向。");
+            context.append(" 请在回答时优先考虑饮食偏好中的过敏/忌口、慢性疾病、目标热量和宏量营养素方向。");
             return context.toString();
         }
-        return buildIngredientAssistantContext(healthInfo, dietGoal);
+        return buildIngredientAssistantContext(healthInfo, dietGoal, preference);
     }
 
     @SuppressWarnings("unchecked")
@@ -517,7 +526,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     private String buildIngredientAssistantSystemPrompt() {
         return "你是一位专业的食材替代与饮食搭配助手。"
-            + "请结合用户当前健康档案、饮食目标、过敏和慢病信息，用自然、专业、清晰的中文直接回答问题。"
+            + "请结合用户当前健康档案、饮食目标、饮食偏好中的过敏/忌口和慢性病信息，用自然、专业、清晰的中文直接回答问题。"
             + "回答时优先先给结论，再解释为什么适合该用户。"
             + "如果合适，可以分点给出 2 到 4 个替代方案，并说明营养差异和使用建议。"
             + "不要返回 JSON，不要返回代码块，也不要用字段名模板式输出。";
@@ -734,8 +743,11 @@ public class RecipeServiceImpl implements RecipeService {
 
         HealthInfo healthInfo = userId == null ? null : healthInfoMapper.findByUserId(userId);
         DietGoal dietGoal = userId == null ? null : dietGoalMapper.findByUserId(userId);
+        UserDietPreference preference = userId == null ? null : userDietPreferenceMapper.selectOne(
+            new QueryWrapper<UserDietPreference>().eq("user_id", userId).last("LIMIT 1")
+        );
         String goalType = dietGoal == null ? "" : String.valueOf(dietGoal.getGoalType()).toLowerCase(Locale.ROOT);
-        String allergies = healthInfo == null || healthInfo.getAllergies() == null ? "" : healthInfo.getAllergies().toLowerCase(Locale.ROOT);
+        String allergies = preference == null || preference.getAllergies() == null ? "" : preference.getAllergies().toLowerCase(Locale.ROOT);
 
         List<Map<String, Object>> cards = new ArrayList<>();
 
@@ -892,7 +904,7 @@ public class RecipeServiceImpl implements RecipeService {
                 continue;
             }
 
-            scoredRecipes.add(buildRecipePayload(recipe, mealType, mealTargetCalories, healthInfo, dietGoal, matchScore));
+            scoredRecipes.add(buildRecipePayload(recipe, mealType, mealTargetCalories, healthInfo, dietGoal, preference, matchScore));
         }
 
         Collections.sort(scoredRecipes, new Comparator<Map<String, Object>>() {
@@ -916,6 +928,7 @@ public class RecipeServiceImpl implements RecipeService {
         double mealTargetCalories,
         HealthInfo healthInfo,
         DietGoal dietGoal,
+        UserDietPreference preference,
         double matchScore
     ) {
         Map<String, Object> payload = new HashMap<>();
@@ -933,7 +946,7 @@ public class RecipeServiceImpl implements RecipeService {
         payload.put("matchScore", Math.round(matchScore));
         payload.put("targetCalories", Math.round(mealTargetCalories));
         payload.put("tags", buildTags(recipe, mealType, healthInfo, dietGoal));
-        payload.put("recommendationReason", buildRecommendationReason(recipe, mealType, mealTargetCalories, healthInfo, dietGoal));
+        payload.put("recommendationReason", buildRecommendationReason(recipe, mealType, mealTargetCalories, healthInfo, dietGoal, preference));
         payload.put("ingredients", buildIngredientPayload(recipe.getId()));
         payload.put("steps", splitInstructions(recipe.getInstructions()));
         return payload;
@@ -978,9 +991,7 @@ public class RecipeServiceImpl implements RecipeService {
         payload.put("bmi", healthInfo.getBmi());
         payload.put("bmr", healthInfo.getBmr());
         payload.put("activityLevel", healthInfo.getActivityLevel());
-        payload.put("allergies", healthInfo.getAllergies());
         payload.put("chronicDiseases", healthInfo.getChronicDiseases());
-        payload.put("healthCondition", healthInfo.getHealthCondition());
         return payload;
     }
 
@@ -1227,10 +1238,9 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     private boolean isExcludedByPreferences(Recipe recipe, HealthInfo healthInfo, UserDietPreference preference) {
-        String allergies = healthInfo == null ? "" : normalizeText(healthInfo.getAllergies());
         String preferenceAllergies = preference == null ? "" : normalizeText(preference.getAllergies());
         String dislikes = preference == null ? "" : normalizeText(preference.getDislikes());
-        if (allergies.isEmpty() && preferenceAllergies.isEmpty() && dislikes.isEmpty()) {
+        if (preferenceAllergies.isEmpty() && dislikes.isEmpty()) {
             return false;
         }
 
@@ -1244,7 +1254,6 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         List<String> excludedTokens = new ArrayList<>();
-        excludedTokens.addAll(splitTokens(allergies));
         excludedTokens.addAll(splitTokens(preferenceAllergies));
         excludedTokens.addAll(splitTokens(dislikes));
 
@@ -1330,7 +1339,8 @@ public class RecipeServiceImpl implements RecipeService {
         String mealType,
         double mealTargetCalories,
         HealthInfo healthInfo,
-        DietGoal dietGoal
+        DietGoal dietGoal,
+        UserDietPreference preference
     ) {
         List<String> reasons = new ArrayList<>();
         reasons.add(mapMealLabel(mealType) + "推荐更关注本餐热量分配和营养平衡");
@@ -1355,8 +1365,8 @@ public class RecipeServiceImpl implements RecipeService {
             reasons.add("结合你的目标“" + mapGoalLabel(goalType) + "”进行了优先排序");
         }
 
-        if (healthInfo != null && healthInfo.getAllergies() != null && !healthInfo.getAllergies().trim().isEmpty()) {
-            reasons.add("已尽量避开你填写的过敏食材");
+        if (preference != null && preference.getAllergies() != null && !preference.getAllergies().trim().isEmpty()) {
+            reasons.add("已尽量避开你在饮食偏好中填写的过敏/忌口食材");
         }
 
         return joinSentences(reasons, 3);

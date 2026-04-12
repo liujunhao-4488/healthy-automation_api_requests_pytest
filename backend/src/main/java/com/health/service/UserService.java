@@ -27,5 +27,7 @@ public interface UserService extends UserDetailsService {
 
     User updateUserStatus(Long userId, Integer status);
 
+    String resolveRole(User user);
+
     boolean isAdmin(User user);
 }

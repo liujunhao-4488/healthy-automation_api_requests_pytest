@@ -76,17 +76,9 @@
           </div>
 
           <div class="form-section">
-            <h3 class="section-title">健康状况</h3>
-            <el-form-item label="过敏食物" prop="allergies">
-              <el-input v-model="detailForm.allergies" type="textarea" :rows="2" placeholder="多个请用逗号分隔" />
-            </el-form-item>
-
+            <h3 class="section-title">健康信息</h3>
             <el-form-item label="慢性疾病" prop="chronicDiseases">
               <el-input v-model="detailForm.chronicDiseases" type="textarea" :rows="2" placeholder="如无可填写无" />
-            </el-form-item>
-
-            <el-form-item label="健康状况描述" prop="healthCondition">
-              <el-input v-model="detailForm.healthCondition" type="textarea" :rows="2" placeholder="请输入当前健康状况描述" />
             </el-form-item>
           </div>
 
@@ -120,9 +112,7 @@ const detailForm = reactive({
   exerciseDuration: null,
   exerciseTypeArr: [],
   exerciseType: '',
-  allergies: '',
-  chronicDiseases: '',
-  healthCondition: ''
+  chronicDiseases: ''
 });
 
 const rules = {
@@ -140,9 +130,7 @@ onMounted(() => {
     detailForm.bloodSugar = basicHealthInfo.value.bloodSugar ?? null;
     detailForm.activityLevel = basicHealthInfo.value.activityLevel || '';
     detailForm.exerciseDuration = basicHealthInfo.value.exerciseDuration ?? null;
-    detailForm.allergies = basicHealthInfo.value.allergies || '';
     detailForm.chronicDiseases = basicHealthInfo.value.chronicDiseases || '';
-    detailForm.healthCondition = basicHealthInfo.value.healthCondition || '';
     if (basicHealthInfo.value.exerciseType) {
       detailForm.exerciseTypeArr = basicHealthInfo.value.exerciseType.split(',');
     }

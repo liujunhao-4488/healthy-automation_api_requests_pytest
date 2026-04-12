@@ -76,7 +76,7 @@ public class AuthController {
         data.put("email", user.getEmail());
         data.put("phone", user.getPhone());
         data.put("avatar", user.getAvatar());
-        data.put("role", userService.isAdmin(user) ? "admin" : "user");
+        data.put("role", userService.resolveRole(user));
         return data;
     }
 }

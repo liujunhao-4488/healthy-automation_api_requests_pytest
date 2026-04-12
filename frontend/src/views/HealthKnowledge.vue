@@ -1,6 +1,21 @@
 <template>
   <div class="knowledge-page">
     <section class="knowledge-shell">
+      <section class="page-head">
+        <div>
+          <p class="page-eyebrow">HEALTH KNOWLEDGE</p>
+          <h1>健康知识库</h1>
+          <p class="page-desc">
+            汇集饮食营养、慢病管理与科学科普内容，帮助你更快找到适合自己的健康建议。
+          </p>
+        </div>
+        <div class="page-summary">
+          <strong>{{ total }}</strong>
+          <span>篇内容</span>
+          <em>当前：{{ activeTabLabel }}</em>
+        </div>
+      </section>
+
       <div class="search-wrap">
         <el-input
           v-model="keyword"
@@ -36,91 +51,95 @@
         </button>
       </div>
 
-      <div v-loading="loading" class="article-list">
-        <article
-          v-for="article in articleList"
-          :key="article.id"
-          class="article-card"
-          @click="viewDetails(article.id)"
-        >
-          <div class="author-row">
-            <div
-              class="author-avatar"
-              :class="{ 'has-image': Boolean(article.authorAvatar) }"
-              :style="article.authorAvatar ? undefined : { background: article.avatarColor }"
-            >
-              <img
-                v-if="article.authorAvatar"
-                :src="article.authorAvatar"
-                :alt="`${article.authorName}头像`"
-                class="author-avatar-image"
-              />
-              <template v-else>
-                {{ article.avatarText }}
-              </template>
+      <div
+        ref="articleScrollRef"
+        v-loading="loading"
+        class="article-scroll"
+        @scroll="handleArticleScroll"
+      >
+        <div class="article-list" :class="{ 'is-empty': !articleList.length }">
+          <article
+            v-for="article in articleList"
+            :key="article.id"
+            class="article-card"
+            @click="viewDetails(article.id)"
+          >
+            <div class="article-cover" :class="article.coverShapeClass" :style="article.coverStyle">
+              <span class="cover-category">{{ article.coverCategory }}</span>
+              <div class="cover-copy">
+                <strong>{{ article.coverHint }}</strong>
+              </div>
             </div>
-            <div class="author-info">
-              <strong>{{ article.authorName }}</strong>
+
+            <h3 class="article-title">{{ article.title }}</h3>
+
+            <p class="article-content">{{ article.summaryText }}</p>
+
+            <div class="article-footer">
+              <div class="author-row">
+                <div
+                  class="author-avatar"
+                  :class="{ 'has-image': Boolean(article.authorAvatar) }"
+                  :style="article.authorAvatar ? undefined : { background: article.avatarColor }"
+                >
+                  <img
+                    v-if="article.authorAvatar"
+                    :src="article.authorAvatar"
+                    :alt="`${article.authorName}头像`"
+                    class="author-avatar-image"
+                  />
+                  <template v-else>
+                    {{ article.avatarText }}
+                  </template>
+                </div>
+                <div class="author-info">
+                  <strong>{{ article.authorName }}</strong>
+                  <p class="author-meta">{{ article.publishText }}</p>
+                </div>
+              </div>
+
+              <div class="metric-row">
+                <button
+                  type="button"
+                  class="metric-item action-btn"
+                  :class="{ liked: article.liked }"
+                  :disabled="article.actionLoading"
+                  @click.stop="toggleLike(article)"
+                >
+                  <span class="metric-icon">♥</span>
+                  <span>{{ article.likeCount }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="metric-item action-btn comment-btn"
+                  @click.stop="openComments(article)"
+                >
+                  <span class="metric-icon">💬</span>
+                  <span>{{ article.commentCount }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="metric-item action-btn"
+                  :class="{ collected: article.collected }"
+                  :disabled="article.actionLoading"
+                  @click.stop="toggleCollect(article)"
+                >
+                  <span class="metric-icon">★</span>
+                  <span>{{ article.collectCount }}</span>
+                </button>
+              </div>
             </div>
-          </div>
+          </article>
 
-          <h3 class="article-title">{{ article.title }}</h3>
+          <el-empty
+            v-if="!loading && !articleList.length"
+            description="当前没有匹配的文章内容"
+            class="empty-block"
+          />
+        </div>
 
-          <div v-if="article.tags.length" class="article-tags">
-            <span v-for="tag in article.tags" :key="tag" class="tag-chip">
-              {{ tag }}
-            </span>
-          </div>
-
-          <p class="article-content">{{ article.summaryText }}</p>
-
-          <div class="metric-row">
-            <button
-              type="button"
-              class="metric-item action-btn"
-              :class="{ liked: article.liked }"
-              :disabled="article.actionLoading"
-              @click.stop="toggleLike(article)"
-            >
-              <span class="metric-icon">♥</span>
-              <span>{{ article.likeCount }}</span>
-            </button>
-            <button
-              type="button"
-              class="metric-item action-btn comment-btn"
-              @click.stop="openComments(article)"
-            >
-              <span class="metric-icon">💬</span>
-              <span>{{ article.commentCount }}</span>
-            </button>
-            <button
-              type="button"
-              class="metric-item action-btn"
-              :class="{ collected: article.collected }"
-              :disabled="article.actionLoading"
-              @click.stop="toggleCollect(article)"
-            >
-              <span class="metric-icon">★</span>
-              <span>{{ article.collectCount }}</span>
-            </button>
-            <span class="metric-item">阅读 {{ article.readCount }}</span>
-          </div>
-        </article>
-
-        <el-empty
-          v-if="!loading && !articleList.length"
-          description="当前没有匹配的文章内容"
-          class="empty-block"
-        />
-      </div>
-
-      <div v-if="total > pageSize" class="pagination-wrap">
-        <el-pagination
-          v-model:current-page="currentPage"
-          :page-size="pageSize"
-          layout="prev, pager, next"
-          :total="total"
-        />
+        <div v-if="loadingMore" class="load-more-state">正在加载更多内容...</div>
+        <div v-else-if="articleList.length && !hasMore" class="load-more-state done">已经到底了</div>
       </div>
     </section>
 
@@ -201,13 +220,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import healthKnowledgeApi from '../api/healthKnowledge';
 
 const router = useRouter();
 const articleList = ref([]);
+const articleScrollRef = ref(null);
 const tagTabs = ref([]);
 const activeTab = ref('recommend');
 const keyword = ref('');
@@ -215,6 +235,7 @@ const currentPage = ref(1);
 const pageSize = 8;
 const total = ref(0);
 const loading = ref(false);
+const loadingMore = ref(false);
 const publishDialogVisible = ref(false);
 const publishing = ref(false);
 const publishFormRef = ref(null);
@@ -242,24 +263,72 @@ const categoryOptions = [
   '营养科普'
 ];
 
-const palette = ['#2f80ed', '#27ae60', '#f2994a', '#eb5757', '#56ccf2', '#6c5ce7', '#219653'];
-
-const parseTags = (tags) => {
-  if (!tags) return [];
-  if (Array.isArray(tags)) return tags.filter(Boolean).map((item) => String(item).trim());
-
-  return String(tags)
-    .replace(/[\[\]"]/g, '')
-    .split(/[，、/]/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+const coverPalette = [
+  'linear-gradient(135deg, #f6d4ba 0%, #f3b487 100%)',
+  'linear-gradient(135deg, #bfdcc3 0%, #7db78a 100%)',
+  'linear-gradient(135deg, #cfd8f3 0%, #8da6de 100%)',
+  'linear-gradient(135deg, #efd2e7 0%, #c38db7 100%)',
+  'linear-gradient(135deg, #f1dfb8 0%, #d8b06f 100%)',
+  'linear-gradient(135deg, #c7e2dd 0%, #7db6ae 100%)'
+];
+const coverShapeClasses = ['shape-sunrise', 'shape-wave', 'shape-orbit', 'shape-blob'];
+const baseTabLabelMap = {
+  recommend: '推荐',
+  latest: '最新',
+  hot: '热门'
 };
+
+const buildCoverSnippet = (text, maxLength = 34) => {
+  const normalized = String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!normalized) {
+    return '科学饮食 · 健康生活';
+  }
+
+  return normalized.length > maxLength ? `${normalized.slice(0, maxLength)}...` : normalized;
+};
+
+const buildCoverHint = (article) => {
+  if (article.goalType) return article.goalType;
+  if (article.category) return article.category;
+  return '健康知识';
+};
+
+const buildCoverCategory = (article) => article.category || '健康知识';
 
 const summarizeContent = (content, summary) => {
   const source = summary && String(summary).trim() ? String(summary).trim() : String(content || '').trim();
   if (!source) return '暂无摘要';
   const normalized = source.replace(/\s+/g, ' ');
   return normalized.length > 88 ? `${normalized.slice(0, 88)}...` : normalized;
+};
+
+const formatDateTimeValue = (value) => {
+  if (!value) return '';
+  const text = String(value).trim();
+  if (!text) return '';
+  const normalized = text.includes('T') ? text.replace('T', ' ') : text;
+  const date = new Date(normalized.replace(/-/g, '/'));
+  if (Number.isNaN(date.getTime())) {
+    return normalized;
+  }
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+};
+
+const buildPublishText = (article) => {
+  const publishTime =
+    article.createTime || article.create_time || article.publishDate || article.publish_date || article.updateTime || article.update_time;
+  const formatted = formatDateTimeValue(publishTime);
+  return formatted ? `发布于 ${formatted}` : '健康知识专栏';
 };
 
 const buildAuthorName = (article) => article.author || '健康营养师';
@@ -275,16 +344,31 @@ const displayTabs = computed(() => [
   }))
 ]);
 
+const activeTabLabel = computed(() => {
+  if (activeTab.value.startsWith('tag:')) {
+    return activeTab.value.slice(4) || '标签';
+  }
+  return baseTabLabelMap[activeTab.value] || '推荐';
+});
+
+const hasMore = computed(() => articleList.value.length < total.value);
+
 const normalizeArticle = (article, index) => {
   const authorName = buildAuthorName(article);
   return {
     ...article,
     authorName,
     avatarText: buildAvatarText(authorName),
-    avatarColor: palette[index % palette.length],
+    avatarColor: coverPalette[(index + 2) % coverPalette.length],
     authorAvatar: article.authorAvatar || '',
-    tags: parseTags(article.tags),
     summaryText: summarizeContent(article.content, article.summary),
+    publishText: buildPublishText(article),
+    coverStyle: {
+      background: coverPalette[index % coverPalette.length]
+    },
+    coverShapeClass: coverShapeClasses[index % coverShapeClasses.length],
+    coverHint: buildCoverHint(article),
+    coverCategory: buildCoverCategory(article),
     likeCount: Number(article.likeCount || 0),
     commentCount: Number(article.commentCount || 0),
     collectCount: Number(article.collectCount || 0),
@@ -295,18 +379,20 @@ const normalizeArticle = (article, index) => {
   };
 };
 
-const normalizeListResponse = (data) => {
+const normalizeListResponse = (data, append = false) => {
   const list = Array.isArray(data) ? data : data?.list || [];
-  articleList.value = list.map(normalizeArticle);
+  const startIndex = append ? articleList.value.length : 0;
+  const normalizedList = list.map((item, index) => normalizeArticle(item, startIndex + index));
+  articleList.value = append ? [...articleList.value, ...normalizedList] : normalizedList;
   total.value = Array.isArray(data) ? list.length : Number(data?.total || list.length);
   if (!Array.isArray(data) && Array.isArray(data?.tags) && data.tags.length) {
     tagTabs.value = data.tags;
   }
 };
 
-const buildListParams = () => {
+const buildListParams = (page = currentPage.value) => {
   const params = {
-    page: currentPage.value,
+    page,
     pageSize
   };
 
@@ -337,41 +423,88 @@ const loadTagTabs = async () => {
   }
 };
 
-const loadKnowledgeList = async () => {
-  loading.value = true;
+const loadKnowledgeList = async ({ page = currentPage.value, append = false } = {}) => {
+  if (append) {
+    if (loading.value || loadingMore.value || !hasMore.value) {
+      return false;
+    }
+    loadingMore.value = true;
+  } else {
+    loading.value = true;
+  }
+
   try {
     const hasKeyword = Boolean(keyword.value.trim());
     const response =
       !hasKeyword && activeTab.value === 'recommend'
-        ? await healthKnowledgeApi.getRecommendedArticles(100)
-        : await healthKnowledgeApi.getKnowledgeList(buildListParams());
+        ? await healthKnowledgeApi.getRecommendedArticles({ page, pageSize })
+        : await healthKnowledgeApi.getKnowledgeList(buildListParams(page));
 
     if (response.code === 200) {
-      normalizeListResponse(response.data);
-      return;
+      normalizeListResponse(response.data, append);
+      return true;
     }
 
     ElMessage.error(response.message || '获取文章列表失败');
+    return false;
   } catch (error) {
     ElMessage.error(error.message || '获取文章列表失败，请检查网络连接');
+    return false;
   } finally {
-    loading.value = false;
+    if (append) {
+      loadingMore.value = false;
+    } else {
+      loading.value = false;
+    }
   }
 };
 
-const changeTab = (tab) => {
-  activeTab.value = tab;
+const scrollArticleListToTop = async () => {
+  await nextTick();
+  articleScrollRef.value?.scrollTo({ top: 0, behavior: 'auto' });
+};
+
+const reloadKnowledgeList = async () => {
   currentPage.value = 1;
-  loadKnowledgeList();
+  await scrollArticleListToTop();
+  await loadKnowledgeList({ page: 1 });
+};
+
+const loadMoreKnowledgeList = async () => {
+  if (!hasMore.value || loading.value || loadingMore.value) {
+    return;
+  }
+
+  const nextPage = currentPage.value + 1;
+  const loaded = await loadKnowledgeList({ page: nextPage, append: true });
+  if (loaded) {
+    currentPage.value = nextPage;
+  }
+};
+
+const handleArticleScroll = () => {
+  const container = articleScrollRef.value;
+  if (!container || loading.value || loadingMore.value || !hasMore.value) {
+    return;
+  }
+
+  const remainingDistance = container.scrollHeight - container.scrollTop - container.clientHeight;
+  if (remainingDistance <= 120) {
+    loadMoreKnowledgeList();
+  }
+};
+
+const changeTab = async (tab) => {
+  activeTab.value = tab;
+  await reloadKnowledgeList();
 };
 
 const toggleTagExpansion = () => {
   showAllTags.value = !showAllTags.value;
 };
 
-const handleSearch = () => {
-  currentPage.value = 1;
-  loadKnowledgeList();
+const handleSearch = async () => {
+  await reloadKnowledgeList();
 };
 
 const viewDetails = (id) => {
@@ -467,9 +600,8 @@ const submitPublish = async () => {
       ElMessage.success('文章发布成功');
       publishDialogVisible.value = false;
       activeTab.value = 'latest';
-      currentPage.value = 1;
       keyword.value = '';
-      await loadKnowledgeList();
+      await reloadKnowledgeList();
       if (response.data?.id) {
         router.push(`/dashboard/health-knowledge/${response.data.id}`);
       }
@@ -484,35 +616,102 @@ const submitPublish = async () => {
   }
 };
 
-watch(currentPage, () => {
-  loadKnowledgeList();
-});
-
 onMounted(async () => {
   await loadTagTabs();
-  await loadKnowledgeList();
+  await loadKnowledgeList({ page: 1 });
 });
 </script>
 
 <style scoped>
 .knowledge-page {
-  padding: 8px 0;
+  height: calc(100vh - 118px);
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .knowledge-shell {
-  background: #fff;
-  border-radius: 24px;
-  border: 1px solid #ebeff4;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #fffdfa 0%, #ffffff 18%, #fcfaf7 100%);
+  border-radius: 30px;
+  border: 1px solid #ece4da;
   overflow: hidden;
-  box-shadow: 0 12px 28px rgba(22, 45, 77, 0.05);
+  box-shadow: 0 20px 42px rgba(72, 55, 38, 0.06);
+}
+
+.page-head {
+  display: none;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 28px 28px 20px;
+  background:
+    radial-gradient(circle at right top, rgba(210, 195, 172, 0.18), transparent 38%),
+    linear-gradient(135deg, #fff9f1 0%, #f8f2ea 100%);
+  border-bottom: 1px solid #efe6dc;
+}
+
+.page-eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9a7e64;
+}
+
+.page-head h1 {
+  margin: 0;
+  color: #3f3126;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.page-desc {
+  max-width: 660px;
+  margin: 12px 0 0;
+  color: #75685d;
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.page-summary {
+  min-width: 156px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(225, 214, 201, 0.9);
+  box-shadow: 0 10px 24px rgba(95, 72, 49, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.page-summary strong {
+  color: #4b3a2d;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.page-summary span,
+.page-summary em {
+  color: #877667;
+  font-style: normal;
+  font-size: 13px;
 }
 
 .search-wrap {
-  padding: 16px 18px 14px;
-  border-bottom: 1px solid #edf1f5;
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid #f0e9e0;
   display: flex;
   align-items: center;
   gap: 12px;
+  background: rgba(255, 252, 248, 0.96);
 }
 
 .search-input {
@@ -522,7 +721,7 @@ onMounted(async () => {
 .search-input :deep(.el-input__wrapper) {
   min-height: 48px;
   border-radius: 999px;
-  background: #f5f6f8;
+  background: #f8f4ef;
   box-shadow: none;
 }
 
@@ -530,105 +729,287 @@ onMounted(async () => {
   min-width: 112px;
   height: 46px;
   border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #8b7355 0%, #6f8f72 100%);
 }
 
 .tabs-wrap {
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 0 18px;
-  border-bottom: 1px solid #edf1f5;
+  gap: 12px;
+  padding: 14px 22px 0;
+  border-bottom: 1px solid #f0e9e0;
   overflow-x: auto;
+  scrollbar-width: none;
+  background: rgba(255, 252, 248, 0.98);
+}
+
+.tabs-wrap::-webkit-scrollbar {
+  display: none;
 }
 
 .tabs-wrap.expanded {
   flex-wrap: wrap;
   align-items: flex-start;
-  row-gap: 0;
+  row-gap: 8px;
   overflow-x: visible;
-  padding-top: 8px;
+  padding-bottom: 12px;
 }
 
 .tab-item {
   position: relative;
-  padding: 16px 0 15px;
-  border: none;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
   background: transparent;
-  color: #4f5d73;
-  font-size: 17px;
+  color: #6f6256;
+  font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.tab-item:hover {
+  color: #5d4c3d;
+  background: #faf4ec;
 }
 
 .tab-item.active {
-  color: #2f80ed;
+  color: #5f4c3b;
   font-weight: 600;
+  background: #f5ede3;
+  border-color: #eadbc9;
+  box-shadow: inset 0 0 0 1px rgba(244, 233, 220, 0.55);
 }
 
 .tab-item.active::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
-  border-radius: 999px;
-  background: #2f80ed;
+  display: none;
 }
 
 .more-toggle {
-  color: #7d8ca1;
+  color: #877667;
 }
 
 .tabs-wrap.expanded .tab-item {
-  padding-top: 10px;
+  margin-bottom: 0;
+}
+
+.article-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 16px 20px;
+  overscroll-behavior: contain;
 }
 
 .article-list {
   min-height: 260px;
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  column-count: 3;
+  column-gap: 14px;
+}
+
+.article-list.is-empty {
+  display: grid;
+  column-count: auto;
 }
 
 .article-card {
-  padding: 20px;
-  border-radius: 22px;
-  border: 1px solid #eef2f7;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 14px;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  padding: 0;
+  border-radius: 18px;
+  border: 1px solid #efe7de;
+  background: #ffffff;
   cursor: pointer;
+  overflow: hidden;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .article-card:hover {
-  transform: translateY(-2px);
-  border-color: #d5e4f7;
-  box-shadow: 0 14px 28px rgba(31, 53, 84, 0.08);
+  transform: translateY(-3px);
+  border-color: #dccab5;
+  box-shadow: 0 16px 30px rgba(70, 50, 33, 0.08);
+}
+
+.article-cover {
+  position: relative;
+  min-height: 164px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.article-cover::before,
+.article-cover::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.article-cover.shape-sunrise::before {
+  width: 122px;
+  height: 122px;
+  right: -26px;
+  top: -34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.article-cover.shape-sunrise::after {
+  width: 76px;
+  height: 76px;
+  left: -18px;
+  bottom: -20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.article-cover.shape-wave::before {
+  width: 145px;
+  height: 72px;
+  left: -16px;
+  bottom: 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  transform: rotate(-12deg);
+}
+
+.article-cover.shape-wave::after {
+  width: 118px;
+  height: 118px;
+  right: -34px;
+  top: -24px;
+  border-radius: 38px;
+  background: rgba(255, 255, 255, 0.12);
+  transform: rotate(22deg);
+}
+
+.article-cover.shape-orbit::before {
+  width: 138px;
+  height: 138px;
+  right: -34px;
+  top: -28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.article-cover.shape-orbit::after {
+  width: 96px;
+  height: 96px;
+  left: -24px;
+  bottom: -18px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.article-cover.shape-blob::before {
+  width: 132px;
+  height: 132px;
+  right: -26px;
+  top: -34px;
+  border-radius: 44% 56% 52% 48%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.article-cover.shape-blob::after {
+  width: 92px;
+  height: 92px;
+  left: -20px;
+  bottom: -18px;
+  border-radius: 60% 40% 58% 42%;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.cover-category,
+.cover-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.cover-category {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fffdf9;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+}
+
+.cover-copy {
+  color: #fffdf9;
+}
+
+.cover-copy strong {
+  display: block;
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.article-title {
+  margin: 12px 14px 8px;
+  color: #2f241b;
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.article-content {
+  margin: 0 14px;
+  color: #65584c;
+  font-size: 13px;
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.article-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 12px 14px 12px;
 }
 
 .author-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
+  margin: 0;
+  min-width: 0;
+  flex: 1;
 }
 
 .author-avatar {
-  width: 52px;
-  height: 52px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 22px;
+  font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
   overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
 }
 
 .author-avatar.has-image {
-  background: #f1f5f9;
+  background: #f3eee7;
 }
 
 .author-avatar-image {
@@ -641,61 +1022,44 @@ onMounted(async () => {
 .author-info {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .author-info strong {
-  color: #182538;
-  font-size: 24px;
+  color: #3f3126;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.article-title {
-  margin: 16px 0 12px;
-  color: #16263c;
-  font-size: 21px;
-  line-height: 1.45;
-}
-
-.article-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.tag-chip {
-  padding: 7px 12px;
-  border-radius: 10px;
-  background: #edf5ff;
-  color: #2f80ed;
-  font-size: 14px;
-}
-
-.article-content {
+.author-meta {
   margin: 0;
-  color: #4a586a;
-  font-size: 17px;
-  line-height: 1.8;
+  color: #8a7a6a;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .metric-row {
   display: flex;
   align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid #eef2f7;
+  gap: 10px;
+  flex-wrap: nowrap;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .metric-item {
-  color: #7b8798;
-  font-size: 15px;
+  color: #8b7d70;
+  font-size: 12px;
 }
 
 .action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   border: none;
   background: transparent;
   padding: 0;
@@ -713,30 +1077,41 @@ onMounted(async () => {
 }
 
 .metric-icon {
-  font-size: 16px;
+  font-size: 13px;
   line-height: 1;
 }
 
 .action-btn.liked {
-  color: #eb5757;
+  color: #d46c6c;
 }
 
 .comment-btn {
-  color: #6b7280;
+  color: #74695f;
 }
 
 .action-btn.collected {
-  color: #f2b94b;
+  color: #c89b42;
 }
 
-.pagination-wrap {
-  padding: 0 18px 22px;
-  display: flex;
-  justify-content: center;
+.metric-read {
+  margin-left: auto;
+  color: #9a8b7c;
+}
+
+.load-more-state {
+  padding: 14px 0 4px;
+  text-align: center;
+  color: #8f8172;
+  font-size: 13px;
+}
+
+.load-more-state.done {
+  color: #a09284;
 }
 
 .empty-block {
-  padding: 42px 0 36px;
+  grid-column: 1 / -1;
+  padding: 48px 0 40px;
 }
 
 .publish-grid {
@@ -751,14 +1126,102 @@ onMounted(async () => {
   gap: 12px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1360px) {
   .article-list {
-    padding: 14px;
+    column-count: 2;
+  }
+}
+
+@media (max-width: 900px) {
+  .article-list {
+    column-count: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .knowledge-page {
+    height: calc(100vh - 96px);
+    min-height: 0;
+    padding: 4px 0;
+  }
+
+  .page-head,
+  .search-wrap {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .page-head {
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 22px;
+    padding-bottom: 18px;
+  }
+
+  .page-head h1 {
+    font-size: 26px;
+  }
+
+  .page-summary {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .article-scroll {
+    padding: 14px 10px 16px;
+  }
+
+  .article-list {
+    column-count: 1;
+    gap: 0;
+  }
+
+  .article-cover {
+    min-height: 146px;
+    padding: 10px;
+  }
+
+  .cover-copy strong {
+    font-size: 16px;
+  }
+
+  .cover-copy p {
+    font-size: 12px;
   }
 
   .article-card {
-    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 16px;
   }
+
+  .article-title {
+    font-size: 15px;
+    margin: 10px 12px 8px;
+  }
+
+
+  .article-content {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+
+  .article-footer {
+    margin: 10px 12px 12px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .author-row,
+  .metric-row {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .metric-row {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
 
   .search-wrap {
     flex-direction: column;
@@ -770,15 +1233,9 @@ onMounted(async () => {
   }
 
   .tabs-wrap {
-    gap: 18px;
-  }
-
-  .author-info strong {
-    font-size: 20px;
-  }
-
-  .article-title {
-    font-size: 18px;
+    gap: 10px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
   .publish-grid {

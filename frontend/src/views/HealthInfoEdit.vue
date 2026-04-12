@@ -97,16 +97,8 @@
           </el-checkbox-group>
         </el-form-item>
 
-        <el-form-item label="过敏食物">
-          <el-input v-model="healthInfoForm.allergies" type="textarea" :rows="2" placeholder="多个食物请用逗号分隔" />
-        </el-form-item>
-
         <el-form-item label="慢性疾病">
           <el-input v-model="healthInfoForm.chronicDiseases" type="textarea" :rows="2" placeholder="如无可填写无" />
-        </el-form-item>
-
-        <el-form-item label="健康状况">
-          <el-input v-model="healthInfoForm.healthCondition" type="textarea" :rows="3" placeholder="请输入当前健康状况说明" />
         </el-form-item>
 
         <div class="actions">
@@ -144,9 +136,7 @@ const healthInfoForm = reactive({
   exerciseDuration: null,
   exerciseTypeArr: [],
   exerciseType: '',
-  allergies: '',
-  chronicDiseases: '',
-  healthCondition: ''
+  chronicDiseases: ''
 });
 
 const rules = {

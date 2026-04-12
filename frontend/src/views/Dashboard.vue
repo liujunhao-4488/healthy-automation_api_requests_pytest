@@ -278,7 +278,7 @@ watch(
 }
 
 .main-content {
-  padding: 24px;
+  padding: 8px 24px 24px;
   background-color: #f7faf8;
   height: calc(100% - 56px) !important;
   overflow-y: auto;

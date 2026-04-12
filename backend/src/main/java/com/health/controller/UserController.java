@@ -178,7 +178,7 @@ public class UserController {
         data.put("status", user.getStatus());
         data.put("createTime", user.getCreateTime());
         data.put("updateTime", user.getUpdateTime());
-        data.put("role", userService.isAdmin(user) ? "admin" : "user");
+        data.put("role", userService.resolveRole(user));
         return data;
     }
 

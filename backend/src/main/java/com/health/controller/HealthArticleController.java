@@ -107,14 +107,19 @@ public class HealthArticleController {
     @GetMapping("/recommend")
     public ResponseEntity<?> getRecommendedArticles(
         Principal principal,
-        @RequestParam(required = false, defaultValue = "5") Integer limit
+        @RequestParam(required = false, defaultValue = "1") Integer page,
+        @RequestParam(required = false, defaultValue = "10") Integer pageSize
     ) {
         try {
             Long userId = resolveUserId(principal);
-            List<Map<String, Object>> data = healthArticleService.getRecommendedArticles(userId, limit)
-                .stream()
-                .map(article -> toArticleView(article, userId))
-                .collect(Collectors.toList());
+            List<HealthArticle> recommendedArticles = healthArticleService.getRecommendedArticles(userId, 0);
+            List<HealthArticle> pagedArticles = paginate(recommendedArticles, page, pageSize);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("list", pagedArticles.stream().map(article -> toArticleView(article, userId)).collect(Collectors.toList()));
+            data.put("total", recommendedArticles.size());
+            data.put("page", page);
+            data.put("pageSize", pageSize);
             return successResponse("获取推荐文章成功", data);
         } catch (Exception e) {
             log.error("获取推荐文章失败: {}", e.getMessage(), e);

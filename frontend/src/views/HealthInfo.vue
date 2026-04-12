@@ -63,62 +63,6 @@
       <div ref="trendChartRef" class="trend-chart"></div>
     </el-card>
 
-    <el-card v-if="healthAnalysis" class="analysis-card" shadow="never">
-      <template #header>
-        <div class="section-title">
-          <el-icon><DataAnalysis /></el-icon>
-          <span>系统分析</span>
-        </div>
-      </template>
-      <div class="analysis-overview">
-        <div class="analysis-badge">
-          <span>综合状态</span>
-          <strong>{{ healthAnalysis.overallLevel || '--' }}</strong>
-        </div>
-        <p>{{ healthAnalysis.summary || '暂无分析结果' }}</p>
-      </div>
-      <div v-if="healthAnalysis.tags?.length" class="analysis-tags">
-        <el-tag
-          v-for="tag in healthAnalysis.tags"
-          :key="tag"
-          effect="plain"
-          round
-          type="success"
-        >
-          {{ tag }}
-        </el-tag>
-      </div>
-      <div class="analysis-grid">
-        <div class="analysis-item">
-          <label>BMI评价</label>
-          <strong>{{ healthAnalysis.bmiCategory || '--' }}</strong>
-          <p>{{ healthAnalysis.bmiAdvice || '--' }}</p>
-        </div>
-        <div class="analysis-item">
-          <label>血压评价</label>
-          <strong>{{ healthAnalysis.bloodPressureStatus || '--' }}</strong>
-          <p>{{ healthAnalysis.bloodPressureAdvice || '--' }}</p>
-        </div>
-        <div class="analysis-item">
-          <label>血糖评价</label>
-          <strong>{{ healthAnalysis.bloodSugarStatus || '--' }}</strong>
-          <p>{{ healthAnalysis.bloodSugarAdvice || '--' }}</p>
-        </div>
-        <div class="analysis-item">
-          <label>运动评价</label>
-          <strong>{{ healthAnalysis.activityStatus || '--' }}</strong>
-          <p>{{ healthAnalysis.activityAdvice || '--' }}</p>
-        </div>
-      </div>
-      <div v-if="healthAnalysis.goalInsight || healthAnalysis.recommendations?.length" class="analysis-recommendations">
-        <h3>建议摘要</h3>
-        <p v-if="healthAnalysis.goalInsight">{{ healthAnalysis.goalInsight }}</p>
-        <ul v-if="healthAnalysis.recommendations?.length">
-          <li v-for="item in healthAnalysis.recommendations" :key="item">{{ item }}</li>
-        </ul>
-      </div>
-    </el-card>
-
     <div class="info-grid">
       <el-card class="info-card" shadow="never">
         <template #header>
@@ -176,20 +120,68 @@
             <span>{{ exerciseTypesLabel }}</span>
           </div>
           <div class="info-item wide">
-            <label>过敏食物</label>
-            <span>{{ displayValue(healthInfo.allergies) }}</span>
-          </div>
-          <div class="info-item wide">
             <label>慢性疾病</label>
             <span>{{ displayValue(healthInfo.chronicDiseases) }}</span>
-          </div>
-          <div class="info-item wide">
-            <label>健康状况</label>
-            <span>{{ displayValue(healthInfo.healthCondition) }}</span>
           </div>
         </div>
       </el-card>
     </div>
+
+    <el-card v-if="healthAnalysis" class="analysis-card" shadow="never">
+      <template #header>
+        <div class="section-title">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>系统分析</span>
+        </div>
+      </template>
+      <div class="analysis-overview">
+        <div class="analysis-badge">
+          <span>综合状态</span>
+          <strong>{{ healthAnalysis.overallLevel || '--' }}</strong>
+        </div>
+        <p>{{ healthAnalysis.summary || '暂无分析结果' }}</p>
+      </div>
+      <div v-if="healthAnalysis.tags?.length" class="analysis-tags">
+        <el-tag
+          v-for="tag in healthAnalysis.tags"
+          :key="tag"
+          effect="plain"
+          round
+          type="success"
+        >
+          {{ tag }}
+        </el-tag>
+      </div>
+      <div class="analysis-grid">
+        <div class="analysis-item">
+          <label>BMI评价</label>
+          <strong>{{ healthAnalysis.bmiCategory || '--' }}</strong>
+          <p>{{ healthAnalysis.bmiAdvice || '--' }}</p>
+        </div>
+        <div class="analysis-item">
+          <label>血压评价</label>
+          <strong>{{ healthAnalysis.bloodPressureStatus || '--' }}</strong>
+          <p>{{ healthAnalysis.bloodPressureAdvice || '--' }}</p>
+        </div>
+        <div class="analysis-item">
+          <label>血糖评价</label>
+          <strong>{{ healthAnalysis.bloodSugarStatus || '--' }}</strong>
+          <p>{{ healthAnalysis.bloodSugarAdvice || '--' }}</p>
+        </div>
+        <div class="analysis-item">
+          <label>运动评价</label>
+          <strong>{{ healthAnalysis.activityStatus || '--' }}</strong>
+          <p>{{ healthAnalysis.activityAdvice || '--' }}</p>
+        </div>
+      </div>
+      <div v-if="healthAnalysis.goalInsight || healthAnalysis.recommendations?.length" class="analysis-recommendations">
+        <h3>建议摘要</h3>
+        <p v-if="healthAnalysis.goalInsight">{{ healthAnalysis.goalInsight }}</p>
+        <ul v-if="healthAnalysis.recommendations?.length">
+          <li v-for="item in healthAnalysis.recommendations" :key="item">{{ item }}</li>
+        </ul>
+      </div>
+    </el-card>
   </div>
 </template>
 <script setup>

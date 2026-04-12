@@ -112,7 +112,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import authApi from '../api/auth'
@@ -142,20 +142,32 @@ const refreshRecentAccounts = () => {
   recentAccounts.value = userStore.getRecentAccounts()
 }
 
-const navigateAfterLogin = () => {
+const redirectWithFallback = async (target) => {
+  try {
+    await router.replace(target)
+  } catch (error) {
+    console.error('route redirect failed:', error)
+  }
+
+  if (router.currentRoute.value.path !== target) {
+    window.location.href = target
+  }
+}
+
+const navigateAfterLogin = async (role = userStore.role) => {
   ElMessage.success('登录成功')
 
-  if (userStore.isAdmin) {
-    router.push('/admin/overview')
+  if (role === 'admin') {
+    await redirectWithFallback('/admin/overview')
     return
   }
 
   if (userStore.hasCompletedHealthProfile) {
-    router.push('/dashboard/health-info')
+    await redirectWithFallback('/dashboard/health-info')
     return
   }
 
-  router.push('/health-info-basic')
+  await redirectWithFallback('/health-info-basic')
 }
 
 const fetchHealthInfo = async () => {
@@ -203,8 +215,13 @@ const submitLogin = async ({ email, password }) => {
     })
     refreshRecentAccounts()
 
+    if (response.data.role === 'admin') {
+      await navigateAfterLogin(response.data.role)
+      return
+    }
+
     await fetchHealthInfo()
-    navigateAfterLogin()
+    await navigateAfterLogin(response.data.role)
   } catch (error) {
     ElMessage.error(error?.message || '登录失败，请检查网络连接')
   } finally {
@@ -263,6 +280,14 @@ const formatRecentTime = (value) => {
     minute: '2-digit'
   })
 }
+
+onMounted(async () => {
+  if (!userStore.isLoggedIn) {
+    return
+  }
+
+  await navigateAfterLogin(userStore.role)
+})
 </script>
 
 <style scoped>

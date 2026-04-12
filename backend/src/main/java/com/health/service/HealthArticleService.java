@@ -132,10 +132,10 @@ public interface HealthArticleService {
     /**
      * 获取个性化推荐文章
      * @param userId 用户ID
-     * @param limit 限制数量
+     * @param limit 限制数量，小于等于 0 时返回完整推荐列表
      * @return 推荐文章列表
      */
-    List<HealthArticle> getRecommendedArticles(Long userId, int limit);
+    List<HealthArticle> getRecommendedArticles(Long userId, Integer limit);
 
     /**
      * 增加文章阅读计数

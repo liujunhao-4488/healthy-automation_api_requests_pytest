@@ -37,10 +37,8 @@ public class HealthInfoServiceImpl implements HealthInfoService {
             existingHealthInfo.setHeight(healthInfoDTO.getHeight());
             existingHealthInfo.setWeight(healthInfoDTO.getWeight());
             existingHealthInfo.setBmi(bmi);
-            existingHealthInfo.setAllergies(healthInfoDTO.getAllergies());
             existingHealthInfo.setChronicDiseases(healthInfoDTO.getChronicDiseases());
             existingHealthInfo.setActivityLevel(healthInfoDTO.getActivityLevel());
-            existingHealthInfo.setHealthCondition(healthInfoDTO.getHealthCondition());
             existingHealthInfo.setBmr(healthInfoDTO.getBmr());
             existingHealthInfo.setBloodPressure(healthInfoDTO.getBloodPressure());
             existingHealthInfo.setBloodSugar(healthInfoDTO.getBloodSugar());
@@ -58,10 +56,8 @@ public class HealthInfoServiceImpl implements HealthInfoService {
         newHealthInfo.setHeight(healthInfoDTO.getHeight());
         newHealthInfo.setWeight(healthInfoDTO.getWeight());
         newHealthInfo.setBmi(bmi);
-        newHealthInfo.setAllergies(healthInfoDTO.getAllergies());
         newHealthInfo.setChronicDiseases(healthInfoDTO.getChronicDiseases());
         newHealthInfo.setActivityLevel(healthInfoDTO.getActivityLevel());
-        newHealthInfo.setHealthCondition(healthInfoDTO.getHealthCondition());
         newHealthInfo.setBmr(healthInfoDTO.getBmr());
         newHealthInfo.setBloodPressure(healthInfoDTO.getBloodPressure());
         newHealthInfo.setBloodSugar(healthInfoDTO.getBloodSugar());
@@ -367,9 +363,6 @@ public class HealthInfoServiceImpl implements HealthInfoService {
         builder.append(bloodPressureStatus).append("，");
         builder.append(bloodSugarStatus).append("，");
         builder.append("运动状态为").append(activityStatus).append("。");
-        if (healthInfo.getHealthCondition() != null && !healthInfo.getHealthCondition().trim().isEmpty()) {
-            builder.append(" 健康状况补充：").append(healthInfo.getHealthCondition().trim()).append("。");
-        }
         return builder.toString();
     }
 

@@ -10,8 +10,8 @@ const healthKnowledgeApi = {
   getArticleTags: () => {
     return axios.get('/article/tags');
   },
-  getRecommendedArticles: (limit) => {
-    return axios.get('/article/recommend', { params: { limit } });
+  getRecommendedArticles: (params = {}) => {
+    return axios.get('/article/recommend', { params });
   },
   getArticleDetail: (articleId) => {
     return axios.get(`/article/detail/${articleId}`);

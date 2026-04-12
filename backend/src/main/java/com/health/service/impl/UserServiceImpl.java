@@ -23,7 +23,8 @@ import java.util.List;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
-    private static final String ADMIN_EMAIL = "admin@qq.com";
+    private static final String ROLE_ADMIN = "admin";
+    private static final String ROLE_USER = "user";
 
     @Autowired
     private UserMapper userMapper;
@@ -50,6 +51,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
         user.setEmail(registerDTO.getEmail());
         user.setPhone(registerDTO.getPhone());
+        user.setRole(ROLE_USER);
         user.setStatus(1);
 
         userMapper.insert(user);
@@ -162,7 +164,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public String resolveRole(User user) {
+        if (user == null) {
+            return ROLE_USER;
+        }
+        return ROLE_ADMIN.equalsIgnoreCase(String.valueOf(user.getRole())) ? ROLE_ADMIN : ROLE_USER;
+    }
+
+    @Override
     public boolean isAdmin(User user) {
-        return user != null && ADMIN_EMAIL.equalsIgnoreCase(user.getEmail());
+        return ROLE_ADMIN.equals(resolveRole(user));
     }
 }

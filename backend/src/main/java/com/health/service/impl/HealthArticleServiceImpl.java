@@ -160,7 +160,7 @@ public class HealthArticleServiceImpl implements HealthArticleService {
     }
 
     @Override
-    public List<HealthArticle> getRecommendedArticles(Long userId, int limit) {
+    public List<HealthArticle> getRecommendedArticles(Long userId, Integer limit) {
         List<HealthArticle> articles = getPublishedArticles();
         if (articles.isEmpty()) {
             return new ArrayList<>();
@@ -175,7 +175,10 @@ public class HealthArticleServiceImpl implements HealthArticleService {
 
         final UserDietPreference finalPreference = preference;
         articles.sort(Comparator.comparingDouble((HealthArticle article) -> scoreArticle(article, finalPreference)).reversed());
-        return articles.subList(0, Math.min(limit, articles.size()));
+        if (limit == null || limit <= 0) {
+            return articles;
+        }
+        return new ArrayList<>(articles.subList(0, Math.min(limit, articles.size())));
     }
 
     @Override
