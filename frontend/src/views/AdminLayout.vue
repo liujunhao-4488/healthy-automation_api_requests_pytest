@@ -34,7 +34,6 @@
       </el-menu>
 
       <div class="sidebar-actions">
-        <el-button text @click="goUserSide">进入用户端</el-button>
         <el-button type="danger" plain @click="logout">退出登录</el-button>
       </div>
     </aside>
@@ -60,10 +59,6 @@ const userStore = useUserStore();
 
 const activeMenu = computed(() => route.path);
 
-const goUserSide = () => {
-  router.push('/dashboard/health-info');
-};
-
 const logout = () => {
   userStore.logout();
   ElMessage.success('已退出登录');
@@ -73,18 +68,21 @@ const logout = () => {
 
 <style scoped>
 .admin-layout {
-  min-height: 100vh;
+  height: 100vh;
   display: grid;
   grid-template-columns: 260px 1fr;
   background: #eff4ef;
+  overflow: hidden;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
+  height: 100vh;
   padding: 28px 18px;
   background: linear-gradient(180deg, #21382c 0%, #2d4a38 100%);
   color: #f5fbf6;
+  overflow: hidden;
 }
 
 .brand {
@@ -136,20 +134,31 @@ const logout = () => {
 }
 
 .content {
+  height: 100vh;
   padding: 24px;
+  overflow-y: auto;
 }
 
 .page-shell {
   min-height: calc(100vh - 48px);
+  padding-bottom: 24px;
 }
 
 @media (max-width: 900px) {
   .admin-layout {
+    height: auto;
     grid-template-columns: 1fr;
+    overflow: visible;
   }
 
   .sidebar {
+    height: auto;
     padding-bottom: 16px;
+  }
+
+  .content {
+    height: auto;
+    overflow: visible;
   }
 }
 </style>

@@ -73,6 +73,15 @@ public class IngredientServiceImpl implements IngredientService {
             if (ingredient.getFiberPer100g() != null) {
                 nutrition.put("fiber", ingredient.getFiberPer100g() * ratio);
             }
+            if (ingredient.getSugarPer100g() != null) {
+                nutrition.put("sugar", ingredient.getSugarPer100g() * ratio);
+            }
+            if (ingredient.getSodiumPer100g() != null) {
+                nutrition.put("sodium", ingredient.getSodiumPer100g() * ratio);
+            }
+            if (ingredient.getGiValue() != null) {
+                nutrition.put("gi", ingredient.getGiValue().doubleValue());
+            }
         }
         
         return nutrition;

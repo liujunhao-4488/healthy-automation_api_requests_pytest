@@ -5,7 +5,7 @@
         <p class="eyebrow">AI 智能配餐</p>
         <h2>个性化食谱推荐</h2>
         <p class="hero-text">
-          系统会结合健康信息、饮食目标和当前偏好，为你生成日计划、7 天计划或 30 天计划。
+          系统会结合健康信息、饮食目标和当前偏好，为你生成每日、7 天或 30 天的食谱方案。
         </p>
       </div>
 
@@ -18,7 +18,7 @@
         <el-button type="primary" :loading="loading" @click="getRecommendations">
           生成推荐
         </el-button>
-        <el-button @click="rotateRecommendations" :disabled="allRecipesCount === 0 || planMode !== 'daily'">
+        <el-button @click="rotateRecommendations" :disabled="!canRotateRecommendations">
           换一批
         </el-button>
         <el-dropdown trigger="click" @command="handleExportCommand" :disabled="allRecipesCount === 0">
@@ -59,7 +59,7 @@
       <div class="section-head">
         <div>
           <h3>{{ planModeLabel }}食谱计划</h3>
-          <p>系统会复用当前候选食谱并按天排列，方便直接查看 7 天或 30 天食谱安排。</p>
+          <p>系统会复用当前候选食谱并按天排列，方便直接查看 7 天或 30 天的饮食安排。</p>
         </div>
       </div>
 
@@ -71,6 +71,12 @@
               <span>{{ currentGoalLabel }}</span>
             </div>
           </template>
+
+          <div class="plan-day-summary">
+            <span>当日总热量</span>
+            <strong>{{ calculateDayCalories(day) }}</strong>
+          </div>
+
           <div class="plan-meals">
             <div class="plan-meal">
               <label>早餐</label>
@@ -84,6 +90,12 @@
               <label>晚餐</label>
               <strong>{{ day.dinner?.name || day.dinner?.recipeName || '--' }}</strong>
             </div>
+          </div>
+
+          <div class="plan-card-actions">
+            <el-button size="small" type="primary" plain @click="openPlanDayDetail(day)">
+              查看当日详情
+            </el-button>
           </div>
         </el-card>
       </div>
@@ -144,6 +156,18 @@
               </div>
             </div>
 
+            <div class="nutrition-grid nutrition-grid-secondary">
+              <div
+                v-for="metric in buildHealthMetrics(recipe)"
+                :key="`health-${metric.key}`"
+                class="nutrition-item nutrition-item-secondary"
+              >
+                <span>{{ metric.label }}</span>
+                <strong>{{ formatNumber(metric.value, metric.digits ?? 1) }}</strong>
+                <small>{{ metric.unit }}</small>
+              </div>
+            </div>
+
             <div class="tag-row" v-if="normalizeTags(recipe.tags).length">
               <el-tag
                 v-for="tag in normalizeTags(recipe.tags)"
@@ -189,11 +213,18 @@
               </el-button>
             </div>
 
-            <div class="recipe-section" v-if="normalizeIngredients(recipe.ingredients).length">
-              <h5>食材</h5>
-              <ul>
-                <li v-for="(ingredient, idx) in normalizeIngredients(recipe.ingredients)" :key="idx">
-                  {{ ingredient }}
+            <div class="recipe-section" v-if="normalizeIngredients(recipe.ingredients, recipe).length">
+              <h5>食材（左：标准数量；右：推荐数量）</h5>
+              <ul class="ingredient-list">
+                <li
+                  v-for="(ingredient, idx) in normalizeIngredients(recipe.ingredients, recipe)"
+                  :key="idx"
+                  class="ingredient-item"
+                >
+                  <span class="ingredient-name">{{ ingredient.name }}</span>
+                  <span class="ingredient-standard">{{ ingredient.standardQuantityText || '--' }}</span>
+                  <span class="ingredient-arrow">→</span>
+                  <span class="ingredient-recommended">{{ ingredient.recommendedQuantityText || '--' }}</span>
                 </li>
               </ul>
             </div>
@@ -211,12 +242,165 @@
       </section>
     </div>
 
-    <el-empty v-else description="暂无推荐食谱，点击上方按钮生成推荐" class="empty-state" />
+    <el-empty
+      v-if="(planMode === 'daily' && recipeGroups.length === 0) || (planMode !== 'daily' && mealPlanDays.length === 0)"
+      description="暂无推荐食谱，点击上方按钮生成推荐"
+      class="empty-state"
+    />
+
+    <el-drawer
+      v-model="planDetailVisible"
+      :title="selectedPlanDay ? `${selectedPlanDay.label} 详细食谱` : '当日详细食谱'"
+      size="70%"
+    >
+      <div class="plan-detail-content" v-if="planDetailRecipeGroups.length">
+        <section v-for="group in planDetailRecipeGroups" :key="`detail-${group.key}`" class="meal-section plan-detail-section">
+          <div class="meal-header">
+            <div>
+              <h3>{{ group.label }}</h3>
+              <p>{{ mealDescriptions[group.key] }}</p>
+            </div>
+            <el-tag type="success" effect="plain">
+              建议热量 {{ mealTargetCalories(group.key) }} kcal
+            </el-tag>
+          </div>
+
+          <div class="recipe-list plan-detail-list">
+            <el-card
+              v-for="(recipe, index) in group.recipes"
+              :key="`detail-${group.key}-${recipe.id || index}`"
+              class="recipe-card"
+              shadow="never"
+            >
+              <template #header>
+                <div class="recipe-header">
+                  <div>
+                    <h4>{{ recipe.name || recipe.recipeName || '未命名食谱' }}</h4>
+                    <p>{{ recipe.description || '根据当前目标自动筛选出的推荐结果。' }}</p>
+                  </div>
+                  <div class="score-badge">
+                    <span>匹配度</span>
+                    <strong>{{ formatScore(recipe.matchScore) }}</strong>
+                  </div>
+                </div>
+              </template>
+
+              <div class="nutrition-grid">
+                <div class="nutrition-item">
+                  <span>热量</span>
+                  <strong>{{ formatNumber(recipe.calories ?? recipe.totalCalories, 0) }}</strong>
+                  <small>kcal</small>
+                </div>
+                <div class="nutrition-item">
+                  <span>蛋白质</span>
+                  <strong>{{ formatNumber(recipe.protein, 1) }}</strong>
+                  <small>g</small>
+                </div>
+                <div class="nutrition-item">
+                  <span>碳水</span>
+                  <strong>{{ formatNumber(recipe.carbs, 1) }}</strong>
+                  <small>g</small>
+                </div>
+                <div class="nutrition-item">
+                  <span>脂肪</span>
+                  <strong>{{ formatNumber(recipe.fat, 1) }}</strong>
+                  <small>g</small>
+                </div>
+              </div>
+
+              <div class="nutrition-grid nutrition-grid-secondary">
+                <div
+                  v-for="metric in buildHealthMetrics(recipe)"
+                  :key="`plan-health-${metric.key}`"
+                  class="nutrition-item nutrition-item-secondary"
+                >
+                  <span>{{ metric.label }}</span>
+                  <strong>{{ formatNumber(metric.value, metric.digits ?? 1) }}</strong>
+                  <small>{{ metric.unit }}</small>
+                </div>
+              </div>
+
+              <div class="tag-row" v-if="normalizeTags(recipe.tags).length">
+                <el-tag
+                  v-for="tag in normalizeTags(recipe.tags)"
+                  :key="tag"
+                  size="small"
+                  effect="plain"
+                  round
+                >
+                  {{ tag }}
+                </el-tag>
+              </div>
+
+              <el-alert
+                class="reason-box"
+                :title="recipe.recommendationReason || buildReason(recipe, group.key)"
+                type="success"
+                :closable="false"
+                show-icon
+              />
+
+              <div class="recipe-meta">
+                <span>烹饪时间：{{ recipe.cookingTime || '--' }} 分钟</span>
+                <span>难度：{{ recipe.difficulty || '家常' }}</span>
+              </div>
+
+              <div class="recipe-actions">
+                <el-button
+                  :type="isCollected(recipe) ? 'warning' : 'default'"
+                  plain
+                  :loading="collectingRecipeId === Number(recipe.id)"
+                  @click="toggleCollectRecipe(recipe)"
+                >
+                  {{ isCollected(recipe) ? '已收藏' : '收藏食谱' }}
+                </el-button>
+                <el-button
+                  :type="isAlreadyAdded(recipe, group.key) ? 'success' : 'primary'"
+                  :plain="!isAlreadyAdded(recipe, group.key)"
+                  :loading="savingRecordKey === `${group.key}-${recipe.id || index}`"
+                  :disabled="isAlreadyAdded(recipe, group.key)"
+                  @click="addToDietRecord(recipe, group.key, index)"
+                >
+                  {{ isAlreadyAdded(recipe, group.key) ? '已加入今日记录' : '一键加入饮食记录' }}
+                </el-button>
+              </div>
+
+              <div class="recipe-section" v-if="normalizeIngredients(recipe.ingredients, recipe).length">
+                <h5>食材（左：标准数量；右：推荐数量）</h5>
+                <ul class="ingredient-list">
+                  <li
+                    v-for="(ingredient, idx) in normalizeIngredients(recipe.ingredients, recipe)"
+                    :key="idx"
+                    class="ingredient-item"
+                  >
+                    <span class="ingredient-name">{{ ingredient.name }}</span>
+                    <span class="ingredient-standard">{{ ingredient.standardQuantityText || '--' }}</span>
+                    <span class="ingredient-arrow">→</span>
+                    <span class="ingredient-recommended">{{ ingredient.recommendedQuantityText || '--' }}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="recipe-section" v-if="normalizeSteps(recipe.steps).length">
+                <h5>制作步骤</h5>
+                <ol>
+                  <li v-for="(step, idx) in normalizeSteps(recipe.steps)" :key="idx">
+                    {{ step }}
+                  </li>
+                </ol>
+              </div>
+            </el-card>
+          </div>
+        </section>
+      </div>
+
+      <el-empty v-else description="当前日期暂无食谱详情" />
+    </el-drawer>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { ArrowDown } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import recipeApi from '../api/recipe';
@@ -239,19 +423,33 @@ const existingRecordKeys = ref(new Set());
 const collectedRecipeIds = ref(new Set());
 const batchIndex = ref(0);
 const batchSize = 2;
+const dailyCandidateCount = 6;
 const planMode = ref('daily');
-
-const allRecipes = ref({
+const planDetailVisible = ref(false);
+const selectedPlanDay = ref(null);
+const createEmptyRecipeGroups = () => ({
   breakfast: [],
   lunch: [],
   dinner: []
 });
 
-const visibleRecipes = ref({
-  breakfast: [],
-  lunch: [],
-  dinner: []
+const modeRecommendationCache = ref({
+  daily: {
+    groups: createEmptyRecipeGroups(),
+    batchIndex: 0
+  },
+  weekly: {
+    groups: createEmptyRecipeGroups(),
+    batchIndex: 0
+  },
+  monthly: {
+    groups: createEmptyRecipeGroups(),
+    batchIndex: 0
+  }
 });
+
+const allRecipes = ref(createEmptyRecipeGroups());
+const visibleRecipes = ref(createEmptyRecipeGroups());
 
 const planOptions = [
   { label: '每日', value: 'daily' },
@@ -290,6 +488,14 @@ const allRecipesCount = computed(
     (allRecipes.value.lunch?.length || 0) +
     (allRecipes.value.dinner?.length || 0)
 );
+
+const canRotateRecommendations = computed(() => {
+  if (planMode.value !== 'daily') {
+    return false;
+  }
+
+  return Object.values(allRecipes.value).some((items) => Array.isArray(items) && items.length > batchSize);
+});
 
 const recipeGroups = computed(() =>
   Object.entries(visibleRecipes.value)
@@ -347,6 +553,51 @@ const mealPlanDays = computed(() => {
   return result;
 });
 
+const calculateRecipeCalories = (recipe) => {
+  const value = Number(recipe?.calories ?? recipe?.totalCalories ?? 0);
+  return Number.isFinite(value) ? value : 0;
+};
+
+const calculateDayCalories = (day) => {
+  const total =
+    calculateRecipeCalories(day?.breakfast) +
+    calculateRecipeCalories(day?.lunch) +
+    calculateRecipeCalories(day?.dinner);
+
+  if (total <= 0) return '--';
+  return `${Math.round(total)} kcal`;
+};
+
+const openPlanDayDetail = (day) => {
+  selectedPlanDay.value = day || null;
+  planDetailVisible.value = true;
+};
+
+const planDetailRecipeGroups = computed(() => {
+  const day = selectedPlanDay.value;
+  if (!day) return [];
+
+  return [
+    { key: 'breakfast', recipe: day.breakfast },
+    { key: 'lunch', recipe: day.lunch },
+    { key: 'dinner', recipe: day.dinner }
+  ]
+    .filter((item) => item.recipe)
+    .map((item) => ({
+      key: item.key,
+      label: mealLabels[item.key] || item.key,
+      recipes: [item.recipe]
+    }));
+});
+const visibleFlattenedRecipes = computed(() =>
+  ['breakfast', 'lunch', 'dinner'].flatMap((mealType) =>
+    (visibleRecipes.value[mealType] || []).map((recipe) => ({
+      ...recipe,
+      mealType
+    }))
+  )
+);
+
 const flattenedRecipes = computed(() =>
   ['breakfast', 'lunch', 'dinner'].flatMap((mealType) =>
     (allRecipes.value[mealType] || []).map((recipe) => ({
@@ -368,14 +619,126 @@ const formatScore = (value) => {
 
 const normalizeTags = (tags) => (Array.isArray(tags) ? tags.filter(Boolean) : []);
 
-const normalizeIngredients = (ingredients) => {
+const buildHealthMetrics = (recipe) => {
+  const goalType = userStore.dietGoal?.goalType || '';
+  const metrics = [];
+
+  if (goalType === 'blood_sugar_control') {
+    metrics.push(
+      { key: 'sugar', label: '含糖量', value: recipe?.sugar, unit: 'g', digits: 1 },
+      { key: 'gi', label: 'GI', value: recipe?.gi, unit: '', digits: 0 },
+      { key: 'fiber', label: '膳食纤维', value: recipe?.fiber, unit: 'g', digits: 1 }
+    );
+  } else if (goalType === 'low_sodium') {
+    metrics.push(
+      { key: 'sodium', label: '钠', value: recipe?.sodium, unit: 'mg', digits: 0 },
+      { key: 'fiber', label: '膳食纤维', value: recipe?.fiber, unit: 'g', digits: 1 },
+      { key: 'sugar', label: '含糖量', value: recipe?.sugar, unit: 'g', digits: 1 }
+    );
+  } else {
+    metrics.push(
+      { key: 'fiber', label: '膳食纤维', value: recipe?.fiber, unit: 'g', digits: 1 },
+      { key: 'sugar', label: '含糖量', value: recipe?.sugar, unit: 'g', digits: 1 },
+      { key: 'sodium', label: '钠', value: recipe?.sodium, unit: 'mg', digits: 0 }
+    );
+    if (Number(recipe?.gi) > 0) {
+      metrics.push({ key: 'gi', label: 'GI', value: recipe?.gi, unit: '', digits: 0 });
+    }
+  }
+
+  return metrics.filter((metric) => Number.isFinite(Number(metric.value)) && Number(metric.value) > 0);
+};
+
+const formatIngredientAmount = (quantity, unit) => {
+  if (quantity === null || quantity === undefined || quantity === '') return '';
+
+  const unitText = String(unit || '').trim();
+  const rawText = String(quantity).trim();
+  const normalizedRaw = rawText.toLowerCase();
+  const normalizedUnit = unitText.toLowerCase();
+
+  if (normalizedUnit && normalizedRaw.endsWith(normalizedUnit)) {
+    return rawText;
+  }
+
+  const number = Number(quantity);
+  if (!Number.isFinite(number)) {
+    return `${rawText}${unitText}`.trim();
+  }
+
+  const digits = Number.isInteger(number) ? 0 : 1;
+  return `${number.toFixed(digits)}${unitText}`.trim();
+};
+
+const normalizeIngredients = (ingredients, recipe = {}) => {
   if (!Array.isArray(ingredients)) return [];
+  const servingFactor = Number(recipe?.servingFactor ?? 1);
+  const validServingFactor = Number.isFinite(servingFactor) && servingFactor > 0 ? servingFactor : 1;
+
   return ingredients.map((ingredient) => {
-    if (typeof ingredient === 'string') return ingredient;
+    if (typeof ingredient === 'string') {
+      return {
+        name: ingredient,
+        standardQuantityText: '',
+        recommendedQuantityText: ''
+      };
+    }
+
     const name = ingredient.name || ingredient.ingredientName || '未命名食材';
-    const quantity = ingredient.quantity ? ` ${ingredient.quantity}${ingredient.unit || ''}` : '';
-    return `${name}${quantity}`.trim();
+    const standardQuantitySource =
+      ingredient.standardQuantity ?? ingredient.standardQuantityValue ?? ingredient.quantity;
+
+    const hasRecommendedQuantity =
+      ingredient.recommendedQuantity !== undefined &&
+      ingredient.recommendedQuantity !== null &&
+      ingredient.recommendedQuantity !== '';
+    const hasRecommendedQuantityValue =
+      ingredient.recommendedQuantityValue !== undefined &&
+      ingredient.recommendedQuantityValue !== null &&
+      ingredient.recommendedQuantityValue !== '';
+
+    let recommendedQuantitySource;
+    if (hasRecommendedQuantity) {
+      recommendedQuantitySource = ingredient.recommendedQuantity;
+    } else if (hasRecommendedQuantityValue) {
+      recommendedQuantitySource = ingredient.recommendedQuantityValue;
+    } else {
+      const baseValue = Number(ingredient.standardQuantityValue ?? ingredient.quantityValue);
+      if (Number.isFinite(baseValue) && baseValue > 0) {
+        recommendedQuantitySource = Number((baseValue * validServingFactor).toFixed(1));
+      } else {
+        recommendedQuantitySource = ingredient.quantityValue ?? ingredient.quantity;
+      }
+    }
+
+    const standardQuantityText = formatIngredientAmount(
+      standardQuantitySource,
+      ingredient.unit
+    );
+    const recommendedQuantityText = formatIngredientAmount(
+      recommendedQuantitySource,
+      ingredient.unit
+    );
+
+    return {
+      name,
+      standardQuantityText,
+      recommendedQuantityText
+    };
   });
+};
+
+const buildIngredientsSummary = (recipe) => {
+  const ingredients = normalizeIngredients(recipe?.ingredients, recipe);
+  if (!ingredients.length) return '--';
+
+  return ingredients
+    .slice(0, 6)
+    .map((ingredient) => {
+      const quantityText = ingredient.recommendedQuantityText || ingredient.standardQuantityText || '';
+      return quantityText ? `${ingredient.name} ${quantityText}` : ingredient.name;
+    })
+    .join('、');
 };
 
 const normalizeSteps = (steps) => (Array.isArray(steps) ? steps : []);
@@ -402,6 +765,56 @@ const normalizeRecipeGroups = (groups) => ({
   dinner: Array.isArray(groups?.dinner) ? groups.dinner : []
 });
 
+const clearRecommendationsView = () => {
+  allRecipes.value = createEmptyRecipeGroups();
+  visibleRecipes.value = createEmptyRecipeGroups();
+  batchIndex.value = 0;
+};
+
+const hasRecipeGroups = (groups) =>
+  Object.values(normalizeRecipeGroups(groups)).some((items) => Array.isArray(items) && items.length > 0);
+
+const normalizeRecommendationCache = (payload) => {
+  const emptyCache = {
+    daily: {
+      groups: createEmptyRecipeGroups(),
+      batchIndex: 0
+    },
+    weekly: {
+      groups: createEmptyRecipeGroups(),
+      batchIndex: 0
+    },
+    monthly: {
+      groups: createEmptyRecipeGroups(),
+      batchIndex: 0
+    }
+  };
+
+  if (!payload) {
+    return emptyCache;
+  }
+
+  if (payload.modes && typeof payload.modes === 'object') {
+    for (const mode of ['daily', 'weekly', 'monthly']) {
+      const source = payload.modes[mode];
+      emptyCache[mode] = {
+        groups: normalizeRecipeGroups(source?.groups),
+        batchIndex: Number.isFinite(source?.batchIndex) ? source.batchIndex : 0
+      };
+    }
+    return emptyCache;
+  }
+
+  if (payload.groups && payload.planMode) {
+    emptyCache[payload.planMode] = {
+      groups: normalizeRecipeGroups(payload.groups),
+      batchIndex: Number.isFinite(payload.batchIndex) ? payload.batchIndex : 0
+    };
+  }
+
+  return emptyCache;
+};
+
 const buildVisibleRecipes = () => {
   const nextVisible = {};
   for (const key of Object.keys(allRecipes.value)) {
@@ -426,33 +839,66 @@ const applyRecommendations = (groups, index = 0) => {
   buildVisibleRecipes();
 };
 
+const loadRecommendationsForMode = (mode) => {
+  const cached = modeRecommendationCache.value[mode];
+  if (!cached || !hasRecipeGroups(cached.groups)) {
+    clearRecommendationsView();
+    return;
+  }
+
+  applyRecommendations(cached.groups, cached.batchIndex || 0);
+};
+
 const persistRecommendations = () => {
   userStore.setRecipeRecommendations({
-    groups: normalizeRecipeGroups(allRecipes.value),
-    batchIndex: batchIndex.value,
+    modes: {
+      daily: {
+        groups: normalizeRecipeGroups(modeRecommendationCache.value.daily?.groups),
+        batchIndex: modeRecommendationCache.value.daily?.batchIndex || 0
+      },
+      weekly: {
+        groups: normalizeRecipeGroups(modeRecommendationCache.value.weekly?.groups),
+        batchIndex: modeRecommendationCache.value.weekly?.batchIndex || 0
+      },
+      monthly: {
+        groups: normalizeRecipeGroups(modeRecommendationCache.value.monthly?.groups),
+        batchIndex: modeRecommendationCache.value.monthly?.batchIndex || 0
+      }
+    },
     planMode: planMode.value,
     updatedAt: new Date().toISOString()
   });
 };
 
 const rotateRecommendations = () => {
+  if (!canRotateRecommendations.value) {
+    ElMessage.info('当前推荐数量不足，暂时没有更多可切换的方案');
+    return;
+  }
+
   batchIndex.value += 1;
   buildVisibleRecipes();
   if (allRecipesCount.value > 0) {
+    modeRecommendationCache.value[planMode.value] = {
+      groups: normalizeRecipeGroups(allRecipes.value),
+      batchIndex: batchIndex.value
+    };
     persistRecommendations();
   }
 };
 
 const buildReason = (recipe, mealType) => {
   const mealReasonMap = {
-    breakfast: '早餐更关注晨间能量补充和轻负担',
-    lunch: '午餐优先考虑蛋白质补充与能量稳定',
-    dinner: '晚餐更强调清淡与总热量控制'
+    breakfast: '早餐优先选择能量适中、蛋白质充足的食谱，帮助维持上午状态。',
+    lunch: '午餐需要兼顾饱腹感和营养密度，适合作为一天中的主要能量来源。',
+    dinner: '晚餐推荐相对清淡、易消化的搭配，避免夜间摄入过重。'
   };
 
   const calories = Number(recipe.calories ?? recipe.totalCalories ?? 0);
-  const calorieReason = calories > 0 ? `热量约 ${Math.round(calories)} kcal，更适合当前三餐分配。` : '热量已纳入推荐判断。';
-  return `${mealReasonMap[mealType] || '系统结合你的健康目标进行了综合筛选。'}${calorieReason}`;
+  const calorieReason = calories > 0
+    ? ` 当前约 ${Math.round(calories)} kcal，便于控制每日总热量。`
+    : ' 当前食谱已按你的饮食目标进行匹配。';
+  return `${mealReasonMap[mealType] || '该食谱与当前饮食目标匹配。'}${calorieReason}`;
 };
 
 const buildRecordDetailsFromRecipe = (recipe) => {
@@ -462,13 +908,17 @@ const buildRecordDetailsFromRecipe = (recipe) => {
     .map((ingredient) => ({
       ingredientId: ingredient.ingredientId ?? ingredient.id ?? null,
       recipeId: recipe.id ?? null,
-      foodName: ingredient.name || ingredient.ingredientName || '食材',
+      foodName: ingredient.name || ingredient.ingredientName || '未命名食材',
       amount: Number(ingredient.quantityValue ?? ingredient.quantity ?? 1) || 1,
       unit: ingredient.unit || 'g',
       calories: Number(ingredient.calories ?? 0),
       protein: Number(ingredient.protein ?? 0),
       carbs: Number(ingredient.carbs ?? 0),
-      fat: Number(ingredient.fat ?? 0)
+      fat: Number(ingredient.fat ?? 0),
+      fiber: Number(ingredient.fiber ?? 0),
+      sugar: Number(ingredient.sugar ?? 0),
+      sodium: Number(ingredient.sodium ?? 0),
+      gi: Number(ingredient.gi ?? 0)
     }));
 
   if (details.length) {
@@ -478,17 +928,20 @@ const buildRecordDetailsFromRecipe = (recipe) => {
   return [
     {
       recipeId: recipe.id ?? null,
-      foodName: recipe.name || recipe.recipeName || '推荐食谱',
+      foodName: recipe.name || recipe.recipeName || '未命名食谱',
       amount: 1,
       unit: '份',
       calories: Number(recipe.calories ?? recipe.totalCalories ?? 0),
       protein: Number(recipe.protein ?? 0),
       carbs: Number(recipe.carbs ?? 0),
-      fat: Number(recipe.fat ?? 0)
+      fat: Number(recipe.fat ?? 0),
+      fiber: Number(recipe.fiber ?? 0),
+      sugar: Number(recipe.sugar ?? 0),
+      sodium: Number(recipe.sodium ?? 0),
+      gi: Number(recipe.gi ?? 0)
     }
   ];
 };
-
 const hasMeaningfulNutrition = (details) =>
   Array.isArray(details) &&
   details.some((detail) =>
@@ -518,7 +971,7 @@ const loadAccurateRecordDetails = async (recipe) => {
       }
     }
   } catch (error) {
-    console.error('加载食谱详情失败:', error);
+    console.error('加载数据失败', error);
   }
 
   return fallbackDetails;
@@ -526,7 +979,7 @@ const loadAccurateRecordDetails = async (recipe) => {
 
 const addToDietRecord = async (recipe, mealType, index) => {
   if (isAlreadyAdded(recipe, mealType)) {
-    ElMessage.warning('这道食谱今天这一餐已经加入过了');
+    ElMessage.warning('今天已添加过这道食谱，请不要重复加入饮食记录');
     return;
   }
 
@@ -537,7 +990,7 @@ const addToDietRecord = async (recipe, mealType, index) => {
     const response = await dietRecordApi.submitRecord({
       date: new Date().toISOString().slice(0, 10),
       mealType,
-      notes: `由食谱推荐一键加入：${recipe.name || recipe.recipeName || '推荐食谱'}`,
+      notes: `来自推荐食谱：${recipe.name || recipe.recipeName || '未命名食谱'}`,
       details
     });
 
@@ -556,7 +1009,6 @@ const addToDietRecord = async (recipe, mealType, index) => {
     savingRecordKey.value = '';
   }
 };
-
 const loadCollectedRecipes = async () => {
   try {
     const response = await recipeApi.getCollectedRecipes();
@@ -566,14 +1018,14 @@ const loadCollectedRecipes = async () => {
       );
     }
   } catch (error) {
-    console.error('加载收藏食谱失败:', error);
+    console.error('加载数据失败', error);
   }
 };
 
 const toggleCollectRecipe = async (recipe) => {
   const recipeId = Number(recipe.id);
   if (!Number.isFinite(recipeId)) {
-    ElMessage.warning('当前食谱暂不支持收藏');
+    ElMessage.warning('当前食谱缺少有效编号，暂不支持收藏');
     return;
   }
 
@@ -595,14 +1047,13 @@ const toggleCollectRecipe = async (recipe) => {
       return;
     }
 
-    ElMessage.error(response.message || '收藏操作失败');
+    ElMessage.error(response.message || '收藏状态更新失败');
   } catch (error) {
-    ElMessage.error(error.message || '收藏操作失败');
+    ElMessage.error(error.message || '收藏状态更新失败，请稍后重试');
   } finally {
     collectingRecipeId.value = null;
   }
 };
-
 const loadTodayRecordKeys = async () => {
   if (!userStore.userId) return;
 
@@ -625,26 +1076,51 @@ const loadTodayRecordKeys = async () => {
     });
     existingRecordKeys.value = keys;
   } catch (error) {
-    console.error('加载今日饮食记录失败:', error);
+    console.error('加载数据失败', error);
   }
 };
 
 const exportRows = () =>
-  flattenedRecipes.value.map((recipe) => ({
+  visibleFlattenedRecipes.value.map((recipe) => ({
     name: recipe.name || recipe.recipeName || '未命名食谱',
     category: mealLabels[recipe.mealType] || recipe.mealType,
     calories: formatNumber(recipe.calories ?? recipe.totalCalories, 0),
     protein: formatNumber(recipe.protein, 1),
     carbs: formatNumber(recipe.carbs, 1),
     fat: formatNumber(recipe.fat, 1),
+    fiber: formatNumber(recipe.fiber, 1),
+    sugar: formatNumber(recipe.sugar, 1),
+    sodium: formatNumber(recipe.sodium, 0),
+    gi: formatNumber(recipe.gi, 0),
     cookingTime: recipe.cookingTime || '--',
-    difficulty: recipe.difficulty || '家常'
+    difficulty: recipe.difficulty || '普通'
+  }));
+
+const exportDetailedRows = () =>
+  visibleFlattenedRecipes.value.map((recipe) => ({
+    name: recipe.name || recipe.recipeName || '未命名食谱',
+    category: mealLabels[recipe.mealType] || recipe.mealType,
+    mealLabel: mealLabels[recipe.mealType] || recipe.mealType,
+    description: recipe.description || '',
+    score: formatScore(recipe.matchScore),
+    calories: formatNumber(recipe.calories ?? recipe.totalCalories, 0),
+    protein: formatNumber(recipe.protein, 1),
+    carbs: formatNumber(recipe.carbs, 1),
+    fat: formatNumber(recipe.fat, 1),
+    fiber: formatNumber(recipe.fiber, 1),
+    sugar: formatNumber(recipe.sugar, 1),
+    sodium: formatNumber(recipe.sodium, 0),
+    gi: formatNumber(recipe.gi, 0),
+    cookingTime: recipe.cookingTime || '--',
+    difficulty: recipe.difficulty || '普通',
+    reason: recipe.recommendationReason || buildReason(recipe, recipe.mealType),
+    ingredientsSummary: buildIngredientsSummary(recipe)
   }));
 
 const handleExportCommand = (command) => {
   if (planMode.value === 'daily') {
-    const rows = exportRows();
-    const title = `${currentGoalLabel.value}推荐食谱`;
+    const rows = exportDetailedRows();
+    const title = `${currentGoalLabel.value}每日推荐食谱`;
     if (command === 'pdf') {
       exportRecipesToPdf(title, rows);
     } else if (command === 'word') {
@@ -655,7 +1131,7 @@ const handleExportCommand = (command) => {
     return;
   }
 
-  const title = `${currentGoalLabel.value}${planModeLabel.value}食谱计划`;
+  const title = `${currentGoalLabel.value}${planModeLabel.value}推荐食谱计划`;
   if (command === 'pdf') {
     exportPlanToPdf(title, mealPlanDays.value);
   } else if (command === 'word') {
@@ -664,24 +1140,23 @@ const handleExportCommand = (command) => {
     exportPlanToExcel(`${title}.xls`, title, mealPlanDays.value);
   }
 };
-
 const getRecommendations = async () => {
   if (!userStore.userId) {
-    ElMessage.error('请先登录');
+    ElMessage.error('请先登录后再获取推荐食谱');
     return;
   }
   if (!userStore.hasHealthInfo) {
-    ElMessage.error('请先完善健康信息');
+    ElMessage.error('请先完善健康信息，再生成推荐食谱');
     return;
   }
   if (!userStore.hasDietGoal) {
-    ElMessage.error('请先设置饮食目标');
+    ElMessage.error('请先设置饮食目标，再生成推荐食谱');
     return;
   }
 
   loading.value = true;
   try {
-    const count = planMode.value === 'monthly' ? 30 : planMode.value === 'weekly' ? 7 : 1;
+    const count = planMode.value === 'monthly' ? 30 : planMode.value === 'weekly' ? 7 : dailyCandidateCount;
     const response = await recipeApi.getRecommendations({
       breakfastCount: count,
       lunchCount: count,
@@ -693,25 +1168,31 @@ const getRecommendations = async () => {
     }
 
     const data = response.data || {};
+    modeRecommendationCache.value[planMode.value] = {
+      groups: normalizeRecipeGroups(data),
+      batchIndex: 0
+    };
     applyRecommendations(data, 0);
     persistRecommendations();
     ElMessage.success('推荐食谱已更新');
   } catch (error) {
-    ElMessage.error(error.message || '获取推荐食谱失败，请稍后再试');
+    ElMessage.error(error.message || '获取推荐食谱失败，请稍后重试');
   } finally {
     loading.value = false;
   }
 };
+watch(planMode, (mode) => {
+  loadRecommendationsForMode(mode);
+  persistRecommendations();
+});
 
 onMounted(() => {
-  if (userStore.recipeRecommendations?.groups) {
-    applyRecommendations(
-      userStore.recipeRecommendations.groups,
-      userStore.recipeRecommendations.batchIndex || 0
-    );
+  if (userStore.recipeRecommendations) {
+    modeRecommendationCache.value = normalizeRecommendationCache(userStore.recipeRecommendations);
     if (userStore.recipeRecommendations.planMode) {
       planMode.value = userStore.recipeRecommendations.planMode;
     }
+    loadRecommendationsForMode(planMode.value);
   }
   loadTodayRecordKeys();
   loadCollectedRecipes();
@@ -863,15 +1344,51 @@ onMounted(() => {
   font-size: 13px;
 }
 
-.plan-meal strong {
-  color: #22382c;
+.plan-day-summary {
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f2f8f4;
+}
+
+.plan-day-summary span {
+  color: #6f8575;
+  font-size: 13px;
+}
+
+.plan-day-summary strong {
+  color: #245f40;
+}
+
+.plan-card-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.plan-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.plan-detail-section {
+  padding: 20px;
+}
+
+.plan-detail-list {
+  margin-top: 16px;
 }
 
 .recipe-list {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  justify-content: center;
 }
 
 .recipe-card {
@@ -917,15 +1434,24 @@ onMounted(() => {
 .nutrition-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin: 18px 0 14px;
+  gap: 8px;
+  margin: 14px 0 10px;
+}
+
+.nutrition-grid-secondary {
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  margin-top: -4px;
 }
 
 .nutrition-item {
-  padding: 14px 12px;
+  padding: 12px 8px;
   border-radius: 16px;
   background: #f7fbf8;
   text-align: center;
+}
+
+.nutrition-item-secondary {
+  background: #eef6f0;
 }
 
 .nutrition-item span,
@@ -936,19 +1462,36 @@ onMounted(() => {
 
 .nutrition-item strong {
   display: block;
-  margin: 6px 0 2px;
+  margin: 4px 0 2px;
   color: #22382c;
-  font-size: 20px;
+  font-size: 18px;
+}
+
+.serving-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: #5f7468;
+  font-size: 14px;
+}
+
+.serving-recommended {
+  color: #2a7a49;
+  font-weight: 600;
+}
+
+.serving-note {
+  margin: 0 0 12px;
+  color: #6f8575;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .tag-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 14px;
-}
-
-.reason-box {
   margin-bottom: 14px;
 }
 
@@ -971,6 +1514,40 @@ onMounted(() => {
 .recipe-section h5 {
   margin: 0 0 10px;
   color: #2a4133;
+}
+
+.ingredient-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ingredient-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.ingredient-name {
+  color: #2a4133;
+}
+
+.ingredient-standard {
+  color: #5a6d61;
+}
+
+.ingredient-arrow {
+  color: #8aa092;
+}
+
+.ingredient-recommended {
+  color: #2a7a49;
+  font-weight: 600;
 }
 
 .recipe-section ul,
@@ -998,6 +1575,10 @@ onMounted(() => {
   .summary-grid {
     grid-template-columns: 1fr;
   }
+
+  .plan-detail-section {
+    padding: 16px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1007,6 +1588,15 @@ onMounted(() => {
 
   .hero-actions {
     width: 100%;
+  }
+
+  .ingredient-item {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .ingredient-arrow {
+    display: none;
   }
 }
 </style>

@@ -1,0 +1,145 @@
+{
+  "pages": [
+    {
+      "path": "pages/launch/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/auth/login",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/auth/register",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/onboarding/health-basic",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/onboarding/health-detail",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/onboarding/diet-goal",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/tabbar/home",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/tabbar/recipes",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/tabbar/record",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/tabbar/knowledge",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/tabbar/mine",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/detail/recipe",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/detail/article",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/detail/notifications",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/assistant/chat",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mine/health-profile",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationStyle": "custom",
+    "backgroundColor": "#f9faf4",
+    "backgroundColorTop": "#f9faf4",
+    "backgroundColorBottom": "#f9faf4"
+  },
+  "tabBar": {
+    "color": "#5b6159",
+    "selectedColor": "#486646",
+    "backgroundColor": "#f9faf4",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/tabbar/home",
+        "text": "首页",
+        "iconPath": "static/icons/tab/home.png",
+        "selectedIconPath": "static/icons/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/tabbar/recipes",
+        "text": "食谱",
+        "iconPath": "static/icons/tab/recipes.png",
+        "selectedIconPath": "static/icons/tab/recipes-active.png"
+      },
+      {
+        "pagePath": "pages/tabbar/record",
+        "text": "记录",
+        "iconPath": "static/icons/tab/record.png",
+        "selectedIconPath": "static/icons/tab/record-active.png"
+      },
+      {
+        "pagePath": "pages/tabbar/knowledge",
+        "text": "知识",
+        "iconPath": "static/icons/tab/knowledge.png",
+        "selectedIconPath": "static/icons/tab/knowledge-active.png"
+      },
+      {
+        "pagePath": "pages/tabbar/mine",
+        "text": "我的",
+        "iconPath": "static/icons/tab/mine.png",
+        "selectedIconPath": "static/icons/tab/mine-active.png"
+      }
+    ]
+  }
+}

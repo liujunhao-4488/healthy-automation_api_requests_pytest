@@ -18,14 +18,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -108,11 +116,17 @@ public class HealthArticleController {
     public ResponseEntity<?> getRecommendedArticles(
         Principal principal,
         @RequestParam(required = false, defaultValue = "1") Integer page,
-        @RequestParam(required = false, defaultValue = "10") Integer pageSize
+        @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+        @RequestParam(required = false) Long excludeId
     ) {
         try {
             Long userId = resolveUserId(principal);
             List<HealthArticle> recommendedArticles = healthArticleService.getRecommendedArticles(userId, 0);
+            if (excludeId != null) {
+                recommendedArticles = recommendedArticles.stream()
+                    .filter(article -> !excludeId.equals(article.getId()))
+                    .collect(Collectors.toList());
+            }
             List<HealthArticle> pagedArticles = paginate(recommendedArticles, page, pageSize);
 
             Map<String, Object> data = new HashMap<>();
@@ -120,6 +134,7 @@ public class HealthArticleController {
             data.put("total", recommendedArticles.size());
             data.put("page", page);
             data.put("pageSize", pageSize);
+            data.put("tags", buildTagList());
             return successResponse("获取推荐文章成功", data);
         } catch (Exception e) {
             log.error("获取推荐文章失败: {}", e.getMessage(), e);
@@ -127,14 +142,51 @@ public class HealthArticleController {
         }
     }
 
-    @PostMapping("/read/{articleId}")
-    public ResponseEntity<?> recordArticleRead(@PathVariable Long articleId, Principal principal) {
+    @GetMapping("/read/history")
+    public ResponseEntity<?> getReadHistory(
+        Principal principal,
+        @RequestParam(required = false, defaultValue = "6") Integer limit
+    ) {
+        if (principal == null) {
+            return unauthorizedResponse();
+        }
+
         try {
-            if (principal == null) {
-                return unauthorizedResponse();
-            }
             Long userId = Long.parseLong(principal.getName());
-            UserReadRecord readRecord = healthArticleService.recordArticleRead(userId, articleId);
+            List<Map<String, Object>> history = healthArticleService.getUserReadHistory(userId, Math.max(1, limit));
+            List<Map<String, Object>> data = history.stream()
+                .map(item -> {
+                    HealthArticle article = (HealthArticle) item.get("article");
+                    Map<String, Object> view = toArticleView(article, userId);
+                    view.put("readTime", item.get("readTime"));
+                    view.put("readDuration", item.get("readDuration"));
+                    view.put("scrollPercent", item.get("scrollPercent"));
+                    view.put("finished", item.get("finished"));
+                    return view;
+                })
+                .collect(Collectors.toList());
+            return successResponse("获取阅读历史成功", data);
+        } catch (Exception e) {
+            log.error("获取阅读历史失败: {}", e.getMessage(), e);
+            return badRequestResponse(e.getMessage());
+        }
+    }
+
+    @PostMapping("/read/{articleId}")
+    public ResponseEntity<?> recordArticleRead(
+        @PathVariable Long articleId,
+        @RequestBody(required = false) Map<String, Object> payload,
+        Principal principal
+    ) {
+        if (principal == null) {
+            return unauthorizedResponse();
+        }
+
+        try {
+            Long userId = Long.parseLong(principal.getName());
+            Integer readDuration = parseIntegerValue(payload == null ? null : payload.get("readDuration"));
+            Integer scrollPercent = parseIntegerValue(payload == null ? null : payload.get("scrollPercent"));
+            UserReadRecord readRecord = healthArticleService.recordArticleRead(userId, articleId, readDuration, scrollPercent);
             return successResponse("记录阅读成功", readRecord);
         } catch (Exception e) {
             log.error("记录阅读失败: {}", e.getMessage(), e);
@@ -169,8 +221,8 @@ public class HealthArticleController {
                 like.setArticleId(articleId);
                 like.setCreateTime(LocalDateTime.now());
                 userArticleLikeMapper.insert(like);
-                updateArticleLikeCount(articleId, 1);
             }
+            healthArticleService.syncArticleStats(articleId);
 
             Map<String, Object> data = new HashMap<>();
             data.put("liked", true);
@@ -192,9 +244,8 @@ public class HealthArticleController {
             Long userId = Long.parseLong(principal.getName());
             QueryWrapper<UserArticleLike> wrapper = new QueryWrapper<>();
             wrapper.eq("user_id", userId).eq("article_id", articleId);
-            if (userArticleLikeMapper.delete(wrapper) > 0) {
-                updateArticleLikeCount(articleId, -1);
-            }
+            userArticleLikeMapper.delete(wrapper);
+            healthArticleService.syncArticleStats(articleId);
 
             Map<String, Object> data = new HashMap<>();
             data.put("liked", false);
@@ -241,6 +292,7 @@ public class HealthArticleController {
                 collect.setArticleId(articleId);
                 userArticleCollectMapper.insert(collect);
             }
+            healthArticleService.syncArticleStats(articleId);
 
             Map<String, Object> data = new HashMap<>();
             data.put("collected", true);
@@ -263,6 +315,7 @@ public class HealthArticleController {
             QueryWrapper<UserArticleCollect> wrapper = new QueryWrapper<>();
             wrapper.eq("user_id", userId).eq("article_id", articleId);
             userArticleCollectMapper.delete(wrapper);
+            healthArticleService.syncArticleStats(articleId);
 
             Map<String, Object> data = new HashMap<>();
             data.put("collected", false);
@@ -351,7 +404,7 @@ public class HealthArticleController {
                     return badRequestResponse("回复的评论不存在");
                 }
                 if (!articleId.equals(parentComment.getArticleId())) {
-                    return badRequestResponse("评论文章不匹配");
+                    return badRequestResponse("评论所属文章不匹配");
                 }
                 if (replyToUserId == null) {
                     replyToUserId = parentComment.getUserId();
@@ -368,7 +421,7 @@ public class HealthArticleController {
             comment.setCreateTime(LocalDateTime.now());
             comment.setUpdateTime(LocalDateTime.now());
             articleCommentMapper.insert(comment);
-            updateArticleCommentCount(articleId, 1);
+            healthArticleService.syncArticleStats(articleId);
 
             return successResponse("评论成功", toCommentView(comment));
         } catch (Exception e) {
@@ -432,9 +485,8 @@ public class HealthArticleController {
 
             UpdateWrapper<ArticleComment> wrapper = new UpdateWrapper<>();
             wrapper.eq("id", commentId).set("is_deleted", 1);
-            if (articleCommentMapper.update(null, wrapper) > 0) {
-                updateArticleCommentCount(comment.getArticleId(), -1);
-            }
+            articleCommentMapper.update(null, wrapper);
+            healthArticleService.syncArticleStats(comment.getArticleId());
             return successResponse("删除评论成功", true);
         } catch (Exception e) {
             log.error("删除评论失败: {}", e.getMessage(), e);
@@ -541,11 +593,16 @@ public class HealthArticleController {
     }
 
     private List<String> buildTagList() {
-        LinkedHashSet<String> tags = new LinkedHashSet<>();
+        Map<String, Integer> tagCountMap = new LinkedHashMap<>();
         for (HealthArticle article : healthArticleService.getLatestArticles(Integer.MAX_VALUE)) {
-            parseTags(article.getTags()).forEach(tags::add);
+            for (String tag : parseTags(article.getTags())) {
+                tagCountMap.put(tag, tagCountMap.getOrDefault(tag, 0) + 1);
+            }
         }
-        return new ArrayList<>(tags);
+        return tagCountMap.entrySet().stream()
+            .sorted((left, right) -> Integer.compare(right.getValue(), left.getValue()))
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toList());
     }
 
     private List<String> parseTags(String source) {
@@ -555,7 +612,7 @@ public class HealthArticleController {
 
         String normalized = source.replace("[", "").replace("]", "").replace("\"", "");
         List<String> tags = new ArrayList<>();
-        for (String item : normalized.split("[，,、|/]")) {
+        for (String item : normalized.split("[,，、;；/|\\s]+")) {
             String value = item.trim();
             if (!value.isEmpty()) {
                 tags.add(value);
@@ -575,7 +632,6 @@ public class HealthArticleController {
         data.put("title", article.getTitle());
         data.put("summary", article.getSummary());
         data.put("content", article.getContent());
-        data.put("coverImage", article.getCoverImage());
         data.put("category", article.getCategory());
         data.put("tags", article.getTags());
         data.put("author", article.getAuthor());
@@ -585,7 +641,7 @@ public class HealthArticleController {
         data.put("readCount", article.getReadCount() == null ? 0 : article.getReadCount());
         data.put("likeCount", likeCount);
         data.put("commentCount", commentCount);
-        data.put("shareCount", article.getShareCount() == null ? 0 : article.getShareCount());
+        data.put("shareCount", 0);
         data.put("collectCount", collectCount);
         data.put("publishDate", article.getPublishDate());
         data.put("createTime", article.getCreateTime());
@@ -593,6 +649,7 @@ public class HealthArticleController {
         data.put("status", article.getStatus());
         data.put("liked", userId != null && hasLiked(userId, article.getId()));
         data.put("collected", userId != null && hasCollected(userId, article.getId()));
+        data.put("recommendReason", article.getRecommendReason());
         return data;
     }
 
@@ -668,6 +725,17 @@ public class HealthArticleController {
         return Long.parseLong(text);
     }
 
+    private Integer parseIntegerValue(Object value) {
+        if (value == null) {
+            return null;
+        }
+        String text = String.valueOf(value).trim();
+        if (!StringUtils.hasText(text) || "null".equalsIgnoreCase(text)) {
+            return null;
+        }
+        return Integer.parseInt(text);
+    }
+
     private int articleHeat(HealthArticle article) {
         int readCount = article.getReadCount() == null ? 0 : article.getReadCount();
         int likeCount = getArticleLikeCount(article.getId());
@@ -704,26 +772,6 @@ public class HealthArticleController {
         QueryWrapper<UserArticleCollect> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId).eq("article_id", articleId);
         return userArticleCollectMapper.selectCount(wrapper) > 0;
-    }
-
-    private void updateArticleLikeCount(Long articleId, int delta) {
-        HealthArticle article = healthArticleService.getArticleById(articleId);
-        if (article == null) {
-            return;
-        }
-        int current = article.getLikeCount() == null ? 0 : article.getLikeCount();
-        article.setLikeCount(Math.max(0, current + delta));
-        healthArticleService.updateArticle(article);
-    }
-
-    private void updateArticleCommentCount(Long articleId, int delta) {
-        HealthArticle article = healthArticleService.getArticleById(articleId);
-        if (article == null) {
-            return;
-        }
-        int current = article.getCommentCount() == null ? 0 : article.getCommentCount();
-        article.setCommentCount(Math.max(0, current + delta));
-        healthArticleService.updateArticle(article);
     }
 
     private Long resolveUserId(Principal principal) {

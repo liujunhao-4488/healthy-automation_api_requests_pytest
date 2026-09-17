@@ -1,0 +1,12 @@
+{
+  "name": "organic-breath-app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@dcloudio/types": "^3.4.8",
+    "@dcloudio/uni-app": "3.0.0-alpha-5000720260327001",
+    "pinia": "2.0.33",
+    "sass": "^1.77.8",
+    "vue": "3.4.21"
+  }
+}

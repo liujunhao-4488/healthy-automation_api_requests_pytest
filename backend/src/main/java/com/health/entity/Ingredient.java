@@ -33,8 +33,6 @@ public class Ingredient {
     private Integer giValue;
     @TableField("cholesterol_per_100g")
     private Double cholesterolPer100g;
-    private String vitaminInfo;
-    private String mineralInfo;
     private String description;
     private String imageUrl;
     private Integer status;

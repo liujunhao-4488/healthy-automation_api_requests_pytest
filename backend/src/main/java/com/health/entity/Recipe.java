@@ -2,6 +2,7 @@ package com.health.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -28,10 +29,8 @@ public class Recipe {
     private String instructions;
     private String tips;
     private String imageUrl;
-    private String videoUrl;
     private Long creatorId;
     private Integer isCustom;
-    private Integer isPublic;
     private Double score;
     private Integer scoreCount;
     private Integer viewCount;
@@ -41,5 +40,14 @@ public class Recipe {
     private Integer status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+
+    @TableField(exist = false)
+    private Double sugar;
+
+    @TableField(exist = false)
+    private Double sodium;
+
+    @TableField(exist = false)
+    private Double gi;
 
 }

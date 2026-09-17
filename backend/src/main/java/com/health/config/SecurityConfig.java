@@ -2,6 +2,7 @@ package com.health.config;
 
 import com.health.security.JwtAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,6 +24,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 
 @Configuration
 @EnableWebSecurity
@@ -30,6 +33,12 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthorizationFilter jwtAuthorizationFilter;
+
+    @Value("${cors.allowed-origins:http://127.0.0.1:5173,http://127.0.0.1:5174,http://localhost:5173,http://localhost:5174,http://127.0.0.1:5175,http://localhost:5175}")
+    private String corsAllowedOrigins;
+
+    @Value("${cors.allow-all-origins:false}")
+    private boolean corsAllowAllOrigins;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -44,14 +53,20 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-            "http://127.0.0.1:5173", 
-            "http://127.0.0.1:5174", 
-            "http://localhost:5173", 
-            "http://localhost:5174",
-            "http://127.0.0.1:5175",
-            "http://localhost:5175"
-        ));
+
+        if (corsAllowAllOrigins) {
+            configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        } else {
+            List<String> origins = new ArrayList<>();
+            for (String origin : corsAllowedOrigins.split(",")) {
+                String trimmed = origin.trim();
+                if (!trimmed.isEmpty()) {
+                    origins.add(trimmed);
+                }
+            }
+            configuration.setAllowedOrigins(origins);
+        }
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

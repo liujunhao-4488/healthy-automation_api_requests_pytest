@@ -137,12 +137,25 @@ const splitLines = (text) =>
     .filter(Boolean);
 
 const formatQuantityText = (quantity, unit) => {
+  if (quantity === null || quantity === undefined || quantity === '') {
+    return '';
+  }
+
+  const unitText = String(unit || '').trim();
+  const rawText = String(quantity).trim();
+  const normalizedRaw = rawText.toLowerCase();
+  const normalizedUnit = unitText.toLowerCase();
+  if (normalizedUnit && normalizedRaw.endsWith(normalizedUnit)) {
+    return rawText;
+  }
+
   const value = Number(quantity);
   if (!Number.isFinite(value)) {
-    return unit || '';
+    return `${rawText}${unitText}`.trim();
   }
+
   const quantityText = Number.isInteger(value) ? String(value) : value.toFixed(1);
-  return `${quantityText}${unit || ''}`.trim();
+  return `${quantityText}${unitText}`.trim();
 };
 
 const normalizeIngredients = (ingredients) => {

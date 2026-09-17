@@ -1,10 +1,14 @@
 package com.health.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.health.entity.ArticleComment;
 import com.health.entity.HealthArticle;
 import com.health.entity.UserDietPreference;
+import com.health.entity.UserArticleLike;
 import com.health.entity.UserReadRecord;
+import com.health.mapper.ArticleCommentMapper;
 import com.health.mapper.HealthArticleMapper;
+import com.health.mapper.UserArticleLikeMapper;
 import com.health.mapper.UserDietPreferenceMapper;
 import com.health.mapper.UserReadRecordMapper;
 import com.health.service.HealthArticleService;
@@ -15,8 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class HealthArticleServiceImpl implements HealthArticleService {
@@ -30,6 +39,12 @@ public class HealthArticleServiceImpl implements HealthArticleService {
     @Autowired
     private UserDietPreferenceMapper userDietPreferenceMapper;
 
+    @Autowired
+    private UserArticleLikeMapper userArticleLikeMapper;
+
+    @Autowired
+    private ArticleCommentMapper articleCommentMapper;
+
     @Override
     public List<HealthArticle> getAllArticles() {
         return healthArticleMapper.selectList(new QueryWrapper<HealthArticle>().orderByDesc("publish_date", "create_time"));
@@ -42,17 +57,7 @@ public class HealthArticleServiceImpl implements HealthArticleService {
 
     @Override
     public HealthArticle getHealthArticleById(Long id, Long userId) {
-        HealthArticle article = healthArticleMapper.selectById(id);
-        if (article == null) {
-            return null;
-        }
-
-        if (userId != null) {
-            int latestReadCount = incrementArticleReadCount(id);
-            article.setReadCount(latestReadCount);
-        }
-
-        return article;
+        return healthArticleMapper.selectById(id);
     }
 
     @Override
@@ -118,13 +123,19 @@ public class HealthArticleServiceImpl implements HealthArticleService {
 
     @Transactional
     @Override
-    public UserReadRecord recordArticleRead(Long userId, Long articleId, Integer readDuration) {
+    public UserReadRecord recordArticleRead(Long userId, Long articleId, Integer readDuration, Integer scrollPercent) {
         UserReadRecord existingRecord = userReadRecordMapper.selectByUserIdAndArticleId(userId, articleId);
+        int safeReadDuration = sanitizeReadDuration(readDuration);
+        int safeScrollPercent = sanitizeScrollPercent(scrollPercent);
+        int isFinished = isReadFinished(articleId, safeReadDuration, safeScrollPercent) ? 1 : 0;
 
         if (existingRecord != null) {
             existingRecord.setReadTime(new Date());
-            existingRecord.setReadDuration(readDuration);
+            existingRecord.setReadDuration(Math.max(safeReadDuration, safeInteger(existingRecord.getReadDuration())));
+            existingRecord.setScrollPercent(Math.max(safeScrollPercent, safeInteger(existingRecord.getScrollPercent())));
+            existingRecord.setIsFinished(Math.max(isFinished, safeInteger(existingRecord.getIsFinished())));
             userReadRecordMapper.updateById(existingRecord);
+            syncArticleStats(articleId);
             return existingRecord;
         }
 
@@ -132,27 +143,35 @@ public class HealthArticleServiceImpl implements HealthArticleService {
         record.setUserId(userId);
         record.setArticleId(articleId);
         record.setReadTime(new Date());
-        record.setReadDuration(readDuration);
+        record.setReadDuration(safeReadDuration);
+        record.setScrollPercent(safeScrollPercent);
+        record.setIsFinished(isFinished);
         userReadRecordMapper.insert(record);
-        incrementArticleReadCount(articleId);
+        syncArticleStats(articleId);
         return record;
     }
 
     @Transactional
     @Override
     public UserReadRecord recordArticleRead(Long userId, Long articleId) {
-        return recordArticleRead(userId, articleId, null);
+        return recordArticleRead(userId, articleId, null, null);
     }
 
     @Override
-    public List<HealthArticle> getUserReadHistory(Long userId, int limit) {
+    public List<Map<String, Object>> getUserReadHistory(Long userId, int limit) {
         List<UserReadRecord> records = userReadRecordMapper.selectByUserId(userId, limit);
-        List<HealthArticle> articles = new ArrayList<>();
+        List<Map<String, Object>> articles = new ArrayList<>();
 
         for (UserReadRecord record : records) {
             HealthArticle article = healthArticleMapper.selectById(record.getArticleId());
             if (article != null) {
-                articles.add(article);
+                Map<String, Object> item = new HashMap<>();
+                item.put("article", article);
+                item.put("readTime", record.getReadTime());
+                item.put("readDuration", safeInteger(record.getReadDuration()));
+                item.put("scrollPercent", safeInteger(record.getScrollPercent()));
+                item.put("finished", Integer.valueOf(1).equals(record.getIsFinished()));
+                articles.add(item);
             }
         }
 
@@ -173,8 +192,18 @@ public class HealthArticleServiceImpl implements HealthArticleService {
             );
         }
 
+        Map<Long, UserReadRecord> readRecordMap = loadRecentReadRecords(userId, 20);
         final UserDietPreference finalPreference = preference;
-        articles.sort(Comparator.comparingDouble((HealthArticle article) -> scoreArticle(article, finalPreference)).reversed());
+        final String readPreferenceText = buildReadPreferenceText(readRecordMap);
+        final Set<Long> readArticleIds = readRecordMap.keySet();
+        articles.sort(
+            Comparator.comparingDouble(
+                (HealthArticle article) -> scoreArticle(article, finalPreference, readPreferenceText, readArticleIds.contains(article.getId()))
+            ).reversed()
+        );
+        articles.forEach(article -> article.setRecommendReason(
+            buildRecommendReason(article, finalPreference, readPreferenceText, readArticleIds.contains(article.getId()))
+        ));
         if (limit == null || limit <= 0) {
             return articles;
         }
@@ -182,16 +211,26 @@ public class HealthArticleServiceImpl implements HealthArticleService {
     }
 
     @Override
-    public int incrementArticleReadCount(Long articleId) {
-        HealthArticle article = healthArticleMapper.selectById(articleId);
-        if (article == null) {
-            return 0;
+    public void syncArticleStats(Long articleId) {
+        if (articleId == null) {
+            return;
         }
 
-        int newCount = (article.getReadCount() == null ? 0 : article.getReadCount()) + 1;
-        article.setReadCount(newCount);
+        HealthArticle article = healthArticleMapper.selectById(articleId);
+        if (article == null) {
+            return;
+        }
+
+        QueryWrapper<UserArticleLike> likeWrapper = new QueryWrapper<>();
+        likeWrapper.eq("article_id", articleId);
+
+        QueryWrapper<ArticleComment> commentWrapper = new QueryWrapper<>();
+        commentWrapper.eq("article_id", articleId).eq("is_deleted", 0);
+
+        article.setReadCount(userReadRecordMapper.selectReadCountByArticleId(articleId));
+        article.setLikeCount(Math.toIntExact(userArticleLikeMapper.selectCount(likeWrapper)));
+        article.setCommentCount(Math.toIntExact(articleCommentMapper.selectCount(commentWrapper)));
         healthArticleMapper.updateById(article);
-        return newCount;
     }
 
     private List<HealthArticle> getPublishedArticles() {
@@ -253,34 +292,27 @@ public class HealthArticleServiceImpl implements HealthArticleService {
         if (article.getCommentCount() == null) {
             article.setCommentCount(0);
         }
-        if (article.getShareCount() == null) {
-            article.setShareCount(0);
-        }
         if ((article.getSummary() == null || article.getSummary().trim().isEmpty()) && article.getContent() != null) {
             String content = article.getContent().trim().replaceAll("\\s+", " ");
             article.setSummary(content.length() > 120 ? content.substring(0, 120) : content);
         }
     }
 
-    private double scoreArticle(HealthArticle article, UserDietPreference preference) {
+    private double scoreArticle(HealthArticle article, UserDietPreference preference, String readPreferenceText, boolean hasRead) {
         double score = article.getReadCount() == null ? 0 : article.getReadCount();
         score += article.getLikeCount() == null ? 0 : article.getLikeCount() * 1.5;
         score += article.getCommentCount() == null ? 0 : article.getCommentCount() * 1.2;
+        score += matchTokens(normalizeArticleText(article), readPreferenceText, 6);
+
+        if (hasRead) {
+            score -= 18;
+        }
 
         if (preference == null) {
             return score;
         }
 
-        String text = String.join(
-            " ",
-            normalize(article.getTitle()),
-            normalize(article.getSummary()),
-            normalize(article.getCategory()),
-            normalize(article.getTags()),
-            normalize(article.getContent()),
-            normalize(article.getSuitableFor()),
-            normalize(article.getGoalType())
-        );
+        String text = normalizeArticleText(article);
 
         score += matchTokens(text, preference.getDietType(), 20);
         score += matchTokens(text, preference.getFavorites(), 12);
@@ -302,6 +334,157 @@ public class HealthArticleServiceImpl implements HealthArticleService {
             }
         }
         return score;
+    }
+
+    private String buildRecommendReason(HealthArticle article, UserDietPreference preference, String readPreferenceText, boolean hasRead) {
+        String text = normalizeArticleText(article);
+        List<String> reasons = new ArrayList<>();
+
+        if (preference != null) {
+            String dietType = firstMatchedToken(text, preference.getDietType());
+            if (!dietType.isEmpty()) {
+                reasons.add("匹配你的饮食目标：" + dietType);
+            }
+
+            String favorite = firstMatchedToken(text, preference.getFavorites());
+            if (!favorite.isEmpty()) {
+                reasons.add("包含你偏好的内容：" + favorite);
+            }
+        }
+
+        if (!firstMatchedToken(text, readPreferenceText).isEmpty()) {
+            reasons.add("与你最近阅读的主题相近");
+        }
+
+        int heat = safeInteger(article.getReadCount()) + safeInteger(article.getLikeCount()) * 2 + safeInteger(article.getCommentCount());
+        if (heat >= 20) {
+            reasons.add("近期阅读和互动较高");
+        }
+
+        if (hasRead && reasons.isEmpty()) {
+            reasons.add("你之前浏览过，可继续深入阅读");
+        }
+
+        if (reasons.isEmpty()) {
+            if (article.getGoalType() != null && !article.getGoalType().trim().isEmpty()) {
+                reasons.add("适合关注" + article.getGoalType().trim() + "的人群");
+            } else if (article.getCategory() != null && !article.getCategory().trim().isEmpty()) {
+                reasons.add("来自" + article.getCategory().trim() + "分类的精选内容");
+            } else {
+                reasons.add("根据热度和发布时间综合推荐");
+            }
+        }
+
+        return reasons.stream().limit(2).collect(Collectors.joining("，"));
+    }
+
+    private String firstMatchedToken(String text, String source) {
+        if (source == null || source.trim().isEmpty()) {
+            return "";
+        }
+
+        for (String token : splitTokens(source)) {
+            String item = normalize(token);
+            if (!item.isEmpty() && text.contains(item)) {
+                return token.trim();
+            }
+        }
+        return "";
+    }
+
+    private String[] splitTokens(String source) {
+        return source.replace("[", "")
+            .replace("]", "")
+            .replace("\"", "")
+            .split("[,，、;；\\s]+");
+    }
+
+    private Map<Long, UserReadRecord> loadRecentReadRecords(Long userId, int limit) {
+        if (userId == null) {
+            return new HashMap<>();
+        }
+
+        return userReadRecordMapper.selectByUserId(userId, limit).stream()
+            .filter(item -> item.getArticleId() != null)
+            .collect(Collectors.toMap(UserReadRecord::getArticleId, item -> item, (left, right) -> left));
+    }
+
+    private String buildReadPreferenceText(Map<Long, UserReadRecord> readRecordMap) {
+        if (readRecordMap.isEmpty()) {
+            return "";
+        }
+
+        return readRecordMap.keySet().stream()
+            .map(healthArticleMapper::selectById)
+            .filter(Objects::nonNull)
+            .sorted(Comparator.comparingInt((HealthArticle article) -> {
+                UserReadRecord record = readRecordMap.get(article.getId());
+                return safeInteger(record == null ? null : record.getIsFinished()) * 100 + safeInteger(record == null ? null : record.getReadDuration());
+            }).reversed())
+            .limit(8)
+            .map(article -> String.join(
+                ",",
+                normalize(article.getCategory()),
+                normalize(article.getTags()),
+                normalize(article.getGoalType()),
+                normalize(article.getSuitableFor())
+            ))
+            .collect(Collectors.joining(","));
+    }
+
+    private String normalizeArticleText(HealthArticle article) {
+        return String.join(
+            " ",
+            normalize(article.getTitle()),
+            normalize(article.getSummary()),
+            normalize(article.getCategory()),
+            normalize(article.getTags()),
+            normalize(article.getContent()),
+            normalize(article.getSuitableFor()),
+            normalize(article.getGoalType())
+        );
+    }
+
+    private boolean isReadFinished(Long articleId, int readDuration, int scrollPercent) {
+        if (scrollPercent < 90) {
+            return false;
+        }
+
+        HealthArticle article = healthArticleMapper.selectById(articleId);
+        if (article == null) {
+            return false;
+        }
+
+        int estimatedDuration = estimateReadingDuration(article);
+        int finishThreshold = Math.max(15, (int) Math.ceil(estimatedDuration * 0.6));
+        return readDuration >= finishThreshold;
+    }
+
+    private int estimateReadingDuration(HealthArticle article) {
+        String content = String.join(
+            "",
+            normalize(article.getTitle()),
+            normalize(article.getSummary()),
+            normalize(article.getContent())
+        );
+        int textLength = content.replaceAll("\\s+", "").length();
+        if (textLength <= 0) {
+            return 15;
+        }
+
+        return Math.max(15, (int) Math.ceil(textLength / 5.0));
+    }
+
+    private int sanitizeReadDuration(Integer readDuration) {
+        return Math.max(0, safeInteger(readDuration));
+    }
+
+    private int sanitizeScrollPercent(Integer scrollPercent) {
+        return Math.max(0, Math.min(100, safeInteger(scrollPercent)));
+    }
+
+    private int safeInteger(Integer value) {
+        return value == null ? 0 : value;
     }
 
     private String normalize(String text) {

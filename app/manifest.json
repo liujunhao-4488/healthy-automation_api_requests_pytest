@@ -1,0 +1,27 @@
+{
+    "name" : "智能饮食推荐",
+    "appid" : "__UNI__8608A04",
+    "description" : "有机呼吸用户端",
+    "versionName" : "0.1.0",
+    "versionCode" : "100",
+    "vueVersion" : "3",
+    "transformPx" : false,
+    "app-plus" : {
+        "usingComponents" : true,
+        "nvueStyleCompiler" : "uni-app",
+        "distribute" : {
+            "ios" : {
+                "dSYMs" : false
+            }
+        }
+    },
+    "h5" : {
+        "title" : "有机呼吸",
+        "router" : {
+            "mode" : "hash"
+        }
+    },
+    "mp-weixin" : {
+        "appid" : ""
+    }
+}

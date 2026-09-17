@@ -24,4 +24,7 @@ public interface UserReadRecordMapper extends BaseMapper<UserReadRecord> {
 
     @Select("SELECT COUNT(*) FROM user_read_record WHERE article_id = #{articleId}")
     int selectReadCountByArticleId(@Param("articleId") Long articleId);
+
+    @Select("SELECT COUNT(*) FROM user_read_record WHERE article_id = #{articleId} AND is_finished = 1")
+    int selectFinishedReadCountByArticleId(@Param("articleId") Long articleId);
 }

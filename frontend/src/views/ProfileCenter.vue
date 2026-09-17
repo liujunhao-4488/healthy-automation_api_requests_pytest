@@ -14,6 +14,7 @@
               {{ userStore.isAdmin ? '管理员账号' : '普通用户' }}
             </el-tag>
             <el-tag effect="plain">{{ profile.phone || '未绑定手机号' }}</el-tag>
+            <span class="register-date">注册于 {{ formatDate(profile.createTime) }}</span>
           </div>
         </div>
       </div>
@@ -23,97 +24,32 @@
       </div>
     </section>
 
-    <el-row :gutter="20" class="summary-grid">
-      <el-col :xs="24" :sm="12" :lg="6">
-        <div class="summary-card accent-sand">
-          <span>注册时间</span>
-          <strong>{{ formatDate(profile.createTime) }}</strong>
-        </div>
-      </el-col>
-      <el-col :xs="24" :sm="12" :lg="6">
-        <div class="summary-card accent-green">
-          <span>当前体重</span>
-          <strong>{{ displayValue(userStore.healthInfo?.weight, 'kg') }}</strong>
-        </div>
-      </el-col>
-      <el-col :xs="24" :sm="12" :lg="6">
-        <div class="summary-card accent-cream">
-          <div class="summary-meta"><el-icon class="summary-icon"><TrendCharts /></el-icon><span>BMI</span></div>
-          <strong>{{ displayValue(userStore.healthInfo?.bmi) }}</strong>
-        </div>
-      </el-col>
-      <el-col :xs="24" :sm="12" :lg="6">
-        <div class="summary-card accent-mint">
-          <span>当前目标</span>
-          <strong>{{ goalTypeLabel }}</strong>
-        </div>
-      </el-col>
-    </el-row>
-
     <div class="content-grid">
       <el-card class="info-card" shadow="never">
         <template #header>
           <div class="section-head">
-            <span>账号资料</span>
+            <span>健康档案</span>
+            <el-button text @click="router.push('/dashboard/health-info')">查看完整档案</el-button>
           </div>
         </template>
-        <div class="info-list">
-          <div class="info-item">
-            <label>用户名</label>
-            <span>{{ profile.username || '--' }}</span>
+        <div class="health-snapshot">
+          <div class="snapshot-item">
+            <span class="snapshot-value">{{ displayValue(userStore.healthInfo?.weight, 'kg') }}</span>
+            <span class="snapshot-label">体重</span>
           </div>
-          <div class="info-item">
-            <label>邮箱</label>
-            <span>{{ profile.email || '--' }}</span>
+          <div class="snapshot-divider"></div>
+          <div class="snapshot-item">
+            <span class="snapshot-value">{{ displayValue(userStore.healthInfo?.bmi) }}</span>
+            <span class="snapshot-label">BMI</span>
           </div>
-          <div class="info-item">
-            <label>手机号</label>
-            <span>{{ profile.phone || '--' }}</span>
-          </div>
-          <div class="info-item">
-            <label>头像状态</label>
-            <span>{{ profile.avatar ? '已设置头像' : '未设置头像' }}</span>
+          <div class="snapshot-divider"></div>
+          <div class="snapshot-item">
+            <span class="snapshot-value">{{ displayValue(userStore.healthInfo?.bmr, 'kcal') }}</span>
+            <span class="snapshot-label">基础代谢</span>
           </div>
         </div>
       </el-card>
 
-      <el-card class="info-card" shadow="never">
-        <template #header>
-          <div class="section-head">
-            <span>健康档案摘要</span>
-            <el-button text @click="router.push('/dashboard/health-info')">查看详情</el-button>
-          </div>
-        </template>
-        <div class="info-list">
-          <div class="info-item">
-            <label>年龄</label>
-            <span>{{ displayValue(userStore.healthInfo?.age, '岁') }}</span>
-          </div>
-          <div class="info-item">
-            <label>性别</label>
-            <span>{{ userStore.healthInfo?.gender || '--' }}</span>
-          </div>
-          <div class="info-item">
-            <label>身高</label>
-            <span>{{ displayValue(userStore.healthInfo?.height, 'cm') }}</span>
-          </div>
-          <div class="info-item">
-            <label>基础代谢</label>
-            <span>{{ displayValue(userStore.healthInfo?.bmr, 'kcal') }}</span>
-          </div>
-          <div class="info-item">
-            <label>活动水平</label>
-            <span>{{ activityLabel }}</span>
-          </div>
-          <div class="info-item">
-            <label>慢性疾病</label>
-            <span>{{ userStore.healthInfo?.chronicDiseases || '无' }}</span>
-          </div>
-        </div>
-      </el-card>
-    </div>
-
-    <div class="content-grid">
       <el-card class="info-card" shadow="never">
         <template #header>
           <div class="section-head">
@@ -175,33 +111,33 @@
           </div>
         </div>
       </el-card>
-    </div>
 
-    <el-card class="info-card" shadow="never">
-      <template #header>
-        <div class="section-head">
-          <span>快捷入口</span>
+      <el-card class="info-card" shadow="never">
+        <template #header>
+          <div class="section-head">
+            <span>快捷入口</span>
+          </div>
+        </template>
+        <div class="shortcut-grid">
+          <button class="shortcut-card" @click="router.push('/dashboard/diet-record')">
+            <strong>查看饮食记录</strong>
+            <span>检查每日摄入与趋势分析</span>
+          </button>
+          <button class="shortcut-card" @click="router.push('/dashboard/custom-recipe')">
+            <strong>我的自定义食谱</strong>
+            <span>管理自己的食谱与营养分析</span>
+          </button>
+          <button class="shortcut-card" @click="router.push('/dashboard/collected-articles')">
+            <strong>我的收藏文章</strong>
+            <span>查看已收藏的健康知识文章</span>
+          </button>
+          <button class="shortcut-card" @click="router.push('/dashboard/collected-recipes')">
+            <strong>我的收藏食谱</strong>
+            <span>查看已经收藏的系统食谱和自定义食谱</span>
+          </button>
         </div>
-      </template>
-<div class="shortcut-grid">
-        <button class="shortcut-card" @click="router.push('/dashboard/diet-record')">
-          <strong>查看饮食记录</strong>
-          <span>检查每日摄入与趋势分析</span>
-        </button>
-        <button class="shortcut-card" @click="router.push('/dashboard/custom-recipe')">
-          <strong>我的自定义食谱</strong>
-          <span>管理自己的食谱与营养分析</span>
-        </button>
-        <button class="shortcut-card" @click="router.push('/dashboard/collected-articles')">
-          <strong>我的收藏文章</strong>
-          <span>查看已收藏的健康知识文章</span>
-        </button>
-        <button class="shortcut-card" @click="router.push('/dashboard/collected-recipes')">
-          <strong>我的收藏食谱</strong>
-          <span>查看已经收藏的系统食谱和自定义食谱</span>
-        </button>
-      </div>
-    </el-card>
+      </el-card>
+    </div>
 
     <el-card v-if="false" class="info-card" shadow="never">
       <template #header>
@@ -293,7 +229,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
-import { Calendar, CollectionTag, DataAnalysis, Document, EditPen, Memo, Reading, Star, TrendCharts, User } from '@element-plus/icons-vue';
+
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
@@ -617,8 +553,14 @@ onMounted(async () => {
 .profile-tags {
   display: flex;
   gap: 8px;
+  align-items: center;
   flex-wrap: wrap;
   margin-top: 12px;
+}
+
+.register-date {
+  color: #8b9a8e;
+  font-size: 13px;
 }
 
 .soft-button {
@@ -776,6 +718,40 @@ onMounted(async () => {
 .shortcut-card span {
   color: #738075;
   line-height: 1.6;
+}
+
+.health-snapshot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 20px 16px;
+}
+
+.snapshot-item {
+  flex: 1;
+  text-align: center;
+  padding: 12px 16px;
+}
+
+.snapshot-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 600;
+  color: #334235;
+  margin-bottom: 4px;
+}
+
+.snapshot-label {
+  font-size: 13px;
+  color: #829084;
+}
+
+.snapshot-divider {
+  width: 1px;
+  height: 48px;
+  background: #e4ecdf;
+  flex-shrink: 0;
 }
 
 .shortcut-grid {

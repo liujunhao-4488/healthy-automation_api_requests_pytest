@@ -1,41 +1,107 @@
-# Maven
+# ============================================================
+#  健康饮食推荐系统 — .gitignore
+#
+#  原则：只提交「源代码 / 配置 / 文档 / 数据库脚本」
+#        依赖、构建产物、本地环境、AI 工具数据一律不入库
+#
+#  说明：规则按本项目实际用到的技术栈编写，不做无依据的臆测堆砌
+#        技术栈 = Java17/Maven(backend) + Python/pytest(algorithm,
+#                automation_api_requests_pytest) + Vue3/Vite(frontend)
+#                + uni-app(app) + MySQL(database)
+# ============================================================
+
+# ------------------------------------------------------------
+# 1. 操作系统 / 编辑器杂项
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+*~
+*.swp
+*.swo
+
+# IDE 本地配置（PyCharm / IDEA / VS Code 的个人设置）
+.idea/
+*.iml
+.vscode/
+
+# ------------------------------------------------------------
+# 2. Python（algorithm / py-backend / automation_api_requests_pytest）
+# ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+
+# pytest 缓存
+.pytest_cache/
+
+# ------------------------------------------------------------
+# 3. 前端 Vue3 + Vite（frontend）与 uni-app 移动端（app）
+# ------------------------------------------------------------
+node_modules/
+dist/
+unpackage/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ------------------------------------------------------------
+# 4. Java / Maven（backend）
+# ------------------------------------------------------------
 target/
+*.class
+*.jar
+*.war
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
+# JVM 崩溃日志（backend/hs_err_pid*.log 就是这类）
+hs_err_pid*.log
+replay_pid*.log
+# 防止以后启用 Maven Wrapper 时把 mvnw 依赖的 jar 一起拦掉
+!.mvn/wrapper/maven-wrapper.jar
 
-# IDE
-.idea/
-*.iml
-.vscode/
-*.swp
-*.swo
-*~
-
-# Logs
+# ------------------------------------------------------------
+# 5. 日志 / 临时文件
+# ------------------------------------------------------------
 *.log
 logs/
+*.tmp
+*.bak
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Frontend
-node_modules/
-dist/
-.env
+# ------------------------------------------------------------
+# 6. 本地环境变量
+#    （frontend/.env.development、.env.production 是 Vite 项目配置，
+#      只含 VITE_API_BASE_URL=/api，无密钥，保留入库）
+# ------------------------------------------------------------
 .env.local
+.env.*.local
+*.local
 
-# Backend
-*.class
-*.jar
-*.war
+# ------------------------------------------------------------
+# 7. 密钥 / 签名文件
+#    安全兜底：以后给 uni-app 打 Android 包加签名、或引入证书时自动拦住
+# ------------------------------------------------------------
+*.pem
+*.key
+*.keystore
+*.jks
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-.venv/
-venv/
+# ------------------------------------------------------------
+# 8. AI 编码助手本地数据（个人本地环境，与项目无关）
+#    以后用其他 AI 工具，按同样格式加一行即可
+# ------------------------------------------------------------
+.claude/
+.codex/
+.workbuddy/
+.trae/
+.cursor/
+.aider*

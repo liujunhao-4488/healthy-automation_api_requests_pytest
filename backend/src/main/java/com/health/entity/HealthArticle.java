@@ -25,9 +25,6 @@ public class HealthArticle implements Serializable {
     @TableField("content")
     private String content;
 
-    @TableField("cover_image")
-    private String coverImage;
-
     @TableField("category")
     private String category;
 
@@ -52,9 +49,6 @@ public class HealthArticle implements Serializable {
     @TableField("comment_count")
     private Integer commentCount;
 
-    @TableField("share_count")
-    private Integer shareCount;
-
     @TableField("publish_date")
     private Date publishDate;
 
@@ -69,6 +63,9 @@ public class HealthArticle implements Serializable {
 
     @TableField(exist = false)
     private Integer collectCount;
+
+    @TableField(exist = false)
+    private String recommendReason;
 
     public Long getId() {
         return id;
@@ -100,14 +97,6 @@ public class HealthArticle implements Serializable {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public String getCoverImage() {
-        return coverImage;
-    }
-
-    public void setCoverImage(String coverImage) {
-        this.coverImage = coverImage;
     }
 
     public String getCategory() {
@@ -174,14 +163,6 @@ public class HealthArticle implements Serializable {
         this.commentCount = commentCount;
     }
 
-    public Integer getShareCount() {
-        return shareCount;
-    }
-
-    public void setShareCount(Integer shareCount) {
-        this.shareCount = shareCount;
-    }
-
     public Date getPublishDate() {
         return publishDate;
     }
@@ -220,5 +201,13 @@ public class HealthArticle implements Serializable {
 
     public void setCollectCount(Integer collectCount) {
         this.collectCount = collectCount;
+    }
+
+    public String getRecommendReason() {
+        return recommendReason;
+    }
+
+    public void setRecommendReason(String recommendReason) {
+        this.recommendReason = recommendReason;
     }
 }

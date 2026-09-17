@@ -1,0 +1,28 @@
+# Python 后端依赖 —— 对应 Java 侧 pom.xml 的 <dependencies>
+#
+# 装依赖命令（在 py-backend 目录下）：
+#   .venv\Scripts\python.exe -m pip install -r requirements.txt
+
+# Web 框架（提供路由、依赖注入、参数校验挂载点、自动 OpenAPI 文档）
+fastapi==0.141.1
+
+# ASGI 服务器 —— FastAPI 只负责"怎么处理请求"，监听端口的是它（类比内嵌 Tomcat）
+uvicorn[standard]==0.53.0
+
+# ORM 框架（对应 MyBatis-Plus）
+sqlalchemy==2.0.54
+
+# MySQL 驱动（对应 mysql-connector-java）
+pymysql==2.2.8
+
+# 解析 mysql_native_password / caching_sha2_password 认证
+cryptography
+
+# JWT 签发与校验（对应 jjwt）
+pyjwt==2.14.0
+
+# BCrypt 密码哈希（对应 BCryptPasswordEncoder）
+bcrypt==5.0.0
+
+# 配置管理，从 .env 读配置（对应 application.yml + @Value）
+pydantic-settings

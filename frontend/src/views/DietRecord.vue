@@ -76,6 +76,10 @@
                   <el-table-column prop="protein" label="蛋白质(g)" width="110" />
                   <el-table-column prop="carbs" label="碳水(g)" width="100" />
                   <el-table-column prop="fat" label="脂肪(g)" width="100" />
+                  <el-table-column prop="fiber" label="膳食纤维(g)" width="100" />
+                  <el-table-column prop="sugar" label="含糖量(g)" width="100" />
+                  <el-table-column prop="sodium" label="钠(mg)" width="110" />
+                  <el-table-column prop="gi" label="GI" width="90" />
                 </el-table>
                 <el-empty v-else description="暂无详细食物明细" :image-size="70" />
               </div>
@@ -99,6 +103,10 @@
               <el-button type="danger" link @click="deleteDietRecord(row)">删除</el-button>
             </template>
           </el-table-column>
+          <el-table-column prop="fiber" label="膳食纤维(g)" width="100" />
+          <el-table-column prop="sugar" label="含糖量(g)" width="100" />
+          <el-table-column prop="sodium" label="钠(mg)" width="110" />
+          <el-table-column prop="gi" label="GI" width="90" />
         </el-table>
       </el-card>
 
@@ -110,8 +118,9 @@
               <p>切换查看热量趋势或营养分布</p>
             </div>
             <el-radio-group v-model="activeChart" size="small">
-              <el-radio-button label="calorie">热量</el-radio-button>
-              <el-radio-button label="nutrition">营养</el-radio-button>
+              <el-radio-button label="calorie">热量趋势</el-radio-button>
+              <el-radio-button label="nutrition">宏量分布</el-radio-button>
+              <el-radio-button label="ratio">宏量占比</el-radio-button>
             </el-radio-group>
           </div>
         </template>
@@ -247,6 +256,10 @@ const analysisSummary = ref({
   totalProtein: 0,
   totalCarbs: 0,
   totalFat: 0,
+  totalFiber: 0,
+  totalSugar: 0,
+  totalSodium: 0,
+  avgGi: 0,
   dailyStats: {}
 });
 
@@ -356,7 +369,11 @@ const normalizeDetailItem = (detail) => ({
   calories: formatMetric(detail?.calories, 2),
   protein: formatMetric(detail?.protein, 2),
   carbs: formatMetric(detail?.carbs, 2),
-  fat: formatMetric(detail?.fat, 2)
+  fat: formatMetric(detail?.fat, 2),
+  fiber: formatMetric(detail?.fiber, 2),
+  sugar: formatMetric(detail?.sugar, 2),
+  sodium: formatMetric(detail?.sodium, 2),
+  gi: formatMetric(detail?.gi, 2)
 });
 
 const resolveMealName = (record, details) => {
@@ -397,6 +414,10 @@ const normalizeDietRecords = (records) =>
       protein: formatMetric(record.totalProtein ?? firstDetail?.protein ?? 0, 2),
       carbs: formatMetric(record.totalCarbs ?? firstDetail?.carbs ?? 0, 2),
       fat: formatMetric(record.totalFat ?? firstDetail?.fat ?? 0, 2),
+      fiber: formatMetric(record.totalFiber ?? firstDetail?.fiber ?? 0, 2),
+      sugar: formatMetric(record.totalSugar ?? firstDetail?.sugar ?? 0, 2),
+      sodium: formatMetric(record.totalSodium ?? firstDetail?.sodium ?? 0, 2),
+      gi: formatMetric(record.totalGi ?? firstDetail?.gi ?? 0, 2),
       notes: record.notes || '',
       details
     };
@@ -411,31 +432,245 @@ const renderCharts = () => {
 
   const dailyStats = analysisSummary.value.dailyStats || {};
   const dates = Object.keys(dailyStats).sort();
+  chartInstance.value.clear();
+  if (!dates.length) {
+    chartInstance.value.setOption({
+      title: { text: '暂无数据', left: 'center', top: 'center', textStyle: { color: '#999', fontSize: 14 } }
+    });
+    return;
+  }
+
+  const goal = userStore.dietGoal || {};
+  const targetCalories = Number(goal.targetCalories) || 0;
+  const targetProtein = Number(goal.proteinTarget) || 0;
+  const targetCarbs = Number(goal.carbsTarget) || 0;
+  const targetFat = Number(goal.fatTarget) || 0;
+  const targetProteinRatio = Number(goal.proteinRatio) || 0.25;
+  const targetCarbsRatio = Number(goal.carbsRatio) || 0.45;
+  const targetFatRatio = Number(goal.fatRatio) || 0.30;
 
   if (activeChart.value === 'nutrition') {
+    const proteinData = dates.map((d) => +(dailyStats[d]?.protein || 0).toFixed(1));
+    const carbsData = dates.map((d) => +(dailyStats[d]?.carbs || 0).toFixed(1));
+    const fatData = dates.map((d) => +(dailyStats[d]?.fat || 0).toFixed(1));
+
+    const nutritionTargets = [
+      { name: '蛋白质', value: targetProtein, unit: 'g', color: '#67a97a' },
+      { name: '碳水', value: targetCarbs, unit: 'g', color: '#f5c06a' },
+      { name: '脂肪', value: targetFat, unit: 'g', color: '#e8916a' }
+    ];
+
     chartInstance.value.setOption({
-      tooltip: { trigger: 'item' },
-      legend: { bottom: 0 },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        confine: true,
+        formatter: (params) => {
+          const date = params[0].axisValue;
+          const day = dailyStats[date] || {};
+          const cal = +(day.calories || 0).toFixed(0);
+          let html = `<strong>${date}</strong><br/>`;
+          html += `<span style="color:#888">总摄入 ${cal} kcal</span><br/>`;
+          params.forEach((p) => {
+            const target = nutritionTargets.find((t) => t.name === p.seriesName);
+            const targetVal = target ? target.value : 0;
+            const suffix = targetVal > 0 ? ` / 目标 ${targetVal}g` : '';
+            html += `${p.marker} ${p.seriesName}: <strong>${p.value}g</strong>${suffix}<br/>`;
+          });
+          return html;
+        }
+      },
+      legend: { bottom: 0, itemWidth: 12, itemHeight: 12 },
+      grid: { left: 36, right: 16, top: 24, bottom: 42 },
+      xAxis: {
+        type: 'category',
+        data: dates,
+        axisLine: { lineStyle: { color: '#cdddcf' } }
+      },
+      yAxis: {
+        type: 'value',
+        name: 'g',
+        splitLine: { lineStyle: { color: '#eef3ee' } }
+      },
       series: [
         {
-          type: 'pie',
-          radius: ['42%', '72%'],
-          center: ['50%', '45%'],
-          label: { formatter: '{b}\n{d}%' },
-          data: [
-            { value: analysisSummary.value.totalProtein || 0, name: '蛋白质' },
-            { value: analysisSummary.value.totalCarbs || 0, name: '碳水' },
-            { value: analysisSummary.value.totalFat || 0, name: '脂肪' }
-          ]
+          name: '蛋白质',
+          type: 'bar',
+          stack: 'macro',
+          data: proteinData,
+          itemStyle: { color: '#67a97a' },
+          emphasis: { focus: 'series' }
+        },
+        {
+          name: '碳水',
+          type: 'bar',
+          stack: 'macro',
+          data: carbsData,
+          itemStyle: { color: '#f5c06a' },
+          emphasis: { focus: 'series' }
+        },
+        {
+          name: '脂肪',
+          type: 'bar',
+          stack: 'macro',
+          data: fatData,
+          itemStyle: { color: '#e8916a' },
+          emphasis: { focus: 'series' }
         }
       ]
     });
     return;
   }
 
+  if (activeChart.value === 'ratio') {
+    const proteinRatioData = dates.map((d) => {
+      const p = dailyStats[d]?.protein || 0;
+      const c = dailyStats[d]?.carbs || 0;
+      const f = dailyStats[d]?.fat || 0;
+      const total = p * 4 + c * 4 + f * 9;
+      return total > 0 ? +((p * 4 / total) * 100).toFixed(1) : 0;
+    });
+    const carbsRatioData = dates.map((d) => {
+      const p = dailyStats[d]?.protein || 0;
+      const c = dailyStats[d]?.carbs || 0;
+      const f = dailyStats[d]?.fat || 0;
+      const total = p * 4 + c * 4 + f * 9;
+      return total > 0 ? +((c * 4 / total) * 100).toFixed(1) : 0;
+    });
+    const fatRatioData = dates.map((d) => {
+      const p = dailyStats[d]?.protein || 0;
+      const c = dailyStats[d]?.carbs || 0;
+      const f = dailyStats[d]?.fat || 0;
+      const total = p * 4 + c * 4 + f * 9;
+      return total > 0 ? +((f * 9 / total) * 100).toFixed(1) : 0;
+    });
+
+    const ratioTargets = [
+      { name: '蛋白质占比', ratio: targetProteinRatio, color: '#67a97a' },
+      { name: '碳水占比', ratio: targetCarbsRatio, color: '#f5c06a' },
+      { name: '脂肪占比', ratio: targetFatRatio, color: '#e8916a' }
+    ];
+
+    chartInstance.value.setOption({
+      tooltip: {
+        trigger: 'axis',
+        confine: true,
+        formatter: (params) => {
+          const date = params[0].axisValue;
+          const day = dailyStats[date] || {};
+          const p = +(day.protein || 0).toFixed(1);
+          const c = +(day.carbs || 0).toFixed(1);
+          const f = +(day.fat || 0).toFixed(1);
+          let html = `<strong>${date}</strong><br/>`;
+          html += `<span style="color:#888">蛋白质 ${p}g | 碳水 ${c}g | 脂肪 ${f}g</span><br/>`;
+          params.forEach((param) => {
+            const target = ratioTargets.find((t) => t.name === param.seriesName);
+            const targetPct = target ? +(target.ratio * 100).toFixed(0) : 0;
+            const suffix = targetPct > 0 ? ` / 目标 ${targetPct}%` : '';
+            html += `${param.marker} ${param.seriesName}: <strong>${param.value}%</strong>${suffix}<br/>`;
+          });
+          return html;
+        }
+      },
+      legend: { bottom: 0, itemWidth: 12, itemHeight: 12 },
+      grid: { left: 36, right: 16, top: 24, bottom: 42 },
+      xAxis: {
+        type: 'category',
+        data: dates,
+        axisLine: { lineStyle: { color: '#cdddcf' } }
+      },
+      yAxis: {
+        type: 'value',
+        name: '%',
+        max: 100,
+        splitLine: { lineStyle: { color: '#eef3ee' } }
+      },
+      series: [
+        {
+          name: '蛋白质占比',
+          type: 'line',
+          data: proteinRatioData,
+          smooth: true,
+          showSymbol: true,
+          symbolSize: 6,
+          lineStyle: { color: '#67a97a', width: 2 }
+        },
+        {
+          name: '碳水占比',
+          type: 'line',
+          data: carbsRatioData,
+          smooth: true,
+          showSymbol: true,
+          symbolSize: 6,
+          lineStyle: { color: '#f5c06a', width: 2 }
+        },
+        {
+          name: '脂肪占比',
+          type: 'line',
+          data: fatRatioData,
+          smooth: true,
+          showSymbol: true,
+          symbolSize: 6,
+          lineStyle: { color: '#e8916a', width: 2 }
+        }
+      ]
+    });
+    return;
+  }
+
+  // calorie chart
+  const calorieData = dates.map((d) => +(dailyStats[d]?.calories || 0).toFixed(0));
+  const targetLine = targetCalories > 0 ? Array(dates.length).fill(targetCalories) : [];
+
+  const series = [
+    {
+      name: '实际摄入',
+      data: calorieData,
+      type: 'line',
+      smooth: true,
+      showSymbol: true,
+      symbolSize: 8,
+      lineStyle: { color: '#67a97a', width: 3 },
+      areaStyle: {
+        color: {
+          type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(103,169,122,0.24)' },
+            { offset: 1, color: 'rgba(103,169,122,0.03)' }
+          ]
+        }
+      },
+      markLine: targetCalories > 0 ? {
+        silent: true,
+        symbol: 'none',
+        lineStyle: { color: '#e8916a', type: 'dashed', width: 2 },
+        label: { formatter: `目标 ${targetCalories} kcal`, position: 'end', fontSize: 11 },
+        data: [{ yAxis: targetCalories }]
+      } : undefined
+    }
+  ];
+
   chartInstance.value.setOption({
-    tooltip: { trigger: 'axis' },
-    grid: { left: 36, right: 16, top: 24, bottom: 36 },
+    tooltip: {
+      trigger: 'axis',
+      confine: true,
+      formatter: (params) => {
+        const date = params[0].axisValue;
+        const day = dailyStats[date] || {};
+        const p = +(day.protein || 0).toFixed(1);
+        const c = +(day.carbs || 0).toFixed(1);
+        const f = +(day.fat || 0).toFixed(1);
+        let html = `<strong>${date}</strong><br/>${params[0].marker} 摄入: <strong>${params[0].value} kcal</strong><br/>`;
+        html += `<span style="color:#888">蛋白质 ${p}g | 碳水 ${c}g | 脂肪 ${f}g</span><br/>`;
+        if (targetCalories > 0) {
+          const diff = params[0].value - targetCalories;
+          const color = diff >= 0 ? '#e8916a' : '#67a97a';
+          html += `<span style="color:${color}">${diff >= 0 ? '+' : ''}${diff} kcal vs 目标 ${targetCalories}</span>`;
+        }
+        return html;
+      }
+    },
+    grid: { left: 36, right: 16, top: 24, bottom: 42 },
     xAxis: {
       type: 'category',
       data: dates,
@@ -446,29 +681,7 @@ const renderCharts = () => {
       name: 'kcal',
       splitLine: { lineStyle: { color: '#eef3ee' } }
     },
-    series: [
-      {
-        data: dates.map((date) => dailyStats[date]?.calories || 0),
-        type: 'line',
-        smooth: true,
-        showSymbol: true,
-        symbolSize: 8,
-        lineStyle: { color: '#67a97a', width: 3 },
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: 'rgba(103, 169, 122, 0.24)' },
-              { offset: 1, color: 'rgba(103, 169, 122, 0.03)' }
-            ]
-          }
-        }
-      }
-    ]
+    series
   });
 };
 

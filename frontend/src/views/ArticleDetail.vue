@@ -24,13 +24,16 @@
             :src="article.authorAvatar"
             :alt="`${article.author || '作者'}头像`"
             class="author-avatar-image"
-          />
+          >
           <template v-else>
             {{ avatarText }}
           </template>
         </div>
         <div class="author-meta">
           <strong>{{ article.author || '健康营养师' }}</strong>
+          <span class="read-status">
+            {{ readStatusText }}
+          </span>
         </div>
       </div>
 
@@ -52,6 +55,28 @@
       <div class="article-content">
         <p v-for="(paragraph, index) in contentParagraphs" :key="index">{{ paragraph }}</p>
       </div>
+
+      <section v-if="recommendedArticles.length" class="related-section">
+        <div class="related-header">
+          <h3>相关推荐</h3>
+          <span>根据你的目标、阅读记录和内容热度推荐</span>
+        </div>
+        <div class="related-list">
+          <article
+            v-for="item in recommendedArticles"
+            :key="item.id"
+            class="related-card"
+            @click="openArticle(item.id)"
+          >
+            <div class="related-meta">
+              <el-tag size="small" effect="plain">{{ item.category || '健康科普' }}</el-tag>
+              <span>阅读 {{ item.readCount || 0 }}</span>
+            </div>
+            <strong>{{ item.title }}</strong>
+            <p>{{ item.recommendReason || item.summary || '根据内容相关性推荐阅读' }}</p>
+          </article>
+        </div>
+      </section>
 
       <section ref="commentSectionRef" class="comment-section">
         <div class="comment-header">
@@ -120,7 +145,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import healthKnowledgeApi from '../api/healthKnowledge';
@@ -131,12 +156,16 @@ const article = ref(null);
 const liked = ref(false);
 const collected = ref(false);
 const comments = ref([]);
+const recommendedArticles = ref([]);
 const commentContent = ref('');
 const commentSectionRef = ref(null);
 const replyTarget = ref(null);
 const likeLoading = ref(false);
 const collectLoading = ref(false);
 const commentSubmitting = ref(false);
+const accumulatedReadSeconds = ref(0);
+const maxScrollPercent = ref(0);
+const lastVisibleAt = ref(0);
 
 const palette = ['#2f80ed', '#27ae60', '#f2994a', '#eb5757', '#56ccf2', '#6c5ce7', '#219653'];
 
@@ -146,7 +175,7 @@ const tagList = computed(() => {
   if (Array.isArray(tags)) return tags;
   return String(tags)
     .replace(/[\[\]"]/g, '')
-    .split(/[，,、|/]/)
+    .split(/[,，、;；/|\s]+/)
     .map((item) => item.trim())
     .filter(Boolean);
 });
@@ -164,20 +193,97 @@ const avatarColor = computed(() => palette[(Number(route.params.id || 0) || 0) %
 const totalCommentCount = computed(() =>
   comments.value.reduce((sum, item) => sum + 1 + (Array.isArray(item.replies) ? item.replies.length : 0), 0)
 );
+const readStatusText = computed(() => {
+  const seconds = accumulatedReadSeconds.value;
+  const scroll = maxScrollPercent.value;
+  if (scroll >= 90 && seconds >= 15) {
+    return `已接近读完 · ${scroll}%`;
+  }
+  if (seconds > 0) {
+    return `阅读中 · ${scroll}%`;
+  }
+  return '开始阅读';
+});
 
 const formatDate = (value) => {
   if (!value) return '--';
-  const date = new Date(value);
+  const normalized = String(value).includes('T') ? String(value).replace('T', ' ') : value;
+  const date = new Date(String(normalized).replace(/-/g, '/'));
   return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('zh-CN');
 };
 
 const formatDateTime = (value) => {
   if (!value) return '--';
-  const date = new Date(value);
+  const normalized = String(value).includes('T') ? String(value).replace('T', ' ') : value;
+  const date = new Date(String(normalized).replace(/-/g, '/'));
   return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString('zh-CN');
 };
 
 const getCommentAvatarText = (comment) => String(comment?.username || '评').trim().charAt(0) || '评';
+
+const updateVisibleReadDuration = () => {
+  if (!lastVisibleAt.value) return;
+  const deltaSeconds = Math.floor((Date.now() - lastVisibleAt.value) / 1000);
+  if (deltaSeconds > 0) {
+    accumulatedReadSeconds.value += deltaSeconds;
+  }
+  lastVisibleAt.value = 0;
+};
+
+const startVisibleReadDuration = () => {
+  if (!document.hidden && !lastVisibleAt.value) {
+    lastVisibleAt.value = Date.now();
+  }
+};
+
+const calculateScrollPercent = () => {
+  const doc = document.documentElement;
+  const fullHeight = doc.scrollHeight || 0;
+  const viewportHeight = window.innerHeight || 0;
+  if (!fullHeight || fullHeight <= viewportHeight) {
+    return 100;
+  }
+
+  return Math.min(
+    100,
+    Math.max(0, Math.round(((window.scrollY + viewportHeight) / fullHeight) * 100))
+  );
+};
+
+const handleScroll = () => {
+  maxScrollPercent.value = Math.max(maxScrollPercent.value, calculateScrollPercent());
+};
+
+const reportReadProgress = () => {
+  if (!article.value?.id) return;
+
+  updateVisibleReadDuration();
+  const readDuration = accumulatedReadSeconds.value;
+  const scrollPercent = Math.max(maxScrollPercent.value, calculateScrollPercent());
+  maxScrollPercent.value = scrollPercent;
+
+  if (readDuration < 3 && scrollPercent < 15) {
+    startVisibleReadDuration();
+    return;
+  }
+
+  healthKnowledgeApi.recordArticleRead(article.value.id, {
+    readDuration,
+    scrollPercent
+  }).catch((error) => {
+    console.error('记录阅读失败', error);
+  });
+
+  startVisibleReadDuration();
+};
+
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    reportReadProgress();
+    return;
+  }
+  startVisibleReadDuration();
+};
 
 const loadLikeStatus = async () => {
   try {
@@ -189,7 +295,7 @@ const loadLikeStatus = async () => {
       }
     }
   } catch (error) {
-    console.error('获取点赞状态失败:', error);
+    console.error('获取点赞状态失败', error);
   }
 };
 
@@ -203,7 +309,7 @@ const loadCollectStatus = async () => {
       }
     }
   } catch (error) {
-    console.error('获取收藏状态失败:', error);
+    console.error('获取收藏状态失败', error);
   }
 };
 
@@ -221,12 +327,33 @@ const loadComments = async () => {
   }
 };
 
+const loadRecommendedArticles = async () => {
+  try {
+    const response = await healthKnowledgeApi.getRecommendedArticles({
+      page: 1,
+      pageSize: 4,
+      excludeId: route.params.id
+    });
+    if (response.code === 200) {
+      const list = Array.isArray(response.data) ? response.data : response.data?.list || [];
+      recommendedArticles.value = list.slice(0, 4);
+    }
+  } catch (error) {
+    console.error('获取相关推荐失败', error);
+  }
+};
+
 const loadArticle = async () => {
   try {
+    comments.value = [];
+    recommendedArticles.value = [];
     const response = await healthKnowledgeApi.getArticleDetail(route.params.id);
     if (response.code === 200) {
       article.value = response.data;
-      await Promise.all([loadLikeStatus(), loadCollectStatus(), loadComments()]);
+      accumulatedReadSeconds.value = 0;
+      maxScrollPercent.value = calculateScrollPercent();
+      startVisibleReadDuration();
+      await Promise.all([loadLikeStatus(), loadCollectStatus(), loadComments(), loadRecommendedArticles()]);
       if (route.query.focus === 'comments') {
         await nextTick();
         commentSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -237,6 +364,14 @@ const loadArticle = async () => {
   } catch (error) {
     ElMessage.error(error.message || '获取文章详情失败');
   }
+};
+
+const openArticle = async (id) => {
+  if (!id || String(id) === String(route.params.id)) {
+    return;
+  }
+  reportReadProgress();
+  await router.push(`/dashboard/health-knowledge/${id}`);
 };
 
 const toggleLike = async () => {
@@ -333,7 +468,28 @@ const goBack = () => {
 };
 
 onMounted(() => {
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  document.addEventListener('visibilitychange', handleVisibilityChange);
   loadArticle();
+});
+
+watch(
+  () => route.params.id,
+  (newId, oldId) => {
+    if (!oldId || String(newId) === String(oldId)) {
+      return;
+    }
+    reportReadProgress();
+    loadArticle();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+);
+
+onBeforeUnmount(() => {
+  reportReadProgress();
+  updateVisibleReadDuration();
+  window.removeEventListener('scroll', handleScroll);
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 </script>
 
@@ -405,11 +561,17 @@ onMounted(() => {
 .author-meta {
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
 .author-meta strong {
   color: #233449;
   font-size: 20px;
+}
+
+.read-status {
+  color: #7b8796;
+  font-size: 13px;
 }
 
 .article-meta {
@@ -442,6 +604,76 @@ h1 {
 
 .article-content p + p {
   margin-top: 14px;
+}
+
+.related-section {
+  margin-top: 30px;
+  padding-top: 24px;
+  border-top: 1px solid #eef2f7;
+}
+
+.related-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.related-header h3 {
+  margin: 0;
+  color: #233449;
+  font-size: 20px;
+}
+
+.related-header span {
+  color: #7b8796;
+  font-size: 13px;
+}
+
+.related-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.related-card {
+  padding: 14px;
+  border: 1px solid #e7edf4;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.related-card:hover {
+  transform: translateY(-2px);
+  border-color: #c8d8ec;
+  box-shadow: 0 12px 24px rgba(35, 52, 73, 0.08);
+}
+
+.related-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: #8b97a8;
+  font-size: 12px;
+}
+
+.related-card strong {
+  display: block;
+  color: #24364c;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.related-card p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .comment-section {
@@ -527,6 +759,7 @@ h1 {
   gap: 10px;
   align-items: center;
   margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .comment-meta strong {
@@ -596,6 +829,15 @@ h1 {
 
 @media (max-width: 640px) {
   .page-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .related-list {
+    grid-template-columns: 1fr;
+  }
+
+  .related-header {
     flex-direction: column;
     align-items: flex-start;
   }

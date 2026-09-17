@@ -19,6 +19,8 @@ mybatis-plus:
 server:
   port: 8080
   servlet:
+
+    address: 0.0.0.0
     context-path: /api
 
 jwt:
@@ -29,7 +31,17 @@ jwt:
 algorithm:
   base-url: http://localhost:5000/api
 
+# ============ CORS配置 ============
+# cpolar部署时：把下面这行的域名替换为你的cpolar URL，多个用逗号分隔
+# 或者设置 cors.allow-all-origins=true 允许所有来源（不推荐长期使用）
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://127.0.0.1:5173,http://127.0.0.1:5174,http://localhost:5173,http://localhost:5174,http://127.0.0.1:5175,http://localhost:5175}
+  allow-all-origins: ${CORS_ALLOW_ALL:false}
+
 deepseek:
-  api-key: sk-797df8f8cb56472eabd235adf1195225
+  # 密钥从环境变量读取，不要写进代码（本仓库是公开的，写进来就等于公开泄露）
+  # 设置方法（PowerShell，设置后需重开 IDE / 终端才生效）：
+  #   [Environment]::SetEnvironmentVariable('DEEPSEEK_API_KEY','你的key','User')
+  api-key: ${DEEPSEEK_API_KEY:}
   base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
   model: ${DEEPSEEK_MODEL:deepseek-chat}

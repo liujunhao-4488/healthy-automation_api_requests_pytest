@@ -16,6 +16,12 @@ const healthKnowledgeApi = {
   getArticleDetail: (articleId) => {
     return axios.get(`/article/detail/${articleId}`);
   },
+  recordArticleRead: (articleId, payload = {}) => {
+    return axios.post(`/article/read/${articleId}`, payload);
+  },
+  getReadHistory: (limit = 6) => {
+    return axios.get('/article/read/history', { params: { limit } });
+  },
   likeArticle: (articleId) => {
     return axios.post(`/article/like/${articleId}`);
   },

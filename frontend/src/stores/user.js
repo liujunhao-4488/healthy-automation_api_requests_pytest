@@ -4,6 +4,43 @@ const STORAGE_KEY = 'health-user';
 const RECENT_ACCOUNTS_KEY = 'health-recent-accounts';
 const INGREDIENT_ASSISTANT_HISTORY_PREFIX = 'health-ingredient-assistant-history';
 
+const decodeJwtPayload = (token) => {
+  if (!token || typeof token !== 'string') {
+    return null;
+  }
+
+  const parts = token.split('.');
+  if (parts.length < 2) {
+    return null;
+  }
+
+  try {
+    const normalized = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), '=');
+    return JSON.parse(window.atob(padded));
+  } catch (error) {
+    return null;
+  }
+};
+
+const isTokenExpired = (token) => {
+  if (!token) {
+    return true;
+  }
+
+  const payload = decodeJwtPayload(token);
+  if (!payload?.exp) {
+    return false;
+  }
+
+  return payload.exp * 1000 <= Date.now();
+};
+
+const clearPersistedAuth = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem(STORAGE_KEY);
+};
+
 const buildIngredientHistoryKey = (user) => {
   const identifier = user?.userId || user?.email || 'guest';
   return `${INGREDIENT_ASSISTANT_HISTORY_PREFIX}:${identifier}`;
@@ -31,8 +68,13 @@ const persistIngredientAssistantHistory = (user, history) => {
 };
 
 const loadPersistedUser = () => {
-  const token = localStorage.getItem('token') || '';
+  const persistedToken = localStorage.getItem('token') || '';
+  const token = isTokenExpired(persistedToken) ? '' : persistedToken;
   const raw = localStorage.getItem(STORAGE_KEY);
+
+  if (persistedToken && !token) {
+    clearPersistedAuth();
+  }
 
   if (!raw) {
     return {
@@ -55,6 +97,8 @@ const loadPersistedUser = () => {
 
   try {
     const persisted = JSON.parse(raw);
+    const persistedStateToken = persisted.token || '';
+    const resolvedToken = token || (isTokenExpired(persistedStateToken) ? '' : persistedStateToken);
     return {
       userId: persisted.userId ?? null,
       username: persisted.username ?? '',
@@ -62,7 +106,7 @@ const loadPersistedUser = () => {
       phone: persisted.phone ?? '',
       avatar: persisted.avatar ?? '',
       role: persisted.role ?? 'user',
-      token: persisted.token || token,
+      token: resolvedToken,
       healthInfo: persisted.healthInfo ?? null,
       healthAnalysis: persisted.healthAnalysis ?? null,
       dietGoal: persisted.dietGoal ?? null,
@@ -283,10 +327,9 @@ export const useUserStore = defineStore('user', {
       this.healthHistory = [];
       this.recipeRecommendations = null;
       this.ingredientAssistantHistory = loadIngredientAssistantHistory();
-      localStorage.removeItem('token');
-      localStorage.removeItem(STORAGE_KEY);
+      clearPersistedAuth();
     }
   }
 });
 
-export { isHealthProfileComplete };
+export { clearPersistedAuth, isHealthProfileComplete, isTokenExpired };

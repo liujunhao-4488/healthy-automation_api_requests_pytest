@@ -304,6 +304,10 @@ public class RecipeController {
             item.put("protein", safeValue(ingredient.getProteinPer100g()) * ratio);
             item.put("carbs", safeValue(ingredient.getCarbsPer100g()) * ratio);
             item.put("fat", safeValue(ingredient.getFatPer100g()) * ratio);
+            item.put("fiber", safeValue(ingredient.getFiberPer100g()) * ratio);
+            item.put("sugar", safeValue(ingredient.getSugarPer100g()) * ratio);
+            item.put("sodium", safeValue(ingredient.getSodiumPer100g()) * ratio);
+            item.put("gi", ingredient.getGiValue() == null ? 0 : ingredient.getGiValue());
             details.add(item);
         }
 

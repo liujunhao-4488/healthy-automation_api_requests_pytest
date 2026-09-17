@@ -1,0 +1,8 @@
+[
+  {"name": "正常登录",   "email": "123456@qq.com",  "password": "123456",    "want_http": 200, "want_code": 200, "want_msg": "登录成功"},
+  {"name": "密码错误",   "email": "123456@qq.com",  "password": "wrong_pwd", "want_http": 400, "want_code": 400, "want_msg": "密码错误"},
+  {"name": "用户不存在", "email": "nobody_x@qq.com", "password": "123456",   "want_http": 400, "want_code": 400, "want_msg": "用户不存在"},
+  {"name": "密码为空",   "email": "123456@qq.com",  "password": "",          "want_http": 400, "want_code": 400, "want_msg": "密码不能为空"},
+  {"name": "邮箱为空",   "email": "",               "password": "123456",    "want_http": 400, "want_code": 400, "want_msg": "邮箱不能为空"},
+  {"name": "邮箱格式错", "email": "not-an-email",   "password": "123456",    "want_http": 400, "want_code": 400, "want_msg": "邮箱格式不正确"}
+]

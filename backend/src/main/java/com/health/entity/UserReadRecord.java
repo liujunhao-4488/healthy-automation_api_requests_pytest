@@ -29,6 +29,12 @@ public class UserReadRecord implements Serializable {
     @TableField("read_duration")
     private Integer readDuration;
 
+    @TableField("scroll_percent")
+    private Integer scrollPercent;
+
+    @TableField("is_finished")
+    private Integer isFinished;
+
     // Getter and Setter methods
     public Long getId() {
         return id;
@@ -68,5 +74,21 @@ public class UserReadRecord implements Serializable {
 
     public void setReadDuration(Integer readDuration) {
         this.readDuration = readDuration;
+    }
+
+    public Integer getScrollPercent() {
+        return scrollPercent;
+    }
+
+    public void setScrollPercent(Integer scrollPercent) {
+        this.scrollPercent = scrollPercent;
+    }
+
+    public Integer getIsFinished() {
+        return isFinished;
+    }
+
+    public void setIsFinished(Integer isFinished) {
+        this.isFinished = isFinished;
     }
 }

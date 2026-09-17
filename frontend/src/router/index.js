@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { isHealthProfileComplete } from '../stores/user';
+import { clearPersistedAuth, isHealthProfileComplete, isTokenExpired } from '../stores/user';
 
 const routes = [
   {
@@ -71,8 +71,13 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const raw = localStorage.getItem('health-user');
-  const token = localStorage.getItem('token');
+  const rawToken = localStorage.getItem('token');
+  const token = isTokenExpired(rawToken) ? '' : rawToken;
   let persisted = null;
+
+  if (rawToken && !token) {
+    clearPersistedAuth();
+  }
 
   try {
     persisted = raw ? JSON.parse(raw) : null;

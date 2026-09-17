@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.health.entity.DietRecord;
 import com.health.entity.DietRecordDetail;
+import com.health.entity.Ingredient;
 import com.health.entity.Recipe;
 import com.health.mapper.DietRecordDetailMapper;
 import com.health.mapper.DietRecordMapper;
+import com.health.mapper.IngredientMapper;
 import com.health.mapper.RecipeMapper;
 import com.health.service.DietRecordService;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,9 @@ public class DietRecordServiceImpl implements DietRecordService {
 
     @Autowired
     private RecipeMapper recipeMapper;
+
+    @Autowired
+    private IngredientMapper ingredientMapper;
 
     @Transactional
     @Override
@@ -148,14 +153,18 @@ public class DietRecordServiceImpl implements DietRecordService {
         }
 
         List<DietRecordDetail> details = dietRecordDetailMapper.selectByRecordId(record.getId());
+        enrichRecordDetails(details);
         record.setDetails(details);
         record.setMealName(resolveMealName(details));
+        applyRecordHealthMetrics(record, details);
         return record;
     }
 
     @Override
     public List<DietRecordDetail> getDietRecordDetails(Long recordId) {
-        return dietRecordDetailMapper.selectByRecordId(recordId);
+        List<DietRecordDetail> details = dietRecordDetailMapper.selectByRecordId(recordId);
+        enrichRecordDetails(details);
+        return details;
     }
 
     @Override
@@ -168,7 +177,9 @@ public class DietRecordServiceImpl implements DietRecordService {
             throw new RuntimeException("记录不存在或无权限查看");
         }
 
-        return dietRecordDetailMapper.selectByRecordId(recordId);
+        List<DietRecordDetail> details = dietRecordDetailMapper.selectByRecordId(recordId);
+        enrichRecordDetails(details);
+        return details;
     }
 
     @Override
@@ -222,15 +233,30 @@ public class DietRecordServiceImpl implements DietRecordService {
         double totalProtein = 0;
         double totalCarbs = 0;
         double totalFat = 0;
+        double totalFiber = 0;
+        double totalSugar = 0;
+        double totalSodium = 0;
+        double weightedGiSum = 0;
+        double giWeightSum = 0;
 
         for (DietRecord record : records) {
             totalCalories += safeValue(record.getTotalCalories());
 
             List<DietRecordDetail> details = dietRecordDetailMapper.selectByRecordId(record.getId());
             for (DietRecordDetail detail : details) {
+                enrichDetailNutrition(detail);
                 totalProtein += safeValue(detail.getProtein());
                 totalCarbs += safeValue(detail.getCarbs());
                 totalFat += safeValue(detail.getFat());
+                totalFiber += safeValue(detail.getFiber());
+                totalSugar += safeValue(detail.getSugar());
+                totalSodium += safeValue(detail.getSodium());
+                double detailGi = safeValue(detail.getGi());
+                double giWeight = safeValue(detail.getCarbs());
+                if (detailGi > 0 && giWeight > 0) {
+                    weightedGiSum += detailGi * giWeight;
+                    giWeightSum += giWeight;
+                }
             }
         }
 
@@ -238,6 +264,10 @@ public class DietRecordServiceImpl implements DietRecordService {
         analysis.put("totalProtein", totalProtein);
         analysis.put("totalCarbs", totalCarbs);
         analysis.put("totalFat", totalFat);
+        analysis.put("totalFiber", totalFiber);
+        analysis.put("totalSugar", totalSugar);
+        analysis.put("totalSodium", totalSodium);
+        analysis.put("avgGi", giWeightSum > 0 ? roundValue(weightedGiSum / giWeightSum, 2) : 0.0);
         analysis.put("recordCount", records.size());
         return analysis;
     }
@@ -253,6 +283,11 @@ public class DietRecordServiceImpl implements DietRecordService {
         double totalProtein = 0;
         double totalCarbs = 0;
         double totalFat = 0;
+        double totalFiber = 0;
+        double totalSugar = 0;
+        double totalSodium = 0;
+        double weightedGiSum = 0;
+        double giWeightSum = 0;
         Map<String, Map<String, Double>> dailyStats = new HashMap<>();
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
 
@@ -264,6 +299,11 @@ public class DietRecordServiceImpl implements DietRecordService {
                 stats.put("protein", 0.0);
                 stats.put("carbs", 0.0);
                 stats.put("fat", 0.0);
+                stats.put("fiber", 0.0);
+                stats.put("sugar", 0.0);
+                stats.put("sodium", 0.0);
+                stats.put("giWeightSum", 0.0);
+                stats.put("giCarbWeight", 0.0);
                 return stats;
             });
 
@@ -274,24 +314,53 @@ public class DietRecordServiceImpl implements DietRecordService {
 
             List<DietRecordDetail> details = dietRecordDetailMapper.selectByRecordId(record.getId());
             for (DietRecordDetail detail : details) {
+                enrichDetailNutrition(detail);
                 double protein = safeValue(detail.getProtein());
                 double carbs = safeValue(detail.getCarbs());
                 double fat = safeValue(detail.getFat());
+                double fiber = safeValue(detail.getFiber());
+                double sugar = safeValue(detail.getSugar());
+                double sodium = safeValue(detail.getSodium());
+                double gi = safeValue(detail.getGi());
 
                 stats.put("protein", stats.get("protein") + protein);
                 stats.put("carbs", stats.get("carbs") + carbs);
                 stats.put("fat", stats.get("fat") + fat);
+                stats.put("fiber", stats.get("fiber") + fiber);
+                stats.put("sugar", stats.get("sugar") + sugar);
+                stats.put("sodium", stats.get("sodium") + sodium);
+                if (gi > 0 && carbs > 0) {
+                    stats.put("giWeightSum", stats.get("giWeightSum") + gi * carbs);
+                    stats.put("giCarbWeight", stats.get("giCarbWeight") + carbs);
+                    weightedGiSum += gi * carbs;
+                    giWeightSum += carbs;
+                }
 
                 totalProtein += protein;
                 totalCarbs += carbs;
                 totalFat += fat;
+                totalFiber += fiber;
+                totalSugar += sugar;
+                totalSodium += sodium;
             }
+        }
+
+        for (Map<String, Double> stats : dailyStats.values()) {
+            double dayGiWeight = stats.get("giCarbWeight");
+            double dayGiSum = stats.get("giWeightSum");
+            stats.put("gi", dayGiWeight > 0 ? roundValue(dayGiSum / dayGiWeight, 2) : 0.0);
+            stats.remove("giWeightSum");
+            stats.remove("giCarbWeight");
         }
 
         analysis.put("totalCalories", totalCalories);
         analysis.put("totalProtein", totalProtein);
         analysis.put("totalCarbs", totalCarbs);
         analysis.put("totalFat", totalFat);
+        analysis.put("totalFiber", totalFiber);
+        analysis.put("totalSugar", totalSugar);
+        analysis.put("totalSodium", totalSodium);
+        analysis.put("avgGi", giWeightSum > 0 ? roundValue(weightedGiSum / giWeightSum, 2) : 0.0);
         analysis.put("dailyStats", dailyStats);
         analysis.put("recordCount", records.size());
         return analysis;
@@ -333,15 +402,30 @@ public class DietRecordServiceImpl implements DietRecordService {
         double totalProtein = 0;
         double totalCarbs = 0;
         double totalFat = 0;
+        double totalFiber = 0;
+        double totalSugar = 0;
+        double totalSodium = 0;
+        double weightedGiSum = 0;
+        double giWeightSum = 0;
 
         for (DietRecord record : records) {
             totalCalories += safeValue(record.getTotalCalories());
 
             List<DietRecordDetail> details = dietRecordDetailMapper.selectByRecordId(record.getId());
             for (DietRecordDetail detail : details) {
+                enrichDetailNutrition(detail);
                 totalProtein += safeValue(detail.getProtein());
                 totalCarbs += safeValue(detail.getCarbs());
                 totalFat += safeValue(detail.getFat());
+                totalFiber += safeValue(detail.getFiber());
+                totalSugar += safeValue(detail.getSugar());
+                totalSodium += safeValue(detail.getSodium());
+                double detailGi = safeValue(detail.getGi());
+                double giWeight = safeValue(detail.getCarbs());
+                if (detailGi > 0 && giWeight > 0) {
+                    weightedGiSum += detailGi * giWeight;
+                    giWeightSum += giWeight;
+                }
             }
         }
 
@@ -349,8 +433,13 @@ public class DietRecordServiceImpl implements DietRecordService {
         nutrition.put("protein", totalProtein);
         nutrition.put("carbs", totalCarbs);
         nutrition.put("fat", totalFat);
+        nutrition.put("fiber", totalFiber);
+        nutrition.put("sugar", totalSugar);
+        nutrition.put("sodium", totalSodium);
+        nutrition.put("gi", giWeightSum > 0 ? roundValue(weightedGiSum / giWeightSum, 2) : 0.0);
         return nutrition;
     }
+
 
     @Override
     public List<String> getDietSuggestions(Long userId) {
@@ -365,7 +454,7 @@ public class DietRecordServiceImpl implements DietRecordService {
 
             List<DietRecord> records = getDietRecordsByDateRange(userId, startDate, endDate);
             if (records == null || records.isEmpty()) {
-                suggestions.add("保持饮食均衡，摄入多样化食物");
+                suggestions.add("保持饮食均衡，摄入更多样化食物");
                 suggestions.add("增加蔬菜水果的摄入量");
                 suggestions.add("控制油脂和盐分的摄入");
                 suggestions.add("保持充足饮水");
@@ -377,6 +466,11 @@ public class DietRecordServiceImpl implements DietRecordService {
             double totalProtein = 0;
             double totalCarbs = 0;
             double totalFat = 0;
+            double totalFiber = 0;
+            double totalSugar = 0;
+            double totalSodium = 0;
+            double weightedGiSum = 0;
+            double giWeightSum = 0;
             int recordCount = 0;
 
             for (DietRecord record : records) {
@@ -386,6 +480,15 @@ public class DietRecordServiceImpl implements DietRecordService {
                     totalProtein += safeValue(detail.getProtein());
                     totalCarbs += safeValue(detail.getCarbs());
                     totalFat += safeValue(detail.getFat());
+                    totalFiber += safeValue(detail.getFiber());
+                    totalSugar += safeValue(detail.getSugar());
+                    totalSodium += safeValue(detail.getSodium());
+                    double detailGi = safeValue(detail.getGi());
+                    double giWeight = safeValue(detail.getCarbs());
+                    if (detailGi > 0 && giWeight > 0) {
+                        weightedGiSum += detailGi * giWeight;
+                        giWeightSum += giWeight;
+                    }
                 }
                 recordCount++;
             }
@@ -394,11 +497,15 @@ public class DietRecordServiceImpl implements DietRecordService {
             double avgProtein = recordCount > 0 ? totalProtein / recordCount : 0;
             double avgCarbs = recordCount > 0 ? totalCarbs / recordCount : 0;
             double avgFat = recordCount > 0 ? totalFat / recordCount : 0;
+            double avgFiber = recordCount > 0 ? totalFiber / recordCount : 0;
+            double avgSugar = recordCount > 0 ? totalSugar / recordCount : 0;
+            double avgSodium = recordCount > 0 ? totalSodium / recordCount : 0;
+            double avgGi = giWeightSum > 0 ? weightedGiSum / giWeightSum : 0;
 
             if (avgCalories > 2500) {
-                warnings.add("最近7天平均热量摄入偏高(" + String.format("%.0f", avgCalories) + " kcal)，建议适当控制");
+                warnings.add("最近 7 天平均热量摄入偏高（" + String.format("%.0f", avgCalories) + " kcal），建议适当控制");
             } else if (avgCalories < 1200) {
-                warnings.add("最近7天平均热量摄入偏低(" + String.format("%.0f", avgCalories) + " kcal)，注意营养补充");
+                warnings.add("最近 7 天平均热量摄入偏低（" + String.format("%.0f", avgCalories) + " kcal），注意营养补足");
             } else {
                 suggestions.add("热量摄入保持在合理范围内");
             }
@@ -412,11 +519,23 @@ public class DietRecordServiceImpl implements DietRecordService {
             if (avgProtein < 50) {
                 warnings.add("蛋白质摄入不足，建议增加蛋奶肉豆类食物");
             }
+            if (avgFiber > 0 && avgFiber < 12) {
+                warnings.add("膳食纤维摄入偏低，建议增加蔬菜、全谷物和豆类食物");
+            }
+            if (avgSugar > 30) {
+                warnings.add("糖摄入偏高，建议减少含糖饮料和甜点");
+            }
+            if (avgSodium > 1500) {
+                warnings.add("钠摄入偏高，建议减少浓汤、调味汁和加工食品");
+            }
+            if (avgGi >= 60) {
+                warnings.add("近期饮食 GI 偏高，可适当用粗粮、豆类和高纤维食物替换部分精制碳水");
+            }
             if (recordCount < 5) {
                 warnings.add("最近饮食记录较少，建议坚持记录以便系统分析");
             }
 
-            suggestions.add("保持饮食均衡，摄入多样化食物");
+            suggestions.add("保持饮食均衡，摄入更多样化食物");
             suggestions.add("增加蔬菜水果的摄入量");
             suggestions.add("控制油脂和盐分的摄入");
             suggestions.add("保持充足饮水");
@@ -428,7 +547,7 @@ public class DietRecordServiceImpl implements DietRecordService {
             return result;
         } catch (Exception e) {
             log.error("生成饮食建议失败: {}", e.getMessage(), e);
-            suggestions.add("保持饮食均衡，摄入多样化食物");
+            suggestions.add("保持饮食均衡，摄入更多样化食物");
             suggestions.add("增加蔬菜水果的摄入量");
             suggestions.add("控制油脂和盐分的摄入");
             suggestions.add("保持充足饮水");
@@ -436,7 +555,6 @@ public class DietRecordServiceImpl implements DietRecordService {
             return suggestions;
         }
     }
-
     private List<DietRecordDetail> buildDetails(Map<String, Object> recordData) {
         List<DietRecordDetail> details = new ArrayList<>();
         if (!recordData.containsKey("details") || recordData.get("details") == null) {
@@ -475,6 +593,18 @@ public class DietRecordServiceImpl implements DietRecordService {
             if (detailMap.containsKey("fat") && detailMap.get("fat") != null) {
                 detail.setFat(Double.parseDouble(detailMap.get("fat").toString()));
             }
+            if (detailMap.containsKey("fiber") && detailMap.get("fiber") != null) {
+                detail.setFiber(Double.parseDouble(detailMap.get("fiber").toString()));
+            }
+            if (detailMap.containsKey("sugar") && detailMap.get("sugar") != null) {
+                detail.setSugar(Double.parseDouble(detailMap.get("sugar").toString()));
+            }
+            if (detailMap.containsKey("sodium") && detailMap.get("sodium") != null) {
+                detail.setSodium(Double.parseDouble(detailMap.get("sodium").toString()));
+            }
+            if (detailMap.containsKey("gi") && detailMap.get("gi") != null) {
+                detail.setGi(Double.parseDouble(detailMap.get("gi").toString()));
+            }
             if (detail.getQuantity() == null || detail.getQuantity() <= 0) {
                 detail.setQuantity(1.0);
             }
@@ -497,8 +627,10 @@ public class DietRecordServiceImpl implements DietRecordService {
                 continue;
             }
             List<DietRecordDetail> details = dietRecordDetailMapper.selectByRecordId(record.getId());
+            enrichRecordDetails(details);
             record.setDetails(details);
             record.setMealName(resolveMealName(details));
+            applyRecordHealthMetrics(record, details);
         }
     }
 
@@ -526,12 +658,18 @@ public class DietRecordServiceImpl implements DietRecordService {
         double totalProtein = 0;
         double totalCarbs = 0;
         double totalFat = 0;
+        double totalFiber = 0;
+        double totalSugar = 0;
+        double totalSodium = 0;
+        double weightedGiSum = 0;
+        double giWeightSum = 0;
 
         if (details != null) {
             for (DietRecordDetail detail : details) {
                 if (detail == null) {
                     continue;
                 }
+                enrichDetailNutrition(detail);
                 totalCalories += safeValue(detail.getCalories());
                 totalProtein += safeValue(detail.getProtein());
                 totalCarbs += safeValue(detail.getCarbs());
@@ -543,6 +681,95 @@ public class DietRecordServiceImpl implements DietRecordService {
         record.setTotalProtein(totalProtein);
         record.setTotalCarbs(totalCarbs);
         record.setTotalFat(totalFat);
+        applyRecordHealthMetrics(record, details);
+    }
+
+    private void enrichRecordDetails(List<DietRecordDetail> details) {
+        if (details == null || details.isEmpty()) {
+            return;
+        }
+        for (DietRecordDetail detail : details) {
+            enrichDetailNutrition(detail);
+        }
+    }
+
+    private void enrichDetailNutrition(DietRecordDetail detail) {
+        if (detail == null) {
+            return;
+        }
+        if (detail.getIngredientId() == null) {
+            if (detail.getFiber() == null) {
+                detail.setFiber(0.0);
+            }
+            if (detail.getSugar() == null) {
+                detail.setSugar(0.0);
+            }
+            if (detail.getSodium() == null) {
+                detail.setSodium(0.0);
+            }
+            if (detail.getGi() == null) {
+                detail.setGi(0.0);
+            }
+            return;
+        }
+
+        Ingredient ingredient = ingredientMapper.selectById(detail.getIngredientId());
+        if (ingredient == null) {
+            return;
+        }
+
+        double quantity = safeValue(detail.getQuantity());
+        if (quantity <= 0) {
+            quantity = 1.0;
+        }
+        double ratio = quantity / 100.0;
+
+        if (detail.getFiber() == null || detail.getFiber() <= 0) {
+            detail.setFiber(roundValue(safeValue(ingredient.getFiberPer100g()) * ratio, 2));
+        }
+        detail.setSugar(roundValue(safeValue(ingredient.getSugarPer100g()) * ratio, 2));
+        detail.setSodium(roundValue(safeValue(ingredient.getSodiumPer100g()) * ratio, 2));
+        detail.setGi(ingredient.getGiValue() == null ? 0.0 : ingredient.getGiValue().doubleValue());
+    }
+
+    private void applyRecordHealthMetrics(DietRecord record, List<DietRecordDetail> details) {
+        if (record == null) {
+            return;
+        }
+
+        double totalFiber = 0;
+        double totalSugar = 0;
+        double totalSodium = 0;
+        double weightedGiSum = 0;
+        double giWeightSum = 0;
+
+        if (details != null) {
+            for (DietRecordDetail detail : details) {
+                if (detail == null) {
+                    continue;
+                }
+                enrichDetailNutrition(detail);
+                totalFiber += safeValue(detail.getFiber());
+                totalSugar += safeValue(detail.getSugar());
+                totalSodium += safeValue(detail.getSodium());
+                double detailGi = safeValue(detail.getGi());
+                double giWeight = safeValue(detail.getCarbs());
+                if (detailGi > 0 && giWeight > 0) {
+                    weightedGiSum += detailGi * giWeight;
+                    giWeightSum += giWeight;
+                }
+            }
+        }
+
+        record.setTotalFiber(roundValue(totalFiber, 2));
+        record.setTotalSugar(roundValue(totalSugar, 2));
+        record.setTotalSodium(roundValue(totalSodium, 2));
+        record.setTotalGi(giWeightSum > 0 ? roundValue(weightedGiSum / giWeightSum, 2) : 0.0);
+    }
+
+    private double roundValue(double value, int digits) {
+        double factor = Math.pow(10, digits);
+        return Math.round(value * factor) / factor;
     }
 
     private double safeValue(Double value) {
@@ -557,3 +784,4 @@ public class DietRecordServiceImpl implements DietRecordService {
         }
     }
 }
+

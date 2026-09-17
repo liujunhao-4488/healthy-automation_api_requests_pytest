@@ -20,7 +20,7 @@ public interface RecipeMapper extends BaseMapper<Recipe> {
      */
     @Select("SELECT id, name, description, category, cuisine_type, cooking_time, difficulty, servings, " +
             "total_calories, calories_per_serving, protein, carbs, fat, fiber, instructions, tips, " +
-            "image_url, video_url, creator_id, is_custom, is_public, score, score_count, view_count, " +
+            "image_url, creator_id, is_custom, score, score_count, view_count, " +
             "collect_count, suitable_for, goal_type, status, create_time, update_time " +
             "FROM recipe " +
             "WHERE creator_id = #{userId} " +
@@ -36,7 +36,7 @@ public interface RecipeMapper extends BaseMapper<Recipe> {
      */
     @Select("SELECT id, name, description, category, cuisine_type, cooking_time, difficulty, servings, " +
             "total_calories, calories_per_serving, protein, carbs, fat, fiber, instructions, tips, " +
-            "image_url, video_url, creator_id, is_custom, is_public, score, score_count, view_count, " +
+            "image_url, creator_id, is_custom, score, score_count, view_count, " +
             "collect_count, suitable_for, goal_type, status, create_time, update_time " +
             "FROM recipe " +
             "WHERE difficulty = #{difficulty} " +
@@ -51,7 +51,7 @@ public interface RecipeMapper extends BaseMapper<Recipe> {
      */
     @Select("SELECT id, name, description, category, cuisine_type, cooking_time, difficulty, servings, " +
             "total_calories, calories_per_serving, protein, carbs, fat, fiber, instructions, tips, " +
-            "image_url, video_url, creator_id, is_custom, is_public, score, score_count, view_count, " +
+            "image_url, creator_id, is_custom, score, score_count, view_count, " +
             "collect_count, suitable_for, goal_type, status, create_time, update_time " +
             "FROM recipe " +
             "WHERE cooking_time <= #{maxTime} " +

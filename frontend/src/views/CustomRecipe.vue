@@ -61,11 +61,20 @@
             {{ formatValue(row.totalCalories, 'kcal') }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="260" fixed="right">
+        <el-table-column label="操作" width="340" fixed="right">
           <template #default="{ row }">
             <div class="table-actions">
               <el-button link type="primary" @click="viewRecipe(row.id)">查看</el-button>
               <el-button link type="success" @click="analyzeRecipe(row.id)">分析</el-button>
+              <el-button
+                link
+                type="warning"
+                :loading="savingRecordKey === row.id"
+                :disabled="!!savingRecordKey && savingRecordKey !== row.id"
+                @click="openMealTypeDialog(row)"
+              >
+                加入记录
+              </el-button>
               <el-button link type="danger" @click="deleteRecipe(row.id)">删除</el-button>
             </div>
           </template>
@@ -245,6 +254,29 @@
     </el-dialog>
 
     <el-dialog
+      v-model="mealTypeDialogVisible"
+      title="加入饮食记录"
+      width="420px"
+      class="meal-dialog"
+    >
+      <el-form :model="mealTypeForm" label-width="80px">
+        <el-form-item label="选择餐次">
+          <el-select v-model="mealTypeForm.mealType" style="width: 100%">
+            <el-option label="早餐" value="breakfast" />
+            <el-option label="午餐" value="lunch" />
+            <el-option label="晚餐" value="dinner" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="mealTypeDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="!!savingRecordKey" @click="confirmAddToRecord">
+          确认添加
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog
       v-model="analysisDialogVisible"
       title="营养分析"
       width="700px"
@@ -272,6 +304,7 @@ import { onMounted, reactive, ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import recipeApi from '../api/recipe';
 import ingredientApi from '../api/ingredient';
+import dietRecordApi from '../api/dietRecord';
 import {
   exportRecipesToExcel,
   exportRecipesToPdf,
@@ -282,6 +315,10 @@ const recipeFormRef = ref(null);
 const createDialogVisible = ref(false);
 const detailDialogVisible = ref(false);
 const analysisDialogVisible = ref(false);
+const mealTypeDialogVisible = ref(false);
+const mealTypeForm = reactive({ mealType: 'lunch' });
+const pendingRecipe = ref(null);
+const savingRecordKey = ref('');
 const myRecipes = ref([]);
 const ingredients = ref([]);
 const selectedRecipe = ref(null);
@@ -369,10 +406,17 @@ const formatValue = (value, unit) => {
 
 const formatIngredientAmount = (quantity, unit) => {
   if (quantity === null || quantity === undefined || quantity === '') return '';
+
+  const unitText = String(unit || '').trim();
+  const rawText = String(quantity).trim();
+  const normalizedRaw = rawText.toLowerCase();
+  const normalizedUnit = unitText.toLowerCase();
+  if (normalizedUnit && normalizedRaw.endsWith(normalizedUnit)) return ` ${rawText}`;
+
   const num = Number(quantity);
-  if (Number.isNaN(num)) return ` ${quantity}${unit || ''}`;
+  if (Number.isNaN(num)) return ` ${rawText}${unitText}`;
   const digits = Number.isInteger(num) ? 0 : 1;
-  return ` ${num.toFixed(digits)}${unit || ''}`;
+  return ` ${num.toFixed(digits)}${unitText}`;
 };
 
 const formatInstructions = (instructions) => {
@@ -521,6 +565,90 @@ const deleteRecipe = async (id) => {
     if (error !== 'cancel') {
       ElMessage.error(error?.response?.data?.message || '操作失败');
     }
+  }
+};
+
+const openMealTypeDialog = (recipe) => {
+  pendingRecipe.value = recipe;
+  mealTypeForm.mealType = 'lunch';
+  mealTypeDialogVisible.value = true;
+};
+
+const buildRecordDetailsFromRecipe = (recipe) => {
+  if (!recipe) return [];
+  const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
+  const details = ingredients.map((ingredient) => ({
+    recipeId: recipe.id ?? null,
+    foodName: ingredient.name || ingredient.ingredientName || recipe.name || '未命名',
+    amount: Number(ingredient.quantity ?? 1),
+    unit: ingredient.unit || 'g',
+    calories: Number(ingredient.calories ?? 0),
+    protein: Number(ingredient.protein ?? 0),
+    carbs: Number(ingredient.carbs ?? 0),
+    fat: Number(ingredient.fat ?? 0),
+    fiber: Number(ingredient.fiber ?? 0),
+    sugar: Number(ingredient.sugar ?? 0),
+    sodium: Number(ingredient.sodium ?? 0),
+    gi: Number(ingredient.gi ?? 0)
+  }));
+  if (details.length) return details;
+  return [{
+    recipeId: recipe.id ?? null,
+    foodName: recipe.name || '未命名食谱',
+    amount: 1,
+    unit: '份',
+    calories: Number(recipe.totalCalories ?? 0),
+    protein: Number(recipe.protein ?? 0),
+    carbs: Number(recipe.carbs ?? 0),
+    fat: Number(recipe.fat ?? 0),
+    fiber: Number(recipe.fiber ?? 0),
+    sugar: Number(recipe.sugar ?? 0),
+    sodium: Number(recipe.sodium ?? 0),
+    gi: Number(recipe.gi ?? 0)
+  }];
+};
+
+const hasMeaningfulNutrition = (details) =>
+  Array.isArray(details) &&
+  details.some((d) => Number(d?.calories || 0) > 0 || Number(d?.protein || 0) > 0);
+
+const loadAccurateRecordDetails = async (recipe) => {
+  const fallbackDetails = buildRecordDetailsFromRecipe(recipe);
+  if (!recipe?.id || hasMeaningfulNutrition(fallbackDetails)) return fallbackDetails;
+  try {
+    const response = await recipeApi.getRecipeDetail(recipe.id);
+    if (response.code === 200) {
+      const data = response.data || {};
+      const enriched = { ...recipe, ingredients: Array.isArray(data.ingredients) ? data.ingredients : recipe.ingredients };
+      const accurate = buildRecordDetailsFromRecipe(enriched);
+      if (hasMeaningfulNutrition(accurate)) return accurate;
+    }
+  } catch (_) { /* fallback */ }
+  return fallbackDetails;
+};
+
+const confirmAddToRecord = async () => {
+  const recipe = pendingRecipe.value;
+  if (!recipe) return;
+  savingRecordKey.value = recipe.id;
+  try {
+    const details = await loadAccurateRecordDetails(recipe);
+    const response = await dietRecordApi.submitRecord({
+      date: new Date().toISOString().slice(0, 10),
+      mealType: mealTypeForm.mealType,
+      notes: `来自自定义食谱：${recipe.name || '未命名食谱'}`,
+      details
+    });
+    if (response.code === 200) {
+      ElMessage.success('已加入今日饮食记录');
+      mealTypeDialogVisible.value = false;
+    } else {
+      ElMessage.error(response.message || '加入饮食记录失败');
+    }
+  } catch (error) {
+    ElMessage.error(error?.response?.data?.message || '加入饮食记录失败，请稍后重试');
+  } finally {
+    savingRecordKey.value = '';
   }
 };
 

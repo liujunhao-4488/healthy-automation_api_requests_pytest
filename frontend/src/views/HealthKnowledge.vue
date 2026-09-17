@@ -30,7 +30,7 @@
         </el-button>
       </div>
 
-      <div class="tabs-wrap" :class="{ expanded: showAllTags }">
+      <div class="tabs-wrap">
         <button
           v-for="tab in displayTabs"
           :key="tab.value"
@@ -45,11 +45,57 @@
           v-if="tagTabs.length > 8"
           type="button"
           class="tab-item more-toggle"
-          @click="toggleTagExpansion"
+          @click="openTagDialog"
         >
-          {{ showAllTags ? '收起' : '更多' }}
+          更多标签
         </button>
       </div>
+
+      <el-dialog
+        v-model="tagDialogVisible"
+        title="选择文章标签"
+        width="680px"
+        class="tag-dialog"
+      >
+        <el-input
+          v-model="tagSearchKeyword"
+          class="tag-search"
+          placeholder="搜索标签"
+          clearable
+        />
+        <div v-if="filteredDialogTags.length" class="dialog-tag-list">
+          <button
+            v-for="tag in filteredDialogTags"
+            :key="tag"
+            type="button"
+            class="dialog-tag-item"
+            :class="{ active: activeTab === `tag:${tag}` }"
+            @click="selectDialogTag(tag)"
+          >
+            {{ tag }}
+          </button>
+        </div>
+        <el-empty v-else description="没有匹配的标签" />
+      </el-dialog>
+
+      <section v-if="readHistory.length" class="history-strip">
+        <div class="history-head">
+          <strong>最近阅读</strong>
+          <span>根据最近阅读记录补充个性化推荐</span>
+        </div>
+        <div class="history-list">
+          <button
+            v-for="item in readHistory"
+            :key="item.id"
+            type="button"
+            class="history-item"
+            @click="viewDetails(item.id)"
+          >
+            <strong>{{ item.title }}</strong>
+            <p>{{ item.finished ? '已读完' : '已浏览' }} · {{ item.scrollPercent }}%</p>
+          </button>
+        </div>
+      </section>
 
       <div
         ref="articleScrollRef"
@@ -74,6 +120,11 @@
             <h3 class="article-title">{{ article.title }}</h3>
 
             <p class="article-content">{{ article.summaryText }}</p>
+
+            <div v-if="article.recommendReason" class="recommend-reason">
+              <span>推荐理由</span>
+              <p>{{ article.recommendReason }}</p>
+            </div>
 
             <div class="article-footer">
               <div class="author-row">
@@ -227,6 +278,7 @@ import healthKnowledgeApi from '../api/healthKnowledge';
 
 const router = useRouter();
 const articleList = ref([]);
+const readHistory = ref([]);
 const articleScrollRef = ref(null);
 const tagTabs = ref([]);
 const activeTab = ref('recommend');
@@ -239,7 +291,8 @@ const loadingMore = ref(false);
 const publishDialogVisible = ref(false);
 const publishing = ref(false);
 const publishFormRef = ref(null);
-const showAllTags = ref(false);
+const tagDialogVisible = ref(false);
+const tagSearchKeyword = ref('');
 const publishForm = ref({
   title: '',
   category: '',
@@ -334,11 +387,49 @@ const buildPublishText = (article) => {
 const buildAuthorName = (article) => article.author || '健康营养师';
 const buildAvatarText = (name) => String(name || '营').trim().charAt(0) || '营';
 
+const normalizeTagTabs = (tags) => {
+  const result = [];
+  const seen = new Set();
+  (Array.isArray(tags) ? tags : []).forEach((tag) => {
+    String(tag || '')
+      .replace(/[\[\]"]/g, '')
+      .split(/[,，、;；/|\s]+/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .forEach((item) => {
+        if (!seen.has(item)) {
+          seen.add(item);
+          result.push(item);
+        }
+      });
+  });
+  return result;
+};
+
+const currentSelectedTag = computed(() => (activeTab.value.startsWith('tag:') ? activeTab.value.slice(4) : ''));
+
+const visibleTopTags = computed(() => {
+  const topTags = tagTabs.value.slice(0, 8);
+  const selectedTag = currentSelectedTag.value;
+  if (selectedTag && !topTags.includes(selectedTag)) {
+    return [selectedTag, ...topTags.slice(0, 7)];
+  }
+  return topTags;
+});
+
+const filteredDialogTags = computed(() => {
+  const keywordText = tagSearchKeyword.value.trim().toLowerCase();
+  if (!keywordText) {
+    return tagTabs.value;
+  }
+  return tagTabs.value.filter((tag) => tag.toLowerCase().includes(keywordText));
+});
+
 const displayTabs = computed(() => [
   { label: '推荐', value: 'recommend' },
   { label: '最新', value: 'latest' },
   { label: '热门', value: 'hot' },
-  ...(showAllTags.value ? tagTabs.value : tagTabs.value.slice(0, 8)).map((tag) => ({
+  ...visibleTopTags.value.map((tag) => ({
     label: tag,
     value: `tag:${tag}`
   }))
@@ -373,11 +464,19 @@ const normalizeArticle = (article, index) => {
     commentCount: Number(article.commentCount || 0),
     collectCount: Number(article.collectCount || 0),
     readCount: Number(article.readCount || 0),
+    recommendReason: article.recommendReason || '',
     liked: Boolean(article.liked),
     collected: Boolean(article.collected),
     actionLoading: false
   };
 };
+
+const normalizeReadHistoryItem = (article) => ({
+  id: article.id,
+  title: article.title || '未命名文章',
+  finished: Boolean(article.finished),
+  scrollPercent: Number(article.scrollPercent || 0)
+});
 
 const normalizeListResponse = (data, append = false) => {
   const list = Array.isArray(data) ? data : data?.list || [];
@@ -386,7 +485,7 @@ const normalizeListResponse = (data, append = false) => {
   articleList.value = append ? [...articleList.value, ...normalizedList] : normalizedList;
   total.value = Array.isArray(data) ? list.length : Number(data?.total || list.length);
   if (!Array.isArray(data) && Array.isArray(data?.tags) && data.tags.length) {
-    tagTabs.value = data.tags;
+    tagTabs.value = normalizeTagTabs(data.tags);
   }
 };
 
@@ -416,10 +515,21 @@ const loadTagTabs = async () => {
   try {
     const response = await healthKnowledgeApi.getArticleTags();
     if (response.code === 200 && Array.isArray(response.data)) {
-      tagTabs.value = response.data;
+      tagTabs.value = normalizeTagTabs(response.data);
     }
   } catch (error) {
     console.error('获取文章标签失败:', error);
+  }
+};
+
+const loadReadHistory = async () => {
+  try {
+    const response = await healthKnowledgeApi.getReadHistory(4);
+    if (response.code === 200 && Array.isArray(response.data)) {
+      readHistory.value = response.data.map(normalizeReadHistoryItem);
+    }
+  } catch (error) {
+    console.error('获取阅读历史失败:', error);
   }
 };
 
@@ -499,8 +609,15 @@ const changeTab = async (tab) => {
   await reloadKnowledgeList();
 };
 
-const toggleTagExpansion = () => {
-  showAllTags.value = !showAllTags.value;
+const openTagDialog = () => {
+  tagSearchKeyword.value = '';
+  tagDialogVisible.value = true;
+};
+
+const selectDialogTag = async (tag) => {
+  tagDialogVisible.value = false;
+  tagSearchKeyword.value = '';
+  await changeTab(`tag:${tag}`);
 };
 
 const handleSearch = async () => {
@@ -617,6 +734,7 @@ const submitPublish = async () => {
 };
 
 onMounted(async () => {
+  await loadReadHistory();
   await loadTagTabs();
   await loadKnowledgeList({ page: 1 });
 });
@@ -751,14 +869,6 @@ onMounted(async () => {
   display: none;
 }
 
-.tabs-wrap.expanded {
-  flex-wrap: wrap;
-  align-items: flex-start;
-  row-gap: 8px;
-  overflow-x: visible;
-  padding-bottom: 12px;
-}
-
 .tab-item {
   position: relative;
   padding: 10px 16px;
@@ -794,8 +904,95 @@ onMounted(async () => {
   color: #877667;
 }
 
-.tabs-wrap.expanded .tab-item {
-  margin-bottom: 0;
+.tag-search {
+  margin-bottom: 16px;
+}
+
+.dialog-tag-list {
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 4px 2px;
+}
+
+.dialog-tag-item {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #d9ead1;
+  background: #fbfff8;
+  color: #4f7d45;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.dialog-tag-item:hover,
+.dialog-tag-item.active {
+  color: #fff;
+  border-color: #6fa45f;
+  background: #6fa45f;
+}
+
+.history-strip {
+  flex-shrink: 0;
+  padding: 12px 22px 14px;
+  border-bottom: 1px solid #f0e9e0;
+  background: rgba(255, 252, 248, 0.95);
+}
+
+.history-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.history-head strong {
+  color: #4b3a2d;
+  font-size: 14px;
+}
+
+.history-head span {
+  color: #8d7f72;
+  font-size: 12px;
+}
+
+.history-list {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history-list::-webkit-scrollbar {
+  display: none;
+}
+
+.history-item {
+  min-width: 190px;
+  padding: 12px 14px;
+  border: 1px solid #eadfcf;
+  border-radius: 16px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.history-item strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #47372a;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.history-item p {
+  margin: 0;
+  color: #8a7a6a;
+  font-size: 12px;
 }
 
 .article-scroll {
@@ -974,6 +1171,29 @@ onMounted(async () => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.recommend-reason {
+  margin: 10px 14px 0;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: #fbf6ed;
+  border: 1px solid #efe2cf;
+}
+
+.recommend-reason span {
+  display: block;
+  margin-bottom: 4px;
+  color: #9a7549;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.recommend-reason p {
+  margin: 0;
+  color: #6a5745;
+  font-size: 12px;
+  line-height: 1.55;
 }
 
 .article-footer {
@@ -1234,6 +1454,11 @@ onMounted(async () => {
 
   .tabs-wrap {
     gap: 10px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .history-strip {
     padding-left: 16px;
     padding-right: 16px;
   }

@@ -80,12 +80,12 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public List<Recipe> getAllRecipes() {
-        return recipeMapper.selectList(null);
+        return sanitizeRecipesForDisplay(recipeMapper.selectList(null));
     }
 
     @Override
     public Recipe getRecipeById(Long id) {
-        return recipeMapper.selectById(id);
+        return sanitizeRecipeForDisplay(recipeMapper.selectById(id));
     }
 
     @Override
@@ -95,14 +95,14 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public List<Recipe> getCustomRecipes(Long userId) {
-        return recipeMapper.selectCustomByUserId(userId);
+        return sanitizeRecipesForDisplay(recipeMapper.selectCustomByUserId(userId));
     }
 
     @Override
     public List<Recipe> searchRecipes(String keyword) {
         QueryWrapper<Recipe> wrapper = new QueryWrapper<>();
         wrapper.like("name", keyword).or().like("description", keyword);
-        return recipeMapper.selectList(wrapper);
+        return sanitizeRecipesForDisplay(recipeMapper.selectList(wrapper));
     }
 
     @Transactional
@@ -114,7 +114,7 @@ public class RecipeServiceImpl implements RecipeService {
             recipeIngredientMapper.insert(ingredient);
         }
         calculateRecipeNutrition(recipe);
-        return recipe;
+        return sanitizeRecipeForDisplay(recipeMapper.selectById(recipe.getId()));
     }
 
     @Transactional
@@ -132,7 +132,7 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         calculateRecipeNutrition(recipe);
-        return recipe;
+        return sanitizeRecipeForDisplay(recipeMapper.selectById(recipe.getId()));
     }
 
     @Transactional
@@ -269,12 +269,26 @@ public class RecipeServiceImpl implements RecipeService {
         DietGoal dietGoal = dietGoalMapper.findByUserId(userId);
 
         try {
+            UserDietPreference preference = userDietPreferenceMapper.selectOne(
+                new QueryWrapper<UserDietPreference>().eq("user_id", userId).last("LIMIT 1")
+            );
+
+            Map<String, Object> healthInfoPayload = buildHealthInfoPayload(healthInfo);
+            if (preference != null) {
+                if (preference.getAllergies() != null && !preference.getAllergies().trim().isEmpty()) {
+                    healthInfoPayload.put("allergies", preference.getAllergies().trim());
+                }
+                if (preference.getDislikes() != null && !preference.getDislikes().trim().isEmpty()) {
+                    healthInfoPayload.put("dislikes", preference.getDislikes().trim());
+                }
+            }
+
             Map<String, Object> requestData = new HashMap<>();
             requestData.put("userId", userId);
             requestData.put("breakfastCount", breakfastCount);
             requestData.put("lunchCount", lunchCount);
             requestData.put("dinnerCount", dinnerCount);
-            requestData.put("healthInfo", buildHealthInfoPayload(healthInfo));
+            requestData.put("healthInfo", healthInfoPayload);
             requestData.put("dietGoal", buildDietGoalPayload(dietGoal));
             requestData.put("candidateRecipes", buildAlgorithmCandidates());
 
@@ -306,7 +320,7 @@ public class RecipeServiceImpl implements RecipeService {
                 if (id instanceof Number) {
                     Recipe recipe = recipeMapper.selectById(((Number) id).longValue());
                     if (recipe != null) {
-                        recipes.add(recipe);
+                        recipes.add(sanitizeRecipeForDisplay(recipe));
                     }
                 }
             }
@@ -855,6 +869,7 @@ public class RecipeServiceImpl implements RecipeService {
         double totalProtein = 0;
         double totalCarbs = 0;
         double totalFat = 0;
+        double totalFiber = 0;
 
         for (RecipeIngredient recipeIngredient : ingredients) {
             Ingredient ingredient = ingredientMapper.selectById(recipeIngredient.getIngredientId());
@@ -866,21 +881,23 @@ public class RecipeServiceImpl implements RecipeService {
                 totalProtein += safeDouble(ingredient.getProteinPer100g()) * ratio;
                 totalCarbs += safeDouble(ingredient.getCarbsPer100g()) * ratio;
                 totalFat += safeDouble(ingredient.getFatPer100g()) * ratio;
+                totalFiber += safeDouble(ingredient.getFiberPer100g()) * ratio;
             }
         }
 
-        recipe.setTotalCalories(totalCalories);
-        recipe.setProtein(totalProtein);
-        recipe.setCarbs(totalCarbs);
-        recipe.setFat(totalFat);
+        recipe.setTotalCalories(roundValue(totalCalories));
+        recipe.setProtein(roundValue(totalProtein));
+        recipe.setCarbs(roundValue(totalCarbs));
+        recipe.setFat(roundValue(totalFat));
+        recipe.setFiber(roundValue(totalFiber));
 
         recipeMapper.updateById(recipe);
     }
 
     private List<Map<String, Object>> getLocalRecommendedRecipes(Long userId, String mealType, int limit) {
-        List<Recipe> allRecipes = recipeMapper.selectList(
+        List<Recipe> allRecipes = sanitizeRecipesForDisplay(recipeMapper.selectList(
             new QueryWrapper<Recipe>().orderByDesc("score").orderByDesc("collect_count").orderByDesc("view_count")
-        );
+        ));
         if (allRecipes.isEmpty()) {
             return new ArrayList<>();
         }
@@ -942,6 +959,9 @@ public class RecipeServiceImpl implements RecipeService {
         payload.put("carbs", safeDouble(recipe.getCarbs()));
         payload.put("fat", safeDouble(recipe.getFat()));
         payload.put("fiber", safeDouble(recipe.getFiber()));
+        payload.put("sugar", safeDouble(recipe.getSugar()));
+        payload.put("sodium", safeDouble(recipe.getSodium()));
+        payload.put("gi", safeDouble(recipe.getGi()));
         payload.put("mealType", mealType);
         payload.put("matchScore", Math.round(matchScore));
         payload.put("targetCalories", Math.round(mealTargetCalories));
@@ -973,6 +993,10 @@ public class RecipeServiceImpl implements RecipeService {
             item.put("protein", safeDouble(ingredient.getProteinPer100g()) * ratio);
             item.put("carbs", safeDouble(ingredient.getCarbsPer100g()) * ratio);
             item.put("fat", safeDouble(ingredient.getFatPer100g()) * ratio);
+            item.put("fiber", roundValue(safeDouble(ingredient.getFiberPer100g()) * ratio));
+            item.put("sugar", roundValue(safeDouble(ingredient.getSugarPer100g()) * ratio));
+            item.put("sodium", roundValue(safeDouble(ingredient.getSodiumPer100g()) * ratio));
+            item.put("gi", ingredient.getGiValue() == null ? 0D : ingredient.getGiValue().doubleValue());
             ingredientPayload.add(item);
         }
 
@@ -1014,11 +1038,12 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     private List<Map<String, Object>> buildAlgorithmCandidates() {
-        List<Recipe> recipes = recipeMapper.selectList(
+        List<Recipe> recipes = sanitizeRecipesForDisplay(recipeMapper.selectList(
             new QueryWrapper<Recipe>().orderByDesc("score").orderByDesc("collect_count").orderByDesc("view_count")
-        );
+        ));
         List<Map<String, Object>> candidates = new ArrayList<>();
         for (Recipe recipe : recipes) {
+            applyRecipeHealthMetrics(recipe);
             Map<String, Object> candidate = new HashMap<>();
             candidate.put("id", recipe.getId());
             candidate.put("name", recipe.getName());
@@ -1031,6 +1056,9 @@ public class RecipeServiceImpl implements RecipeService {
             candidate.put("carbs", safeDouble(recipe.getCarbs()));
             candidate.put("fat", safeDouble(recipe.getFat()));
             candidate.put("fiber", safeDouble(recipe.getFiber()));
+            candidate.put("sugar", safeDouble(recipe.getSugar()));
+            candidate.put("sodium", safeDouble(recipe.getSodium()));
+            candidate.put("gi", safeDouble(recipe.getGi()));
             candidate.put("tips", recipe.getTips());
             candidate.put("mealType", inferMealType(recipe));
             candidate.put("ingredients", buildIngredientPayload(recipe.getId()));
@@ -1167,6 +1195,9 @@ public class RecipeServiceImpl implements RecipeService {
         double fat = safeDouble(recipe.getFat());
         double fiber = safeDouble(recipe.getFiber());
         double calories = safeDouble(recipe.getTotalCalories());
+        double sugar = safeDouble(recipe.getSugar());
+        double sodium = safeDouble(recipe.getSodium());
+        double gi = safeDouble(recipe.getGi());
 
         if ("fat_loss".equals(goalType)) {
             if (protein >= 20) score += 5;
@@ -1182,10 +1213,13 @@ public class RecipeServiceImpl implements RecipeService {
         } else if ("blood_sugar_control".equals(goalType)) {
             if (carbs <= 35) score += 6;
             if (fiber >= 4) score += 4;
+            if (sugar > 0 && sugar <= 12) score += 3;
+            if (gi > 0 && gi <= 55) score += 3;
         } else if ("lipid_control".equals(goalType)) {
             if (fat <= 16) score += 6;
             if (fiber >= 4) score += 4;
         } else if ("low_sodium".equals(goalType)) {
+            if (sodium > 0 && sodium <= 350) score += 6;
             if (isLightCooking(recipe)) score += 8;
         } else if ("pregnancy_nutrition".equals(goalType)) {
             if (protein >= 18) score += 5;
@@ -1201,14 +1235,17 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         String chronicDiseases = healthInfo == null ? "" : normalizeText(healthInfo.getChronicDiseases());
-        if (chronicDiseases.contains("糖") && carbs <= 35) {
-            score += 3;
+        if (chronicDiseases.contains("糖")) {
+            if (carbs <= 35) score += 3;
+            if (sugar > 0 && sugar <= 12) score += 2;
+            if (gi > 0 && gi <= 55) score += 2;
         }
         if (chronicDiseases.contains("高血脂") && fat <= 16) {
             score += 3;
         }
-        if ((chronicDiseases.contains("高血压") || chronicDiseases.contains("血压")) && isLightCooking(recipe)) {
-            score += 3;
+        if (chronicDiseases.contains("高血压") || chronicDiseases.contains("血压")) {
+            if (isLightCooking(recipe)) score += 3;
+            if (sodium > 0 && sodium <= 350) score += 3;
         }
         return score;
     }
@@ -1315,6 +1352,15 @@ public class RecipeServiceImpl implements RecipeService {
         if (safeDouble(recipe.getFat()) <= 15) {
             tags.add("低脂");
         }
+        if (safeDouble(recipe.getSugar()) > 0 && safeDouble(recipe.getSugar()) <= 12) {
+            tags.add("低糖");
+        }
+        if (safeDouble(recipe.getGi()) > 0 && safeDouble(recipe.getGi()) <= 55) {
+            tags.add("低GI");
+        }
+        if (safeDouble(recipe.getSodium()) > 0 && safeDouble(recipe.getSodium()) <= 350) {
+            tags.add("低钠");
+        }
 
         String goalType = dietGoal == null ? "" : normalizeText(dietGoal.getGoalType());
         if (!goalType.isEmpty()) {
@@ -1326,8 +1372,14 @@ public class RecipeServiceImpl implements RecipeService {
             if (diseases.contains("糖") && safeDouble(recipe.getCarbs()) <= 35) {
                 tags.add("控糖友好");
             }
+            if (diseases.contains("糖") && safeDouble(recipe.getGi()) > 0 && safeDouble(recipe.getGi()) <= 55) {
+                tags.add("低GI友好");
+            }
             if (diseases.contains("高血脂") && safeDouble(recipe.getFat()) <= 16) {
                 tags.add("控脂友好");
+            }
+            if ((diseases.contains("高血压") || diseases.contains("血压")) && safeDouble(recipe.getSodium()) > 0 && safeDouble(recipe.getSodium()) <= 350) {
+                tags.add("低钠友好");
             }
         }
 
@@ -1358,6 +1410,15 @@ public class RecipeServiceImpl implements RecipeService {
         }
         if (safeDouble(recipe.getFat()) <= 15) {
             reasons.add("脂肪含量相对克制，更适合轻负担饮食");
+        }
+        if (safeDouble(recipe.getSugar()) > 0 && safeDouble(recipe.getSugar()) <= 12) {
+            reasons.add("含糖量相对较低，更适合控糖场景");
+        }
+        if (safeDouble(recipe.getGi()) > 0 && safeDouble(recipe.getGi()) <= 55) {
+            reasons.add("升糖指数偏低，有助于平稳餐后血糖波动");
+        }
+        if (safeDouble(recipe.getSodium()) > 0 && safeDouble(recipe.getSodium()) <= 350) {
+            reasons.add("钠含量控制较好，更适合低盐饮食方向");
         }
 
         String goalType = dietGoal == null ? "" : normalizeText(dietGoal.getGoalType());
@@ -1527,6 +1588,99 @@ public class RecipeServiceImpl implements RecipeService {
             return "老年养生";
         }
         return "均衡饮食";
+    }
+
+    private List<Recipe> sanitizeRecipesForDisplay(List<Recipe> recipes) {
+        List<Recipe> sanitized = new ArrayList<>();
+        if (recipes == null) {
+            return sanitized;
+        }
+        for (Recipe recipe : recipes) {
+            Recipe item = sanitizeRecipeForDisplay(recipe);
+            if (item != null) {
+                sanitized.add(item);
+            }
+        }
+        return sanitized;
+    }
+
+    private Recipe sanitizeRecipeForDisplay(Recipe recipe) {
+        if (recipe == null) {
+            return null;
+        }
+        applyRecipeHealthMetrics(recipe);
+        recipe.setDescription(localizeGoalTypeInDescription(recipe.getDescription()));
+        recipe.setSuitableFor(localizeGoalTypeInDescription(recipe.getSuitableFor()));
+        recipe.setGoalType(localizeGoalTypeInDescription(recipe.getGoalType()));
+        return recipe;
+    }
+
+    private void applyRecipeHealthMetrics(Recipe recipe) {
+        if (recipe == null || recipe.getId() == null) {
+            return;
+        }
+        Map<String, Double> metrics = calculateRecipeHealthMetrics(recipe.getId());
+        recipe.setFiber(roundValue(metrics.get("fiber")));
+        recipe.setSugar(roundValue(metrics.get("sugar")));
+        recipe.setSodium(roundValue(metrics.get("sodium")));
+        recipe.setGi(roundValue(metrics.get("gi")));
+    }
+
+    private Map<String, Double> calculateRecipeHealthMetrics(Long recipeId) {
+        Map<String, Double> metrics = new HashMap<>();
+        double totalFiber = 0;
+        double totalSugar = 0;
+        double totalSodium = 0;
+        double weightedGi = 0;
+        double giCarbWeight = 0;
+
+        List<RecipeIngredient> ingredients = recipeIngredientMapper.selectByRecipeId(recipeId);
+        for (RecipeIngredient recipeIngredient : ingredients) {
+            Ingredient ingredient = ingredientMapper.selectById(recipeIngredient.getIngredientId());
+            if (ingredient == null) {
+                continue;
+            }
+
+            double quantity = safeDouble(recipeIngredient.getQuantity());
+            double ratio = quantity / 100.0;
+            totalFiber += safeDouble(ingredient.getFiberPer100g()) * ratio;
+            totalSugar += safeDouble(ingredient.getSugarPer100g()) * ratio;
+            totalSodium += safeDouble(ingredient.getSodiumPer100g()) * ratio;
+            double carbs = safeDouble(ingredient.getCarbsPer100g()) * ratio;
+            if (ingredient.getGiValue() != null && ingredient.getGiValue() > 0 && carbs > 0) {
+                weightedGi += ingredient.getGiValue() * carbs;
+                giCarbWeight += carbs;
+            }
+        }
+
+        metrics.put("fiber", totalFiber);
+        metrics.put("sugar", totalSugar);
+        metrics.put("sodium", totalSodium);
+        metrics.put("gi", giCarbWeight > 0 ? weightedGi / giCarbWeight : 0D);
+        return metrics;
+    }
+
+    private String localizeGoalTypeInDescription(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return text;
+        }
+        String localized = text;
+        localized = localized.replace("fat_loss", "减肥减脂");
+        localized = localized.replace("muscle_toning", "增肌塑形");
+        localized = localized.replace("weight_maintenance", "维持体重");
+        localized = localized.replace("healthy_weight_gain", "健康增重");
+        localized = localized.replace("blood_sugar_control", "控糖饮食");
+        localized = localized.replace("lipid_control", "控脂降脂");
+        localized = localized.replace("low_sodium", "控压低盐");
+        localized = localized.replace("pregnancy_nutrition", "孕妇营养");
+        localized = localized.replace("child_growth", "儿童成长");
+        localized = localized.replace("senior_wellness", "老年养生");
+        return localized;
+    }
+
+    private double roundValue(Double value) {
+        double number = value == null ? 0D : value;
+        return Math.round(number * 10D) / 10D;
     }
 
     private List<String> splitTokens(String text) {

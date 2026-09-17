@@ -1,59 +1,90 @@
 <template>
-  <div class="auth-wrapper">
-    <div class="auth-main">
-      <div class="auth-header">
-        <h1>健康饮食推荐</h1>
-        <p class="auth-subtitle">开启您的健康生活</p>
-      </div>
+  <div class="login-page">
+    <div class="login-shell">
+      <section class="login-brand">
+        <div class="brand-icon">
+          <div class="brand-icon-inner">
+            <span class="brand-monitor"></span>
+          </div>
+        </div>
 
-      <div class="auth-form">
-        <h2>创建账号</h2>
-        <el-form :model="registerForm" :rules="rules" ref="registerFormRef" label-position="top">
+        <div class="brand-copy">
+          <h1>基于人工智能的个人饮食健康管理系统</h1>
+          <p>建立账号后完善健康档案，系统将结合饮食目标、身体情况和营养数据生成个性化推荐。</p>
+        </div>
+
+        <ul class="brand-points">
+          <li>个性化食谱推荐</li>
+          <li>健康档案与目标管理</li>
+          <li>饮食记录与智能分析</li>
+        </ul>
+      </section>
+
+      <section class="login-panel register-panel">
+        <div class="panel-head">
+          <h2>创建账号</h2>
+          <p>填写基础账号信息，下一步完善健康档案</p>
+        </div>
+
+        <div class="login-tabs">
+          <button type="button" class="tab-item active">账号注册</button>
+        </div>
+
+        <el-form
+          ref="registerFormRef"
+          :model="registerForm"
+          :rules="rules"
+          label-position="top"
+          class="login-form register-form"
+        >
           <el-form-item label="用户名" prop="username">
-            <el-input v-model="registerForm.username" placeholder="请输入用户名" />
+            <el-input v-model="registerForm.username" placeholder="请输入用户名" class="login-input" />
           </el-form-item>
 
           <el-form-item label="邮箱" prop="email">
-            <el-input v-model="registerForm.email" placeholder="请输入邮箱" />
+            <el-input v-model="registerForm.email" placeholder="请输入邮箱地址" class="login-input" />
           </el-form-item>
 
           <el-form-item label="手机号" prop="phone">
-            <el-input v-model="registerForm.phone" placeholder="请输入手机号" />
+            <el-input v-model="registerForm.phone" placeholder="请输入手机号" class="login-input" />
           </el-form-item>
 
           <el-form-item label="密码" prop="password">
-            <el-input v-model="registerForm.password" type="password" placeholder="请输入密码" />
+            <el-input
+              v-model="registerForm.password"
+              type="password"
+              show-password
+              placeholder="请输入密码"
+              class="login-input"
+            />
           </el-form-item>
 
           <el-form-item label="确认密码" prop="confirmPassword">
             <el-input
               v-model="registerForm.confirmPassword"
               type="password"
+              show-password
               placeholder="请再次输入密码"
+              class="login-input"
             />
           </el-form-item>
 
-          <el-form-item>
-            <el-button class="btn-primary" @click="register" :loading="loading">下一步</el-button>
+          <el-form-item class="login-submit">
+            <el-button class="submit-button" @click="register" :loading="loading">下一步</el-button>
           </el-form-item>
         </el-form>
 
         <div class="auth-footer">
           <span>已有账号？</span>
-          <el-link class="link-text" @click="goToLogin">立即登录</el-link>
+          <el-link class="register-link" @click="goToLogin">立即登录</el-link>
         </div>
-      </div>
-    </div>
-
-    <div class="auth-decor">
-      <div class="decor-line"></div>
-      <div class="decor-circle"></div>
+      </section>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import authApi from '../api/auth';
@@ -73,9 +104,7 @@ const registerForm = reactive({
 });
 
 const rules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
-  ],
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, message: '密码长度至少 6 位', trigger: 'blur' }
@@ -174,189 +203,315 @@ const goToLogin = () => {
 </script>
 
 <style scoped>
-.auth-wrapper {
+.login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #F7FAF8;
-  padding: 40px 20px;
-  position: relative;
+  padding: 32px;
+  background:
+    radial-gradient(circle at top left, rgba(123, 160, 136, 0.18), transparent 28%),
+    linear-gradient(180deg, #f4f8f6 0%, #edf3ef 100%);
+}
+
+.login-shell {
+  width: min(1180px, 100%);
+  min-height: 720px;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  background: #ffffff;
+  border-radius: 32px;
   overflow: hidden;
+  box-shadow: 0 28px 80px rgba(77, 104, 88, 0.14);
+  border: 1px solid rgba(221, 232, 227, 0.9);
 }
 
-.auth-main {
-  width: 100%;
-  max-width: 380px;
+.login-brand {
   position: relative;
-  z-index: 2;
+  padding: 72px 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.12), transparent 16%),
+    linear-gradient(180deg, #6f9580 0%, #86ab95 100%);
+  color: #fff;
 }
 
-.auth-header {
-  margin-bottom: 48px;
-  text-align: left;
+.brand-icon {
+  display: flex;
+  justify-content: center;
 }
 
-.auth-header h1 {
-  font-family: 'Noto Serif SC', 'Source Han Serif SC', serif;
-  font-size: 32px;
-  font-weight: 600;
-  color: #3D4A3E;
-  letter-spacing: 2px;
-  margin: 0 0 8px 0;
+.brand-icon-inner {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(4px);
 }
 
-.auth-subtitle {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 14px;
-  color: #8A9A8C;
+.brand-monitor {
+  width: 54px;
+  height: 40px;
+  border: 4px solid #fff;
+  border-radius: 8px;
+  position: relative;
+  display: block;
+}
+
+.brand-monitor::before {
+  content: '';
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  width: 22px;
+  height: 4px;
+  background: #fff;
+  transform: translateX(-50%);
+  border-radius: 999px;
+}
+
+.brand-monitor::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  width: 4px;
+  height: 12px;
+  background: #fff;
+  transform: translateX(-50%);
+  border-radius: 999px;
+}
+
+.brand-copy {
+  text-align: center;
+}
+
+.brand-copy h1 {
+  margin: 0 0 14px;
+  font-size: 44px;
+  line-height: 1.2;
+  font-weight: 700;
   letter-spacing: 1px;
 }
 
-.auth-form {
-  background: #FFF;
-  padding: 40px 36px;
-  border-radius: 4px;
-  box-shadow:
-    8px 8px 24px rgba(61, 74, 62, 0.08),
-    -2px -2px 8px rgba(255, 255, 255, 0.6);
+.brand-copy p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.88);
 }
 
-.auth-form h2 {
-  font-family: 'Noto Serif SC', 'Source Han Serif SC', serif;
-  font-size: 22px;
-  font-weight: 500;
-  color: #3D4A3E;
-  margin: 0 0 32px 0;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #E8F0EA;
+.brand-points {
+  list-style: none;
+  margin: 8px auto 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: fit-content;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 18px;
 }
 
-.auth-form :deep(.el-form-item__label) {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 13px;
-  color: #5A6B5C;
-  padding-bottom: 6px;
+.brand-points li {
+  position: relative;
+  padding-left: 28px;
 }
 
-.auth-form :deep(.el-input__wrapper) {
-  background-color: #F7FAF8;
-  border: 1px solid #D8E4DC;
-  border-radius: 4px;
-  box-shadow: none;
-  padding: 8px 12px;
-  min-height: 40px;
-  transition: all 0.3s ease;
+.brand-points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
 }
 
-.auth-form :deep(.el-input__wrapper:hover) {
-  border-color: #B8C8B8;
+.login-panel {
+  padding: 64px 54px 46px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.auth-form :deep(.el-input__wrapper.is-focus) {
-  border-color: #9BC1A8;
-  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.04);
+.panel-head h2 {
+  margin: 0;
+  font-size: 46px;
+  line-height: 1.15;
+  color: #1d3b2f;
+  font-weight: 700;
 }
 
-.auth-form :deep(.el-input__inner) {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 14px;
-  color: #3D4A3E;
+.panel-head p {
+  margin: 14px 0 0;
+  color: #7d9082;
+  font-size: 18px;
 }
 
-.auth-form :deep(.el-input__inner::placeholder) {
-  color: #A8B8A8;
+.login-tabs {
+  display: flex;
+  gap: 32px;
+  margin-top: 32px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #dde5ef;
 }
 
-.btn-primary {
-  width: 100%;
-  height: 44px;
-  background-color: #7BA088;
+.tab-item {
   border: none;
-  border-radius: 4px;
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: #FFF;
-  cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  padding: 0 0 12px;
+  font-size: 20px;
+  color: #6b7f71;
+  cursor: default;
+}
+
+.tab-item.active {
+  color: #7ba088;
+  font-weight: 600;
+  border-bottom: 3px solid #7ba088;
+}
+
+.login-form {
+  margin-top: 24px;
+}
+
+.login-form :deep(.el-form-item) {
+  margin-bottom: 18px;
+}
+
+.login-form :deep(.el-form-item__label) {
+  font-size: 15px;
+  color: #5d7163;
+  padding-bottom: 8px;
+}
+
+.login-input :deep(.el-input__wrapper) {
+  min-height: 52px;
+  border-radius: 14px;
+  box-shadow: none;
+  background: #fff;
+  border: 1px solid #d8e2ef;
+  padding: 0 16px;
+}
+
+.login-input :deep(.el-input__wrapper:hover) {
+  border-color: #bdd1c3;
+}
+
+.login-input :deep(.el-input__wrapper.is-focus) {
+  border-color: #7ba088;
+  box-shadow: 0 0 0 3px rgba(123, 160, 136, 0.14);
+}
+
+.login-input :deep(.el-input__inner) {
+  font-size: 16px;
+  color: #2d4335;
+}
+
+.login-submit {
   margin-top: 8px;
 }
 
-.btn-primary:hover {
-  background-color: #6A9177;
-  transform: scale(1.02);
-  box-shadow: 4px 4px 12px rgba(123, 160, 136, 0.25);
+.submit-button {
+  width: 100%;
+  height: 54px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #7ba088 0%, #6b9078 100%);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.btn-primary:active {
-  transform: scale(0.98);
+.submit-button:hover {
+  background: linear-gradient(180deg, #739982 0%, #62866f 100%);
 }
 
 .auth-footer {
   margin-top: 24px;
   text-align: center;
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 13px;
-  color: #8A9A8C;
+  color: #839587;
+  font-size: 15px;
 }
 
-.link-text {
-  color: #7BA088;
-  font-weight: 500;
-  margin-left: 4px;
+.register-link {
+  margin-left: 6px;
+  color: #7ba088;
+  font-size: 15px;
+  font-weight: 600;
 }
 
-.link-text:hover {
-  color: #6A9177;
-}
-
-.auth-decor {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 45%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.decor-line {
-  position: absolute;
-  top: 15%;
-  right: 20%;
-  width: 120px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #C8D8CC, transparent);
-}
-
-.decor-line:nth-child(2) {
-  top: 25%;
-  right: 25%;
-  width: 80px;
-}
-
-.decor-circle {
-  position: absolute;
-  bottom: 15%;
-  right: 10%;
-  width: 200px;
-  height: 200px;
-  border: 1px solid #E8F0EA;
-  border-radius: 50%;
-  opacity: 0.5;
-}
-
-@media (max-width: 480px) {
-  .auth-wrapper {
-    padding: 24px 16px;
+@media (max-width: 980px) {
+  .login-shell {
+    grid-template-columns: 1fr;
+    min-height: auto;
   }
 
-  .auth-header h1 {
-    font-size: 26px;
+  .login-brand {
+    padding: 48px 30px;
   }
 
-  .auth-form {
-    padding: 28px 20px;
+  .login-panel {
+    padding: 44px 28px 36px;
+  }
+
+  .brand-copy h1 {
+    font-size: 36px;
+  }
+
+  .panel-head h2 {
+    font-size: 38px;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-page {
+    padding: 14px;
+  }
+
+  .login-shell {
+    border-radius: 22px;
+  }
+
+  .login-brand {
+    padding: 38px 22px;
+  }
+
+  .login-panel {
+    padding: 34px 20px 28px;
+  }
+
+  .brand-copy h1 {
+    font-size: 30px;
+  }
+
+  .brand-copy p,
+  .brand-points {
+    font-size: 15px;
+  }
+
+  .panel-head h2 {
+    font-size: 32px;
+  }
+
+  .panel-head p {
+    font-size: 15px;
+  }
+
+  .login-tabs {
+    gap: 20px;
+  }
+
+  .tab-item {
+    font-size: 17px;
   }
 }
 </style>

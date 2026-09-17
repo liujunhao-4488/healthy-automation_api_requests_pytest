@@ -2,6 +2,8 @@ package com.health.service;
 
 import com.health.entity.HealthArticle;
 import com.health.entity.UserReadRecord;
+
+import java.util.Map;
 import java.util.List;
 
 /**
@@ -111,7 +113,7 @@ public interface HealthArticleService {
      * @param readDuration 阅读时长（秒）
      * @return 阅读记录
      */
-    UserReadRecord recordArticleRead(Long userId, Long articleId, Integer readDuration);
+    UserReadRecord recordArticleRead(Long userId, Long articleId, Integer readDuration, Integer scrollPercent);
 
     /**
      * 记录用户阅读文章（简化版）
@@ -127,7 +129,7 @@ public interface HealthArticleService {
      * @param limit 限制数量
      * @return 阅读历史列表
      */
-    List<HealthArticle> getUserReadHistory(Long userId, int limit);
+    List<Map<String, Object>> getUserReadHistory(Long userId, int limit);
 
     /**
      * 获取个性化推荐文章
@@ -138,9 +140,8 @@ public interface HealthArticleService {
     List<HealthArticle> getRecommendedArticles(Long userId, Integer limit);
 
     /**
-     * 增加文章阅读计数
+     * 同步文章冗余统计字段
      * @param articleId 文章ID
-     * @return 更新后的阅读计数
      */
-    int incrementArticleReadCount(Long articleId);
+    void syncArticleStats(Long articleId);
 }
