@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +45,15 @@ public class HealthInfoServiceImpl implements HealthInfoService {
             existingHealthInfo.setBloodSugar(healthInfoDTO.getBloodSugar());
             existingHealthInfo.setExerciseDuration(healthInfoDTO.getExerciseDuration());
             existingHealthInfo.setExerciseType(healthInfoDTO.getExerciseType());
+
+            // 手动刷新 updateTime。
+            // 表定义里 update_time 已经是 `ON UPDATE CURRENT_TIMESTAMP`，本该自动更新，
+            // 但 MyBatis-Plus 的 updateById 默认"非 null 字段一律写进 SET"，
+            // 而 existingHealthInfo 是从库里查出来的、updateTime 带着旧值，
+            // 于是 SQL 里出现了 `update_time = <旧值>` —— 显式赋值把数据库的自动刷新盖掉了。
+            // 这里显式给新时间，语义明确，也不依赖数据库方言行为。
+            existingHealthInfo.setUpdateTime(LocalDateTime.now());
+
             healthInfoMapper.updateById(existingHealthInfo);
             appendHistoryIfNeeded(userId, existingHealthInfo);
             return existingHealthInfo;

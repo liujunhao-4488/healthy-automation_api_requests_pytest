@@ -20,8 +20,9 @@
           <el-col :md="12" :xs="24">
             <el-form-item label="性别" prop="gender">
               <el-radio-group v-model="healthInfoForm.gender">
-                <el-radio label="男">男</el-radio>
-                <el-radio label="女">女</el-radio>
+                <!-- 库里统一存 male/female；界面上仍显示「男」「女」 -->
+                <el-radio value="male">男</el-radio>
+                <el-radio value="female">女</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -116,6 +117,7 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '../stores/user';
 import healthInfoApi from '../api/healthInfo';
+import { isMaleGender } from '../utils/healthEnums';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -158,7 +160,10 @@ const calculateBMI = () => {
 
 const calculateBMR = () => {
   if (healthInfoForm.height && healthInfoForm.weight && healthInfoForm.age && healthInfoForm.gender) {
-    const isMale = healthInfoForm.gender === '男';
+    // ⚠️ 这行是 BMR 公式的分支开关：它判错不会报错，只会静默用错公式。
+    // 判定收拢到公共工具（兼容 male / MALE / 男），避免各处写法不一致——
+    // 归一前这里写死的是 === '男'，导致 male 用户被按女性公式重算。
+    const isMale = isMaleGender(healthInfoForm.gender);
     const bmr = isMale
       ? 88.362 + (13.397 * healthInfoForm.weight) + (4.799 * healthInfoForm.height) - (5.677 * healthInfoForm.age)
       : 447.593 + (9.247 * healthInfoForm.weight) + (3.098 * healthInfoForm.height) - (4.33 * healthInfoForm.age);

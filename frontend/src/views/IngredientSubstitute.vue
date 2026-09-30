@@ -166,6 +166,7 @@ import assistantApi from '../api/assistant';
 import healthInfoApi from '../api/healthInfo';
 import dietGoalApi from '../api/dietGoal';
 import { useUserStore } from '../stores/user';
+import { genderLabel } from '../utils/healthEnums';
 
 const userStore = useUserStore();
 const assistantFormRef = ref(null);
@@ -245,7 +246,7 @@ const buildContextSummary = () => {
   const healthSummary = [
     '健康评估：',
     `年龄 ${formatValue(healthInfo.age)}`,
-    `性别 ${formatValue(healthInfo.gender)}`,
+    `性别 ${genderLabel(healthInfo.gender)}`,
     `身高 ${formatValue(healthInfo.height, 'cm')}`,
     `体重 ${formatValue(healthInfo.weight, 'kg')}`,
     `BMI ${formatValue(healthInfo.bmi)}`,

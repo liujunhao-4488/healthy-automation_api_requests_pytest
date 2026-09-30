@@ -11,18 +11,29 @@ pytest + requests 写的接口自动化测试，被测系统：健康饮食后�
 
 | 序 | 编号 | 测试文件 | 这个文件在讲什么（人话） | 新学的核心概念 | 用例数 | 数据从哪来 |
 |:--:|:--|:--|:--|:--|:--:|:--|
-| 1 | `#1` 地基 | `test_auth.py` | 第一个接口测试：登录成功 / 密码错 | fixture、assert、业务 code | 2 | 代码内常量 |
-| 2 | `#2` 封装 | `test_recipe_v2.py` | 把"拼URL+判code"的重复动作收进客户端 | `ApiClient`、**路径解耦** | 3 | 接口动态取 id |
-| — | `#2` 对照 | `test_recipe.py` ⚠️ | 旧风格对照物，**已挂 `collect_ignore` 不参与自动跑** | 反面教材：跨层耦合 → 404 | 3 | 代码内常量 |
-| 3 | `#3` 参数化 | `test_param_boundary.py` | 一条用例吃一组输入（9 登录 + 5 搜索） | `@pytest.mark.parametrize`、**边界值 / 异常值** | 16 | .py 内字面量 |
-| 4 | `#3.5` DDT | `test_login_ddt.py` | 把数据搬出代码，改用外部文件 | **数据驱动**、外部文件、**fuzz 模糊测试** | 22 | JSON + CSV |
-| 5 | `#3.5` 续 | `test_login_sources.py` | 换数据格式，一行业务代码都不用改 | **数据源可插拔** | 12 | YAML + Excel |
-| 6 | `#3.6` 工厂 | `test_data_factory.py` | "大量数据"靠程序**生成**，不靠手写 | 笛卡尔积、边界算法、可复现 fuzz | 27 | 程序生成 |
-| 7 | `#3.7` 动态 | `test_dynamic_data.py` | 数据运行时**现场取**，不写死 | DB 取数、**接口链式依赖** | 3 | MySQL / 上游接口 |
-| 8 | `#3.8` 数据库 | `test_db_conn_write.py` | 数据库工具升级：连接复用 + 能写 + 有日志 | 连接复用、`execute`/`executemany`、**事务回滚** | 7 | MySQL 临时表 |
-| | | | | **合计** | **92** | |
+| 1 | `#4.2` 登录（合并） | `auth/test_login.py` | 登录接口的 4 个"写法版本"合并成一个文件：地基 → 参数化 → 数据驱动 → fuzz | fixture、`assert_ok`、`parametrize`、**DDT 四层数据源**、fuzz | 45 | 代码内 + JSON/CSV/YAML/Excel |
+| 2 | `#2` 封装 | `recipe/test_recipe_v2.py` | 把"拼URL+判code"的重复动作收进客户端 | `ApiClient`、**路径解耦** | 3 | 接口动态取 id |
+| — | `#2` 对照 | `recipe/test_recipe.py` ⚠️ | 旧风格对照物，**已挂 `collect_ignore` 不参与自动跑** | 反面教材：跨层耦合 → 404 | 3 | 代码内常量 |
+| 3 | `#4.2b` 健壮性 | `recipe/test_recipe_search.py` | 搜索接口的关键词健壮性 + 2 条"文档与实现不一致" | 注入 / 超长 / 空值的"不崩"断言 | 7 | .py 内字面量 |
+| 4 | `#3.6` 工厂 | `toolbox/test_data_factory.py` | "大量数据"靠程序**生成**，不靠手写 | 笛卡尔积、边界算法、可复现 fuzz | 27 | 程序生成 |
+| 5 | `#3.7` 动态 | `toolbox/test_dynamic_data.py` | 数据运行时**现场取**，不写死 | DB 取数、**接口链式依赖** | 3 | MySQL / 上游接口 |
+| 6 | `#3.8` 数据库 | `toolbox/test_db_conn_write.py` | 数据库工具升级：连接复用 + 能写 + 有日志 | 连接复用、`execute`/`executemany`、**事务回滚** | 7 | MySQL 临时表 |
+| 7 | `#4.1a` 写操作 | `health/test_health_info.py` | 第一次测**写**接口（健康档案）：写完读回来对账，测完自动还原 | **写读回环**、**yield 夹具**、**顺序依赖假失败** | 11 | 接口动态取值 |
+| 8 | `#4.1b` 写操作 | `health/test_health_goal.py` | 同上，但测的是饮食目标；**夹具只备份自己那一份** | **夹具粒度匹配用例需求** | 7 | 接口动态取值 |
+| 9 | `#4.2` 注册 | `auth/test_register.py` | 注册接口的正常 + 异常：拒 4 类非法邮箱，成功路径带唯一值与清理 | **唯一值防"二次运行冲突"**、yield 清理夹具 | 6 | .py 内 + 时间戳生成 |
+| 10 | `#4.3` 用户资料 | `user/test_user_profile.py` | 单例资源的读写：鉴权 6 型、**字段白名单**、唯一性边界、**越权 4 个入口逐个试** | **单例还原夹具**、JWT 篡改三连、**交叉比对证隔离** | 35 | 接口动态取值 + MySQL 对质 |
+| | | | | **合计** | **151** | |
 
-> ⚠️ = 该文件被 `conftest.py` 的 `collect_ignore` 排除，`pytest test_cases` 时不计入；想单独研究它，直接 `pytest test_cases/test_recipe.py` 点名跑。
+> **2026-09-29 合并说明**：原 `auth/` 下的 `test_auth.py` / `test_param_boundary.py` /
+> `test_login_ddt.py` / `test_login_sources.py` 四个文件（共 52 条）已合并进 `auth/test_login.py`。
+> 理由：它们测的是**同一个接口**，只是四个"写法版本"。合并后按接口就能找全用例——
+> 原来那份"按知识点切"的进化史没有丢，变成了同一文件里的第 1~4 组。
+> 其中原来混在 `test_param_boundary.py` 里的 **7 条 `/recipe/search` 用例已归位到 `recipe/test_recipe_search.py`**
+> （那个文件其实横跨两个资源，不符合"按资源切文件"）。
+
+
+> ⚠️ = 该文件被 `conftest.py` 的 `collect_ignore` 排除，`pytest test_cases` 时不计入；
+> 想单独研究它，直接 `pytest test_cases/recipe/test_recipe.py` 点名跑。
 
 ---
 
@@ -30,22 +41,41 @@ pytest + requests 写的接口自动化测试，被测系统：健康饮食后�
 
 | 我想搞懂… | 打开这个文件 | 重点看哪里 |
 |:--|:--|:--|
-| pytest 最基础的套路（`def test_` + `assert`） | `test_auth.py` | 全篇，只有 2 条，最短最好读 |
+| pytest 最基础的套路（`def test_` + `assert`） | `auth/test_login.py` | 第 1 组，只有 2 条，最短最好读 |
 | 什么是 fixture（`api` / `token` / `auth_headers`） | `conftest.py` | 三个 `@pytest.fixture` 函数 |
-| 为什么用例不该自己拼 BASE_URL | `test_recipe.py` vs `test_recipe_v2.py` | 两个文件第 1 条用例对比着看 |
+| 为什么用例不该自己拼 BASE_URL | `recipe/test_recipe.py` vs `recipe/test_recipe_v2.py` | 两个文件第 1 条用例对比着看 |
 | 怎么一行断言"成功" | `common/api_client.py` | `assert_ok()` 方法 |
-| `@pytest.mark.parametrize` 怎么用 | `test_param_boundary.py` | 第 1 组的 `LOGIN_CASES` 表 |
-| 边界值 / 等价类怎么设计 | `test_param_boundary.py` | `LOGIN_CASES` 里超长、注入那几行 |
-| 数据驱动（DDT）是什么 | `test_login_ddt.py` | 顶部注释 + `CASES` 那段循环 |
+| `@pytest.mark.parametrize` 怎么用 | `auth/test_login.py` | 第 2 组的 `LOGIN_CASES` 表 |
+| 边界值 / 等价类怎么设计 | `auth/test_login.py` | `LOGIN_CASES` 里超长、注入那几行 |
+| 数据驱动（DDT）是什么 | `auth/test_login.py` | 第 3 组顶部注释 + `CASES` 那段循环 |
 | 数据文件怎么读（4 种格式） | `common/data_loader.py` | `load_cases()` 函数 |
 | **CSV 中文乱码 / BOM 坑** | `common/data_loader.py` | `utf-8-sig` 那几行 |
 | "大量数据"怎么造 | `common/data_factory.py` | `cartesian` / `boundary_numbers` / `fuzz_emails` |
-| 怎么从数据库取真实数据当输入 | `common/db.py` + `test_dynamic_data.py` | `query()` 用法 |
-| 接口链式依赖（上一步结果喂下一步） | `test_dynamic_data.py` | `test_chain_data_from_api` |
+| 怎么从数据库取真实数据当输入 | `common/db.py` + `toolbox/test_dynamic_data.py` | `query()` 用法 |
+| 接口链式依赖（上一步结果喂下一步） | `toolbox/test_dynamic_data.py` | `test_chain_data_from_api` |
 | 数据库连接怎么复用（别每次新建） | `common/db.py` | `get_conn()` / `_IDLE_BEFORE_PING` |
-| 怎么往库里写数据（造数据/清理） | `common/db.py` + `test_db_conn_write.py` | `execute` / `executemany` / `transaction()` |
-| 怎么在用例里"临时替换"某个函数 | `test_db_conn_write.py` | `test_five_queries_share_one_connection` 里的 `monkeypatch` |
+| 怎么往库里写数据（造数据/清理） | `common/db.py` + `toolbox/test_db_conn_write.py` | `execute` / `executemany` / `transaction()` |
+| 怎么在用例里"临时替换"某个函数 | `toolbox/test_db_conn_write.py` | `test_five_queries_share_one_connection` 里的 `monkeypatch` |
 | 怎么让每条 SQL 都打日志、看耗时 | `pytest.ini` + `common/db.py` | `log_cli` 与 `log.info` |
+| **怎么把接口响应打印得好看（每次都能看到返回内容）** | `test_cases/toolbox/logger.py` | `log_response(resp)` / `format_response()` |
+| **为什么日志在 pytest 里会被打两遍** | `test_cases/toolbox/logger.py` | `get_logger()` 里 `_IN_PYTEST` 那段注释（`propagate=False` 反被 pytest 补挂一个 handler） |
+| 怎么证明"写接口"真的写进去了 | `health/test_health_info.py` | `test_write_info_then_read_back`（写读回环） |
+| 用例会改真实数据，怎么收场 | `health/test_health_info.py` / `health/test_health_goal.py` | `info_env` / `goal_env` 夹具（yield 前 setup / 后 teardown） |
+| 某个接口到底哪些字段必填 | `health/test_health_info.py` / `health/test_health_goal.py` | `INFO_REQUIRED` / `GOAL_REQUIRED` 表 |
+| **一个模块为什么要拆成两个文件** | `health/test_health_info.py` vs `health/test_health_goal.py` | 两个文件的头部注释 + 夹具写法对比 |
+| **同一个接口为什么要合并成一个文件** | `auth/test_login.py` | 头部"为什么合并"注释 + 第 1~4 组的编排 |
+| **注册用例怎么避免"跑第二次就红"** | `auth/test_register.py` | `new_user` 夹具：时间戳唯一值 + yield 清理 |
+| **"期望失败"的用例为什么不能用 `assert_ok`** | `auth/test_register.py` vs `auth/test_login.py` | 前者手写三层断言，后者用 `assert_ok` |
+| **顺序依赖的"假失败"怎么破** | `health/test_health_info.py` | `test_update_time_refreshed_on_write` 的 docstring（撞秒坑） |
+| **跨目录同名文件为什么会让收集直接中断** | 本节第五节约定 7 | `import file mismatch` 与 `__init__.py` 解法 |
+| **怎么测"拿别人的数据"（越权 / IDOR）** | `user/test_user_profile.py` | 组 5：`PROBE_POSITIONS`（query/header 塞 id）+ 组 1 的 JWT 篡改三连 |
+| **哪些字段传了能改、哪些传了等于白传** | `user/test_user_profile.py` | `test_update_ignores_non_editable_fields` |
+| **怎么伪造 token 冒充别人** | `user/test_user_profile.py` | `_tamper_signature` / `_tamper_subject` / `_tamper_alg_none` |
+| **"单例资源"（改它=改全局状态）怎么收场** | `user/test_user_profile.py` | `restore_profile` 夹具（对比 health 的 `info_env`） |
+| **只改一个字段，别的会不会被冲掉** | `user/test_user_profile.py` | `test_update_single_field_keeps_others`（局部更新 vs 全量覆盖） |
+| **怎么写"期望失败"的边界用例** | `user/test_user_profile.py` | 组 4：手写 status_code + code + message 三层断言 |
+| **`%` 在 SQL 里被 pymysql 当成占位符** | 本节第六节 | `like 'tmp\_%%'` 要写成参数化的 `%s` |
+
 
 ---
 
@@ -56,18 +86,36 @@ automation_api_requests_pytest/
 ├── README.md            ← 你正在看的这份知识点索引
 ├── config.py            ← 配置中心：BASE_URL / TIMEOUT / 测试账号
 ├── conftest.py          ← 公共夹具：api / token / auth_headers（+ collect_ignore）
-├── pytest.ini           ← pytest 运行配置（中文用例名显示等）
+├── docs/
+│   └── 接口覆盖矩阵.md   ← 施工图：77 个接口的覆盖状态 + 优先级排序
+├── pytest.ini           ← pytest 运行配置（pythonpath / 中文用例名显示 / SQL 日志）
 ├── requirements.txt     ← 依赖清单
-├── test_cases/          ← 测试用例（知识点地图见上表）
-│   ├── test_auth.py
-│   ├── test_recipe.py           ⚠️ 旧风格对照，默认不跑
-│   ├── test_recipe_v2.py
-│   ├── test_param_boundary.py
-│   ├── test_login_ddt.py
-│   ├── test_login_sources.py
-│   ├── test_data_factory.py
-│   ├── test_dynamic_data.py
-│   └── test_db_conn_write.py
+├── test_cases/          ← 测试用例，按业务模块分目录（知识点地图见第一节）
+│   │                      目录名 = URL 前缀（auth / health / recipe …），一个模块一个目录
+│   ├── auth/            ← /auth/*        登录、注册                        ★ 已覆盖
+│   │   ├── test_login.py        ← 45 条，登录接口的全部用例（4 个写法版本合并）
+│   │   └── test_register.py     ← 6 条
+│   ├── health/          ← /health/*      健康档案、饮食目标               ★ 已覆盖
+│   │   ├── test_health_info.py
+│   │   └── test_health_goal.py
+│   ├── recipe/          ← /recipe/*      食谱                            ◐ 部分覆盖
+│   │   ├── test_recipe_v2.py
+│   │   ├── test_recipe_search.py
+│   │   └── test_recipe.py       ⚠️ 旧风格对照，默认不跑
+│   ├── toolbox/         ← 工具零件自测（不对应任何业务接口）
+│   │   ├── logger.py            ← 日志工具：把接口响应打印成好读的多行（是"零件"，不是 test_ 用例）
+│   │   ├── test_data_factory.py
+│   │   ├── test_db_conn_write.py
+│   │   └── test_dynamic_data.py
+│   ├── user/            ← /user/*        个人资料、饮食偏好               ◐ 部分覆盖
+│   │   └── test_user_profile.py ← 35 条（34 passed + 1 xfailed 缺陷 #9）
+│   ├── record/          ← /record/*      饮食记录                        ⬜ 待补
+│   ├── ingredient/      ← /ingredient/*  食材                            ⬜ 待补
+│   ├── recommend/       ← /recommend/*   三餐推荐、食材替代               ⬜ 待补
+│   ├── article/         ← /article/*     健康文章（22 个接口，最多）      ⬜ 待补
+│   ├── assistant/       ← /assistant/*   AI 助手                         ⬜ 待补（AI 专项主战场）
+│   ├── notification/    ← /notification/* 通知                           ⬜ 待补
+│   └── admin/           ← /admin/*       后台总览                        ⬜ 待补
 ├── common/              ← 可复用零件
 │   ├── api_client.py    ← 请求封装：get/post/put/delete + assert_ok
 │   ├── data_loader.py   ← 统一读数据：json / csv / yaml / xlsx → list[dict]
@@ -87,11 +135,18 @@ automation_api_requests_pytest/
 ```bash
 cd D:\jiankang\healthy\automation_api_requests_pytest
 
-# 跑全套（85 条）
+# 跑全套（151 条，2026-09-30 实测 150 passed + 1 xfailed，约 13 秒）
+# 注1：health 那 4 条"缺陷固化"用例，后端已修复 → XFAIL 变 XPASS → 标记已摘，
+#      现在它们是正式断言（哪天再退化会直接变红）。
+# 注2：user 那 1 条 xfail 用例是**已知缺陷 #9**（PUT 后 updateTime 不刷新），
+#      后端修好后会自己变成 XPASS —— 那时把 @pytest.mark.xfail 摘掉即可。
 .venv\Scripts\python.exe -m pytest test_cases -v
 
-# 只跑某一个知识点
-.venv\Scripts\python.exe -m pytest test_cases/test_param_boundary.py -v
+# 只跑某一个模块（按目录跑，最常用）
+.venv\Scripts\python.exe -m pytest test_cases/auth -v
+
+# 只跑某一个文件
+.venv\Scripts\python.exe -m pytest test_cases/auth/test_login.py -v
 
 # 只看有哪些用例、不执行（当"活清单"用）
 .venv\Scripts\python.exe -m pytest test_cases --collect-only -q
@@ -119,15 +174,52 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/api/recipe/list
 > 解决：启动前 `env -u SERVER__PORT`（或加 `--server.port=8080`）。
 > 判断是否中招：看 `run.log` 里 `Tomcat initialized with port(s): N`，N 不是 8080 就是中招了。
 
+> ⚠️ **在 AI 工具环境里跑测试还要摘代理**：工具环境注入了 `HTTP_PROXY/HTTPS_PROXY`，
+> `requests` 默认会走它，连 `127.0.0.1:8080` 会得到 **502**（看起来像后端挂了）。
+> 跑之前先 `unset HTTP_PROXY HTTPS_PROXY` + `export NO_PROXY=127.0.0.1,localhost`。
+> 你在 PyCharm 里自己跑没有这个问题。
+
 ---
 
-## 五、三条约定（防止以后再次迷路）
+## 五、九条约定（防止以后再次迷路）
 
 1. **命名**：新增文件用 `test_<被测对象>_<知识点>.py`，例如 `test_recipe_parametrize.py`、`test_order_ddt.py`。
    名字里带上"知识点"，光看文件名就知道它教什么。
 2. **文件头**：每个测试文件第一行固定写 `# 【任务 #x：知识点】` + 一句话这个文件在证明什么。
-   （多数文件已经写了，见 `test_param_boundary.py` / `test_login_ddt.py` / `test_dynamic_data.py` 的头部。）
+   （多数文件已经写了，见 `auth/test_login.py` / `recipe/test_recipe_search.py` / `toolbox/test_dynamic_data.py` 的头部。）
 3. **加完新文件，回来更新第一节的"知识点地图"表** —— 保持这份索引和目录同步。
+4. **补业务用例之前，先看 `docs/接口覆盖矩阵.md`** —— 那是施工图（77 个接口谁覆盖了、谁没覆盖、先打哪个）。
+   每补完一个接口，回矩阵把 ⬜ 改成 ✅。**别凭感觉随机挑接口写。**
+5. **拆分维度：按"资源"切文件，不按"知识点"切。**
+   一个文件对应一个接口/资源（`health/test_health_info.py` = `/health/info`，`health/test_health_goal.py` = `/health/goal`），
+   知识点靠文件头注释和函数名表达。配套原则：**夹具的粒度要匹配用例的需求**——
+   只测 A 资源的用例，夹具不该顺手去动 B 资源（白花请求，还多一份数据风险）。
+6. **目录按"模块"分，文件按"资源"切。** `test_cases/` 的下一级目录名 = URL 前缀
+   （`auth/` 放 `/auth/*` 的用例，`health/` 放 `/health/*`…），想找某个接口的用例直接进对应目录。
+   不对应任何业务接口的"工具零件自测"统一放 `toolbox/`（数据工厂、数据库工具、动态取数）。
+   新增模块时就新建一个目录，别把文件堆在 `test_cases/` 根下。
+7. **文件切多细：看这个模块的用例量，不是看知识点数量。**（2026-09-29 定）
+   - 模块用例 **< 40 条或接口 < 5 个** → **一个模块一个文件**就够（`recipe/test_recipe_v2.py`）。
+   - 模块内部**有多个独立资源、各自用例够多** → **按资源切**（`health/` → info / goal 两个文件）。
+   - 单文件**超过约 300 行 / 40 个函数**就拆，否则找一条用例要翻半天。
+   - ⚠️ 跨目录**文件名必须唯一**（`user/test_profile.py` 和 `admin/test_profile.py` 会撞车，实测报
+     `import file mismatch` 直接中断收集）。解法：要么保证 basename 唯一（当前 10 个文件都满足），
+     要么给每个目录加 `__init__.py`（已实测可解）。
+   - ⚠️ 同一模块**不要同时存在两份测同一个接口的文件**（会重复收集、重复写数据）。要留对照就把旧的挂进 `collect_ignore`。
+8. **合并/拆分后，必须跑这两条命令对账**（2026-09-29 定）：
+   ```bash
+   .venv\Scripts\python.exe -m pytest test_cases --collect-only -q   # 总数应与改动前完全一致
+   .venv\Scripts\python.exe -m pytest test_cases -q                  # 通过/失败数也应完全一致
+   ```
+   **一条不多、一条不少**才算搬家成功。只看"没报错"不够——少收集了几条 pytest 不会提醒你。
+9. **报缺陷之前，先回答一句："我说'应该这样'，依据是什么？"**（2026-09-30 定）
+   依据只能是三者之一：① 文档/需求/前端页面写明了的 ② 表结构、字段语义明确表达的
+   ③ 团队已经按某个标准修过同类问题（先例）。
+   三者都不是 → 记成「观察点」，**别写进缺陷单**。判缺陷用的是**需求**这把尺子，不是"我的直觉"。
+   > 反面教材（我自己踩的）：把"`PUT /user/profile` 传 `email` 不生效"报成缺陷 ——
+   > 可前端编辑个人资料页**根本没有邮箱输入框**，需求里就没这个功能。
+   > 同一把尺子还砍掉了"`phone` 可以重复"（文档只要求用户名/邮箱查重）。
+   > 详见覆盖矩阵第六节的「判定纪律 / 观察点」。
 
 ---
 
@@ -135,7 +227,181 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/api/recipe/list
 
 练习过程中实测发现的，对应路线图"失败用例比成功用例值钱"：
 
-| # | 现象 | 涉及接口 | 记录位置 |
-|:--:|:--|:--|:--|
-| 1 | 文档写"无需认证"，实测无 token → 401 | `GET /recipe/search` | `test_param_boundary.py` |
-| 2 | 缺 `keyword` 参数时返回 Spring 默认 400，不走统一信封 | `GET /recipe/search` | `test_param_boundary.py` |
+| # | 现象 | 涉及接口 | 记录位置 | 状态 |
+|:--:|:--|:--|:--|:--|
+| 1 | 文档写"无需认证"，实测无 token → 401 | `GET /recipe/search` | `recipe/test_recipe_search.py` | 待修复 |
+| 2 | 缺 `keyword` 参数时返回 Spring 默认 400，不走统一信封 | `GET /recipe/search` | `recipe/test_recipe_search.py` | 待修复 |
+| 3 | ~~`height=0` 触发 BMI 除零，把 MyBatis/MySQL 异常栈原样回给客户端~~ | `POST /health/info` | `health/test_health_info.py` | ✅ 已修复 2026-09-20 |
+| 4 | ~~数值范围无校验：`age=-1`、`age=999`、`weight=-5`、`bloodSugar=-1` 都能保存~~ | `POST /health/info` | `health/test_health_info.py` | ✅ 已修复 2026-09-20 |
+| 5 | ~~允许结束日期早于开始日期~~ | `POST /health/goal` | `health/test_health_goal.py` | ✅ 已修复 2026-09-20 |
+| 6 | ~~upsert 更新数据后 `updateTime` 不刷新~~ | `POST /health/info` | `health/test_health_info.py` | ✅ 已修复 2026-09-20 |
+| 7 | 非法日期格式返回的 400 不走统一信封 | `POST /health/goal` | 待补用例 | 待修复 |
+| 8 | ~~`gender` 无白名单，库里 `male`/`female`/`男` 三套取值并存；且落库的字面值直接决定 BMR 走哪个公式，写错不报错只算错~~ | `POST /health/info` | 待补用例（`gender_whitelist_check.py` 临时脚本验证） | ✅ 已修复 2026-09-20 |
+| 9 | `PUT /user/profile` 更新后 `updateTime` **不刷新**（停在注册时间不动）—— **与 #6 同源**，同一个 `updateById` 毛病在另一个接口原样复现 | `PUT /user/profile` | `user/test_user_profile.py`（**xfail 固化**） | 待修复 |
+| 10 | 越权被拒时返回 403 + Spring 默认错误体（`{timestamp,status,error,path}`），**不走统一信封** | 全部管理员接口 | `user/test_user_profile.py` | 待修复 |
+| 11 | ~~`PUT /user/profile` 改手机号**不查重**，可以把号改成别人正在用的（`POST /auth/register` 同样没查）；表上 `phone` 也无唯一索引——而同一方法里 `username` 是有查重的~~ | `PUT /user/profile`、`POST /auth/register` | `user/test_user_profile.py` | ✅ 已修复 2026-09-30 |
+
+> 完整版（含影响分析、优先级）见 `docs/接口覆盖矩阵.md` 第六节。
+
+### 已修复的 6 条（#3 / #4 / #5 / #6 / #8 / #11）分别改了什么
+
+**#5 日期倒挂** —— `DietGoalDTO` 加 `@AssertTrue` 跨字段校验方法 `isDateRangeValid()`。
+规则同时依赖两个字段，单字段注解表达不了，所以挂在 getter 上做类级校验；
+两个日期任一为空放行（`endDate` 本就可选），只拦真正的倒挂。
+
+**#3 和 #4 其实是同一个病根**：参数层面完全没有范围校验。在 `HealthInfoDTO` 上补：
+
+- `height`：`@DecimalMin("50") / @DecimalMax("250")` —— 顺带堵死了 `height=0`
+  算出 `Infinity`、再炸出 MyBatis 异常栈并原样返回的那条路。
+- `age`：`@Min(1) / @Max(150)`；`weight`：`@DecimalMin("10") / @DecimalMax("500")`；
+  `bloodSugar`：`@DecimalMin(value="0", inclusive=false) / @DecimalMax("50")`。
+
+三个容易踩的点：
+① **Double 字段必须用 `@DecimalMin/@DecimalMax`** —— `@Min/@Max` 只支持整数系类型
+（byte/short/int/long + 包装类、BigInteger/BigDecimal），挂在 `Double` 上会抛 `UnexpectedTypeException`；
+② 同一字段的上下限**共用一条 message**，否则调用方收到哪句取决于校验器的执行顺序，不可控；
+③ **定范围前先核对库里存量数据**（这次含 120 条模拟用户），确保已有记录不会变成"非法"——
+否则那些用户下次改档案会被新规则拦死。
+
+**#6 updateTime 不刷新** —— 根因很反直觉：表定义里 `update_time` **本来就是
+`ON UPDATE CURRENT_TIMESTAMP`**，本该自动更新；但 MyBatis-Plus 的 `updateById`
+默认策略是"非 null 字段一律写进 SET"，而实体是从库里查出来的、`updateTime` 带着旧值，
+于是 SQL 变成了 `update_time = <旧值>`，**显式赋值把数据库的自动刷新盖掉了**。
+修法：`updateById` 之前显式 `setUpdateTime(LocalDateTime.now())`。
+
+> ⚠️ **2026-09-30 补记：这个病还在，只是换了个接口。**
+> 实测 `PUT /user/profile` 更新后 `updateTime` 同样停在**注册时刻**不动
+> （注册 16:17:36 → 两次 PUT 在 16:17:39 / 16:17:42 → API 与 DB 都仍是 16:17:36）。
+> 说明 `updateById` 这个坑**不是 health 独有的**，凡是走 MyBatis-Plus 全量写回的更新接口都得查一遍。
+> 已记为本表 **#9**，并用 `user/test_user_profile.py::test_update_time_refreshed_on_profile_write`
+> 挂 `xfail` 固化 —— 后端修好后它会自己变 XPASS。
+
+**回归结果**：`health/test_health_info.py` + `health/test_health_goal.py` 里对应的 4 条断言全部由 XFAIL 转为
+**XPASS**（独立跑时）；另用临时脚本验证了 21 个边界场景 + updateTime 刷新，全部符合预期、数据已还原。
+
+**2026-09-29 收尾**：这 4 条已**摘掉 `@pytest.mark.xfail` 标记，转为正式守卫用例**
+（函数名也从 `test_bug_xxx` 改成描述契约的名字，如 `test_negative_age_rejected`）。
+这正是 xfail 的用法闭环 —— 它变 XPASS 就是在提醒你"可以摘了"；摘掉之后哪天再退化，会**直接变红**。
+
+> ⚠️ 摘标记时顺手抓到一个**测试自己的 bug**，值得单独记住：
+> `test_update_time_refreshed_on_write` 原来写的是 `assert after != before`（"变了没变"），
+> **单跑能过、跟 health 其他用例一起跑必红** —— 因为前一条用例的 teardown 刚 POST 过，
+> 两次写入落在**同一秒**，而 `updateTime` 精度只到秒（实测：相隔 0.2 秒的两次写入返回同一个值）。
+> 这叫**顺序依赖的假失败**：测试挂了但产品没毛病。
+> 正确写法是判"是否接近当前时刻"（`abs(now - after) <= 300s`），既不受秒精度影响，
+> 也照样能抓到原来的 bug（旧值停在几个月前）。改完连跑 3 次稳定 18 passed。
+
+**#8 gender 取值归一** —— 这条不是"多写了个校验"，而是**消除一个静默的计算错误**。
+
+归一前的乱象：库里 `male` 83 / `female` 98 / `男` 3 **三套取值并存**；
+而 BMR 公式的分支写成了三处**标准不一致**的判断——
+
+- `HealthInfoEdit.vue`：`gender === '男'`（**最窄，只认「男」**）
+- `dietGoalRecommendation.js`：`=== '男' || === 'male'`（不忽略大小写）
+- 后端 `HealthInfoServiceImpl.calculateBMR`：`"male".equalsIgnoreCase(...)`（忽略大小写）
+
+后果：一个 `male` 用户打开编辑页保存，`isMale` 为 `false` → **按女式公式重算 BMR**
+（测试账号正确值 1703 会被写成 1515，差 12%）→ POST 回库。**全程不报错**，
+因为 `required` 只看非空，`'male'` 是非空串。
+
+归一方案定 **`male` / `female`（英文小写）**，而不是统一成中文，理由：
+
+1. **迁移量**：库里已有 181 条英文值，只有 **3 条**中文要改（反向要改 181 条）；
+2. **后端本意**：`calculateBMR` 早就写成 `equalsIgnoreCase("male")`，DB 注释里的「男/女」才是残留；
+3. **前端零感知**：只改 radio 的 `value`，标签文字仍是「男」「女」。
+
+改动共 5 处（**顺序不能颠倒**）：
+
+1. **DB**：`UPDATE health_info SET gender='male' WHERE gender='男'`（3 行，实测 `male 86 / female 98`）；
+2. `HealthInfoBasic.vue` / `HealthInfoEdit.vue` 的 radio：`value="男"` → `value="male"`；
+3. `HealthInfoEdit.vue` 的 `isMale` 判定：`=== '男'` → 改用公共工具（**这处漏了等于白改**）；
+4. `dietGoalRecommendation.js`：同样收拢到公共工具；
+5. 后端 `HealthInfoDTO`：加 `@Pattern(regexp = "male|female", message = "性别取值不合法，只能是 male 或 female")`。
+
+新建了 `frontend/src/utils/healthEnums.js` 收拢字典与判定，避免 `'male'` 硬编码散在四处。
+新增一个**显示映射** `genderLabel()`：库里存英文、界面显示中文——这条最容易漏，
+不补的话「我的健康档案」页会直接把 `male` 显示给用户。
+
+**两条必须记住的坑**：
+
+① **`el-radio` 的 `value` 是发到后端的数据，标签文字只是给用户看的。**
+"前端传男女"这个说法本身就不成立——用户点的是「男」，发出去的是 `value`。
+所以"让前端统一发英文"**不需要写任何转换代码**，改 `value` 就行。
+
+② **白名单必须最后加。** 先加 `@Pattern` 再迁数据，那 3 条存量 `男` 会被自己的记录拦死
+（用户下次改档案直接 400，而且不知道怎么改）。
+
+**回归结果**：临时脚本 12 个场景全过（`male`/`female` → 200；`男`/`女`/`MALE`/`Male`/`'男 '`/`'male '`/`X` → 400 统一信封；
+`''`/缺字段/`null` → 400「性别不能为空」），数据已还原（14 个字段一致）；
+全套 `106 passed + 4 xpassed` 无回归。
+
+> 顺带说明：`@NotBlank` 与 `@Pattern` 同时挂在 `gender` 上**不冲突**——
+> 字段缺失（null）时 `@NotBlank` 报「性别不能为空」，`@Pattern` 对 null 放行（Bean Validation 规范行为）；
+> 空串 `''` 两个都会失败，实测报的是「性别不能为空」，与既有用例 `test_info_required_fields[缺gender]` 一致。
+
+**#11 手机号无唯一校验** —— 一个"漏了一层"的典型：同一个方法里 `username` 有查重，`phone` 什么都没有。
+
+实测：把自己的 `phone` 改成**别人正在用**的号 → **HTTP 200，真的写进库**；
+而同一接口把 `username` 改成别人的 → 400「用户名已存在」。表结构也印证：
+`username` / `email` 都有 UNIQUE 索引，**`phone` 一个索引都没有**。
+
+修了三层，**层层都不能省**：
+
+1. **Service 查重**（`UserServiceImpl` 的 `updateProfile` + `register`）：仿照已有的 username 查重写法。
+   要点：判断条件必须**排除自己**（`!phoneOwner.getId().equals(userId)`），
+   否则"提交自己的原号"会被自己拦死。注册接口同样漏了，一起补上。
+2. **数据库唯一索引** `uk_phone`：Java 的"先查后写"**挡不住并发**——
+   两个请求同时查、都查不到、都去写，谁也没错。唯一索引才是最终防线。
+   实测直连 SQL 写重复号被拦：`(1062, "Duplicate entry '17840529449' for key 'user.uk_phone'")`。
+   ⚠️ **建索引前先清了存量重复**：`19330406783` 被 id=2 和 id=100181 **两个账号共用**（种子数据自带的），
+   给 id=100181 换成 `13800138001` 才建得上 —— 又是"先看存量、再定规则"那条教训。
+3. **顺手修掉"写了删不掉"**：`avatar` 传空串现在能真正存成 `NULL` 了。
+   根因是 MyBatis-Plus `updateById` 的默认策略 `NOT_NULL` **会跳过 null 字段**——
+   Service 里写 `setAvatar(null)`，内存里改了、SQL 里根本没有这一列、库里纹丝不动。
+   修法：`User.avatar` 加 `@TableField(updateStrategy = FieldStrategy.IGNORED)`。
+
+**契约澄清（改完要记住的三句话）**：
+
+- `null` = "这个字段不改"（三个字段一致）；
+- `""` 在 `phone` 上 → **400「手机号格式不正确」**，即**手机号不可解绑**（`avatar` 相反，空串 = 清空）；
+- 撞车 → 400「手机号已被使用」。
+
+> 为什么要专门澄清：修的过程中一度把 `""` 放开成"解绑"，结果和
+> `test_user_profile.py::test_update_phone_invalid_format_rejected[空串]` 直接撞车
+> —— 那条用例断言"空串应被拒"。**`""` 不能既是"非法输入"又是"解绑指令"**，
+> 最后按用例的契约回退成 400。这也说明：**写用例就是在定契约**，改行为前先看一眼有没有用例守着。
+
+**回归结果**：临时脚本 17 个场景全 PASS（含"改他人号被拒且库里没动"、"提交原号幂等放行"、
+"注册占用他人号被拒"、"SQL 直写重复号被唯一索引拦住"），数据已还原
+（`username`/`phone`/`avatar`/两个时间戳逐一比对一致）；全套 `150 passed + 1 xfailed`，无回归。
+
+---
+
+### ⚠️ 遗留的测试侧问题：`test_bug_update_time_not_refreshed` 会因为"撞秒"假失败
+
+这条用例写的是 `assert after != before`，但 `updateTime` 的精度是**秒**。
+文件级/全套连续跑时，**前一条用例的 teardown 还原**与本用例的写入会落在**同一秒**，
+`after == before` 于是变成假失败（记为 XFAIL）——后端其实是好的。
+
+实测：单独跑这条 6/6 通过；整个文件连着跑 4/4 失败。这就是"测试用例之间的时间耦合"。
+
+**修法**：别比"变了没有"（同秒分不出），改比"是否刷新成了当前时间"：
+
+```python
+from datetime import datetime, timedelta
+
+def test_update_time_refreshed_on_update(api, auth_headers, info_env):
+    """写入后 updateTime 应刷新为"写入那一刻"。
+
+    注意别写 assert after != before：updateTime 精度到秒，
+    只要前一条用例的还原和本次写入落在同一秒，就会假失败。
+    改判"它是否贴近当前时间"——没刷新时它会是一个很久以前的值，必然被这条断言抓住。
+    """
+    info = info_env
+    api.assert_ok(api.post("/health/info", json={**info, "age": (info["age"] or 0) + 1},
+                           headers=auth_headers))
+    after = datetime.fromisoformat(
+        api.assert_ok(api.get("/health/info", headers=auth_headers))["data"]["updateTime"])
+    assert datetime.now() - after < timedelta(seconds=10), \
+        f"写入后 updateTime 应刷新为当前时间，实际是 {after}（距现在超过 10 秒 → 没刷新）"
+```

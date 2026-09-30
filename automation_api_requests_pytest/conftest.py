@@ -36,4 +36,7 @@ def auth_headers(token):
 # test_recipe.py 是你手写的"旧风格"版本，保留下来只为对照阅读。
 # 它按旧约定自己手写了 BASE_URL，而新的 api 夹具也会自动拼 BASE_URL，两者冲突会 404，
 # 所以这里让它不参与收集，避免每次跑都报红。内容一个字没改。
-collect_ignore = ["test_cases/test_recipe.py"]
+#
+# ⚠️ 路径是相对本文件（conftest.py 在项目根）的。测试文件分目录后这里也要跟着改，
+#    否则旧文件会被重新收集 → 3 条 404 假红。
+collect_ignore = ["test_cases/recipe/test_recipe.py"]

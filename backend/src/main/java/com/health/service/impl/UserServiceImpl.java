@@ -46,11 +46,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RuntimeException("邮箱已被注册");
         }
 
+        // 手机号注册时不强制填，但填了就必须唯一 —— 和用户名、邮箱一个待遇。
+        // 注意：数据库上还有 uk_phone 唯一索引兜底。这里的查询挡不住并发
+        // （两个请求可能同时查、都查不到、都去写），唯一索引才是最后一道防线。
+        String phone = registerDTO.getPhone() == null ? null : registerDTO.getPhone().trim();
+        if (phone != null && !phone.isEmpty()) {
+            if (userMapper.selectOne(new QueryWrapper<User>().eq("phone", phone)) != null) {
+                throw new RuntimeException("手机号已被使用");
+            }
+        } else {
+            phone = null;   // 空串一律存成 NULL（NULL 不参与唯一索引比较）
+        }
+
         User user = new User();
         user.setUsername(registerDTO.getUsername());
         user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
         user.setEmail(registerDTO.getEmail());
-        user.setPhone(registerDTO.getPhone());
+        user.setPhone(phone);
         user.setRole(ROLE_USER);
         user.setStatus(1);
 
@@ -130,7 +142,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         if (profileDTO.getPhone() != null) {
             String nextPhone = profileDTO.getPhone().trim();
-            user.setPhone(nextPhone.isEmpty() ? null : nextPhone);
+            // 空串到不了这里：DTO 上的 @Pattern 已经先把它拦成 400「手机号格式不正确」。
+            // 也就是说手机号只能改、不能解绑（avatar 相反，允许清空，见 User 实体的字段策略）。
+            if (!nextPhone.isEmpty()) {
+                // 改成一个"别人正在用的"号必须拦住；提交自己的原号要放行（幂等保存）
+                User phoneOwner = userMapper.selectOne(new QueryWrapper<User>().eq("phone", nextPhone));
+                if (phoneOwner != null && !phoneOwner.getId().equals(userId)) {
+                    throw new RuntimeException("手机号已被使用");
+                }
+                user.setPhone(nextPhone);
+            }
         }
 
         if (profileDTO.getAvatar() != null) {

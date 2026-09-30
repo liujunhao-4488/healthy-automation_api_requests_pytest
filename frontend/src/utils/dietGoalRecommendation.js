@@ -1,3 +1,5 @@
+import { isMaleGender } from './healthEnums';
+
 const KG_TO_KCAL = 7700;
 const DEFAULT_PLAN_DAYS = 84;
 
@@ -136,7 +138,9 @@ export const calculateBmrByHealthInfo = (healthInfo) => {
     return 0;
   }
 
-  if (healthInfo.gender === '男' || healthInfo.gender === 'male') {
+  // 归一后 gender 统一是 male/female；isMaleGender 内部仍兼容 '男' 和大小写，
+  // 这样即使遇到没迁干净的旧值也不会静默走错公式（这是 BMR 唯一的分支点）。
+  if (isMaleGender(healthInfo.gender)) {
     return Math.round(
       88.362 + (13.397 * healthInfo.weight) + (4.799 * healthInfo.height) - (5.677 * healthInfo.age)
     );

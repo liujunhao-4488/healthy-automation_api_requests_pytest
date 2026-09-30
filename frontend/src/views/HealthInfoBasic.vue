@@ -34,8 +34,10 @@
             <el-col :span="12">
               <el-form-item label="性别" prop="gender">
                 <el-radio-group v-model="healthForm.gender" class="gender-group">
-                  <el-radio value="男">男</el-radio>
-                  <el-radio value="女">女</el-radio>
+                  <!-- value = 发到后端的值（英文），标签文字 = 用户看到的（中文）。
+                       两者是分开的，改 value 不会影响界面文案。 -->
+                  <el-radio value="male">男</el-radio>
+                  <el-radio value="female">女</el-radio>
                 </el-radio-group>
               </el-form-item>
             </el-col>

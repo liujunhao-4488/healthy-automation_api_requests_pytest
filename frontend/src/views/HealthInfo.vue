@@ -78,7 +78,7 @@
           </div>
           <div class="info-item">
             <label>性别</label>
-            <span>{{ displayValue(healthInfo.gender) }}</span>
+            <span>{{ genderLabel(healthInfo.gender) }}</span>
           </div>
           <div class="info-item">
             <label>身高</label>
@@ -191,6 +191,7 @@ import { DataAnalysis, EditPen, Memo, Timer, TrendCharts, User } from '@element-
 import * as echarts from 'echarts';
 import { useUserStore } from '../stores/user';
 import healthInfoApi from '../api/healthInfo';
+import { genderLabel } from '../utils/healthEnums';
 
 const router = useRouter();
 const userStore = useUserStore();
