@@ -5,6 +5,16 @@ pytest + requests 写的接口自动化测试，被测系统：健康饮食后�
 > **本文件是项目的"知识点地图"。**
 > 打开 `test_cases/` 看见一堆文件、不知道哪个在讲什么的时候，先回这里查表。
 
+> ⚠️ **2026-10-12 现状提示：§一 / §二 里的表格仍是重构前的记录**（151 条用例，
+> `recipe/` `toolbox/test_data_factory.py` 等文件已不存在），**尚未重写**。
+>
+> **当前真实状态**：
+> - 用例 98 条（89 passed + 8 skipped + 1 xfailed），约 62 秒
+> - 目录：`auth/` `user/` `health/` `assistant/` `toolbox/` + `api/` `common/` `config/` `data/` `tools/`
+> - 已覆盖 14 个接口（含 `/assistant/*` 全部 5 个）
+> - 覆盖矩阵见 `docs/接口覆盖矩阵.md` 顶部；AI 助手的来龙去脉见 `docs/AI助手模块-迭代记录.md`
+> - 下面的**目录树**（§三）是准的，可以照着找文件。
+
 ---
 
 ## 一、知识点地图（按学习顺序）
@@ -12,7 +22,8 @@ pytest + requests 写的接口自动化测试，被测系统：健康饮食后�
 | 序 | 编号 | 测试文件 | 这个文件在讲什么（人话） | 新学的核心概念 | 用例数 | 数据从哪来 |
 |:--:|:--|:--|:--|:--|:--:|:--|
 | 1 | `#4.2` 登录（合并） | `auth/test_login.py` | 登录接口的 4 个"写法版本"合并成一个文件：地基 → 参数化 → 数据驱动 → fuzz | fixture、`assert_ok`、`parametrize`、**DDT 四层数据源**、fuzz | 45 | 代码内 + JSON/CSV/YAML/Excel |
-| 2 | `#2` 封装 | `recipe/test_recipe_v2.py` | 把"拼URL+判code"的重复动作收进客户端 | `ApiClient`、**路径解耦** | 3 | 接口动态取 id |
+| 2 | `#2` 封装 | `recipe/test_recipe_v2.py` | 把"拼URL+判code"的重复动作收进客户端 | `BaseApiClient`、**路径解耦** | 3 | 接口动态取 id |
+| 2b | `#2b` 接口层 | `api/`（**不是测试文件**） | 把**接口路径**从用例里搬进专门一层：用例只认方法名，不认 URL | **接口封装层**、**单一底座**、逃生舱 `raw_get` | — | — |
 | — | `#2` 对照 | `recipe/test_recipe.py` ⚠️ | 旧风格对照物，**已挂 `collect_ignore` 不参与自动跑** | 反面教材：跨层耦合 → 404 | 3 | 代码内常量 |
 | 3 | `#4.2b` 健壮性 | `recipe/test_recipe_search.py` | 搜索接口的关键词健壮性 + 2 条"文档与实现不一致" | 注入 / 超长 / 空值的"不崩"断言 | 7 | .py 内字面量 |
 | 4 | `#3.6` 工厂 | `toolbox/test_data_factory.py` | "大量数据"靠程序**生成**，不靠手写 | 笛卡尔积、边界算法、可复现 fuzz | 27 | 程序生成 |
@@ -44,7 +55,12 @@ pytest + requests 写的接口自动化测试，被测系统：健康饮食后�
 | pytest 最基础的套路（`def test_` + `assert`） | `auth/test_login.py` | 第 1 组，只有 2 条，最短最好读 |
 | 什么是 fixture（`api` / `token` / `auth_headers`） | `conftest.py` | 三个 `@pytest.fixture` 函数 |
 | 为什么用例不该自己拼 BASE_URL | `recipe/test_recipe.py` vs `recipe/test_recipe_v2.py` | 两个文件第 1 条用例对比着看 |
-| 怎么一行断言"成功" | `common/api_client.py` | `assert_ok()` 方法 |
+| **接口路径为什么只能写在一个地方** | `api/__init__.py` | 头部「为什么要多这一层」+ `Api` 类的聚合写法 |
+| **一个接口怎么变成"一个方法"** | `api/user_api.py` | `get_profile` / `update_profile`（契约坑全写在 docstring 上） |
+| **路径里带变量的接口怎么封装** | `api/recipe_api.py` | `detail(recipe_id)` —— 变量走参数，不写死在方法里 |
+| **接口类的底座为什么只有一个 `BaseApiClient`** | `api/base_api_client.py` | 头部注释（讲清了它是由 `ApiClient` + `BaseApi` 合并来的，以及合并前后各要理解几个概念） |
+| **封装层遇到"故意打非法路径"怎么办** | `api/__init__.py` + `user/test_user_profile.py` | `raw_get()` 逃生舱 ↔ `test_no_id_based_profile_route` 的 404 探针 |
+| 怎么一行断言"成功" | `api/base_api_client.py` | `assert_ok()` 方法 |
 | `@pytest.mark.parametrize` 怎么用 | `auth/test_login.py` | 第 2 组的 `LOGIN_CASES` 表 |
 | 边界值 / 等价类怎么设计 | `auth/test_login.py` | `LOGIN_CASES` 里超长、注入那几行 |
 | 数据驱动（DDT）是什么 | `auth/test_login.py` | 第 3 组顶部注释 + `CASES` 那段循环 |
@@ -86,6 +102,13 @@ automation_api_requests_pytest/
 ├── README.md            ← 你正在看的这份知识点索引
 ├── config.py            ← 配置中心：BASE_URL / TIMEOUT / 测试账号
 ├── conftest.py          ← 公共夹具：api / token / auth_headers（+ collect_ignore）
+├── api/                 ← 【接口封装层】一个接口 = 一个方法，**接口路径只写在这一层**
+│   ├── __init__.py      ← `Api` 聚合同入口：自己继承 BaseApiClient，把 auth / user / health / recipe 挂成属性
+│   ├── base_api_client.py ← 【唯一底座】接口类继承它，就有 get/post/put/delete + assert_ok
+│   ├── auth_api.py      ← POST /auth/login、/auth/register
+│   ├── user_api.py      ← GET / PUT /user/profile
+│   ├── health_api.py    ← GET / POST /health/info、/health/goal
+│   └── recipe_api.py    ← GET /recipe/list、/recipe/detail/{id}、/recipe/search
 ├── docs/
 │   └── 接口覆盖矩阵.md   ← 施工图：77 个接口的覆盖状态 + 优先级排序
 ├── pytest.ini           ← pytest 运行配置（pythonpath / 中文用例名显示 / SQL 日志）
@@ -103,30 +126,36 @@ automation_api_requests_pytest/
 │   │   ├── test_recipe_search.py
 │   │   └── test_recipe.py       ⚠️ 旧风格对照，默认不跑
 │   ├── toolbox/         ← 工具零件自测（不对应任何业务接口）
-│   │   ├── logger.py            ← 日志工具：把接口响应打印成好读的多行（是"零件"，不是 test_ 用例）
-│   │   ├── test_data_factory.py
-│   │   ├── test_db_conn_write.py
-│   │   └── test_dynamic_data.py
+│   │   └── test_data_loader.py  ← 数据加载器自测（Excel 多工作表：工作表名携带期望值）
 │   ├── user/            ← /user/*        个人资料、饮食偏好               ◐ 部分覆盖
 │   │   └── test_user_profile.py ← 35 条（34 passed + 1 xfailed 缺陷 #9）
 │   ├── record/          ← /record/*      饮食记录                        ⬜ 待补
 │   ├── ingredient/      ← /ingredient/*  食材                            ⬜ 待补
 │   ├── recommend/       ← /recommend/*   三餐推荐、食材替代               ⬜ 待补
 │   ├── article/         ← /article/*     健康文章（22 个接口，最多）      ⬜ 待补
-│   ├── assistant/       ← /assistant/*   AI 助手                         ⬜ 待补（AI 专项主战场）
+│   ├── assistant/       ← /assistant/*   AI 助手                         ✅ 已覆盖（26 条：结构 11 + 意图 15）
+│   │   ├── test_assistant_结构鉴权.py   ← 结构 / 鉴权 / 参数校验 / 会话持久化
+│   │   └── test_assistant_意图识别.py ← 问什么、答得对不对（8 条 skip：意图观测不到）
 │   ├── notification/    ← /notification/* 通知                           ⬜ 待补
 │   └── admin/           ← /admin/*       后台总览                        ⬜ 待补
-├── common/              ← 可复用零件
-│   ├── api_client.py    ← 请求封装：get/post/put/delete + assert_ok
+├── common/              ← 可复用零件（与"接口"无关的通用工具）
 │   ├── data_loader.py   ← 统一读数据：json / csv / yaml / xlsx → list[dict]
 │   ├── data_factory.py  ← 批量生成数据：组合 / 边界 / fuzz
 │   └── db.py            ← MySQL 工具：连接复用 + 读/写 + 事务 + SQL 日志
+├── tools/               ← 辅助脚本（**不是用例**：产出数字/清单，不产出红绿）
+│   ├── latency_report.py   ← 拿提问集跑一遍，量耗时并导出 Excel
+│   ├── jailbreak_report.py ← 红队对抗：跑越狱样本集，算攻破率并导出 Excel
+│   ├── run_tests.py        ← 跑 pytest 并把输出写文件（本机抓不到 stdout 的兜底）
+│   └── clean_artifacts.py  ← 清理 logs/runs 与 reports 的旧文件（默认演习，加 --yes 才真删）
 └── data/                ← 外部数据文件（同一份 6 行登录数据的 4 个孪生版本）
     ├── login_cases.json
     ├── login_cases.csv
     ├── login_cases.yaml
     └── login_cases.xlsx
 ```
+
+> **用例 vs 报告**：`test_cases/` 产出红绿，用来守门；`tools/` 产出数字，用来做决策。
+> 混在一起的典型错法是把"耗时不超过 3 秒"写成 assert —— 它会随机变红。
 
 ---
 
@@ -135,11 +164,13 @@ automation_api_requests_pytest/
 ```bash
 cd D:\jiankang\healthy\automation_api_requests_pytest
 
-# 跑全套（151 条，2026-09-30 实测 150 passed + 1 xfailed，约 13 秒）
+# 跑全套（98 条，2026-10-12 实测 89 passed + 8 skipped + 1 xfailed，约 62 秒）
 # 注1：health 那 4 条"缺陷固化"用例，后端已修复 → XFAIL 变 XPASS → 标记已摘，
 #      现在它们是正式断言（哪天再退化会直接变红）。
 # 注2：user 那 1 条 xfail 用例是**已知缺陷 #9**（PUT 后 updateTime 不刷新），
 #      后端修好后会自己变成 XPASS —— 那时把 @pytest.mark.xfail 摘掉即可。
+# 注3：ai_assistant 的 8 条 skip **不是失败也不是待修**，是"意图观测不到、断不了"——
+#      后端哪天把 intent 回传出来，它们就能转成真断言（见 docs/AI助手模块-迭代记录.md §3b.4）。
 .venv\Scripts\python.exe -m pytest test_cases -v
 
 # 只跑某一个模块（按目录跑，最常用）
@@ -153,6 +184,13 @@ cd D:\jiankang\healthy\automation_api_requests_pytest
 
 # 想看清某个用例挂在哪：-v 看名字，--tb=short 缩短报错栈
 .venv\Scripts\python.exe -m pytest test_cases -v --tb=short
+
+# 跑"报告"（不是用例，不产红绿）：AI 助手提问集的耗时，导出 reports/*.xlsx
+.venv\Scripts\python.exe tools/latency_report.py --limit 5
+
+# 清理产物堆积：logs/runs 保留 30 天、reports 保留 90 天
+# （默认只演习列清单，确认后加 --yes 才真删；每个目录至少留最新 1 个）
+.venv\Scripts\python.exe tools/clean_artifacts.py
 ```
 
 **前置条件**（后端没起会全红）：
@@ -181,7 +219,7 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/api/recipe/list
 
 ---
 
-## 五、九条约定（防止以后再次迷路）
+## 五、十一条约定（防止以后再次迷路）
 
 1. **命名**：新增文件用 `test_<被测对象>_<知识点>.py`，例如 `test_recipe_parametrize.py`、`test_order_ddt.py`。
    名字里带上"知识点"，光看文件名就知道它教什么。
@@ -220,6 +258,34 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/api/recipe/list
    > 可前端编辑个人资料页**根本没有邮箱输入框**，需求里就没这个功能。
    > 同一把尺子还砍掉了"`phone` 可以重复"（文档只要求用户名/邮箱查重）。
    > 详见覆盖矩阵第六节的「判定纪律 / 观察点」。
+10. **接口路径只准写在 `api/` 里，用例里不许出现 URL 字符串。**（2026-10-08 定）
+   用例写 `api.user.get_profile(headers=auth_headers)`，**不写** `api.get("/user/profile", ...)`。
+   理由就是"改一个接口要动几处"：收敛前光 `/user/profile` 一条路径在用例里出现 **17 次**、
+   `/recipe/detail/{id}` 散在 **2 个文件**里 —— 后端哪天改路径，你得 grep 全局一处处改，
+   **改漏一处就是一条莫名其妙的假红**；收敛后只需要改 `api/` 里的**一行**。
+   - 新增接口 → 找对应的 `<模块>_api.py` 加一个方法（没有就新建一个）；
+     方法名用**动作**命名（`get_profile` / `save_goal` / `search`），别写 `get` / `do`；
+     把实测出来的坑写进 docstring（401 空体、非统一信封、upsert、哪些字段不可改…）。
+   - **路径带变量**的接口（`/recipe/detail/{id}`）→ 变量做成参数：`detail(recipe_id)`。
+   - **唯一例外**：故意打"不该存在的路径"的越权探针，走逃生舱 `api.raw_get()`，
+     并在注释里写明为什么（见 `user/test_user_profile.py::test_no_id_based_profile_route`）。
+     正常业务用例用它 = 把 URL 又写回了用例，这一层就白搭了。
+   - ⚠️ 批量改写时**别只 grep `api.get("`** —— **f-string 动态路径**（`api.get(f"/x/{i}")`）
+     会整个漏掉。本次重构就漏了 3 处，靠实跑才暴露。
+     **注意**：当时 `Api` 不带 `get`，报错很扎眼（`AttributeError: 'Api' object has no attribute 'get'`）；
+     现在 `Api` 继承了 `BaseApiClient`，**`api.get("/x")` 能跑通、不报错** ——
+     也就是说这类漏网之鱼不会再自己炸给你看，只能靠"实跑 + 人工看用例"兜底。
+11. **接口类都直接继承 `BaseApiClient`，不要再引入中间基类。**（2026-10-08 定）
+   原来是两个类叠着用：`ApiClient`（负责发请求）+ `BaseApi`（负责存一个 client 给子类用），
+   于是每个模块方法都得写 `self._c.get(...)` —— 想看懂要先理解两层继承。
+   现在合并成一个：`class UserApi(BaseApiClient)` → 方法里直接 `self.get("/user/profile")`。
+   - 新增模块类：`from .base_api_client import BaseApiClient`（同在 `api/` 包内，用相对导入），
+     继承，用 `self.get/post/put/delete`。
+   - ⚠️ 子类**自己写了 `__init__`** 时必须先 `super().__init__()`
+     （`api/__init__.py` 的 `Api` 类就是例子）——子类一旦自己写了 `__init__`，
+     Python 就不再自动用父类的，Session 不会被创建，一调就 `AttributeError`。
+   - ⚠️ **代价要说清**：`Api` 现在也带着继承来的 `get/post`，所以 `api.user.post("/任意路径")`
+     语法上能跑。防线从"结构上不给"变成了"约定上不用"——靠这条约定和 code review 守。
 
 ---
 

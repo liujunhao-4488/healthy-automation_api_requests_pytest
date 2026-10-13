@@ -1,0 +1,94 @@
+# data/health_info_cases.yaml
+# 【数据驱动】POST /health/info 的校验失败场景。
+#
+# 字段说明（用例按这套读）：
+#   name       用例名（中文，直接显示在 pytest 输出里）
+#   body       POST 的请求体
+#   want_http  期望的 HTTP 状态码
+#   want_code  期望的统一信封 code
+#   want_msg   期望的统一信封 message
+#
+# 【关键设计】每条用例**只有一个字段不合法**，其余字段都合法。
+#   为什么？因为多个字段同时不合法时，后端只返回其中一条 message，
+#   而报哪一条由校验器顺序决定、不确定（实测 {} 空体报的是"身高不能为空"）
+#   → 一次只犯一个错，报错才唯一确定、断言才稳。
+#
+# 期望值全部来自实测（2026-10-10 真打后端），不是抄来源码或文档。
+
+- name: age 为 0
+  body: {age: 0, gender: male, height: 175.0, weight: 70.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "年龄需在 1~150 岁之间"
+
+- name: age 超上限 151
+  body: {age: 151, gender: male, height: 175.0, weight: 70.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "年龄需在 1~150 岁之间"
+
+- name: gender 传中文男
+  body: {age: 30, gender: "男", height: 175.0, weight: 70.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "性别取值不合法，只能是 male 或 female"
+
+- name: gender 传非法值 X
+  body: {age: 30, gender: X, height: 175.0, weight: 70.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "性别取值不合法，只能是 male 或 female"
+
+- name: height 为 0（曾泄露异常栈，已修）
+  body: {age: 30, gender: male, height: 0.0, weight: 70.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "身高需在 50~250cm 之间"
+
+- name: height 低于下限 49
+  body: {age: 30, gender: male, height: 49.0, weight: 70.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "身高需在 50~250cm 之间"
+
+- name: weight 低于下限 5
+  body: {age: 30, gender: male, height: 175.0, weight: 5.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "体重需在 10~500kg 之间"
+
+- name: bloodSugar 为 0（须大于 0）
+  body: {age: 30, gender: male, height: 175.0, weight: 70.0, bloodSugar: 0}
+  want_http: 400
+  want_code: 400
+  want_msg: "血糖需在 0~50mmol/L 之间"
+
+- name: bloodSugar 超上限 51
+  body: {age: 30, gender: male, height: 175.0, weight: 70.0, bloodSugar: 51}
+  want_http: 400
+  want_code: 400
+  want_msg: "血糖需在 0~50mmol/L 之间"
+
+- name: 缺 age
+  body: {gender: male, height: 175.0, weight: 70.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "年龄不能为空"
+
+- name: 缺 gender
+  body: {age: 30, height: 175.0, weight: 70.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "性别不能为空"
+
+- name: 缺 height
+  body: {age: 30, gender: male, weight: 70.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "身高不能为空"
+
+- name: 缺 weight
+  body: {age: 30, gender: male, height: 175.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "体重不能为空"

@@ -1,0 +1,12 @@
+# 测试产物
+logs/
+reports/
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# 虚拟环境
+.venv/
+
+# 临时文件（AI/调试用的探测脚本，_ 前缀）
+_*

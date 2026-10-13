@@ -25,7 +25,7 @@
           </el-menu-item>
           <el-menu-item index="/dashboard/ingredient-substitute">
             <el-icon><Refresh /></el-icon>
-            <template #title>食材小助手</template>
+            <template #title>饮食健康助手</template>
           </el-menu-item>
           <el-menu-item index="/dashboard/custom-recipe">
             <el-icon><Edit /></el-icon>

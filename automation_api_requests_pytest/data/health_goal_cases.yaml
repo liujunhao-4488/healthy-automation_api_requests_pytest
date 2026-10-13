@@ -1,0 +1,41 @@
+# data/health_goal_cases.yaml
+# 【数据驱动】POST /health/goal 的校验失败场景。
+#
+# 字段同 health_info_cases.yaml：name / body / want_http / want_code / want_msg。
+#
+# 【关键设计】同 info —— 每条只犯一个错，报错才唯一确定。
+#   实测 {} 空体报的是"开始日期不能为空"（三个必填都缺时只报一条，顺序不定），
+#   所以"缺字段"类用例一律只缺一个。
+#
+# 必填字段（来自 DietGoalDTO）：goalType / targetCalories / startDate。
+
+- name: goalType 为空
+  body: {goalType: "", targetCalories: 1800.0, startDate: "2026-10-01"}
+  want_http: 400
+  want_code: 400
+  want_msg: "目标类型不能为空"
+
+- name: 缺 goalType
+  body: {targetCalories: 1800.0, startDate: "2026-10-01"}
+  want_http: 400
+  want_code: 400
+  want_msg: "目标类型不能为空"
+
+- name: 缺 targetCalories
+  body: {goalType: lose_weight, startDate: "2026-10-01"}
+  want_http: 400
+  want_code: 400
+  want_msg: "目标卡路里不能为空"
+
+- name: 缺 startDate
+  body: {goalType: lose_weight, targetCalories: 1800.0}
+  want_http: 400
+  want_code: 400
+  want_msg: "开始日期不能为空"
+
+- name: 结束日期早于开始日期
+  body: {goalType: lose_weight, targetCalories: 1800.0,
+         startDate: "2026-10-10", endDate: "2026-10-01"}
+  want_http: 400
+  want_code: 400
+  want_msg: "结束日期不能早于开始日期"

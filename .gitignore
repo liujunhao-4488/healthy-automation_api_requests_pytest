@@ -66,8 +66,11 @@ release.properties
 # JVM 崩溃日志（backend/hs_err_pid*.log 就是这类）
 hs_err_pid*.log
 replay_pid*.log
-# 防止以后启用 Maven Wrapper 时把 mvnw 依赖的 jar 一起拦掉
-!.mvn/wrapper/maven-wrapper.jar
+# 防止把 Maven Wrapper 依赖的 jar 一起拦掉。
+# 注意这里必须带 ** —— maven 工程在 backend/ 子目录下，
+# 原来写的 !.mvn/... 是"锚定仓库根目录"的，匹配不到 backend/.mvn/...，
+# 等于没生效（jar 照样被上面的 *.jar 拦掉）。
+!**/.mvn/wrapper/maven-wrapper.jar
 
 # ------------------------------------------------------------
 # 5. 日志 / 临时文件

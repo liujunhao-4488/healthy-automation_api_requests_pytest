@@ -4,15 +4,6 @@ export default {
   getRecommendations(params = {}) {
     return request.get('/recommend/recipes', params)
   },
-  getSubstitutes(payload) {
-    const prompt = typeof payload === 'string' ? payload : payload?.prompt
-    const rawPrompt = typeof payload === 'object' && payload ? payload.rawPrompt || payload.prompt : prompt
-    return request.post('/recommend/ingredient/substitute', {
-      ...(typeof payload === 'object' && payload ? payload : {}),
-      ingredientName: rawPrompt,
-      prompt
-    }, { timeout: 60000 })
-  },
   getRecipesByGoal(data) {
     return request.post('/recommend/recipes/by-goal', data)
   },

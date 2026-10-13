@@ -1,0 +1,64 @@
+# PUT /user/profile 的失败场景数据
+#
+# 字段统一：name / body / want_http / want_code / want_msg
+#   body  = 直接发给 PUT 的请求体（只写"要改的字段"，没写的=不改）
+# 期望值全部来自**实测**（2026-10-10 真打后端拿到的，不是抄文档、不是猜）。
+#
+# 【规则】每条只让**一个字段**不合法，报错才唯一确定（同注册数据的规则）。
+#   注意：用户名空串报的是 `@Size(1,50)` 的文案，不是"不能为空"——
+#   因为这个 DTO 的 username 上只有 @Size、没有 @NotBlank，空串是被 @Size 拦下的。
+#
+# 【为什么这些用例要在"临时靶子账号"上跑，而不是直接改测试账号张三】
+#   失败分两种，触发方式不一样：
+#     · 格式类（超长/空/格式错）→ DTO 校验器直接拦，跟"你是谁"无关；
+#     · 冲突类（用户名已存在 / 手机号已被使用）→ 后端要**查库比对**，
+#       而比对时会放过"自己"：张三提交"张三"是幂等保存、会 200；
+#       只有**别的账号**提交"张三"才 400。
+#   所以冲突类必须在靶子账号上跑。为了让一处写、处处能用，统一都用靶子跑
+#   （见 test_user_profile.py 的 temp_user 夹具 / test_update_profile_fail）。
+
+# ---- 格式类（DTO 校验器拦）----
+- name: 用户名空
+  body:
+    username: ""
+  want_http: 400
+  want_code: 400
+  want_msg: 用户名长度需在 1 到 50 个字符之间
+
+- name: 用户名超长
+  body:
+    username: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  want_http: 400
+  want_code: 400
+  want_msg: 用户名长度需在 1 到 50 个字符之间
+
+- name: 手机号格式错
+  body:
+    phone: "123"
+  want_http: 400
+  want_code: 400
+  want_msg: 手机号格式不正确
+
+- name: 手机号空
+  body:
+    phone: ""
+  want_http: 400
+  want_code: 400
+  want_msg: 手机号格式不正确
+
+# ---- 冲突类（查库比对，靠库里稳定存在的数据触发）----
+#   张三      → user 表 id=2（username）
+#   19330406783 → user 表 id=2（张三的手机号，实测确认已被占用）
+- name: 用户名已存在
+  body:
+    username: 张三
+  want_http: 400
+  want_code: 400
+  want_msg: 用户名已存在
+
+- name: 手机号已被使用
+  body:
+    phone: "19330406783"
+  want_http: 400
+  want_code: 400
+  want_msg: 手机号已被使用

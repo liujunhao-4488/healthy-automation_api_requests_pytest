@@ -9,7 +9,7 @@
         </div>
         <div>
           <h1>AI 智能饮食助手</h1>
-          <p>每次对话都结合当前健康信息和饮食目标，持续输出个性化的替代建议。</p>
+          <p>结合你的健康档案和饮食目标，饮食搭配、食材替代、营养估算、慢病饮食都能问。</p>
         </div>
       </div>
     </header>
@@ -134,7 +134,7 @@
                 type="textarea"
                 resize="none"
                 :rows="1"
-                placeholder="输入你的问题，例如：我可以用什么替代鸡胸肉？"
+                placeholder="输入你的问题，例如：减脂期间晚餐怎么吃？"
                 @keydown.enter.exact.prevent="submitPrompt"
               />
             </el-form-item>
@@ -166,7 +166,7 @@ import assistantApi from '../api/assistant';
 import healthInfoApi from '../api/healthInfo';
 import dietGoalApi from '../api/dietGoal';
 import { useUserStore } from '../stores/user';
-import { genderLabel } from '../utils/healthEnums';
+import { checkAssistantInput } from '../utils/assistantSafety';
 
 const userStore = useUserStore();
 const assistantFormRef = ref(null);
@@ -182,33 +182,15 @@ const rules = {
   prompt: [{ required: true, message: '请输入你的问题', trigger: 'blur' }]
 };
 
+// 四个快捷问题刻意和移动端 app/pages/assistant/chat.vue 保持一致 ——
+// 之前这里四个全是"替代"，把整个页面框死在食材替换上，
+// 而后端早就被放宽成泛健康助手了，两边对不上。
 const quickPrompts = [
-  { label: '热量换算推荐', prompt: '能否告诉我热量相近的替代食材？', type: 'green' },
-  { label: '蛋白质替代方案', prompt: '我不太喜欢鸡胸肉，有没有其他高蛋白替代？', type: 'blue' },
-  { label: '多种餐次设想', prompt: '我晚上要吃晚餐，有什么健康的替代建议？', type: 'orange' },
-  { label: '搭配平衡', prompt: '如何搭配食材以提高饱腹感和营养均衡？', type: 'purple' }
+  { label: '控糖早餐', prompt: '控糖早餐怎么搭配更稳？', type: 'green' },
+  { label: '低钠晚餐', prompt: '低钠晚餐推荐吃什么？', type: 'orange' },
+  { label: '食材替换', prompt: '鸡胸肉可以替换成什么？', type: 'blue' },
+  { label: '蛋白质不足', prompt: '今天蛋白质不够怎么办？', type: 'purple' }
 ];
-
-const activityLevelLabelMap = {
-  sedentary: '久坐少动',
-  lightly_active: '轻度活动',
-  moderately_active: '中度活动',
-  very_active: '高度活动',
-  extra_active: '极高活动量'
-};
-
-const goalTypeLabelMap = {
-  fat_loss: '减脂',
-  muscle_toning: '塑形',
-  weight_maintenance: '维持体重',
-  healthy_weight_gain: '健康增重',
-  blood_sugar_control: '血糖控制',
-  lipid_control: '血脂管理',
-  low_sodium: '低钠',
-  pregnancy_nutrition: '孕期营养',
-  child_growth: '儿童成长',
-  senior_wellness: '老年养生'
-};
 
 const messages = ref([]);
 const conversationList = ref([]);
@@ -216,7 +198,7 @@ const currentConversationId = ref(null);
 
 const currentConversationTitle = computed(() => {
   const current = conversationList.value.find((item) => item.id === currentConversationId.value);
-  return current?.title || 'AI 小助手会话';
+  return current?.title || 'AI 饮食助手会话';
 });
 
 const toLines = (text) =>
@@ -225,56 +207,12 @@ const toLines = (text) =>
     .map((item) => item.trim())
     .filter(Boolean);
 
-const formatValue = (value, suffix = '') => {
-  if (value === null || value === undefined || value === '') {
-    return '--';
-  }
-  return `${value}${suffix}`;
-};
-
 const createTempMessage = (role, text, extra = {}) => ({
   id: `temp-${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   role,
   text,
   ...extra
 });
-
-const buildContextSummary = () => {
-  const healthInfo = userStore.healthInfo || {};
-  const dietGoal = userStore.dietGoal || {};
-
-  const healthSummary = [
-    '健康评估：',
-    `年龄 ${formatValue(healthInfo.age)}`,
-    `性别 ${genderLabel(healthInfo.gender)}`,
-    `身高 ${formatValue(healthInfo.height, 'cm')}`,
-    `体重 ${formatValue(healthInfo.weight, 'kg')}`,
-    `BMI ${formatValue(healthInfo.bmi)}`,
-    `活动水平 ${activityLevelLabelMap[healthInfo.activityLevel] || healthInfo.activityLevel || '--'}`,
-    `慢性病 ${healthInfo.chronicDiseases || '--'}`
-  ].join('，');
-
-  const goalSummary = [
-    '饮食目标：',
-    `目标类型 ${goalTypeLabelMap[dietGoal.goalType] || dietGoal.goalType || '--'}`,
-    `目标热量 ${formatValue(dietGoal.targetCalories, 'kcal')}`,
-    `蛋白质目标 ${formatValue(dietGoal.proteinTarget, 'g')}`,
-    `碳水目标 ${formatValue(dietGoal.carbsTarget, 'g')}`,
-    `脂肪目标 ${formatValue(dietGoal.fatTarget, 'g')}`,
-    `水分目标 ${formatValue(dietGoal.waterTarget, 'ml')}`
-  ].join('，');
-
-  return `${healthSummary}\n${goalSummary}`;
-};
-
-const buildPromptWithContext = (question) => {
-  return [
-    '请结合用户健康与饮食目标提供食材替换建议：',
-    buildContextSummary(),
-    `用户问题：${question}`,
-    '说明：请优先给出替代食材、营养差异与使用建议。'
-  ].join('\n');
-};
 
 const formatConversationTime = (value) => {
   if (!value) {
@@ -364,7 +302,7 @@ const handleSelectConversation = async (conversation) => {
 
 const handleCreateConversation = async () => {
   try {
-    const response = await assistantApi.createConversation({ title: 'AI 小助手会话' });
+    const response = await assistantApi.createConversation({ title: 'AI 饮食助手会话' });
     if (response.code === 200 && response.data) {
       currentConversationId.value = response.data.id;
       await loadConversations();
@@ -423,10 +361,24 @@ const submitPrompt = async () => {
     return;
   }
 
+  // 前端本地预检（体验层）：只拦「超长 + 明摆着的脏话」，直接回固定提示、不发请求。
+  // 高危医疗 / 无关领域 已交给后端判 —— 前端判会漂移（见 utils/assistantSafety.js 头注释）。
+  // 它可被绕过，不是安全边界。
+  const blocked = checkAssistantInput(rawPrompt);
+  if (blocked) {
+    assistantForm.prompt = '';
+    messages.value = [
+      ...messages.value,
+      createTempMessage('user', rawPrompt),
+      createTempMessage('assistant', blocked.reply),
+    ];
+    await scrollToBottom();
+    return;
+  }
+
   loading.value = true;
   try {
     await loadLatestContext();
-    const promptWithContext = buildPromptWithContext(rawPrompt);
 
     if (!currentConversationId.value) {
       await handleCreateConversation();
@@ -439,10 +391,20 @@ const submitPrompt = async () => {
     messages.value = [...messages.value, createTempMessage('user', rawPrompt)];
     await scrollToBottom();
 
+    // 只发 rawPrompt，不再拼一段 prompt 一起发。
+    //
+    // 为什么删掉？因为后端会把它整块当成"用户的问题"：
+    //   AssistantChatServiceImpl:128  request.put("prompt", promptWithContext)
+    //   RecipeServiceImpl:727         extractIngredientQuestion 优先返回 prompt
+    // 于是拼进去的 "请优先给出替代食材…" 成了模型的指令，问「1+1=多少」也照套；
+    // 而拼进去的健康档案，后端本来就会按 userId 再查一遍、作为 system 消息单独发 ——
+    // 同一份档案发两遍，还可能互相矛盾。
+    //
+    // 副作用（想要的）：不再产生 role=context 的消息，聊天里那块
+    // "发送给 AI 的上下文" 也就不再出现了。旧会话里已有的 context 消息仍会照旧显示。
     const response = await assistantApi.chat({
       conversationId: currentConversationId.value,
       rawPrompt,
-      prompt: promptWithContext,
       healthInfo: userStore.healthInfo,
       dietGoal: userStore.dietGoal
     });

@@ -126,8 +126,22 @@ public class AssistantChatServiceImpl implements AssistantChatService {
         request.put("rawPrompt", rawPrompt);
         request.put("ingredientName", rawPrompt);
         request.put("prompt", promptWithContext.isEmpty() ? rawPrompt : promptWithContext);
+        // 透传会话 ID 与当前用户消息 ID，供下游拼装多轮对话历史
+        request.put("conversationId", conversation.getId());
+        request.put("currentUserMessageId", userMessage.getId());
 
         Map<String, Object> assistantResult = recipeService.getIngredientSubstitutes(request);
+        // ① 意图：由 RecipeServiceImpl.classifyIntent 在入口算出，挂在返回值里带过来。
+        // ② source：回答是哪来的（deepseek / error / **blocked**）。buildAssistantTextResult
+        //    一直算了它，但以前只被 saveAssistantReply 读走 mode/text/cards，source 就此失联 ——
+        //    于是"这句话是模型说的还是本地写的"，响应里一个字都看不到。
+        // ③ blocked：输入安全拦截命中的规则类型（abuse / medical / out_of_scope / too_long）。
+        //    2026-10-12 新增的**代码硬拦**：命中就不再调模型，直接回固定文案。
+        //    有它才分得清"这句是被本地规则拦下的，还是真问了模型"。
+        //    三者一起跟着 assistantMessage 回出去（**不落库**，见 toMessageMap 注释）。
+        String intent = readText(assistantResult == null ? null : assistantResult.get("intent"));
+        String source = readText(assistantResult == null ? null : assistantResult.get("source"));
+        String blocked = readText(assistantResult == null ? null : assistantResult.get("blocked"));
         AssistantMessage assistantMessage = saveAssistantReply(conversation.getId(), userId, assistantResult);
 
         refreshConversation(conversation, rawPrompt, assistantMessage.getContent());
@@ -137,7 +151,7 @@ public class AssistantChatServiceImpl implements AssistantChatService {
         result.put("conversation", toConversationMap(conversation));
         result.put("userMessage", toMessageMap(userMessage));
         result.put("contextMessage", contextMessage == null ? null : toMessageMap(contextMessage));
-        result.put("assistantMessage", toMessageMap(assistantMessage));
+        result.put("assistantMessage", toMessageMap(assistantMessage, intent, source, blocked));
         return result;
     }
 
@@ -255,6 +269,23 @@ public class AssistantChatServiceImpl implements AssistantChatService {
     }
 
     private Map<String, Object> toMessageMap(AssistantMessage message) {
+        return toMessageMap(message, null, null, null);
+    }
+
+    /**
+     * 带 intent / source / blocked 的消息视图。
+     *
+     * ⚠️ 这三个字段是**算出来的**，没有落库 —— assistant_message 表就 8 列，
+     *    没有它们的位置。所以：
+     *      · POST /assistant/chat 的 assistantMessage 里有它们（回到当前的这一轮）；
+     *      · GET  /assistant/conversations/{id}/messages（翻历史）里**没有**。
+     *    这是当前实现的已知缺口。要让历史消息也带上，得给表加列 + 改实体，
+     *    属于下一步；现在先保证"新问的一轮看得出来"，够写意图断言了。
+     *
+     * blocked 取值：abuse / medical / out_of_scope / too_long；未被拦截时不出现该键。
+     * 有它才分得清"这句话是被本地规则拦下的，还是真的问了模型"—— source="blocked" 是配套信号。
+     */
+    private Map<String, Object> toMessageMap(AssistantMessage message, String intent, String source, String blocked) {
         Map<String, Object> data = new HashMap<>();
         data.put("id", message.getId());
         data.put("role", message.getRole());
@@ -262,6 +293,15 @@ public class AssistantChatServiceImpl implements AssistantChatService {
         data.put("messageType", readText(message.getMessageType()));
         data.put("cards", deserializeCards(message.getCardsJson()));
         data.put("createTime", message.getCreateTime());
+        if (intent != null && !intent.isEmpty()) {
+            data.put("intent", intent);
+        }
+        if (source != null && !source.isEmpty()) {
+            data.put("source", source);
+        }
+        if (blocked != null && !blocked.isEmpty()) {
+            data.put("blocked", blocked);
+        }
         return data;
     }
 

@@ -1,0 +1,94 @@
+# 注册用例数据（失败场景）
+#
+# 和登录数据一样，字段统一：name / username / password / email / want_http / want_code / want_msg
+# 期望值全部来自实测（真打后端拿到的，不是抄文档、不是猜）。
+#
+# 【关键设计】每条用例**只有一个字段**不合法，其余字段都合法。
+#   为什么？因为后端多个字段同时不合法时，只返回其中一条 message，
+#   而报哪一条由校验器顺序决定、不确定 → 断言会变脆。
+#   一次只犯一个错，报错就唯一确定，用例才稳。
+#
+# ⚠️ 上面这条规则有个**例外**：一个字段上挂了两个约束时，空值会让**两个同时失败**，
+#    报哪条同样不确定。实测（2026-10-08，各打 15 次）：
+#      password=""  →  9/15 "密码不能为空"   6/15 "密码长度应在6-50之间"   ← 随机
+#      username=""  → 12/15 "用户名不能为空" 3/15 "用户名长度应在1-50之间" ← 随机
+#      email=""     → 15/15 "邮箱不能为空"   （@Email 不拒空串，实际只有 @NotBlank 失败 → 确定）
+#    对策：这两条列出 `want_msg_alt`（候选期望值），用例断言 "message 属于候选集合"。
+#    ⚠️ 这同时是一个**缺陷候选**：同一个请求，响应内容却不固定，任何精确断言都会随机红。
+#       详见 test_register.py 里 test_register_fail 的注释。
+#
+# 两条"已存在"的用例靠库里**稳定存在**的数据来触发：
+#   用户名 张三       → user 表 id=2（测试账号）
+#   邮箱 123456@qq.com → user 表 id=2
+#   而它们各自"陪跑"的另一个字段用的是**永远不会有人注册**的假值，
+#   所以这两条用例可以反复跑，结果永远一致。
+
+- name: 用户名已存在
+  username: 张三
+  password: "123456"
+  email: reg_dupname_probe@example.com
+  want_http: 400
+  want_code: 400
+  want_msg: 用户名已存在
+
+- name: 邮箱已被注册
+  username: reg_dupemail_probe
+  password: "123456"
+  email: 123456@qq.com
+  want_http: 400
+  want_code: 400
+  want_msg: 邮箱已被注册
+
+- name: 用户名超长
+  username: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  password: "123456"
+  email: reg_toolong_probe@example.com
+  want_http: 400
+  want_code: 400
+  want_msg: 用户名长度应在1-50之间
+
+- name: 用户名空
+  username: ""
+  password: "123456"
+  email: reg_noname_probe@example.com
+  want_http: 400
+  want_code: 400
+  want_msg: 用户名不能为空
+  # @NotBlank 和 @Size(1,50) 同时失败，后端报哪条随机 → 两个都接受
+  want_msg_alt:
+    - 用户名长度应在1-50之间
+
+- name: 密码太短
+  username: reg_shortpwd_probe
+  password: "12345"
+  email: reg_shortpwd_probe@example.com
+  want_http: 400
+  want_code: 400
+  want_msg: 密码长度应在6-50之间
+
+- name: 密码空
+  username: reg_nopwd_probe
+  password: ""
+  email: reg_nopwd_probe@example.com
+  want_http: 400
+  want_code: 400
+  want_msg: 密码不能为空
+  # @NotBlank 和 @Size(6,50) 同时失败，后端报哪条随机 → 两个都接受
+  want_msg_alt:
+    - 密码长度应在6-50之间
+
+- name: 邮箱空
+  username: reg_nomail_probe
+  password: "123456"
+  email: ""
+  want_http: 400
+  want_code: 400
+  want_msg: 邮箱不能为空
+
+- name: 邮箱格式错
+  username: reg_badmail_probe
+  password: "123456"
+  email: not-an-email
+  want_http: 400
+  want_code: 400
+  want_msg: 邮箱格式不正确

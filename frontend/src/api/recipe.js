@@ -4,17 +4,6 @@ const recipeApi = {
   getRecommendations: (params = {}) => {
     return axios.get('/recommend/recipes', { params });
   },
-  getSubstitutes: (payload) => {
-    const prompt = typeof payload === 'string' ? payload : payload?.prompt;
-    const rawPrompt = typeof payload === 'object' && payload ? (payload.rawPrompt || payload.prompt) : prompt;
-    return axios.post('/recommend/ingredient/substitute', {
-      ...(typeof payload === 'object' && payload ? payload : {}),
-      ingredientName: rawPrompt,
-      prompt
-    }, {
-      timeout: 60000
-    });
-  },
   getRecipesByGoal: (goalData) => {
     return axios.post('/recommend/recipes/by-goal', goalData);
   },

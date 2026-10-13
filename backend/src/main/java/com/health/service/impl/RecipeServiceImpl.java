@@ -8,7 +8,9 @@ import com.health.entity.HealthInfo;
 import com.health.entity.Ingredient;
 import com.health.entity.Recipe;
 import com.health.entity.RecipeIngredient;
+import com.health.entity.AssistantMessage;
 import com.health.entity.UserDietPreference;
+import com.health.mapper.AssistantMessageMapper;
 import com.health.mapper.DietGoalMapper;
 import com.health.mapper.HealthInfoMapper;
 import com.health.mapper.IngredientMapper;
@@ -38,12 +40,179 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
 public class RecipeServiceImpl implements RecipeService {
 
     private static final String PYTHON_SERVICE_URL = "http://localhost:5000";
+
+    /**
+     * 多轮对话历史窗口：最多带入多少条历史消息（约 10 轮，user/assistant 各算一条）。
+     */
+    private static final int MAX_HISTORY_MESSAGES = 20;
+
+    /**
+     * 单条历史消息进入模型前的最大长度，超出截断，避免个别长回复占满上下文。
+     */
+    private static final int MAX_HISTORY_CONTENT_LENGTH = 500;
+
+    // ══════════ 意图识别（本地关键词规则） ══════════
+    // 2026-10-12 新增。在此之前：/assistant/chat 入口**无条件**把任何问题都送进
+    // getIngredientSubstitutes，意图既没被算出来、也没被传出来 ——
+    // 黑盒测试只能断文本，断不了"它到底判成了什么"，数据集里的 intent 标签一直没人接。
+    //
+    // 这一步只做两件事：① 把意图**算出来**（下面的 classifyIntent）；
+    //                   ② 让它随返回值**透传**到响应里（getIngredientSubstitutes 末尾 put）。
+    //
+    // ⚠️ 故意**没有改分支走向** —— greeting / out_of_scope 现在仍然会去调模型。
+    //    原因：一旦本地短接（比如越界问题不再问模型），"越界必被拒绝"就会从
+    //    "模型守不守得住"变成"我写的这句文案对不对"，现在那些盯模型稳定性的
+    //    哨兵用例（重复 5 次的 pass^5）就白建了。
+    //    分叉怎么切、切哪几类，等这批断言先跑起来、有了真实误判率再定。
+    //    —— 一次只改一件事，改完能验收，再加下一件。
+    private static final List<String> OUT_OF_SCOPE_KEYWORDS = Arrays.asList(
+        "写代码", "代码", "编程", "程序", "脚本", "算法", "排序", "冒泡", "python", "java", "报错", "bug",
+        "机票", "订票", "酒店", "天气", "气温", "股票", "基金", "翻译", "作文", "数学题", "电影", "游戏"
+    );
+
+    private static final List<String> SUBSTITUTE_KEYWORDS = Arrays.asList(
+        "替代", "代替", "替换", "换成", "换掉", "用什么代", "拿什么代"
+    );
+
+    // 寒暄用**整句相等**判定，不用"包含"。
+    // 为什么：数据集里有一条「你好，今天想吃点好的」——真实意图是饮食问答（点餐需求）。
+    // 如果按"包含你好"判，它会被判成 greeting，把真实需求丢掉。
+    // 整句相等能天然放过这种"寒暄夹带需求"，代价是「你好呀」「您好，请问」这类
+    // 带尾巴的问候不再算寒暄，一律落到 other —— 这个取舍是有意的：宁可少判寒暄，不可吞掉需求。
+    private static final Set<String> GREETING_ONLY = new LinkedHashSet<>(Arrays.asList(
+        "你好", "您好", "哈喽", "嗨", "hi", "hello", "在吗", "早上好", "中午好", "下午好", "晚上好",
+        "谢谢", "谢谢啦", "多谢", "好的", "ok", "再见", "拜拜"
+    ));
+
+    // ══════════ 输入安全拦截（2026-10-12 新增） ══════════
+    // 规则**由前端 frontend/src/utils/assistantSafety.js 平移而来**，
+    // 但把前端那版实测出来的 4 处误伤一起修掉了（逐条见下方注释）。
+    //
+    // 为什么搬到后端：
+    //   ① 前端那层跑在浏览器里，curl 直接打 /assistant/chat 就绕过去了；
+    //   ② pytest 读不懂 JS，那层永远测不到。放这儿才拦得住、也才测得到。
+    //
+    // ⚠️ 前端那份规则**暂未删除** —— 同一套判断现在写了两遍，改词表要改两处。
+    //    这是有意留下的技术债：先把后端这版跑稳、测出来，再决定前端那层去留。
+    private static final int MAX_PROMPT_LENGTH = 1000;
+
+    // 脏话 / 辱骂：**只匹配明确的辱骂组合与拼音缩写**，绝不匹配单字「草」「操」
+    // （草莓 / 甘草 / 体操 / 操场 会被单字规则大面积误伤）。
+    //
+    // ⚠️ 三处负向断言，全是**实测抓出来的误伤**，不是想当然加的：
+    //    · 我草(?![一-龥])  —— 否则「我草莓过敏」被判辱骂
+    //    · 我操(?![一-龥])  —— 同理（我对操场…）
+    //    · "妈的" 不能光写两个字：
+    //        写 `妈的`        → 「我**妈妈的**饮食建议」命中（第二个"妈"+"的"拼出来了）→ 误伤
+    //        写 `妈的(?![妈])` → 上面这条挡住了，但「**我妈的**血糖高吗」照样命中 → 还是误伤
+    //      最后改成**只认固定搭配 + 后面不接汉字**：他妈的 / 你妈的 / 妈的(!接汉字)。
+    //      代价是「妈的智障」这种会被放过 —— 宁可漏拦一句脏话，也不要把「我妈的饮食」挡在门外。
+    private static final List<Pattern> BLOCK_ABUSE_PATTERNS = Arrays.asList(
+        Pattern.compile("cnm|nmsl|tmd|tnnd|woc|wc(?![a-z])|sb(?![a-z])|fuck|shit", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("草泥马|艹你|艹尼玛|操你|操他|他妈的|你妈的|它妈的|妈的(?![一-龥])|妈逼|傻逼|煞笔|沙雕|狗东西|去死|卧槽|我操(?![一-龥])|我艹|我草(?![一-龥])")
+    );
+
+    // 高危医疗：求具体剂量、自行停药换药、自残/极端做法。
+    // ⚠️ 第一条是**修过**的。前端原版是 /(吃|服).*(几片|几粒|几袋|几支)/ ——
+    //    只要求"吃"和"几片"先后出现、不限定"几片"指的是**药**，
+    //    实测把「早餐吃几片全麦面包合适」「晚饭吃几粒杏仁比较合适」都判成了求用药剂量，
+    //    然后回一句"请以医生的诊断和处方为准"。问份量是营养问答最常见的问法，这条必须收。
+    //    改法：加**频次词**约束（一次/每次/每天…），把"食物问份量"的说法放过去，
+    //    同时「一次吃几片布洛芬」这类真求剂量的照旧拦住。
+    private static final List<Pattern> BLOCK_MEDICAL_PATTERNS = Arrays.asList(
+        Pattern.compile("(一次|每次|每天|每日|一天|一顿|每顿)[^。！？!?]{0,8}(吃|服)[^。！？!?]{0,8}(几片|几粒|几袋|几支)"),
+        Pattern.compile("(剂量|用量)是?多少|多少(毫克|mg|毫升|ml)"),
+        Pattern.compile("(自行|自己|能不能|可以)[^。！？!?]{0,8}(停药|减药|换药|停掉|减半)"),
+        Pattern.compile("自杀|不想活|催吐|泻药减肥|禁食[0-9一二三四五六七八九十]+天")
+    );
+
+    // 与饮食健康完全无关的领域。
+    private static final List<Pattern> BLOCK_OUT_OF_SCOPE_PATTERNS = Arrays.asList(
+        Pattern.compile("写(个|一段)?代码|冒泡排序|编程|python|java|sql|bug|报错", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("机票|订票|酒店|天气|气温|股票|基金|翻译|作文|数学题")
+    );
+
+    /**
+     * 饮食词白名单：越界词**和饮食词同时出现**时，按饮食问题放过。
+     *
+     * 这是修"裸词误伤"的那一刀。前端把「天气」「翻译」当裸词用，于是
+     * 「今天天气冷了，适合喝什么汤」「帮我翻译一下这个营养成分表」都被整套拦掉。
+     * 加了这层：这两条放行，而「今天天气怎么样」「帮我翻译这段英文」照旧拦住。
+     */
+    private static final Pattern DIET_CONTEXT_PATTERN = Pattern.compile(
+        "吃|喝|食物|食材|菜|饭|汤|营养|热量|蛋白|碳水|脂肪|糖|盐|油|减肥|减脂|增肌|食谱|餐|饮食|替代|代替|水果|蔬菜|肉|蛋|奶|豆|坚果|零食|早餐|午餐|晚餐|加餐"
+    );
+
+    private static final String BLOCK_REPLY_ABUSE =
+        "请文明交流哦～我会尽力帮你解答饮食与健康相关的问题，比如食材替代、三餐搭配、热量营养估算等。";
+    private static final String BLOCK_REPLY_MEDICAL =
+        "用药剂量、停药换药等问题关系到人身安全，请以医生的诊断和处方为准，我无法提供这类建议。";
+    private static final String BLOCK_REPLY_OUT_OF_SCOPE =
+        "我只负责饮食与健康相关的问题，这个话题超出了我的能力范围，我们聊聊饮食方面的内容吧。";
+    private static final String BLOCK_REPLY_TOO_LONG =
+        "输入内容过长，请精简到 1000 字以内再提问。";
+
+    /**
+     * 输入安全拦截检测：命中返回规则类型，未命中返回 null。
+     * 取值：abuse（辱骂）/ medical（高危医疗）/ out_of_scope（无关领域）/ too_long（超长）。
+     *
+     * 纯本地、不调模型 —— 同一句话问一百次结果一样，测试才敢拿它当断言。
+     * 顺序就是优先级：超长 → 辱骂 → 高危医疗 → 无关领域。
+     */
+    private String detectBlockedType(String question) {
+        if (question == null) {
+            return null;
+        }
+        String text = question.trim();
+        if (text.isEmpty()) {
+            return null;
+        }
+        if (text.length() > MAX_PROMPT_LENGTH) {
+            return "too_long";
+        }
+        if (matchesAnyPattern(BLOCK_ABUSE_PATTERNS, text)) {
+            return "abuse";
+        }
+        if (matchesAnyPattern(BLOCK_MEDICAL_PATTERNS, text)) {
+            return "medical";
+        }
+        // 越界词与饮食词**同现** → 当成饮食问题放过，不判越界（见 DIET_CONTEXT_PATTERN 注释）
+        if (matchesAnyPattern(BLOCK_OUT_OF_SCOPE_PATTERNS, text)
+            && !DIET_CONTEXT_PATTERN.matcher(text).find()) {
+            return "out_of_scope";
+        }
+        return null;
+    }
+
+    private boolean matchesAnyPattern(List<Pattern> patterns, String text) {
+        for (Pattern pattern : patterns) {
+            if (pattern.matcher(text).find()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 按拦截类型取固定回复文案。 */
+    private String blockReply(String blockedType) {
+        if ("abuse".equals(blockedType)) {
+            return BLOCK_REPLY_ABUSE;
+        }
+        if ("medical".equals(blockedType)) {
+            return BLOCK_REPLY_MEDICAL;
+        }
+        if ("too_long".equals(blockedType)) {
+            return BLOCK_REPLY_TOO_LONG;
+        }
+        return BLOCK_REPLY_OUT_OF_SCOPE;
+    }
 
     @Value("${deepseek.api-key:}")
     private String deepSeekApiKey;
@@ -74,6 +243,9 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Autowired
     private UserDietPreferenceMapper userDietPreferenceMapper;
+
+    @Autowired
+    private AssistantMessageMapper assistantMessageMapper;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -348,30 +520,123 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public Map<String, Object> getIngredientSubstitutes(Map<String, Object> ingredientData) {
+        // 先在入口算出意图，再让它跟着**每一条**出口一起返回。
+        // 之前这里没有这一行 —— 于是不管用户问的是"订机票"还是"鸡胸肉怎么替代"，
+        // 调用方看到的返回值长得一模一样，分支无从观测。
+        String question = extractIngredientQuestion(ingredientData);
+        String intent = classifyIntent(question);
+
+        // ③ 硬拦：命中安全规则就**不调模型**，直接回固定文案。
+        //
+        // 这是三层防线里唯一"确定性"的一层：
+        //   ① DeepSeek 自带对齐 —— 管通用有害内容，管不了"你这个业务的职责边界"（你也不拥有它）
+        //   ② system prompt 的【安全边界】4 条 —— 只是"劝"，实测越界问代码 3/4 次照写不误
+        //   ③ 就在这里 —— 代码拦，绕不过去（前端那层 curl 一打就绕过）
+        //
+        // ⚠️ 代价要有意识：这一拦，「越界-写代码」那条重复 5 次的 pass^5 哨兵
+        //    就不再是"盯模型守不守规矩"，而变成"盯这几条正则对不对"。
+        //    模型行为那部分从此测不到了 —— 换来的是确定性。
+        String blocked = detectBlockedType(question);
+        if (blocked != null) {
+            log.info("AI 助手输入被拦截: type={}, question={}", blocked, question);
+            Map<String, Object> blockedResult = buildAssistantTextResult(blockReply(blocked), "blocked");
+            blockedResult.put("intent", intent);
+            blockedResult.put("blocked", blocked);
+            return blockedResult;
+        }
+
         Map<String, Object> deepSeekResult = getDeepSeekIngredientAssistantResult(ingredientData);
         if (deepSeekResult != null && !deepSeekResult.isEmpty()) {
+            deepSeekResult.put("intent", intent);
             return deepSeekResult;
         }
 
-        List<Map<String, Object>> substitutes = new ArrayList<>();
-        try {
-            String url = PYTHON_SERVICE_URL + "/api/ingredient/substitute";
-            Map<String, Object> response = restTemplate.postForObject(url, ingredientData, Map.class);
-            if (response != null && response.containsKey("data") && response.get("data") instanceof List) {
-                substitutes = (List<Map<String, Object>>) response.get("data");
+        // 模型不可用时，如实报错，不再编一个答案。
+        //
+        // 2026-10-12 删掉了原来的两级兜底：
+        //   ① Python 算法服务 localhost:5000/api/ingredient/substitute
+        //   ② 本地模板 buildLocalAssistantCards + buildLocalAssistantReply
+        // 这两条路只会产出"食材替代"，而助手现在的范围是泛健康 ——
+        // 用户问「减脂晚餐怎么吃」，只要 DeepSeek 一挂，就会被套成「替代方案：1. 鸡蛋…」。
+        // 那等于用一个错误答案去掩盖另一个错误答案，用户根本不知道服务其实坏了。
+        // 宁可说"暂时不可用"，也不要说一个错的。
+        log.warn("AI 助手无可用结果，返回错误提示（已不再回退到 Python 服务或本地模板）");
+        Map<String, Object> errorResult = buildAssistantTextResult(
+            "抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。\n"
+                + "如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。",
+            "error");
+        errorResult.put("intent", intent);
+        return errorResult;
+    }
+
+    /**
+     * 意图分类：greeting / out_of_scope / substitute / other。
+     *
+     * 纯本地关键词规则 —— 这点很重要：意图**不依赖模型**，同一句话问一百次结果都一样，
+     * 测试才敢拿它当断言（模型回答是概率性的，温度 0.6 下同一句话两次不一样）。
+     *
+     * 分类顺序就是优先级，别随意调换：
+     *   ① 整句寒暄 → ② 越界关键词 → ③ 替代关键词 → ④ 兜底 other
+     * 一个问题是"越界"还是"饮食"，比它是不是"求替代"更该优先判 ——
+     * 「帮我用代码写个鸡胸肉替代方案」这种，判 out_of_scope 才是对的。
+     *
+     * ── ④ 原名 diet_qa，2026-10-13 **改名 other** ──
+     * 旧名在撒谎：前三类都不中就一律贴 diet_qa，于是「帮我写首诗」这种**越界问题**
+     * 也被叫成 饮食问答 —— 它其实只是 我什么都没认出来。
+     * 改成 other 之后，这个位置终于名副其实了。
+     *
+     * ⚠️ 但改名**不带来任何能力提升**，代价却有一条（别指望白来）：
+     *    diet_qa 这个标签**从此不存在** —— 「早餐吃什么比较抗饿」这类**没有关键词的
+     *    正经饮食问题**也只能落进 other。也就是说：名字变诚实了，
+     *    但"系统认不认得出饮食问题"这件事一点没变好
+     *    （何况 other 不驱动任何动作，见本文件上方 故意没有改分支走向，系统行为一个字没变）。
+     *
+     * 已知的误判（数据集里刻意留了样本，就是为了让准确率不是 100%）：
+     *   · 「我还能吃点什么别的」→ 判成 other（期望 substitute）—— 一个替代词都不含，落到兜底。
+     *   · 带尾巴的问候（「你好呀」「您好，请问…」）→ 判成 other，会少算一次寒暄。
+     *     （取舍理由见 GREETING_ONLY 上面的注释。）
+     */
+    private String classifyIntent(String question) {
+        String normalized = normalizeStrict(question);
+        if (normalized.isEmpty()) {
+            return "other";
+        }
+        if (GREETING_ONLY.contains(normalized)) {
+            return "greeting";
+        }
+        for (String keyword : OUT_OF_SCOPE_KEYWORDS) {
+            if (normalized.contains(keyword)) {
+                return "out_of_scope";
             }
-        } catch (RestClientException ignored) {
         }
-
-        if (substitutes.isEmpty()) {
-            substitutes.addAll(buildLocalAssistantCards(ingredientData));
+        for (String keyword : SUBSTITUTE_KEYWORDS) {
+            if (normalized.contains(keyword)) {
+                return "substitute";
+            }
         }
+        // ④ 兜底：如实标 没认出来 —— 原名 diet_qa（那是谎言，见上方注释）。
+        return "other";
+    }
 
-        return buildAssistantTextResult(buildLocalAssistantReply(ingredientData, substitutes), "local");
+    /**
+     * 把问题压成"只剩字"的形式：去掉空白和常见标点，英文转小写。
+     * 为什么不能直接用 normalizeText（它只 trim + 转小写）：
+     *   「你好」和「你好，」要判成同一件事 —— 后者带着标点，整句相等就匹配不上了。
+     */
+    private String normalizeStrict(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replaceAll("[\\s，。！？；：、,.!?;:~…\"'“”‘’（）()\\[\\]【】\\-]+", "")
+            .toLowerCase(Locale.ROOT);
     }
 
     private Map<String, Object> getDeepSeekIngredientAssistantResult(Map<String, Object> ingredientData) {
         if (deepSeekApiKey == null || deepSeekApiKey.trim().isEmpty()) {
+            // 以前这里是静默 return null —— 日志里一个字都不留。
+            // 结果是"回答全是本地模板"这个现象，只能靠人肉比对文本来判断，
+            // 白白花掉很久。现在至少留一条。
+            log.warn("DEEPSEEK_API_KEY 未配置或为空，AI 助手无法调用模型");
             return null;
         }
 
@@ -409,18 +674,15 @@ public class RecipeServiceImpl implements RecipeService {
             requestBody.put("model", deepSeekModel);
             requestBody.put("temperature", 0.6);
 
+            // 这里原来有三行"加了又清"的废动作（第一版遗留的 JSON 数组提示词）：
+            //   messages.add(...); messages.add(...); messages.clear();
+            // 加完立刻 clear，等于没写；可那段"严格返回 JSON 数组"的提示词留在源码里
+            // 极具误导性 —— 读到的人会以为模型现在仍被要求返回 JSON 数组。已删除。
             List<Map<String, String>> messages = new ArrayList<>();
-            messages.add(buildMessage(
-                "system",
-                "你是一位专业的食材小助手。请根据用户当前健康状况、饮食目标、过敏和慢病信息，"
-                    + "优先给出 3 个更合适的替代食材建议。请严格返回 JSON 数组，"
-                    + "每个元素包含 name、similarity、nutrition_difference、usage_suggestion 四个字段。"
-                    + "similarity 使用“高 / 适中 / 一般”之一，不要输出 markdown。"
-            ));
-            messages.add(buildMessage("system", assistantContext));
-            messages.clear();
             messages.add(buildMessage("system", buildIngredientAssistantSystemPrompt()));
             messages.add(buildMessage("system", assistantContext));
+            // 注入本会话的多轮历史（最近窗口，按时间正序），让模型能理解"它/那个/再来一份"等指代
+            messages.addAll(buildConversationHistoryMessages(ingredientData));
             messages.add(buildMessage("user", buildIngredientAssistantNaturalUserPrompt(question, assistantContext)));
             requestBody.put("messages", messages);
 
@@ -538,19 +800,109 @@ public class RecipeServiceImpl implements RecipeService {
         return message;
     }
 
+    /**
+     * 拼装当前会话的多轮历史消息。
+     *
+     * 取当前用户消息之前、role 为 user/assistant 的最近 MAX_HISTORY_MESSAGES 条
+     * （先按 id 倒序取窗口，再反转为时间正序），排除 context 类型和空内容消息。
+     * 拿不到会话 ID 或当前消息 ID 时（如非 /assistant 入口的调用）返回空列表，
+     * 不影响原有流程。
+     */
+    private List<Map<String, String>> buildConversationHistoryMessages(Map<String, Object> ingredientData) {
+        Long conversationId = readLong(ingredientData.get("conversationId"));
+        Long currentUserMessageId = readLong(ingredientData.get("currentUserMessageId"));
+        if (conversationId == null || currentUserMessageId == null) {
+            return new ArrayList<>();
+        }
+
+        QueryWrapper<AssistantMessage> wrapper = new QueryWrapper<>();
+        wrapper.eq("conversation_id", conversationId)
+            .in("role", "user", "assistant")
+            .lt("id", currentUserMessageId)
+            .orderByDesc("id")
+            .last("LIMIT " + MAX_HISTORY_MESSAGES);
+
+        List<AssistantMessage> recentMessages = assistantMessageMapper.selectList(wrapper);
+        Collections.reverse(recentMessages);
+
+        List<Map<String, String>> history = new ArrayList<>();
+        for (AssistantMessage message : recentMessages) {
+            String content = message.getContent() == null ? "" : message.getContent().trim();
+            if (content.isEmpty()) {
+                continue;
+            }
+            if (content.length() > MAX_HISTORY_CONTENT_LENGTH) {
+                content = content.substring(0, MAX_HISTORY_CONTENT_LENGTH - 1) + "…";
+            }
+            history.add(buildMessage(message.getRole(), content));
+        }
+        return history;
+    }
+
+    private Long readLong(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        if (value instanceof String) {
+            String text = ((String) value).trim();
+            if (!text.isEmpty()) {
+                try {
+                    return Long.parseLong(text);
+                } catch (NumberFormatException ignored) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 通用饮食健康助手的 system prompt。
+     *
+     * ⚠️ 方法名还叫 Ingredient —— 这是历史遗留，别被名字骗了。
+     * 它现在描述的是一个"泛健康"助手，不再是"食材替代小助手"。
+     * 更名会牵动 RecipeService 接口和两个 Controller，留到命名清理那一版再做。
+     *
+     * 2026-10-12 放宽范围：从"只做食材替代"扩到 饮食 + 健康生活方式 + 慢病饮食。
+     * 范围放宽的同时，必须把医疗边界写死在这里 ——
+     * 本轮是"只改提示词"，代码层没有任何护栏，模型守不守得住边界全靠下面这段文字。
+     */
     private String buildIngredientAssistantSystemPrompt() {
-        return "你是一位专业的食材替代与饮食搭配助手。"
-            + "请结合用户当前健康档案、饮食目标、饮食偏好中的过敏/忌口和慢性病信息，用自然、专业、清晰的中文直接回答问题。"
-            + "回答时优先先给结论，再解释为什么适合该用户。"
-            + "如果合适，可以分点给出 2 到 4 个替代方案，并说明营养差异和使用建议。"
-            + "不要返回 JSON，不要返回代码块，也不要用字段名模板式输出。";
+        return "你是一位专业的饮食与健康助手。"
+            + "你可以回答：食材替代、食谱分析、三餐搭配、营养成分与热量估算、"
+            + "控油控糖控钠等饮食调整、慢病相关的饮食注意事项、运动与体重管理、"
+            + "以及保健品的常见作用与注意事项。"
+            + "请结合用户当前健康档案、饮食目标、过敏/忌口和慢性病信息，用自然、专业、清晰的中文回答。"
+            + "先给结论，再解释为什么这样建议适合该用户；需要时再分点给出具体方案。"
+            + "\n\n【多轮对话规则，必须遵守】"
+            + "\n1. 对话历史中用户已经说过的事实（如「我不喜欢吃鸡胸肉」「我海鲜过敏」），"
+            + "直接当作既定前提，不要反问、不要质疑、也不要重新论证。"
+            + "\n2. 后续追问通常很短（「鸡胸肉呢」「那它热量多少」「再来一份」），"
+            + "要结合历史理解其指代，只针对追问本身简短作答，一般两三句话即可；"
+            + "默认用户已经知道前几轮的结论，不要重复前文讲过的内容，也不要每轮复述完整档案。"
+            + "\n3. 只有开启一个全新话题、或用户明确要求完整方案时，才给出分点的完整长回答。"
+            + "\n\n【安全边界，必须遵守】"
+            + "\n1. 你提供的只是饮食与生活方式参考，不做疾病诊断、不开处方、"
+            + "不给具体用药剂量，也不建议用户自行调整正在服用的药物。"
+            + "\n2. 遇到疾病治疗、药物相互作用、孕期哺乳期、婴幼儿、进食障碍、"
+            + "严重过敏等高风险情形：先给一般性的饮食建议，"
+            + "再明确提醒「具体请以医生的诊断和处方为准」。"
+            + "\n3. 不推荐极端节食、催吐、禁食、滥用减肥药等有害做法；"
+            + "遇到这类请求要明确拒绝，并说明风险。"
+            + "\n4. 与饮食、健康完全无关的问题（写代码、查天气、订机票等），"
+            + "直接说明你只负责饮食与健康相关的问题，不要勉强作答，也不要硬套成饮食建议。"
+            + "\n\n不要返回 JSON，不要返回代码块，也不要用字段名模板式输出。";
     }
 
     private String buildIngredientAssistantNaturalUserPrompt(String question, String assistantContext) {
-        return "请结合以下用户信息回答食材替代问题。\n"
+        // 之前这里写死了"回答食材替代问题"、"为什么这些替代方案适合该用户" ——
+        // 等于每句话都先把模型按回替代任务里，泛健康的问题也会被套成替代方案。
+        return "请结合以下用户信息回答。\n"
             + assistantContext + "\n"
             + "用户问题：" + question + "\n"
-            + "要求：先直接回答这个问题，再说明为什么这些替代方案适合该用户当前身体状况和饮食目标。"
+            + "要求：先直接回答这个问题；如果它涉及该用户的过敏/忌口、慢性病或饮食目标，"
+            + "再简要说明为什么这样建议适合他。若问题超出饮食与健康范围，按安全边界说明你的职责。"
+            + "如果这是结合上文的简短追问，请只回答追问本身、避免重复前文和档案。"
             + "请用自然语言分段回答，不要返回 JSON。";
     }
 
@@ -611,45 +963,6 @@ public class RecipeServiceImpl implements RecipeService {
         result.put("text", text == null ? "" : text.trim());
         result.put("source", source);
         return result;
-    }
-
-    private String buildLocalAssistantReply(Map<String, Object> ingredientData, List<Map<String, Object>> cards) {
-        String question = extractIngredientQuestion(ingredientData);
-        if (cards == null || cards.isEmpty()) {
-            return "暂时没有生成合适的替代建议，请换个问法再试试。";
-        }
-
-        StringBuilder builder = new StringBuilder();
-        builder.append("结合你当前的健康档案和饮食目标，");
-        if (!question.isEmpty()) {
-            builder.append("关于“").append(question).append("”，");
-        }
-        builder.append("可以优先参考以下替代方案：\n\n");
-
-        for (int index = 0; index < cards.size(); index++) {
-            Map<String, Object> card = cards.get(index);
-            String name = valueOrDash(card.get("name"));
-            String similarity = valueOrDash(card.get("similarity"));
-            String nutritionDifference = valueOrDash(card.get("nutrition_difference"));
-            String usageSuggestion = valueOrDash(card.get("usage_suggestion"));
-
-            builder.append(index + 1).append(". ").append(name);
-            if (!"--".equals(similarity)) {
-                builder.append("（匹配度：").append(similarity).append("）");
-            }
-            builder.append("\n");
-
-            if (!"--".equals(nutritionDifference)) {
-                builder.append("营养差异：").append(nutritionDifference).append("\n");
-            }
-            if (!"--".equals(usageSuggestion)) {
-                builder.append("使用建议：").append(usageSuggestion).append("\n");
-            }
-            builder.append("\n");
-        }
-
-        builder.append("如果你愿意，我还可以继续按你当前目标帮你细化到早餐、午餐或晚餐的具体搭配。");
-        return builder.toString().trim();
     }
 
     private String formatObjectReply(JsonNode node) {
@@ -740,102 +1053,6 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         return "";
-    }
-
-    private List<Map<String, Object>> buildLocalAssistantCards(Map<String, Object> ingredientData) {
-        String question = extractIngredientQuestion(ingredientData).toLowerCase(Locale.ROOT);
-        Long userId = null;
-        Object userIdObj = ingredientData.get("userId");
-        if (userIdObj instanceof Number) {
-            userId = ((Number) userIdObj).longValue();
-        } else if (userIdObj instanceof String) {
-            try {
-                userId = Long.parseLong((String) userIdObj);
-            } catch (NumberFormatException ignored) {
-            }
-        }
-
-        HealthInfo healthInfo = userId == null ? null : healthInfoMapper.findByUserId(userId);
-        DietGoal dietGoal = userId == null ? null : dietGoalMapper.findByUserId(userId);
-        UserDietPreference preference = userId == null ? null : userDietPreferenceMapper.selectOne(
-            new QueryWrapper<UserDietPreference>().eq("user_id", userId).last("LIMIT 1")
-        );
-        String goalType = dietGoal == null ? "" : String.valueOf(dietGoal.getGoalType()).toLowerCase(Locale.ROOT);
-        String allergies = preference == null || preference.getAllergies() == null ? "" : preference.getAllergies().toLowerCase(Locale.ROOT);
-
-        List<Map<String, Object>> cards = new ArrayList<>();
-
-        if (containsAny(question, "鸡胸肉", "鸡肉")) {
-            addAssistantCard(cards, "去皮鸡腿肉", "高", "脂肪略高于鸡胸肉，但蛋白质接近，热量稍高。", buildUsageSuggestion(goalType, "可煎、烤或炖煮，适合作为主菜补充优质蛋白。"));
-            if (!containsAny(allergies, "牛", "牛肉")) {
-                addAssistantCard(cards, "瘦牛肉（如里脊）", "适中", "蛋白质含量高，富含铁和锌，脂肪略高。", buildUsageSuggestion(goalType, "适合切片快炒或做牛肉饼，能提升蛋白质和热量摄入。"));
-            }
-            addAssistantCard(cards, "老豆腐", "一般", "植物蛋白较稳定，脂肪较低，但单次蛋白密度不如肉类。", buildUsageSuggestion(goalType, "适合与鸡蛋或主食搭配，做成煎豆腐或豆腐炒菜。"));
-        } else if (containsAny(question, "牛奶", "乳糖")) {
-            if (!containsAny(allergies, "豆")) {
-                addAssistantCard(cards, "强化豆奶", "高", "蛋白质接近牛奶，无乳糖，更适合乳糖不耐受人群。", buildUsageSuggestion(goalType, "可直接替代牛奶饮用，也适合搭配燕麦或全麦面包。"));
-            }
-            addAssistantCard(cards, "无乳糖牛奶", "高", "营养构成与普通牛奶接近，但乳糖已被分解。", buildUsageSuggestion(goalType, "如果只是乳糖不耐受，优先选择无乳糖版本最方便。"));
-            addAssistantCard(cards, "无糖酸奶（低乳糖或无乳糖）", "适中", "发酵后乳糖更低，蛋白质和钙含量也较稳定。", buildUsageSuggestion(goalType, "适合作为早餐或加餐，帮助补充蛋白质和热量。"));
-        } else if (containsAny(question, "海鲜", "海虾", "虾", "鱼")) {
-            addAssistantCard(cards, "鸡蛋", "高", "蛋白质优质、过敏风险通常低于海鲜，做法灵活。", buildUsageSuggestion(goalType, "可做蒸蛋、炒蛋或蛋饼，搭配蔬菜和主食使用。"));
-            addAssistantCard(cards, "鸡胸肉", "高", "蛋白质高、脂肪较低，适合多数饮食目标。", buildUsageSuggestion(goalType, "适合煎、煮、烤，作为海鲜的直接蛋白替代。"));
-            if (!containsAny(allergies, "豆")) {
-                addAssistantCard(cards, "豆腐", "适中", "植物蛋白稳定，口感清淡，适合做配菜或主菜。", buildUsageSuggestion(goalType, "可与蔬菜同炒或炖煮，提升餐盘搭配多样性。"));
-            }
-        } else if (containsAny(question, "搭配", "晚餐", "午餐", "早餐")) {
-            addAssistantCard(cards, "鸡蛋", "高", "蛋白质吸收率高，适合快速补充优质蛋白。", buildUsageSuggestion(goalType, "可与现有蔬菜或豆制品一起搭配成主菜。"));
-            addAssistantCard(cards, "豆腐", "适中", "植物蛋白和水分充足，适合做成清炒、炖煮或煎制菜肴。", buildUsageSuggestion(goalType, "适合和西兰花、鸡蛋、主食搭配做成均衡一餐。"));
-            addAssistantCard(cards, "糙米或全麦主食", "适中", "能补充碳水化合物和额外热量，让一餐更完整。", buildUsageSuggestion(goalType, "如果目标是增重或维持体重，建议搭配主食一起吃。"));
-        }
-
-        if (cards.isEmpty()) {
-            addAssistantCard(cards, "鸡蛋", "适中", "优质蛋白来源稳定，适合多数替代场景。", buildUsageSuggestion(goalType, "可作为常见食材的基础替代，和蔬菜、主食组合食用。"));
-            addAssistantCard(cards, "豆腐", "适中", "植物蛋白温和，适合清淡和家常搭配。", buildUsageSuggestion(goalType, "适合作为家常替代方案，提升蛋白质来源多样性。"));
-            addAssistantCard(cards, "糙米", "一般", "可补充碳水和部分膳食纤维，帮助完善整体能量结构。", buildUsageSuggestion(goalType, "如果你问的是整餐搭配，这类主食通常需要一起考虑。"));
-        }
-
-        return cards;
-    }
-
-    private void addAssistantCard(List<Map<String, Object>> cards, String name, String similarity, String nutritionDifference, String usageSuggestion) {
-        Map<String, Object> card = new HashMap<>();
-        card.put("name", name);
-        card.put("similarity", similarity);
-        card.put("nutrition_difference", nutritionDifference);
-        card.put("usage_suggestion", usageSuggestion);
-        cards.add(card);
-    }
-
-    private boolean containsAny(String source, String... keywords) {
-        if (source == null || source.isEmpty()) {
-            return false;
-        }
-        for (String keyword : keywords) {
-            if (keyword != null && !keyword.isEmpty() && source.contains(keyword.toLowerCase(Locale.ROOT))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private String buildUsageSuggestion(String goalType, String defaultSuggestion) {
-        if (goalType == null) {
-            return defaultSuggestion;
-        }
-        if (containsAny(goalType, "减脂", "减肥", "fat_loss")) {
-            return defaultSuggestion + " 更适合控制总热量和脂肪摄入。";
-        }
-        if (containsAny(goalType, "增肌", "塑形", "muscle")) {
-            return defaultSuggestion + " 有助于补充蛋白质并支持肌肉恢复。";
-        }
-        if (containsAny(goalType, "控糖", "blood_sugar")) {
-            return defaultSuggestion + " 建议搭配低 GI 主食并控制额外糖分。";
-        }
-        if (containsAny(goalType, "增重", "weight_gain")) {
-            return defaultSuggestion + " 可以适当增加主食或健康脂肪，帮助提高总热量。";
-        }
-        return defaultSuggestion;
     }
 
     @Override

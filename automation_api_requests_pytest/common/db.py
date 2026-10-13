@@ -27,16 +27,13 @@ import time
 
 import pymysql
 
-log = logging.getLogger("db")
+from config.config import DB
 
-DB = {
-    "host": "127.0.0.1",
-    "port": 3306,
-    "user": "root",
-    "password": "123456",   # 与 backend/application.yml 一致
-    "database": "health_diet",
-    "charset": "utf8mb4",
-}
+# 数据库连接参数统一由 config 提供（原来硬编码在这里，属于"放错地方"）。
+# 名字仍然是 DB，所以下面所有用到 DB 的地方一行都不用改。
+
+
+log = logging.getLogger("db")
 
 
 # ==================== ① 连接复用 ====================
@@ -98,7 +95,8 @@ def query(sql, args=None, one=False):
         rows = cur.fetchone() if one else list(cur.fetchall())
 
     n = (0 if rows is None else 1) if one else len(rows)
-    log.info("SELECT %s | args=%s | rows=%d | %.1fms", _one_line(sql), args or (), n, _ms(t0))
+    # `·` 前缀 = 只读；级别 INFO。写操作用 `!` + WARNING，一眼看得出谁动了数据。
+    log.info("· READ  %s | args=%s | rows=%d | %.1fms", _one_line(sql), args or (), n, _ms(t0))
     return rows
 
 
@@ -115,11 +113,11 @@ def execute(sql, args=None):
         with conn.cursor() as cur:
             affected = cur.execute(sql, args or ())
     except Exception:
-        log.exception("WRITE 失败 %s | args=%s", _one_line(sql), args or ())
+        log.exception("! WRITE 失败 %s | args=%s", _one_line(sql), args or ())
         raise
 
     # 故意用 WARNING 级别：写操作在日志里要显眼
-    log.warning("WRITE %s | args=%s | affected=%d | %.1fms", _one_line(sql), args or (), affected, _ms(t0))
+    log.warning("! WRITE %s | args=%s | affected=%d | %.1fms", _one_line(sql), args or (), affected, _ms(t0))
     return affected
 
 
@@ -132,10 +130,10 @@ def executemany(sql, rows):
         with conn.cursor() as cur:
             affected = cur.executemany(sql, rows)
     except Exception:
-        log.exception("BULK 失败 %s | 参数组数=%d", _one_line(sql), len(rows))
+        log.exception("! BULK 失败 %s | 参数组数=%d", _one_line(sql), len(rows))
         raise
 
-    log.warning("BULK %s | 参数组数=%d | affected=%d | %.1fms", _one_line(sql), len(rows), affected, _ms(t0))
+    log.warning("! BULK  %s | 参数组数=%d | affected=%d | %.1fms", _one_line(sql), len(rows), affected, _ms(t0))
     return affected
 
 
@@ -157,14 +155,14 @@ def transaction():
     """
     conn = get_conn()
     conn.begin()
-    log.info("BEGIN 事务")
+    log.info("· BEGIN 事务")
     try:
         with conn.cursor() as cur:
             yield cur
     except Exception:
         conn.rollback()
-        log.warning("ROLLBACK 事务（发生异常，已撤销全部改动）")
+        log.warning("! ROLLBACK 事务（发生异常，已撤销全部改动）")
         raise
     else:
         conn.commit()
-        log.info("COMMIT 事务")
+        log.info("· COMMIT 事务")

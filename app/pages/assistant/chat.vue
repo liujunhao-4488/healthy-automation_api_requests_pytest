@@ -136,6 +136,7 @@
 
 <script setup>
 import assistantApi from '@/api/assistant'
+import { checkAssistantInput } from '@/utils/assistantSafety'
 import { nextTick, ref } from 'vue'
 
 const conversationId = ref(null)
@@ -279,8 +280,18 @@ const sendMessage = async () => {
   const rawPrompt = inputText.value.trim()
   if (!rawPrompt || sending.value) return
 
+  // 前端本地预检（体验层）：只拦「超长 + 明摆着的脏话」，本地直接回固定提示、不发请求。
+  // 高危医疗 / 无关领域 已交给后端判 —— 前端判会漂移（见 utils/assistantSafety.js 头注释）。
+  // 它可被绕过，不是安全边界。
+  const blocked = checkAssistantInput(rawPrompt)
   appendMessage({ text: rawPrompt, role: 'user' }, 'user')
   inputText.value = ''
+
+  if (blocked) {
+    appendMessage({ role: 'assistant', text: blocked.reply }, 'assistant')
+    return
+  }
+
   sending.value = true
 
   try {
