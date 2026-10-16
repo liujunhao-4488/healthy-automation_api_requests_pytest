@@ -1,12 +1,13 @@
 <template>
-  <div class="admin-layout">
-    <aside class="sidebar">
-      <div class="brand">
-        <p class="brand-tag">ADMIN CONSOLE</p>
-        <h2>后台管理中心</h2>
+  <div class="app-shell">
+    <!-- 侧边栏：与用户端 Dashboard 使用同一套 app-* 结构与样式 -->
+    <aside class="app-sidebar">
+      <div class="app-brand">
+        <span class="app-brand__tag">Admin Console</span>
+        <h2 class="app-brand__title">后台管理中心</h2>
       </div>
 
-      <el-menu :default-active="activeMenu" router class="admin-menu">
+      <el-menu :default-active="activeMenu" router class="app-nav">
         <el-menu-item index="/admin/overview">
           <el-icon><DataBoard /></el-icon>
           <span>后台总览</span>
@@ -32,17 +33,41 @@
           <span>系统通知</span>
         </el-menu-item>
       </el-menu>
-
-      <div class="sidebar-actions">
-        <el-button type="danger" plain @click="logout">退出登录</el-button>
-      </div>
     </aside>
 
-    <main class="content">
-      <section class="page-shell">
+    <!-- 右侧主体：顶栏 + 内容区 -->
+    <div class="app-body">
+      <header class="app-header">
+        <span class="app-header__title">{{ currentTitle }}</span>
+
+        <div class="app-header__actions">
+          <el-dropdown trigger="hover" class="app-header__dropdown" @command="handleUserCommand">
+            <div class="app-user">
+              <el-avatar :size="32" :src="userStore.avatar || ''">
+                {{ adminAvatarFallback }}
+              </el-avatar>
+              <div class="app-user__meta">
+                <span class="app-user__name">{{ userStore.username || '管理员' }}</span>
+                <span class="app-user__sub">{{ userStore.email || '管理员' }}</span>
+              </div>
+              <el-icon class="app-user__arrow"><ArrowDown /></el-icon>
+            </div>
+
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item divided command="logout">
+                  <el-icon><SwitchButton /></el-icon>退出登录
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+      </header>
+
+      <main class="app-main">
         <router-view />
-      </section>
-    </main>
+      </main>
+    </div>
   </div>
 </template>
 
@@ -50,7 +75,16 @@
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Bell, Collection, DataBoard, Files, Reading, User } from '@element-plus/icons-vue';
+import {
+  ArrowDown,
+  Bell,
+  Collection,
+  DataBoard,
+  Files,
+  Reading,
+  SwitchButton,
+  User
+} from '@element-plus/icons-vue';
 import { useUserStore } from '../stores/user';
 
 const route = useRoute();
@@ -58,107 +92,33 @@ const router = useRouter();
 const userStore = useUserStore();
 
 const activeMenu = computed(() => route.path);
+const adminAvatarFallback = computed(() =>
+  (userStore.username || 'A').trim().charAt(0).toUpperCase()
+);
+
+// 顶栏标题跟随当前路由，替代原来"顶栏左侧一片空白"的观感
+const MENU_TITLES = {
+  '/admin/overview': '后台总览',
+  '/admin/users': '用户管理',
+  '/admin/ingredients': '食材库管理',
+  '/admin/recipes': '食谱库管理',
+  '/admin/articles': '健康文章管理',
+  '/admin/notifications': '系统通知'
+};
+
+const currentTitle = computed(() => MENU_TITLES[route.path] || '后台管理中心');
 
 const logout = () => {
   userStore.logout();
   ElMessage.success('已退出登录');
   router.push('/login');
 };
+
+const handleUserCommand = (command) => {
+  if (command === 'logout') {
+    logout();
+  }
+};
 </script>
 
-<style scoped>
-.admin-layout {
-  height: 100vh;
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  background: #eff4ef;
-  overflow: hidden;
-}
-
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding: 28px 18px;
-  background: linear-gradient(180deg, #21382c 0%, #2d4a38 100%);
-  color: #f5fbf6;
-  overflow: hidden;
-}
-
-.brand {
-  margin-bottom: 24px;
-}
-
-.brand-tag {
-  margin: 0 0 8px;
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  color: rgba(245, 251, 246, 0.6);
-}
-
-.brand h2 {
-  margin: 0;
-  font-size: 24px;
-}
-
-:deep(.admin-menu) {
-  border-right: none;
-  background: transparent;
-}
-
-:deep(.admin-menu .el-menu-item) {
-  margin-bottom: 8px;
-  border-radius: 14px;
-  color: rgba(245, 251, 246, 0.74);
-}
-
-:deep(.admin-menu .el-menu-item:hover) {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
-
-:deep(.admin-menu .el-menu-item.is-active) {
-  background: #7ba088;
-  color: #fff;
-}
-
-.sidebar-actions {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sidebar-actions :deep(.el-button) {
-  justify-content: flex-start;
-}
-
-.content {
-  height: 100vh;
-  padding: 24px;
-  overflow-y: auto;
-}
-
-.page-shell {
-  min-height: calc(100vh - 48px);
-  padding-bottom: 24px;
-}
-
-@media (max-width: 900px) {
-  .admin-layout {
-    height: auto;
-    grid-template-columns: 1fr;
-    overflow: visible;
-  }
-
-  .sidebar {
-    height: auto;
-    padding-bottom: 16px;
-  }
-
-  .content {
-    height: auto;
-    overflow: visible;
-  }
-}
-</style>
+<!-- 外壳样式见 src/styles/admin.css（与 Dashboard 共用一套视觉规范） -->

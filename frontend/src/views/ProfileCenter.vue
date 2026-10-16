@@ -25,55 +25,35 @@
     </section>
 
     <div class="content-grid">
-      <el-card class="info-card" shadow="never">
+      <el-card
+        class="info-card entry-card"
+        shadow="never"
+        @click="router.push('/dashboard/health-info')"
+      >
         <template #header>
           <div class="section-head">
-            <span>健康档案</span>
-            <el-button text @click="router.push('/dashboard/health-info')">查看完整档案</el-button>
+            <span>健康信息</span>
           </div>
         </template>
-        <div class="health-snapshot">
-          <div class="snapshot-item">
-            <span class="snapshot-value">{{ displayValue(userStore.healthInfo?.weight, 'kg') }}</span>
-            <span class="snapshot-label">体重</span>
-          </div>
-          <div class="snapshot-divider"></div>
-          <div class="snapshot-item">
-            <span class="snapshot-value">{{ displayValue(userStore.healthInfo?.bmi) }}</span>
-            <span class="snapshot-label">BMI</span>
-          </div>
-          <div class="snapshot-divider"></div>
-          <div class="snapshot-item">
-            <span class="snapshot-value">{{ displayValue(userStore.healthInfo?.bmr, 'kcal') }}</span>
-            <span class="snapshot-label">基础代谢</span>
-          </div>
+        <div class="entry-body">
+          <span>身高体重、血压血糖、运动习惯与体重趋势</span>
+          <el-icon class="entry-arrow"><ArrowRight /></el-icon>
         </div>
       </el-card>
 
-      <el-card class="info-card" shadow="never">
+      <el-card
+        class="info-card entry-card"
+        shadow="never"
+        @click="router.push('/dashboard/diet-goal')"
+      >
         <template #header>
           <div class="section-head">
-            <span>饮食目标摘要</span>
-            <el-button text @click="router.push('/dashboard/diet-goal')">查看详情</el-button>
+            <span>饮食目标</span>
           </div>
         </template>
-        <div class="goal-metrics">
-          <div class="goal-metric">
-            <span>目标类型</span>
-            <strong>{{ goalTypeLabel }}</strong>
-          </div>
-          <div class="goal-metric">
-            <span>目标体重</span>
-            <strong>{{ displayValue(userStore.dietGoal?.targetWeight, 'kg') }}</strong>
-          </div>
-          <div class="goal-metric">
-            <span>目标热量</span>
-            <strong>{{ displayValue(userStore.dietGoal?.targetCalories, 'kcal') }}</strong>
-          </div>
-          <div class="goal-metric">
-            <span>饮水目标</span>
-            <strong>{{ displayValue(userStore.dietGoal?.waterTarget, 'ml') }}</strong>
-          </div>
+        <div class="entry-body">
+          <span>目标体重、每日热量与饮水目标</span>
+          <el-icon class="entry-arrow"><ArrowRight /></el-icon>
         </div>
       </el-card>
 
@@ -138,27 +118,6 @@
         </div>
       </el-card>
     </div>
-
-    <el-card v-if="false" class="info-card" shadow="never">
-      <template #header>
-        <div class="section-head">
-          <span>我的收藏食谱</span>
-          <el-tag type="warning" effect="plain">{{ collectedRecipes.length }} 道</el-tag>
-        </div>
-      </template>
-      <div v-if="collectedRecipes.length" class="collection-list">
-        <button
-          v-for="recipe in collectedRecipes.slice(0, 5)"
-          :key="recipe.id"
-          class="collection-row"
-          @click="router.push('/dashboard/recipe-recommend')"
-        >
-          <strong>{{ recipe.name }}</strong>
-          <span>{{ recipe.description || '已加入收藏，方便后续再次查看' }}</span>
-        </button>
-      </div>
-      <el-empty v-else description="还没有收藏食谱" />
-    </el-card>
 
     <el-dialog v-model="dialogVisible" title="编辑个人资料" width="520px" class="profile-dialog">
       <div class="profile-edit-dialog">
@@ -231,6 +190,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 
 import { ElMessage } from 'element-plus';
+import { ArrowRight } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import userApi from '../api/user';
@@ -241,7 +201,6 @@ const dialogVisible = ref(false);
 const preferenceDialogVisible = ref(false);
 const saving = ref(false);
 const preferenceSaving = ref(false);
-const collectedRecipes = ref([]);
 const avatarInputRef = ref(null);
 
 const profile = reactive({
@@ -279,44 +238,14 @@ const preferenceForm = reactive({
   snackPreference: 1
 });
 
-const goalLabelMap = {
-  fat_loss: '减肥减脂',
-  muscle_toning: '增肌塑形',
-  weight_maintenance: '维持体重',
-  healthy_weight_gain: '健康增重',
-  blood_sugar_control: '控糖饮食',
-  lipid_control: '控脂降脂',
-  low_sodium: '控压低盐',
-  pregnancy_nutrition: '孕妇营养',
-  child_growth: '儿童成长',
-  senior_wellness: '老年养生'
-};
-
-const activityMap = {
-  sedentary: '久坐',
-  lightly_active: '轻度活动',
-  moderately_active: '中度活动',
-  very_active: '高强度活动',
-  extra_active: '超高强度活动'
-};
-
 const avatarFallback = computed(() => (profile.username || userStore.username || 'U').trim().charAt(0).toUpperCase());
 const editAvatarFallback = computed(() => (editForm.username || profile.username || 'U').trim().charAt(0).toUpperCase());
-const goalTypeLabel = computed(() => goalLabelMap[userStore.dietGoal?.goalType] || '--');
-const activityLabel = computed(() => activityMap[userStore.healthInfo?.activityLevel] || '--');
 const preferenceSnackSwitch = computed({
   get: () => preferenceForm.snackPreference !== 0,
   set: (value) => {
     preferenceForm.snackPreference = value ? 1 : 0;
   }
 });
-
-const displayValue = (value, unit = '') => {
-  if (value === null || value === undefined || value === '') return '--';
-  const normalizedValue =
-    typeof value === 'number' ? (Number.isInteger(value) ? value : value.toFixed(1)) : value;
-  return `${normalizedValue}${unit ? ` ${unit}` : ''}`;
-};
 
 const formatDate = (value) => {
   if (!value) return '--';
@@ -540,16 +469,6 @@ onMounted(async () => {
   color: #6b796d;
 }
 
-.section-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.section-title .el-icon {
-  color: #6f8f72;
-}
-
 .profile-tags {
   display: flex;
   gap: 8px;
@@ -567,56 +486,6 @@ onMounted(async () => {
   border-color: #cfe0d2;
   color: #46614a;
   background: #f4fbf5;
-}
-
-.summary-grid {
-  margin: 0;
-}
-
-.summary-card {
-  min-height: 126px;
-  padding: 22px;
-  border-radius: 22px;
-  color: #334235;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 12px 28px rgba(59, 79, 63, 0.06);
-}
-
-.summary-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.summary-card span {
-  color: #738075;
-}
-
-.summary-icon {
-  font-size: 18px;
-}
-
-.summary-card strong {
-  font-size: 26px;
-  font-weight: 600;
-}
-
-.accent-sand {
-  background: linear-gradient(180deg, #fffaf4 0%, #f1e5d7 100%);
-}
-
-.accent-green {
-  background: linear-gradient(180deg, #f4fbf5 0%, #dcefdc 100%);
-}
-
-.accent-cream {
-  background: linear-gradient(180deg, #fcfbf6 0%, #ece7d8 100%);
-}
-
-.accent-mint {
-  background: linear-gradient(180deg, #f3fcf7 0%, #d8eee3 100%);
 }
 
 .content-grid {
@@ -639,14 +508,6 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-.info-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.info-item,
-.goal-metric,
 .preference-card {
   padding: 16px 18px;
   border-radius: 16px;
@@ -656,114 +517,73 @@ onMounted(async () => {
   gap: 8px;
 }
 
-.info-item label {
-  font-size: 13px;
-  color: #829084;
-}
-
-.info-item span,
 .preference-card strong {
   color: #334235;
   line-height: 1.6;
 }
 
-.goal-metrics,
 .preference-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
 
-.goal-metric span,
 .preference-card span {
   display: block;
   color: #718073;
 }
 
-.goal-metric strong {
-  color: #334235;
-  font-size: 24px;
-}
-
-.collection-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.collection-row {
-  border: 1px solid #dfe8df;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #ffffff 0%, #f6fbf7 100%);
-  padding: 16px 18px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.collection-row:hover,
 .shortcut-card:hover {
   border-color: #a6c3ab;
   box-shadow: 0 12px 24px rgba(80, 108, 86, 0.08);
 }
 
-.collection-row strong,
 .shortcut-card strong {
   display: block;
   margin-bottom: 6px;
   color: #334235;
 }
 
-.collection-row span,
 .shortcut-card span {
   color: #738075;
   line-height: 1.6;
 }
 
-.health-snapshot {
+.entry-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.entry-card:hover {
+  border-color: #a6c3ab;
+  box-shadow: 0 12px 24px rgba(80, 108, 86, 0.08);
+}
+
+.entry-body {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0;
-  padding: 20px 16px;
+  justify-content: space-between;
+  gap: 12px;
+  color: #738075;
+  line-height: 1.6;
 }
 
-.snapshot-item {
-  flex: 1;
-  text-align: center;
-  padding: 12px 16px;
-}
-
-.snapshot-value {
-  display: block;
-  font-size: 24px;
-  font-weight: 600;
-  color: #334235;
-  margin-bottom: 4px;
-}
-
-.snapshot-label {
-  font-size: 13px;
-  color: #829084;
-}
-
-.snapshot-divider {
-  width: 1px;
-  height: 48px;
-  background: #e4ecdf;
+.entry-arrow {
   flex-shrink: 0;
+  color: #b6c6b9;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.entry-card:hover .entry-arrow {
+  color: #6f8f72;
+  transform: translateX(3px);
 }
 
 .shortcut-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
-}
-
-.shortcut-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .shortcut-card {
@@ -835,13 +655,6 @@ onMounted(async () => {
     align-items: flex-start;
   }
 
-  .summary-card strong,
-  .goal-metric strong {
-    font-size: 22px;
-  }
-
-  .info-list,
-  .goal-metrics,
   .preference-grid,
   .shortcut-grid,
   .grid-two {

@@ -1,0 +1,21 @@
+# ============================================================
+# 离线训练依赖 —— 只有跑 training/ 下的训练脚本才需要
+#
+# ⚠️ 为什么单独拆一份：
+#    这三个包在 Python 3.11 及以上没有预编译 wheel，安装要现场编译
+#    （需要 C 编译器 + BLAS），通常直接失败。
+#    **服务运行不需要它们** —— model_runtime.py 里对 training 的引用
+#    是写在函数内部的延迟导入，import 服务时不会触发。
+#    所以它们绝对不能和运行依赖混在一个文件里，否则会导致
+#    "换台机器 pip install 全失败、服务起不来"。
+#
+# 如果确实要重训推荐模型，建议单独建一个 Python 3.9 / 3.10 环境：
+#   py -3.9 -m venv .venv-train
+#   .venv-train\Scripts\pip install -r requirements-training.txt
+# 然后用这个环境跑 training/ 下的脚本，训练产物（.joblib）
+# 再交给 .venv 运行时的 model_runtime 去加载。
+# ============================================================
+
+pandas
+numpy
+scikit-learn

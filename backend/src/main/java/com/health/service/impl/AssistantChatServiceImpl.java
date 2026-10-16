@@ -9,22 +9,45 @@ import com.health.mapper.AssistantConversationMapper;
 import com.health.mapper.AssistantMessageMapper;
 import com.health.service.AssistantChatService;
 import com.health.service.RecipeService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
+@Slf4j
 public class AssistantChatServiceImpl implements AssistantChatService {
 
     private static final String DEFAULT_CONVERSATION_TITLE = "AI 助手会话";
     private static final int TITLE_PREVIEW_LENGTH = 12;
     private static final int MAX_SUMMARY_LENGTH = 120;
+
+    /**
+     * 流式响应专用线程池。
+     *
+     * 为什么**必须**换一个线程：Controller 要先返回 SseEmitter，Spring 才会初始化异步上下文。
+     * 如果在返回之前就把内容全推完，这些内容会被当成"提前发送"缓存住、等初始化时一次性冲出去 ——
+     * 那就不叫流式了（客户端会等十几秒然后一下子看到整段）。
+     *
+     * 为什么不用默认的 ForkJoinPool 公共池：这里干的是**阻塞 I/O**（一直等 DeepSeek 吐字），
+     * 占满公共池会连累其它用到它的地方。线程设为 daemon，随 JVM 退出，不必显式关。
+     */
+    private final ExecutorService streamExecutor = Executors.newCachedThreadPool(runnable -> {
+        Thread thread = new Thread(runnable, "assistant-sse");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     @Autowired
     private AssistantConversationMapper assistantConversationMapper;
@@ -140,8 +163,12 @@ public class AssistantChatServiceImpl implements AssistantChatService {
         //    有它才分得清"这句是被本地规则拦下的，还是真问了模型"。
         //    三者一起跟着 assistantMessage 回出去（**不落库**，见 toMessageMap 注释）。
         String intent = readText(assistantResult == null ? null : assistantResult.get("intent"));
+        //    2026-10-14 归一后，intent 的取值就是 query / knowledge / advice / fallback / chat
+        //    （旧四类已退休）；它**只透传、不改分支** —— 5 个值目前都还没有下游 if。
         String source = readText(assistantResult == null ? null : assistantResult.get("source"));
         String blocked = readText(assistantResult == null ? null : assistantResult.get("blocked"));
+        // knowledge 的二级路由（ingredient / article），同样只透传、不落库。
+        String knowledgeRoute = readText(assistantResult == null ? null : assistantResult.get("knowledgeRoute"));
         AssistantMessage assistantMessage = saveAssistantReply(conversation.getId(), userId, assistantResult);
 
         refreshConversation(conversation, rawPrompt, assistantMessage.getContent());
@@ -151,8 +178,132 @@ public class AssistantChatServiceImpl implements AssistantChatService {
         result.put("conversation", toConversationMap(conversation));
         result.put("userMessage", toMessageMap(userMessage));
         result.put("contextMessage", contextMessage == null ? null : toMessageMap(contextMessage));
-        result.put("assistantMessage", toMessageMap(assistantMessage, intent, source, blocked));
+        result.put("assistantMessage", toMessageMap(assistantMessage, intent, source, blocked, knowledgeRoute));
         return result;
+    }
+
+    /**
+     * 流式聊天。见接口注释里的事件协议。
+     *
+     * ⚠️ 故意**没有** @Transactional：
+     *    非流式 chat 全程加事务没问题（一口气跑完就提交），但流式会持续几十秒，
+     *    把整个流包在事务里 = 一条数据库连接被占着几十秒不还（连接池会被拖垮），
+     *    而且"用户已经看到字了、事务却回滚了"这种状态没法向用户解释。
+     *    这里落库是两次独立的 insert/update，各自提交，语义更诚实。
+     */
+    @Override
+    public void chatStream(Long userId, Map<String, Object> payload, SseEmitter emitter) {
+        // 立刻返回，把真正的推送丢给独立线程 —— 理由见 streamExecutor 字段上的注释。
+        streamExecutor.execute(() -> doChatStream(userId, payload, emitter));
+    }
+
+    private void doChatStream(Long userId, Map<String, Object> payload, SseEmitter emitter) {
+        boolean completed = false;
+        try {
+            if (payload == null) {
+                throw new RuntimeException("聊天请求不能为空");
+            }
+
+            String rawPrompt = readText(payload.get("rawPrompt"));
+            if (rawPrompt.isEmpty()) {
+                rawPrompt = readText(payload.get("prompt"));
+            }
+            if (rawPrompt.isEmpty()) {
+                throw new RuntimeException("请输入聊天内容");
+            }
+
+            String promptWithContext = readText(payload.get("prompt"));
+            Long conversationId = toLong(payload.get("conversationId"));
+
+            AssistantConversation conversation = conversationId == null
+                ? createConversationEntity(userId, rawPrompt)
+                : requireConversation(userId, conversationId);
+
+            boolean hasMessages = conversation.getMessageCount() != null && conversation.getMessageCount() > 0;
+            if (!hasMessages) {
+                conversation.setTitle(resolveConversationTitle(conversation.getTitle(), rawPrompt));
+            }
+
+            AssistantMessage userMessage = saveMessage(conversation.getId(), userId, "user", rawPrompt, null, "text");
+
+            Map<String, Object> request = new HashMap<>(payload);
+            request.put("userId", userId);
+            request.put("rawPrompt", rawPrompt);
+            request.put("ingredientName", rawPrompt);
+            request.put("prompt", promptWithContext.isEmpty() ? rawPrompt : promptWithContext);
+            request.put("conversationId", conversation.getId());
+            request.put("currentUserMessageId", userMessage.getId());
+
+            // start：先把"这轮属于哪个会话、用户说了什么"推出去。
+            // 为什么不能等 done —— 新建会话时，客户端要等模型答完才知道 conversationId，
+            // 那段空白期里用户的气泡没地方挂。
+            Map<String, Object> startData = new HashMap<>();
+            startData.put("conversationId", conversation.getId());
+            startData.put("conversation", toConversationMap(conversation));
+            startData.put("userMessage", toMessageMap(userMessage));
+            sendEvent(emitter, "start", startData);
+
+            // RecipeService 一边把增量回调给这里推出去，一边自己累加成完整回答，
+            // 所以下面拿到的 assistantResult 和一次性调用**同构**（mode / text / source / intent）。
+            Map<String, Object> assistantResult = recipeService.streamIngredientSubstitutes(request, delta -> {
+                Map<String, Object> deltaData = new HashMap<>();
+                deltaData.put("text", delta);
+                sendEvent(emitter, "delta", deltaData);
+            });
+
+            String intent = readText(assistantResult == null ? null : assistantResult.get("intent"));
+            String source = readText(assistantResult == null ? null : assistantResult.get("source"));
+            String blocked = readText(assistantResult == null ? null : assistantResult.get("blocked"));
+            String knowledgeRoute = readText(assistantResult == null ? null : assistantResult.get("knowledgeRoute"));
+
+            // 落库在**流结束之后**一次性完成，不是边流边写。
+            // 这样历史记录里那条消息和非流式完全一致，翻历史的断言口径不用改。
+            AssistantMessage assistantMessage = saveAssistantReply(conversation.getId(), userId, assistantResult);
+            refreshConversation(conversation, rawPrompt, assistantMessage.getContent());
+
+            Map<String, Object> doneData = new HashMap<>();
+            doneData.put("conversationId", conversation.getId());
+            doneData.put("conversation", toConversationMap(conversation));
+            doneData.put("assistantMessage", toMessageMap(assistantMessage, intent, source, blocked, knowledgeRoute));
+            sendEvent(emitter, "done", doneData);
+
+            emitter.complete();
+            completed = true;
+        } catch (Exception exception) {
+            log.error("AI 小助手流式聊天失败: {}", exception.getMessage(), exception);
+            try {
+                sendEvent(emitter, "error", errorPayload(exception.getMessage()));
+            } catch (Exception ignored) {
+                // 客户端已经断开时，这里必然再失败一次 —— 忽略
+            }
+        } finally {
+            if (!completed) {
+                try {
+                    emitter.complete();
+                } catch (Exception ignored) {
+                    // 已经结束/已断开，忽略
+                }
+            }
+        }
+    }
+
+    /**
+     * 发一个 SSE 事件。
+     * 单独包一层是为了把 IOException 转成 RuntimeException ——
+     * 增量回调是个 lambda，里面不能抛受检异常。
+     */
+    private void sendEvent(SseEmitter emitter, String name, Object data) {
+        try {
+            emitter.send(SseEmitter.event().name(name).data(data, MediaType.APPLICATION_JSON));
+        } catch (IOException exception) {
+            throw new RuntimeException("SSE 发送失败: " + exception.getMessage(), exception);
+        }
+    }
+
+    private Map<String, Object> errorPayload(String message) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("message", message == null || message.trim().isEmpty() ? "AI 小助手暂时无法回复" : message);
+        return data;
     }
 
     @Override
@@ -269,23 +420,28 @@ public class AssistantChatServiceImpl implements AssistantChatService {
     }
 
     private Map<String, Object> toMessageMap(AssistantMessage message) {
-        return toMessageMap(message, null, null, null);
+        return toMessageMap(message, null, null, null, null);
     }
 
     /**
      * 带 intent / source / blocked 的消息视图。
      *
-     * ⚠️ 这三个字段是**算出来的**，没有落库 —— assistant_message 表就 8 列，
+     * ⚠️ 这三个字段都是**算出来的**，没有落库 —— assistant_message 表就 8 列，
      *    没有它们的位置。所以：
      *      · POST /assistant/chat 的 assistantMessage 里有它们（回到当前的这一轮）；
      *      · GET  /assistant/conversations/{id}/messages（翻历史）里**没有**。
      *    这是当前实现的已知缺口。要让历史消息也带上，得给表加列 + 改实体，
      *    属于下一步；现在先保证"新问的一轮看得出来"，够写意图断言了。
      *
+     * intent 取值：query / knowledge / advice / fallback / chat（2026-10-14 归一后的唯一一套；
+     *              旧四类 greeting / out_of_scope / substitute / other 已退休）。
      * blocked 取值：abuse / medical / out_of_scope / too_long；未被拦截时不出现该键。
-     * 有它才分得清"这句话是被本地规则拦下的，还是真的问了模型"—— source="blocked" 是配套信号。
+     *              有它才分得清"这句话是被本地规则拦下的，还是真的问了模型"—— source="blocked" 是配套信号。
+     * knowledgeRoute 取值：ingredient（knowledge 意图下走**精确查食材表**）/
+     *                     article（走检索，RAG 的挂载点）。2026-10-16 新增，
+     *                     同样只在算出来时出现（非 knowledge 意图不带这个键）。
      */
-    private Map<String, Object> toMessageMap(AssistantMessage message, String intent, String source, String blocked) {
+    private Map<String, Object> toMessageMap(AssistantMessage message, String intent, String source, String blocked, String knowledgeRoute) {
         Map<String, Object> data = new HashMap<>();
         data.put("id", message.getId());
         data.put("role", message.getRole());
@@ -301,6 +457,11 @@ public class AssistantChatServiceImpl implements AssistantChatService {
         }
         if (blocked != null && !blocked.isEmpty()) {
             data.put("blocked", blocked);
+        }
+        // knowledge 的二级路由（2026-10-16）：没有它，"这次到底查表还是检索"
+        // 从响应里看不出来 —— RAG 的用例就没法断言"该检索的走了检索"。
+        if (knowledgeRoute != null && !knowledgeRoute.isEmpty()) {
+            data.put("knowledgeRoute", knowledgeRoute);
         }
         return data;
     }

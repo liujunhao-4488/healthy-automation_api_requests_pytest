@@ -15,6 +15,12 @@ from config.config import BASE_URL, TIMEOUT
 
 
 class BaseApiClient:
+    # 这个 client 打到哪台机器。默认是 Java 后端；
+    # 子类可以覆盖它去连别的服务（例如算法服务的 Flask，端口不一样）。
+    # 之所以做成**类属性**而不是构造参数：绝大多数 client 都用默认值，
+    # 只有极少数要改，改一行类属性比每个用例都传一遍参数省事得多。
+    base_url = BASE_URL
+
     def __init__(self):
         # Session 会复用同一条 TCP 连接，比每次新建连接快。
         self._session = requests.Session()
@@ -26,13 +32,13 @@ class BaseApiClient:
 
     def get(self, path, **kwargs):
         kwargs.setdefault("timeout", TIMEOUT)  # 没传超时就用统一值
-        resp = self._session.get(BASE_URL + path, **kwargs)
+        resp = self._session.get(self.base_url + path, **kwargs)
         self._log(resp)
         return resp
 
     def post(self, path, **kwargs):
         kwargs.setdefault("timeout", TIMEOUT)
-        resp = self._session.post(BASE_URL + path, **kwargs)
+        resp = self._session.post(self.base_url + path, **kwargs)
         self._log(resp)
         return resp
 
@@ -41,7 +47,7 @@ class BaseApiClient:
         # 这就是"请求能力集中在一处"的直接好处：加一种请求方式只要 4 行，
         # 所有接口类立刻都能用，用例那边一个字都不用动。
         kwargs.setdefault("timeout", TIMEOUT)
-        resp = self._session.put(BASE_URL + path, **kwargs)
+        resp = self._session.put(self.base_url + path, **kwargs)
         self._log(resp)
         return resp
 
@@ -49,7 +55,7 @@ class BaseApiClient:
         # 第四种动词。加它只花了 4 行 —— 这就是"请求能力集中在一处"的好处：
         # 加完所有接口类立刻都能用，用例那边一个字都不用改。
         kwargs.setdefault("timeout", TIMEOUT)
-        resp = self._session.delete(BASE_URL + path, **kwargs)
+        resp = self._session.delete(self.base_url + path, **kwargs)
         self._log(resp)
         return resp
 

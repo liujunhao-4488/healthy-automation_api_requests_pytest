@@ -6,11 +6,15 @@ Flask API 入口 —— 算法服务的 HTTP 接口层
   1. 对外暴露 POST /api/recommend/recipes 推荐接口
   2. 管理两个推荐引擎（V1 规则引擎 + V2 混合ML引擎）
   3. 实现自动降级策略：V2 质量不足时自动切换 V1
+  4. 对外暴露 POST /api/kb/search 知识库检索接口（RAG 的检索端）
 
 调用链路：
   前端 → Spring Boot 后端 → 此 Flask API → RecommendEngineV2
                                               ↓ 失败时回退
                                           RecommendEngine (V1)
+  助手问答 → Spring Boot 后端 → POST /api/kb/search → 双源检索器
+                                                     ├─ authority（卫健委食养指南）
+                                                     └─ article  （站内 health_article）
 
 环境变量控制：
   RECOMMEND_ENGINE_MODE      : auto / v2 / legacy（引擎选择策略）
@@ -19,10 +23,13 @@ Flask API 入口 —— 算法服务的 HTTP 接口层
 
 import math
 import os
+import threading
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+from kb_retriever import (DEFAULT_SOURCE_TYPE, DEFAULT_TOP_K,
+                          build_default_retriever)
 from recommend_engine import RecommendEngine
 from recommend_engine_v2 import RecommendEngineV2
 
@@ -236,6 +243,153 @@ def recommend_recipes():
             'message': str(error),
             'data': None
         })
+
+
+# =========================================================================
+# 知识库检索接口 —— RAG 的「检索段」
+#
+# 和数据源的分工：
+#   ingredient 表  → 精确数值（"米饭多少卡"）→ 走 Java 侧的精确查表，不进这里
+#   权威指南(8篇)  → 概念/建议/注意事项 → 走这里，sourceType="authority"
+#   health_article → 站内科普文          → 走这里，sourceType="article"
+#                    （⚠️ 其中 120 篇是同一套模板生成的，质量参差）
+# 也就是说：**有唯一正确答案的东西不查这里，没有唯一答案的才查这里。**
+#
+# 语料重建：改了 权威文件/ 里的 PDF，或新抓了文章，都要重跑
+#   algorithm\.venv\Scripts\python.exe ingest_authority.py
+# 然后重启本服务（索引是进程内存里懒加载的，不会自动感知文件变化）。
+# =========================================================================
+
+_kb_retriever = None
+_kb_retriever_lock = threading.Lock()
+
+
+def _get_kb_retriever():
+    """
+    懒加载知识库索引（第一次真有人调检索时才构建，之后复用）。
+
+    为什么不放在模块顶层构建：
+      Flask 开发服务器开着 debug=True，改一行代码就重启进程。
+      放顶层 → 每改一次代码都要重读全库、重建索引，调试体验很差。
+    为什么要加锁：
+      开发服务器是多线程的，两个请求同时到达可能同时触发构建。
+      双重检查 + 锁，保证只建一次。
+    """
+    global _kb_retriever
+    if _kb_retriever is None:
+        with _kb_retriever_lock:
+            if _kb_retriever is None:
+                retriever = build_default_retriever()
+                stats = getattr(retriever, "stats", {})
+                app.logger.info(
+                    "知识库索引构建完成：权威语料 %d 块 + 站内文章 %d 块 → 索引 %d 块（去重丢 %d）",
+                    stats.get("authority", 0), stats.get("article", 0),
+                    len(retriever.chunks), getattr(retriever, "duplicates_dropped", 0),
+                )
+                _kb_retriever = retriever
+    return _kb_retriever
+
+
+@app.route('/api/kb/search', methods=['POST'])
+def kb_search():
+    """
+    知识库检索接口（POST）。被 Spring Boot 后端调用，也可被测试脚本直接调用
+    （直连时不经 Java、不需要登录 token，这是把它放在算法端的主要理由之一）。
+
+    请求 JSON：
+      - query      : 用户问题（必填）
+      - topK       : 返回几条，默认 3
+      - sourceType : 检索范围。不传 = authority（默认只查权威源）
+                     authority / article / all（两个源都查）
+                     ⭐ 有了它才能回答"权威源单独召回了什么"——
+                       这也是分别测两个源召回率的前提。
+
+    响应：
+      { "code": 200, "message": "success",
+        "data": [ {"docId":.., "title":.., "section":.., "sourceType":..,
+                   "score":.., "snippet":..}, ... ] }
+
+    📌 每个结果都带 docId + sourceType —— 这是"召回率能不能测"的前提：
+       没有 docId 就无法断言"问 X 应该命中文档 Y"；
+       没有 sourceType 就无法断言"这条答案该不该标权威来源"。
+       这两个字段是**为测试而加**的，不是可选项。
+
+    ⚠️ 出错不抛 500 给调用方，而是返回 code + 可读 message + 空 data：
+       RAG 最常见的失败形态就是"检索返回空、然后静默退化成裸模型回答、
+       谁也不知道"。调用方必须能区分"检索成功但没命中"和"检索服务挂了"。
+    """
+    try:
+        data = request.json or {}
+        query = str(data.get('query') or '').strip()
+        top_k = _safe_int(data.get('topK', DEFAULT_TOP_K), DEFAULT_TOP_K)
+        # 不传就是默认范围（权威源）；显式传 all 才两源都查
+        source_type = data.get('sourceType') or DEFAULT_SOURCE_TYPE
+        if source_type not in ('authority', 'article', 'all'):
+            return jsonify({'code': 400,
+                            'message': "sourceType 只能是 authority / article / all",
+                            'data': []})
+
+        if not query:
+            return jsonify({'code': 400, 'message': 'query 不能为空', 'data': []})
+
+        hits = _get_kb_retriever().search(query, top_k=top_k, source_type=source_type)
+        return jsonify({'code': 200, 'message': 'success', 'data': hits})
+
+    except Exception as error:
+        # 检索失败不能拖垮整个服务：记日志 + 返回可读错误，data 留空
+        app.logger.exception("知识库检索失败：%s", error)
+        return jsonify({'code': 500, 'message': str(error), 'data': []})
+
+
+@app.route('/api/kb/reload', methods=['POST'])
+def kb_reload():
+    """
+    重建索引。改了语料（重跑 ingest_authority.py）或调了切块参数之后调它，
+    **不用重启服务**。
+
+    为什么值得单独开一个口子：
+      索引是**进程内存里懒加载**的，文件变了它不会自己知道。
+      没有这个接口，每次改语料都得"杀进程 → 重启 → 等启动"，
+      做召回实验时这一步会烦到让人不想改参数 —— 而"不想改参数"
+      恰恰是评测做不下去的头号原因。
+
+    先清空再重建（而不是原地替换）：清空要拿锁，构建也要拿锁，
+    分两步是为了避开同一把非重入锁的死锁。
+    """
+    global _kb_retriever
+    with _kb_retriever_lock:
+        _kb_retriever = None
+    retriever = _get_kb_retriever()
+    return jsonify({
+        'code': 200,
+        'message': '索引已重建',
+        'data': {
+            'totalChunks': len(retriever.chunks),
+            'duplicatesDropped': getattr(retriever, 'duplicates_dropped', 0),
+        },
+    })
+
+
+@app.route('/api/kb/stats', methods=['GET'])
+def kb_stats():
+    """
+    看一眼索引构成。演示和排查时用：能立刻回答"到底装进去了什么、有多少"。
+    """
+    retriever = _get_kb_retriever()
+    stats = getattr(retriever, "stats", {})
+    authority_chunks = sum(1 for c in retriever.chunks if c.source_type == 'authority')
+    article_chunks = sum(1 for c in retriever.chunks if c.source_type == 'article')
+    return jsonify({
+        'code': 200,
+        'message': 'success',
+        'data': {
+            'totalChunks': len(retriever.chunks),
+            'authorityChunks': authority_chunks,
+            'articleChunks': article_chunks,
+            'duplicatesDropped': getattr(retriever, 'duplicates_dropped', 0),
+            'sources': stats,
+        },
+    })
 
 
 if __name__ == '__main__':

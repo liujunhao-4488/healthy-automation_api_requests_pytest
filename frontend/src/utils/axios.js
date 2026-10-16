@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { clearPersistedAuth, isTokenExpired } from '../stores/user';
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+// 导出出来是为了让 api 层里那条"不走 axios"的 SSE 请求也能用同一个 baseURL ——
+// 否则它得自己再抄一份 import.meta.env，两边一旦不一致就会变成很难查的怪问题。
+export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const service = axios.create({
   baseURL: apiBaseUrl,

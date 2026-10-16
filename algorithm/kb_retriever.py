@@ -1,0 +1,492 @@
+# -*- coding: utf-8 -*-
+"""
+知识库检索器 —— RAG 里的那个 "R"（Retrieval）
+======================================================================
+职责只三件：
+  1. 把语料切成块（chunk），每块记住自己来自哪篇文章的哪一节
+  2. 给所有块建一份倒排索引
+  3. 收到问题，按 BM25 打分，返回得分最高的 top-k 块
+
+⭐ 双源（2026-10-16 起）
+----------------------------------------------------------------------
+  语料现在有两个来源，**混在同一份索引里，但每条都带 sourceType 标记**：
+
+    sourceType="authority"  国家卫健委食养指南 8 篇（ingest_authority.py 产出）
+                            → 权威答案的依据。1101 块。
+    sourceType="article"    库里的 health_article 132 篇
+                            → 站内科普文，质量参差（含 120 篇模板文）。
+
+  为什么放在同一份索引、只加标记，而不是建两份索引：
+    · 检索质量能直接横向对比（同一个问题，两个源各召回什么）；
+    · search(source_type=...) 一个参数就能按源过滤，实现了"权威优先"；
+    · 分两份索引的话，"某问题权威源没命中、站内文章命中了"这种跨源比较
+      反而要跑两遍才知道。
+
+为什么不用 langchain / faiss / 向量库
+----------------------------------------------------------------------
+  · 规模：约 1500 块。这个量级下，向量检索相对关键词检索的召回提升几乎为零，
+    却要多维护一个 embedding 服务和一份向量索引。
+  · 更要紧的是**可测**：召回率正是我们要测的东西。框架会把"为什么召回了
+    这一块、为什么没召回那一块"藏进黑盒；自己写，每个 token 的分数都能打出来。
+
+  🔁 将来要换向量检索，只需改 tokenize() 一处 —— build / search / 返回结构
+     全都不用动，golden set 的测试代码也一个字不用改。这叫消融实验。
+
+为什么用「字符 bigram」当词，而不是 jieba 分词
+----------------------------------------------------------------------
+  中文没有空格，标准 BM25 必须先分词。但这里刻意不分词，两个理由：
+    · 零依赖：不用装 jieba；
+    · 更要紧的是**确定性**——分词器版本不同、词典不同，切出来的词就不同，
+      召回结果跟着变，"同样输入永远同样输出"这条就没了，断言没法写。
+  字符 bigram 是它的零依赖近似：「控糖饮食」→ 控糖 / 糖饮 / 饮食。
+  对"短查询 + 短文档"这种场景，效果和分词接近。
+
+⚠️ 这个模块**不依赖 Flask**；只有 load_articles_from_db() 需要 pymysql，
+    load_authority_chunks() 只读本地 JSON。两者都是懒加载，
+    import 本模块本身不需要任何第三方包 —— 方便单独跑测试喂假数据。
+"""
+
+import hashlib
+import json
+import math
+import os
+import re
+from collections import Counter, defaultdict
+
+# ══════════════════════════════════════════════════════════════════════
+# 可调参数 —— 想调召回效果，只动这一段
+# ══════════════════════════════════════════════════════════════════════
+CHUNK_SIZE = 400        # 每块目标字数（仅用于 article 源，权威源在 ingest 时已切好）
+CHUNK_OVERLAP = 80      # 相邻块之间重叠的字数
+DEFAULT_TOP_K = 3       # 默认返回几块
+BM25_K1 = 1.5           # BM25 词频饱和参数（常规取值 1.2~2.0）
+BM25_B = 0.75           # BM25 长度归一化参数（常规取值 0.75）
+
+# ⭐ 分数下限：低于它的召回直接丢掉，返回空列表。
+#   为什么需要它：BM25 只要有**一个字**对上就会给分，于是一个编程问题
+#   （「如何用 Python 写一个快速排序」）也能在健康语料里捞出一条 ——
+#   命中它的词是「如何」。返回空比返回一条错的更有价值：
+#   下游拿到空，知道"没有依据"，可以如实说不知道；拿到一条错的，
+#   模型会当成事实用。
+#
+#   8.0 这个值**不是拍的**，是实测的：负样本最高 5.91，
+#   正样本（应命中的）最低 12.1，中间有明显空档，取中间偏负样本侧。
+#   语料换了要重测（golden set 就是干这个的）。
+MIN_SCORE = 8.0
+
+SOURCE_AUTHORITY = "authority"   # 国家卫健委食养指南
+SOURCE_ARTICLE = "article"       # 站内 health_article
+
+# ⭐ 默认只检索权威源（2026-10-16 拍板）。
+#   理由：站内 133 篇里 120 篇是同一套模板生成的（切出 240 块），
+#   混合检索时它们会靠"怎么安排""能不能真正落地"这类通用词抢走 top-1
+#   （实测：「糖尿病人的主食怎么安排」top-3 全是模板文）。
+#   要不要放开成全部，由调用方显式传 sourceType="all" 决定。
+DEFAULT_SOURCE_TYPE = SOURCE_AUTHORITY
+ALL_SOURCE_TYPES = (SOURCE_AUTHORITY, SOURCE_ARTICLE)
+# ══════════════════════════════════════════════════════════════════════
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+AUTHORITY_FILE = os.path.join(BASE_DIR, "kb_data", "authority_chunks.json")
+
+_HAN = re.compile(r"[\u4e00-\u9fff]+")   # 连续汉字段
+_ASCII_WORD = re.compile(r"[a-z0-9]+")   # 连续英文/数字
+_WHITESPACE = re.compile(r"\s+")
+
+
+def tokenize(text):
+    """
+    把一段文字切成检索用的「词」列表。
+
+    中文 → 字符 bigram（相邻两字一组）；英文/数字 → 整词小写。
+    例：
+        '控糖饮食指南'  → ['控糖', '糖饮', '饮食', '食指', '指南']
+        'BMI 怎么算'    → ['bmi', '怎么', '么算']
+
+    ⚠️ 单字汉字段要单独保留：句子末尾常出现单独一个汉字（如 "…吃吗？好"），
+       bigram 切不出来，丢掉就白丢了。
+    """
+    if not text:
+        return []
+    lowered = text.lower()
+
+    tokens = list(_ASCII_WORD.findall(lowered))
+    for segment in _HAN.findall(lowered):
+        if len(segment) == 1:
+            tokens.append(segment)
+        else:
+            for i in range(len(segment) - 1):
+                tokens.append(segment[i:i + 2])
+    return tokens
+
+
+def split_into_chunks(text, size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
+    """
+    把长正文切成**带重叠**的块。
+
+    为什么必须有重叠：
+        不留重叠的话，一句话可能正好被切成两半 —— 前半句落在块 A 的尾部、
+        后半句落在块 B 的开头，两边都匹配不上完整语义，等于这句话没被收录。
+        代价是索引会略大一点，在千级块的规模下完全无所谓。
+
+    切点优先落在自然断点（换行 / 。！？；）上，断不了才硬切。
+    """
+    text = (text or "").strip()
+    if not text:
+        return []
+    if len(text) <= size:
+        return [text]
+
+    pieces = []
+    start = 0
+    while start < len(text):
+        end = min(start + size, len(text))
+        if end < len(text):
+            window = text[start:end]
+            # 从窗口末尾往前找最近的自然断点
+            cut = max(
+                window.rfind("\n"), window.rfind("。"), window.rfind("；"),
+                window.rfind("！"), window.rfind("？"), window.rfind("."),
+            )
+            # 断点太靠前就放弃（否则每块会变得很短，等于把文档切碎）
+            if cut > size // 2:
+                end = start + cut + 1
+        piece = text[start:end].strip()
+        if piece:
+            pieces.append(piece)
+        if end >= len(text):
+            break
+        # 下一块从 end 往前退 overlap 个字，形成重叠区
+        start = max(end - overlap, start + 1)
+    return pieces
+
+
+class _Chunk:
+    """
+    一个文本块。doc_id / title / section 是**元数据**，用于把召回结果回溯到原文。
+
+    ⚠️ 索引用的文本（search_text）和展示用的文本（text）是**两个东西**：
+       索引时把「书名 + 章节名 + 正文」拼起来 —— 因为「减钠增钾」「高血压」
+       这类最关键的词往往只出现在书名/章节名里，正文反而一次都不提。
+       但展示给用户的 snippet 只取正文，免得回一条"成人高血压食养指南 一、前言"。
+    """
+
+    __slots__ = ("doc_id", "title", "section", "source_type",
+                 "text", "search_text", "term_freq", "length")
+
+    def __init__(self, doc_id, title, text, section="", source_type=SOURCE_ARTICLE):
+        self.doc_id = doc_id
+        self.title = title
+        self.section = section or ""
+        self.source_type = source_type
+        self.text = text
+        self.search_text = "\n".join(
+            part for part in (title, self.section, text) if part
+        )
+        self.term_freq = Counter(tokenize(self.search_text))   # 词 → 出现次数
+        self.length = sum(self.term_freq.values())             # 块的总词数（BM25 长度归一化用）
+
+
+class KnowledgeRetriever:
+    """
+    检索器。用法：
+
+        r = KnowledgeRetriever()
+        r.build_chunks(chunks)                    # chunks 是已规范化的块列表
+        hits = r.search("高血压该怎么吃", top_k=3)
+
+    返回的每个 hit 都带 docId —— ⭐ 这正是"召回率能不能测"的前提：
+    没有它就无法断言"问 X 应该命中文档 Y"。
+    """
+
+    def __init__(self):
+        self.chunks = []
+        self.inverted = defaultdict(set)   # 词 → 包含它的块下标集合
+        self.doc_freq = defaultdict(int)   # 词 → 出现在多少个块里（算 IDF 用）
+        self.avg_length = 0.0
+
+    # ---------------------------------------------------------------- build
+    def build_chunks(self, chunks):
+        """
+        用一批**已规范化**的块重建索引。返回块数。
+
+        chunks 的每一项是 dict：
+            {docId, title, section?, sourceType?, text}
+
+        ⚠️ 会做一次**按正文的去重**：语料里存在"不同 id、正文一字不差"的文章
+           （实测 health_article 的模板文有成对重复）。不去重的话，同一段内容
+           会以多个块的身份同时挤进 top-k，把真正有区分度的结果挤出去。
+        去重按**首次出现**保留，顺序稳定 → 结果确定。
+        """
+        self.chunks = []
+        seen_texts = set()
+        self.duplicates_dropped = 0
+        for item in chunks or []:
+            text = (item.get("text") or "").strip()
+            if not text:
+                continue
+            # 只按正文去重，**不把书名/章节名算进去** ——
+            # 否则"同一段食谱出现在两个地区章节里"会被误判成两条。
+            # 用 sha1 而不是内置 hash()：hash() 对字符串带随机盐，
+            # 跨进程不稳定，会让"两次运行结果一致"这条保证失效。
+            fingerprint = hashlib.sha1(text.encode("utf-8")).hexdigest()
+            if fingerprint in seen_texts:
+                self.duplicates_dropped += 1
+                continue
+            seen_texts.add(fingerprint)
+            self.chunks.append(_Chunk(
+                doc_id=item.get("docId"),
+                title=(item.get("title") or "").strip(),
+                text=text,
+                section=item.get("section") or "",
+                source_type=item.get("sourceType") or SOURCE_ARTICLE,
+            ))
+
+        # 重建倒排索引
+        self.inverted = defaultdict(set)
+        self.doc_freq = defaultdict(int)
+        for index, chunk in enumerate(self.chunks):
+            for term in chunk.term_freq:          # Counter 的键天然去重
+                self.inverted[term].add(index)
+                self.doc_freq[term] += 1
+
+        self.avg_length = (
+            sum(chunk.length for chunk in self.chunks) / len(self.chunks)
+            if self.chunks else 0.0
+        )
+        return len(self.chunks)
+
+    def build(self, articles):
+        """便捷入口：直接用 health_article 的文章列表建索引。"""
+        return self.build_chunks(articles_to_chunks(articles))
+
+    # --------------------------------------------------------------- search
+    def search(self, query, top_k=DEFAULT_TOP_K, source_type=DEFAULT_SOURCE_TYPE):
+        """
+        按 BM25 打分，返回 top-k 块。
+
+        BM25 一句话解释：一个词在**这一块里出现得多**（tf）、而在**别的块里
+        很少见**（idf），它就越是这块的"特征词"，得分越高；同时用块长度做归一化，
+        免得长块光靠字多就占便宜。
+
+        source_type：
+            "authority"（默认）只查卫健委指南
+            "article"           只查站内文章
+            "all" 或 None       两个源都查
+                            用于实现"权威优先"，以及分别测两个源的召回率。
+
+        返回：[{docId, title, section, sourceType, score, snippet}, ...]，按分数降序。
+        没有命中时返回空列表 —— **调用方必须处理空列表**（这是 RAG 最常见的失败形态）。
+        """
+        if not self.chunks:
+            return []
+
+        query_terms = set(tokenize(query))
+        if not query_terms:
+            return []
+
+        # 候选范围：按来源过滤时，df 和平均长度也都只按这个子集算，
+        # 否则分数会被另一个源的块大小拖偏（两个源块长不一样）。
+        wanted = None if source_type in (None, "all") else source_type
+        candidate_indexes = [
+            index for index, chunk in enumerate(self.chunks)
+            if wanted is None or chunk.source_type == wanted
+        ]
+        if not candidate_indexes:
+            return []
+        candidate_set = set(candidate_indexes)
+
+        total = len(candidate_indexes)
+        avg_length = (
+            sum(self.chunks[index].length for index in candidate_indexes) / total
+        ) or 1.0
+
+        scores = defaultdict(float)
+        for term in query_terms:
+            hit_indexes = self.inverted.get(term)
+            if not hit_indexes:
+                continue
+            in_scope = [index for index in hit_indexes if index in candidate_set]
+            if not in_scope:
+                continue
+            df = len(in_scope)
+            # BM25 的 IDF（加 1 是为了在 df 很大时也不出现负数，小语料里很常见）
+            idf = math.log(1 + (total - df + 0.5) / (df + 0.5))
+            for index in in_scope:
+                chunk = self.chunks[index]
+                tf = chunk.term_freq[term]
+                denominator = tf + BM25_K1 * (
+                    1 - BM25_B + BM25_B * chunk.length / avg_length
+                )
+                scores[index] += idf * tf * (BM25_K1 + 1) / denominator
+
+        # 分数相同的按块下标排，保证结果稳定（同样的输入永远同样的输出）
+        ranked = sorted(scores.items(), key=lambda item: (-item[1], item[0]))
+
+        results = []
+        for index, score in ranked[:max(0, top_k)]:
+            if score < MIN_SCORE:
+                # 排名已降序，第一条不达标，后面全不达标 → 直接收工。
+                # 返回空列表是**有意为之**：宁可说"没找到依据"，
+                # 也不给模型一条分数很低的噪声去当事实用。
+                break
+            chunk = self.chunks[index]
+            results.append({
+                "docId": chunk.doc_id,
+                "title": chunk.title,
+                "section": chunk.section,
+                "sourceType": chunk.source_type,
+                "score": round(score, 4),
+                "snippet": _WHITESPACE.sub(" ", chunk.text)[:200],
+            })
+        return results
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 两个语料加载器 —— 各自把"原始数据"翻译成 build_chunks 认识的口袋格式
+# ══════════════════════════════════════════════════════════════════════
+
+def articles_to_chunks(articles):
+    """
+    health_article 文章 → 块。
+
+    每篇文章拼成 "标题 + 摘要 + 正文" 一整段再切块 —— 标题和摘要虽然短，
+    但信息密度最高（「高血压饮食建议」这种词往往只出现在标题里），
+    把它们并进正文能显著提高召回。
+    """
+    chunks = []
+    for article in articles or []:
+        article_id = article.get("id")
+        title = (article.get("title") or "").strip()
+        haystack = "\n".join(
+            part for part in (title, article.get("summary"), article.get("content"))
+            if part and str(part).strip()
+        )
+        for piece in split_into_chunks(haystack):
+            chunks.append({
+                "docId": article_id,
+                "title": title,
+                "sourceType": SOURCE_ARTICLE,
+                "text": piece,
+            })
+    return chunks
+
+
+def load_authority_chunks(path=AUTHORITY_FILE):
+    """
+    读 ingest_authority.py 产出的权威语料 JSON。
+
+    ⚠️ 文件不存在时**不抛异常**，只打印警告并返回空列表。
+       理由：检索器挂了会让整个 RAG 链路 500，而"权威语料还没生成"
+       只是少一个源，站内文章照样能检索 —— 这属于可降级的失败。
+
+    这里顺手把 ingest 的字段名（docTitle）翻译成 build_chunks 的统一契约（title）。
+    翻译**只放在这一个地方** —— 两个源的差异在入口处抹平，进去以后就是一回事。
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except FileNotFoundError:
+        print("⚠️ 权威语料索引不存在: %s" % path)
+        print("   先跑一次: algorithm\\.venv\\Scripts\\python.exe ingest_authority.py")
+        return []
+
+    chunks = []
+    for item in payload.get("chunks") or []:
+        chunks.append({
+            "docId": item.get("docId"),
+            "title": item.get("docTitle") or item.get("title") or "",
+            "section": item.get("section") or "",
+            "sourceType": item.get("sourceType") or SOURCE_AUTHORITY,
+            "text": item.get("text") or "",
+        })
+    return chunks
+
+
+def load_articles_from_db():
+    """
+    从 MySQL 读全部 status=1 的文章。
+
+    连接参数与 real_data_source.py 保持**完全一致**（同一套环境变量名 + 同样的默认值），
+    避免同一个项目里出现两份互不相同的数据库配置 —— 那种"两套配置各自为政"的问题
+    这个项目已经踩过一次（两张"越界"词表打架）。
+    """
+    import pymysql
+    from pymysql.cursors import DictCursor
+
+    config = {
+        "host": os.getenv("DB_HOST", "localhost"),
+        "port": int(os.getenv("DB_PORT", "3306")),
+        "user": os.getenv("DB_USERNAME", "root"),
+        "password": os.getenv("DB_PASSWORD", "123456"),
+        "database": os.getenv("DB_NAME", "health_diet"),
+        "charset": "utf8mb4",
+        "cursorclass": DictCursor,
+        "autocommit": True,
+    }
+
+    connection = pymysql.connect(**config)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT id, title, summary, content FROM health_article WHERE status = 1"
+            )
+            return list(cursor.fetchall())
+    finally:
+        connection.close()
+
+
+def build_default_retriever(include_articles=True):
+    """
+    按默认配置装配检索器：权威语料 + （可选）站内文章。
+
+    单点装配 —— 服务端和测试都调这一个函数，免得"服务里装了权威源、
+    测试里只装站内文"这种两边不一致。
+    """
+    chunks = load_authority_chunks()
+    authority_count = len(chunks)
+    article_count = 0
+    if include_articles:
+        try:
+            article_chunks = articles_to_chunks(load_articles_from_db())
+            article_count = len(article_chunks)
+            chunks = chunks + article_chunks
+        except Exception as exc:      # 数据库不通不影响权威源可用
+            print("⚠️ 站内文章读取失败，只用权威语料: %s" % exc)
+
+    retriever = KnowledgeRetriever()
+    retriever.build_chunks(chunks)
+    retriever.stats = {"authority": authority_count, "article": article_count}
+    return retriever
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 直接运行本文件 = 自测：装两个源、建索引、打几个问题看召回
+#   algorithm\.venv\Scripts\python.exe kb_retriever.py
+# ══════════════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    retriever = build_default_retriever()
+    stats = getattr(retriever, "stats", {})
+    print("权威语料 %d 块 + 站内文章 %d 块 → 去重丢 %d 块 → 索引 %d 块" % (
+        stats.get("authority", 0), stats.get("article", 0),
+        getattr(retriever, "duplicates_dropped", 0), len(retriever.chunks),
+    ))
+
+    for question in (
+        "高血压饮食要注意什么",
+        "痛风患者不能吃什么",
+        "糖尿病人的主食怎么安排",
+        "骨质疏松要补多少钙",
+        "生酮饮食是什么",
+        "完全无关的问题：怎么修汽车发动机",
+    ):
+        hits = retriever.search(question, top_k=3)
+        print("\n" + "═" * 66)
+        print("Q: %s" % question)
+        if not hits:
+            print("   ⚠️ 无命中（这就是 RAG 最常见的失败形态，调用方必须处理）")
+        for rank, hit in enumerate(hits, 1):
+            print("   %d. score=%.4f [%s] %s | %s" % (
+                rank, hit["score"], hit["sourceType"], hit["title"], hit["section"]
+            ))
+            print("      %s" % hit["snippet"][:70])

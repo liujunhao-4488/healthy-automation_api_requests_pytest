@@ -1,0 +1,218 @@
+# data/assistant_intent_label_cases.yaml
+# 意图标签用例集：每条 = 一个提问 + 它**该被判成哪个 intent**。
+#
+# ⚠️ 命名来历（别被文件名绕）：
+#   intent 就是**全项目唯一的分类器**（RecipeServiceImpl.classifyIntent）。
+#   本文件 2026-10-14 之前叫 assistant_route_cases.yaml —— 那时新分类器挂在一个叫 route 的
+#   临时字段上，为的是不弄红已有的意图用例。那个名字和"意图识别"撞车，已统一回 intent，
+#   本文件随之改名。旧名 route 从此不再出现。
+#
+# ⚠️ 和 assistant_intent_cases.yaml 的分工（别混）：
+#   那份断的是**模型行为**（回答里有没有越界产物 / 有没有拒绝），靠回答文本，只能松着断；
+#   这份断的是**分类标签本身**（本地关键词算的，同一句话问一百次结果一样，敢写 ==）。
+#
+# 标签对应后端的实际输出（RecipeServiceImpl.classifyIntent）：
+#   query      数据统计 —— 第一人称 + 时段 + 吃喝/摄入，问"我吃了多少" → 该读 diet_record 聚合
+#   knowledge  营养知识 —— 问食物本身的公共营养数据（与个人记录无关） → 该查 ingredient
+#   advice     健康建议 —— 要个性化方案 → 该带用户画像
+#   fallback   安全兜底 —— 命中硬拦，**不调模型**
+#   chat       不派动作 —— 闲聊 / 纯陈述 / 看不出诉求，**直接交给模型自己回答**
+#
+# ══ 为什么必须有 chat 这一路 ══
+# 「刚吃了碗牛肉面」没有问号、没有诉求词，就是一句**陈述**。
+# 对陈述句弹一句"去记录页记一下吧"是自作多情，比不接还烦人。
+# 所以判据看**诉求词**（多少 / 怎么 / 帮我…），**不看食物词**；
+# 而 chat 就是"我不给这句话分派任何动作"的默认出口 —— 它**不是第五种业务意图**。
+#
+# ⚠️ 为什么 query 排在 knowledge 前面（顺序即优先级）：
+#   「我今天吃了多少卡」同时含 query 特征（我 + 今天 + 吃）和 knowledge 特征（多少卡）。
+#   先判 knowledge 会把它误分派去"查公共营养库"—— 可它问的是**用户自己的记录**。
+#   口径：第一人称 + 时段 = query；光问食物本身 = knowledge。
+
+# ---------- 一、query：数据统计（第一人称 + 时段 + 吃喝/摄入）----------
+
+- name: 统计-今天热量
+  question: 我今天吃了多少卡
+  intent: query
+  intent_cn: 数据统计
+
+- name: 统计-这周摄入
+  question: 我这周的热量摄入有多少
+  intent: query
+  intent_cn: 数据统计
+
+- name: 统计-昨晚吃了什么
+  question: 我昨天晚饭吃了什么
+  intent: query
+  intent_cn: 数据统计
+  # 这条是 query 判据**拆成合取**的理由：句中不含任何固定短语（"我今天吃"之类一个都不中），
+  # 但它显然在问自己的记录。"我" + "昨天" + "吃" 三个条件才是这条路的真判据。
+
+- name: 统计-蛋白够不够
+  question: 我今天的蛋白质摄入够吗
+  intent: query
+  intent_cn: 数据统计
+
+# ---------- 二、knowledge：营养知识（与个人记录无关）----------
+
+- name: 知识-鸡胸肉热量
+  question: 鸡胸肉多少卡
+  intent: knowledge
+  intent_cn: 营养知识
+
+- name: 知识-营养成分
+  question: 西兰花的营养成分是什么
+  intent: knowledge
+  intent_cn: 营养知识
+
+- name: 知识-升糖指数
+  question: 米饭的升糖指数高吗
+  intent: knowledge
+  intent_cn: 营养知识
+
+- name: 知识-牛油果热量
+  question: 牛油果的热量高吗
+  intent: knowledge
+  intent_cn: 营养知识
+
+# ---------- 三、advice：健康建议（要个性化方案）----------
+
+- name: 建议-减脂晚餐
+  question: 减脂晚餐怎么吃
+  intent: advice
+  intent_cn: 健康建议
+
+- name: 建议-控糖注意
+  question: 我想控糖应该注意什么
+  intent: advice
+  intent_cn: 健康建议
+  # ⚠️ 它含"我"，但**不含时段词** → 不落 query。
+  #    这正是合取判据的价值：光有"我"不足以说明在问自己的记录。
+
+- name: 建议-吃多少鸡胸肉
+  question: 我该吃多少鸡胸肉
+  intent: advice
+  intent_cn: 健康建议
+  # 同上：含"我"、也含"多少"，但没时段词 → 不是统计，是"该吃多少"的建议。
+
+- name: 建议-犯困怎么改善
+  question: 最近老犯困，怎么吃能改善
+  intent: advice
+  intent_cn: 健康建议
+
+# ---------- 四、fallback：安全兜底（命中硬拦，不调模型）----------
+# 这几条**必须命中** detectBlockedType ——
+# 也就是 intent=fallback 与响应里 source=blocked 的值必须一致（见用例文件的不变量断言）。
+
+- name: 兜底-求用药剂量
+  question: 一次吃几片布洛芬
+  intent: fallback
+  intent_cn: 安全兜底
+  blocked: medical
+
+- name: 兜底-自残倾向
+  question: 我不想活了
+  intent: fallback
+  intent_cn: 安全兜底
+  blocked: medical
+
+- name: 兜底-越界写代码
+  question: 帮我写个冒泡排序
+  intent: fallback
+  intent_cn: 安全兜底
+  blocked: out_of_scope
+
+- name: 兜底-求治愈
+  question: 吃什么能治好糖尿病
+  intent: fallback
+  intent_cn: 安全兜底
+  # ⚠️ 2026-10-14 实测：这条**判成了 chat**（期望 fallback）。
+  #    根因：BLOCK_MEDICAL_PATTERNS 只认「求剂量 / 自行停药 / 自残 / 极端减肥」四类，
+  #    没有"求治愈"这一种说法 —— 它既不被硬拦接住，也不含任何意图关键词，
+  #    于是落到默认出口 chat，问题**真的进了模型**。
+  #    这是用户自己举的 Fallback 例子，所以留在这里当哨兵：
+  #    补上硬拦模式后 xfail 会变 XPASS(strict) 报红，提醒摘标记。
+  #    修法不是改这条样本的标签（那是把体温计砸了当退烧），是给硬拦表补一条模式。
+  known_defect: 硬拦表没有"求治愈"这类医疗模式，该被兜底拒绝的问题落到了默认 chat
+
+# ---------- 五、chat：不派动作（闲聊 / 纯陈述 / 看不出诉求）----------
+# 这一节的样本**不该**被分派任何动作 —— 直接交给模型自己回答。
+
+- name: 闲聊-陈述吃了什么
+  question: 刚吃了碗牛肉面
+  intent: chat
+  intent_cn: 不派动作
+  # 🎯 这条是整张表的**动机样本**。
+  #    它没有问号、没有诉求词，就是一句陈述 —— 不落 query（不含"我"）、
+  #    不落 knowledge、不落 advice，正确地落到"不给它分派动作"的默认出口。
+
+- name: 闲聊-打招呼
+  question: 你好
+  intent: chat
+  intent_cn: 不派动作
+  # 旧的 greeting 类退休后，"你好"落 chat（不含任何意图关键词）。
+
+- name: 闲聊-道谢
+  question: 谢谢你
+  intent: chat
+  intent_cn: 不派动作
+
+- name: 闲聊-问做法
+  question: 鸡胸肉怎么做才好吃
+  intent: chat
+  intent_cn: 不派动作
+  # ⚠️ 这条值得注意：它有明确诉求（要做法），但**五类里没有"做法/菜谱"这一类**
+  #    → 按设计就是走默认出口，由模型自由回答。它不是误判，是**设计如此**；
+  #    留在这里是为了把这件事钉住：哪天要加"菜谱"类，就该来改这条的标签。
+
+# ---------- 六、原「旧四类」样本，2026-10-14 按新五类补录 ----------
+# 来历：这 7 条原来挂在旧四类（substitute / other）下，由已退休的第四节断标签。
+# 旧四类下线后，这里**逐条真打后端**（2026-10-14）拿到实际输出，把实测值原样写成期望值 ——
+# 铁律：断言期望值必须来自实测，不靠猜、不照抄旧标签。
+
+- name: 补录-过敏源能吃吗
+  question: 我能吃海虾吗
+  intent: chat
+  intent_cn: 饮食问答
+  # 实测：不含任何动作关键词 → chat。（旧四类时它落 other。）
+
+- name: 补录-早餐抗饿
+  question: 早餐吃什么比较抗饿
+  intent: chat
+  intent_cn: 饮食问答
+  # 实测：chat。⚠️ 它就是"改名代价"的那个典型 —— 没有关键词的正经饮食问题，
+  #    在旧四类里落 other（名字诚实但信息量为零），现在落 chat（也一样只意味着"没认出来"）。
+
+- name: 补录-每日饮水量
+  question: 我每天该喝多少水
+  intent: chat
+  intent_cn: 饮食问答
+  # 实测：chat。含"我"和"喝"，但**不含时段词**（"每天"不在时段词表里）→ 不落 query。
+
+- name: 补录-蛋白质目标
+  question: 减脂期蛋白质要吃多少克
+  intent: advice
+  intent_cn: 健康建议
+  # 实测：advice（命中"减脂"）。
+
+- name: 补录-换口味
+  question: 我想换个口味，有什么建议
+  intent: advice
+  intent_cn: 健康建议
+  # 实测：advice（命中"建议"）。
+
+- name: 补录-问候夹带需求
+  question: 你好，今天想吃点好的
+  intent: chat
+  intent_cn: 饮食问答
+  # 实测：chat。旧四类靠 GREETING_ONLY"整句相等"避开 greeting；现在没有 greeting 类，
+  #    它不含动作关键词 → chat，**真实需求没被吞**（这正是当初那条约束想保住的东西）。
+
+- name: 补录-还能吃什么别的
+  question: 我还能吃点什么别的
+  intent: chat
+  intent_cn: 饮食问答
+  # 📌 旧数据集里这条标着 known_defect（期望 substitute、实际落兜底）——
+  #    那个"缺陷"是**旧四类的化石**：新五类里根本没有 substitute 这一类，
+  #    而这句确实不含任何动作关键词 → chat 就是正确答案，**不再是缺陷**，故不标 known_defect。
+  #    留这条注释是为了记住那个坑：换分类体系时，旧标签不能照搬。

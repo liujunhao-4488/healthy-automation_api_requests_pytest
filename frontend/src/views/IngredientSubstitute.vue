@@ -107,7 +107,7 @@
             </div>
           </div>
 
-          <div v-if="loading" class="chat-loading">
+          <div v-if="loading && !hasFirstChunk" class="chat-loading">
             <span>AI 正在思考...</span>
           </div>
         </section>
@@ -173,6 +173,9 @@ const assistantFormRef = ref(null);
 const chatContainerRef = ref(null);
 const loading = ref(false);
 const conversationLoading = ref(false);
+// 流式回答开始后，"AI 正在思考..."就不该再挂着了（字都已经在往外冒了）。
+// 用它区分"等第一段"和"正在流"这两种都处于 loading 的状态。
+const hasFirstChunk = ref(false);
 
 const assistantForm = reactive({
   prompt: ''
@@ -377,6 +380,7 @@ const submitPrompt = async () => {
   }
 
   loading.value = true;
+  hasFirstChunk.value = false;
   try {
     await loadLatestContext();
 
@@ -388,8 +392,16 @@ const submitPrompt = async () => {
     }
 
     assistantForm.prompt = '';
-    messages.value = [...messages.value, createTempMessage('user', rawPrompt)];
+
+    // 先摆两个临时气泡：用户那条立刻可见；助手那条**先空着**，等流一段段往里填。
+    // 流跑完后助手那条会被后端落库的最终消息覆盖（含真正的 id / intent / source / blocked），
+    // 所以这里不需要再调 refreshMessages 去整个重拉一遍。
+    const userTemp = createTempMessage('user', rawPrompt);
+    const assistantTemp = createTempMessage('assistant', '');
+    messages.value = [...messages.value, userTemp, assistantTemp];
     await scrollToBottom();
+
+    const findAssistantTemp = () => messages.value.find((item) => item.id === assistantTemp.id);
 
     // 只发 rawPrompt，不再拼一段 prompt 一起发。
     //
@@ -402,24 +414,60 @@ const submitPrompt = async () => {
     //
     // 副作用（想要的）：不再产生 role=context 的消息，聊天里那块
     // "发送给 AI 的上下文" 也就不再出现了。旧会话里已有的 context 消息仍会照旧显示。
-    const response = await assistantApi.chat({
-      conversationId: currentConversationId.value,
-      rawPrompt,
-      healthInfo: userStore.healthInfo,
-      dietGoal: userStore.dietGoal
-    });
-
-    if (response.code === 200) {
-      await refreshMessages();
-      await loadConversations();
-    } else {
-      throw new Error(response.message || '生成回复失败');
-    }
+    await assistantApi.chatStream(
+      {
+        conversationId: currentConversationId.value,
+        rawPrompt,
+        healthInfo: userStore.healthInfo,
+        dietGoal: userStore.dietGoal
+      },
+      {
+        // 后端建好会话、存好用户消息后**最先**推这个 ——
+        // 新建会话时尤其关键：不用等模型答完，客户端就已经知道这轮属于哪个会话了。
+        start: (data) => {
+          if (data?.conversationId) {
+            currentConversationId.value = data.conversationId;
+          }
+        },
+        // 一段一段往里追加。这里**不能**每段都刷新消息列表 ——
+        // 那样会把还在生成的临时气泡冲掉，看起来就像"闪一下又没了"。
+        delta: (data) => {
+          const target = findAssistantTemp();
+          if (target && typeof data?.text === 'string') {
+            target.text = `${target.text || ''}${data.text}`;
+            if (!hasFirstChunk.value) {
+              hasFirstChunk.value = true;
+            }
+            scrollToBottom();
+          }
+        },
+        // 流结束：用后端落库的那条**权威消息**覆盖临时气泡，再刷新会话列表
+        // （标题 / 摘要 / 消息数只有后端算得出来）。
+        done: async (data) => {
+          const target = findAssistantTemp();
+          const finalMessage = data?.assistantMessage;
+          if (target && finalMessage) {
+            Object.assign(target, finalMessage);
+          }
+          await loadConversations();
+          await scrollToBottom();
+        },
+        // 后端在流程里抛异常时会推这个事件；抛出去让下面统一的 catch 接住
+        error: (data) => {
+          throw new Error(data?.message || '生成回复失败');
+        }
+      }
+    );
   } catch (error) {
     console.error('发送请求失败:', error);
-    ElMessage.error(error.message || '发送请求失败，请稍后重试');
+    // 失败时补一条说明，别让用户对着一个空气泡猜
+    const fallback = createTempMessage('assistant', error?.message || '发送请求失败，请稍后重试');
+    messages.value = [...messages.value, fallback];
+    await scrollToBottom();
+    ElMessage.error(error?.message || '发送请求失败，请稍后重试');
   } finally {
     loading.value = false;
+    hasFirstChunk.value = false;
   }
 };
 

@@ -4,6 +4,7 @@ import com.health.entity.Recipe;
 import com.health.entity.RecipeIngredient;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * 食谱服务接口
@@ -99,6 +100,22 @@ public interface RecipeService {
      * @return 替代建议列表
      */
     Map<String, Object> getIngredientSubstitutes(Map<String, Object> ingredientData);
+
+    /**
+     * 获取助手回复（**流式**）。
+     *
+     * 与 getIngredientSubstitutes 的唯一区别：模型是**边生成边推送**的 ——
+     * 每收到一段增量就回调 onDelta 一次；走完之后返回的汇总结果
+     * 和非流式**完全同构**（mode / text / source / intent；命中硬拦另有 blocked）。
+     *
+     * ⚠️ 两条路上没有"真实增量"：命中硬拦（压根不调模型）、模型不可用（报错）。
+     *    这时会一次性把固定文案通过 onDelta 推一次 ——
+     *    让调用方的渲染逻辑不用为"没有增量"写特例，也保证客户端总能拿到文本。
+     *
+     * ⚠️ onDelta 是在**网络读取线程**里同步调用的（不是回调到别的线程），
+     *    所以别在里面做耗时操作；抛异常会中断整个流。
+     */
+    Map<String, Object> streamIngredientSubstitutes(Map<String, Object> ingredientData, Consumer<String> onDelta);
 
     /**
      * 根据目标获取推荐食谱

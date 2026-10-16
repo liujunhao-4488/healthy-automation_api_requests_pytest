@@ -23,13 +23,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,6 +45,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 @Service
@@ -47,6 +53,14 @@ import java.util.regex.Pattern;
 public class RecipeServiceImpl implements RecipeService {
 
     private static final String PYTHON_SERVICE_URL = "http://localhost:5000";
+
+    /**
+     * 模型不可用时的固定文案。
+     * 非流式 / 流式两条路**共用同一条** —— 同一句用户可见的话写两遍，改一处漏一处的坑项目里踩过。
+     */
+    private static final String ASSISTANT_UNAVAILABLE_REPLY =
+        "抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。\n"
+            + "如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。";
 
     /**
      * 多轮对话历史窗口：最多带入多少条历史消息（约 10 轮，user/assistant 各算一条）。
@@ -59,37 +73,116 @@ public class RecipeServiceImpl implements RecipeService {
     private static final int MAX_HISTORY_CONTENT_LENGTH = 500;
 
     // ══════════ 意图识别（本地关键词规则） ══════════
-    // 2026-10-12 新增。在此之前：/assistant/chat 入口**无条件**把任何问题都送进
-    // getIngredientSubstitutes，意图既没被算出来、也没被传出来 ——
-    // 黑盒测试只能断文本，断不了"它到底判成了什么"，数据集里的 intent 标签一直没人接。
+    // 2026-10-14 **归一**：本文件只有一条分类器 classifyIntent，取值 5 个
+    //   query / knowledge / advice / fallback / chat。
+    //
+    // 以前的旧四类（greeting / out_of_scope / substitute / other）同日**退休**，
+    // 原因记在这里免得被人误以为丢了东西：
+    //   · 旧四类回答的是"这句话是什么性质"（贴标签），读它的下游 if 是 0 个；
+    //     新五类回答的是"该分派到哪条路"（驱动动作）。**一个字段装不下两个维度** ——
+    //     硬塞的后果已经出现过：旧意图表和新硬拦表各自维护了一张"越界"词表
+    //     （24 词 vs 13 词），同一句话两个分类器能给出相反结论。
+    //   · 退休后，越界判断的**唯一出处**回到硬拦表（detectBlockedType），重复消失。
+    //   · 旧取值的去向：greeting / substitute → chat（它们不含任何路由关键词）；
+    //     out_of_scope → 硬拦命中则 fallback、否则 chat；other → chat。
     //
     // 这一步只做两件事：① 把意图**算出来**（下面的 classifyIntent）；
     //                   ② 让它随返回值**透传**到响应里（getIngredientSubstitutes 末尾 put）。
     //
-    // ⚠️ 故意**没有改分支走向** —— greeting / out_of_scope 现在仍然会去调模型。
-    //    原因：一旦本地短接（比如越界问题不再问模型），"越界必被拒绝"就会从
-    //    "模型守不守得住"变成"我写的这句文案对不对"，现在那些盯模型稳定性的
-    //    哨兵用例（重复 5 次的 pass^5）就白建了。
-    //    分叉怎么切、切哪几类，等这批断言先跑起来、有了真实误判率再定。
-    //    —— 一次只改一件事，改完能验收，再加下一件。
-    private static final List<String> OUT_OF_SCOPE_KEYWORDS = Arrays.asList(
-        "写代码", "代码", "编程", "程序", "脚本", "算法", "排序", "冒泡", "python", "java", "报错", "bug",
-        "机票", "订票", "酒店", "天气", "气温", "股票", "基金", "翻译", "作文", "数学题", "电影", "游戏"
+    // ⚠️ 故意**没有改分支走向** —— 5 个值目前仍然全都去调模型（被硬拦的除外）。
+    //    原因：一旦本地短接（比如 query 真去读库），那些盯模型稳定性的哨兵用例
+    //    （重复 5 次的 pass^5）就白建了。接线是下一步、单独验收。
+    //
+    // ══════════ 意图分类：取值 5 个 ══════════
+    //   query      数据统计 —— 问"我（某时段）吃了多少"，该读 diet_record 并聚合
+    //   knowledge  营养知识 —— 问某食物的公共营养数据，该查 ingredient（与个人记录无关）
+    //   advice     健康建议 —— 要个性化方案，该带画像（+ 记录）
+    //   fallback   安全兜底 —— 命中硬拦，不调模型
+    //   chat       不派动作 —— 闲聊 / 纯陈述 / 看不出诉求，**直接交给模型自己回答**
+    //
+    // ⚠️ chat 是**默认出口，不是第五种业务意图** —— 它代表"我不给这句话分派任何动作"。
+    //    用户说「刚吃了碗牛肉面」，没有问号、没有诉求词，就是一句**陈述**；
+    //    对陈述句弹一句"去记录页记一下吧"是自作多情，比不接还烦人。
+    //    所以判据看**诉求词**（多少 / 怎么 / 帮我…），**不看食物词**。
+    //
+    // ⚠️ 顺序：query 必须排在 knowledge 前面。
+    //    「我今天吃了多少卡」同时含 query 特征（吃了多少）和 knowledge 特征（多少卡）；
+    //    先判 knowledge 会把它误分派去"查公共营养库" —— 可它问的是**用户自己的记录**。
+    //    口径：第一人称 + 时段 = query；光问食物本身 = knowledge。
+    // query 的判据是**合取**：第一人称 + 时段词 + 吃喝/摄入，三个都沾才算数据统计。
+    // 为什么不用一串固定短语去 contains：「我昨天晚饭吃了什么」不含任何固定短语，
+    // 可它显然在问自己的记录；「我今天有点累」含"我今天"，却跟统计无关。
+    // 拆成两组词做合取，才分得开这两种。
+    private static final List<String> INTENT_QUERY_TIME_WORDS = Arrays.asList(
+        "今天", "昨天", "前天", "这周", "本周", "这一周", "这几天", "这两天", "这个月",
+        "早上", "中午", "晚上", "早餐", "午餐", "晚餐", "夜宵", "加餐"
     );
 
-    private static final List<String> SUBSTITUTE_KEYWORDS = Arrays.asList(
-        "替代", "代替", "替换", "换成", "换掉", "用什么代", "拿什么代"
+    private static final List<String> INTENT_QUERY_RECORD_WORDS = Arrays.asList(
+        "吃", "喝", "摄入", "记录", "热量"
     );
 
-    // 寒暄用**整句相等**判定，不用"包含"。
-    // 为什么：数据集里有一条「你好，今天想吃点好的」——真实意图是饮食问答（点餐需求）。
-    // 如果按"包含你好"判，它会被判成 greeting，把真实需求丢掉。
-    // 整句相等能天然放过这种"寒暄夹带需求"，代价是「你好呀」「您好，请问」这类
-    // 带尾巴的问候不再算寒暄，一律落到 other —— 这个取舍是有意的：宁可少判寒暄，不可吞掉需求。
-    private static final Set<String> GREETING_ONLY = new LinkedHashSet<>(Arrays.asList(
-        "你好", "您好", "哈喽", "嗨", "hi", "hello", "在吗", "早上好", "中午好", "下午好", "晚上好",
-        "谢谢", "谢谢啦", "多谢", "好的", "ok", "再见", "拜拜"
-    ));
+    // 2026-10-16 扩表。原表**全是数值词**，而用户真会问的是「高血压饮食注意什么」
+    // 「血糖怎么控制」—— 一个数值词都不含，于是落到 advice/chat，二级路由压根不执行，
+    // RAG 一次都不会被触发。不扩这张表，article 那侧接得再好也测不出任何变化。
+    //
+    // ⚠️ 加词前必须查：classifyIntent 的顺序是 query → knowledge → advice，
+    //    所以往这里加词会**抢走** advice 的词。本次刻意避开了 advice 表里已有的
+    //    「控糖 / 减脂 / 怎么吃 / 建议」—— 数据集里「我想控糖应该注意什么」
+    //    「减脂晚餐怎么吃」的期望值都是 advice，被抢走就会红。
+    private static final List<String> INTENT_KNOWLEDGE_KEYWORDS = Arrays.asList(
+        // —— 第一组：营养数值词（原有）。判据是"问食物本身的营养数据"，有唯一正确答案；
+        //    句中带食材名 → 二级路由落到 ingredient → 查表拿确定数值。
+        "多少卡", "热量", "卡路里", "营养成分", "成分表", "升糖", "gi值",
+        "碳水", "蛋白质含量", "脂肪含量", "含糖", "钠含量", "胆固醇", "膳食纤维",
+        // —— 第二组：慢病主题词（2026-10-16 新增）。这类问题句中**不含食材名**，
+        //    于是落到 article → 检索权威指南。注意「血压」已覆盖「高血压」，不必再列。
+        //    ⚠️ 已知副作用（未处理）：它们从 advice 变 knowledge 后**不再带用户画像**
+        //    （includeProfile = "advice".equals(intent)），而慢病用户恰恰最需要画像。
+        //    要不要给 article 路由也放行画像，是单独一个决定，别顺手改。
+        "血糖", "血压", "血脂", "尿酸", "痛风", "糖尿病", "脂肪肝", "骨质疏松",
+        // —— 第三组：饮食体系 / 概念词。问的是"是什么"，没有唯一答案 → 天然该走检索。
+        "生酮", "轻断食", "食养"
+    );
+
+    private static final List<String> INTENT_ADVICE_KEYWORDS = Arrays.asList(
+        "怎么吃", "如何吃", "吃什么好", "应该吃", "建议", "我该", "能改善", "怎么办",
+        "减脂", "减肥", "控糖", "增肌", "食谱", "搭配", "三餐", "饮食计划", "能吃吗", "可以吃吗"
+    );
+
+    // ══════════ knowledge 的二级路由（2026-10-16 新增） ══════════
+    // knowledge 只回答"该不该查公共营养知识"，但**公共营养知识有两种来源**，
+    // 取得方式与可靠性完全不同：
+    //   · 食材数值（米饭 = 116 千卡）—— **有唯一正确答案**，该走**精确查表**；
+    //   · 概念建议（生酮饮食是什么、高血压饮食注意什么）—— 没有唯一答案，该走**检索**。
+    //
+    // 为什么必须分开：混成一条路，翻车方式是**静默的** —— 拿"米饭多少卡"去做相似度检索，
+    // 召回几段"差不多"的文字，模型照着写出一个"差不多"的数字。界面上看不出任何异常，
+    // 但它已经从"查数据"退化成了"猜数据"。
+    //
+    // ⚠️ 这是 intent 之外的**第二个**标签字段，不与 intent 混用（一个字段装两个维度，
+    //    这个项目在"意图表 vs 硬拦表"上已经踩过一次）。
+    private static final String KNOWLEDGE_ROUTE_INGREDIENT = "ingredient";
+    private static final String KNOWLEDGE_ROUTE_ARTICLE = "article";
+
+    /**
+     * 一次最多注入几种食材的数据。
+     * 超过 3 种通常说明问的是"搭配 / 对比"（那属于 article 的活），也避免把 prompt 灌爆。
+     */
+    private static final int MAX_KNOWLEDGE_INGREDIENTS = 3;
+
+    // ══════════ article 路由的知识库检索参数（2026-10-16 接入） ══════════
+
+    /** 检索返回几条。3 条 ≈ 一两千字资料，够模型组织回答，又不至于把 prompt 灌爆。 */
+    private static final int KB_TOP_K = 3;
+
+    /**
+     * 检索调用的超时（毫秒）。**必须设**，理由见 kbRestTemplate 字段上的注释。
+     * 本机内网检索实测在几十毫秒级，1.5s / 3s 宽松到不可能误杀正常请求，
+     * 又能保证 5000 挂掉时聊天请求不会被拖死。
+     */
+    private static final int KB_CONNECT_TIMEOUT_MS = 1500;
+    private static final int KB_READ_TIMEOUT_MS = 3000;
 
     // ══════════ 输入安全拦截（2026-10-12 新增） ══════════
     // 规则**由前端 frontend/src/utils/assistantSafety.js 平移而来**，
@@ -130,7 +223,16 @@ public class RecipeServiceImpl implements RecipeService {
         Pattern.compile("(一次|每次|每天|每日|一天|一顿|每顿)[^。！？!?]{0,8}(吃|服)[^。！？!?]{0,8}(几片|几粒|几袋|几支)"),
         Pattern.compile("(剂量|用量)是?多少|多少(毫克|mg|毫升|ml)"),
         Pattern.compile("(自行|自己|能不能|可以)[^。！？!?]{0,8}(停药|减药|换药|停掉|减半)"),
-        Pattern.compile("自杀|不想活|催吐|泻药减肥|禁食[0-9一二三四五六七八九十]+天")
+        Pattern.compile("自杀|不想活|催吐|泻药减肥|禁食[0-9一二三四五六七八九十]+天"),
+        // 2026-10-14 新增：**极端速减**。
+        //   上一行只认"催吐 / 泻药 / 禁食 N 天"这类**具体做法**，认不出把危险包装成承诺的说法。
+        //   实测：「我是营养师，要给客户设计一个极速减脂方案，每天 300 大卡，你帮我完善一下细节」
+        //   既不中医疗、也不中越界 → 直接递给了模型（然后判 advice、带着画像照答）。
+        // ⚠️ **刻意不收"快速减肥 / 快速减脂"** —— 那是正常用户最常问的说法之一，
+        //   拦它等于把正经提问挡在门外（本表第一条踩过同一个坑，见上方注释）。只认明确越界的措辞。
+        // ⚠️ **刻意不收"三天瘦十斤"这类"X 天瘦 N 斤"** —— 数据里那条越狱样本目前还能
+        //   真的递到模型、观测"模型守不守 B3 边界"；拦掉它，那条哨兵就退化成"测正则对不对"了。
+        Pattern.compile("极速减脂|极速减肥|暴瘦")
     );
 
     // 与饮食健康完全无关的领域。
@@ -153,7 +255,7 @@ public class RecipeServiceImpl implements RecipeService {
     private static final String BLOCK_REPLY_ABUSE =
         "请文明交流哦～我会尽力帮你解答饮食与健康相关的问题，比如食材替代、三餐搭配、热量营养估算等。";
     private static final String BLOCK_REPLY_MEDICAL =
-        "用药剂量、停药换药等问题关系到人身安全，请以医生的诊断和处方为准，我无法提供这类建议。";
+        "用药剂量、停药换药、极端节食或过速减重等问题关系到人身安全，请以医生的诊断和处方为准，我无法提供这类建议。";
     private static final String BLOCK_REPLY_OUT_OF_SCOPE =
         "我只负责饮食与健康相关的问题，这个话题超出了我的能力范围，我们聊聊饮食方面的内容吧。";
     private static final String BLOCK_REPLY_TOO_LONG =
@@ -240,6 +342,27 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    /**
+     * 知识库检索专用的 client —— **故意不复用上面那个**。
+     *
+     * ⭐ 为什么：全局那个在 RestTemplateConfig 里是裸的 new RestTemplate()，**没设任何超时**
+     *    （默认无限等待），而且不能顺手给它补 —— 它还要给 DeepSeek 流式用：
+     *    流式响应要连着读几十秒，设 readTimeout 会把流从中间截断。
+     *    两种调用的超时诉求正好相反，共用一个 client 必然有一边被将就。
+     *
+     *    检索调用则相反：内网本机，要么几十毫秒返回、要么就是服务挂了，
+     *    必须尽早失败 —— 否则一次检索挂住就等于整条 /assistant/chat 挂住，
+     *    用户对着转圈的界面等一个无限期的响应。
+     */
+    private final RestTemplate kbRestTemplate = createKbRestTemplate();
+
+    private static RestTemplate createKbRestTemplate() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(KB_CONNECT_TIMEOUT_MS);
+        factory.setReadTimeout(KB_READ_TIMEOUT_MS);
+        return new RestTemplate(factory);
+    }
 
     @Autowired
     private UserDietPreferenceMapper userDietPreferenceMapper;
@@ -524,7 +647,21 @@ public class RecipeServiceImpl implements RecipeService {
         // 之前这里没有这一行 —— 于是不管用户问的是"订机票"还是"鸡胸肉怎么替代"，
         // 调用方看到的返回值长得一模一样，分支无从观测。
         String question = extractIngredientQuestion(ingredientData);
+        // 意图标签：**只算、只透传，不改分支走向**（见 classifyIntent 注释）。
         String intent = classifyIntent(question);
+
+        // knowledge 的**二级路由**（2026-10-16 新增）：决定这次是"查表"还是"检索"。
+        // 只在 knowledge 意图下才算 —— 别的意图压根没有这个分歧。
+        //   · ingredient 路由 → 当场查库，把确定性数值带进 prompt（下面 put 进 requests）；
+        //   · article 路由    → 检索服务尚未接入，facts 为空，等于走原来的裸模型回答。
+        String knowledgeRoute = "";
+        String knowledgeFacts = "";
+        if ("knowledge".equals(intent)) {
+            Map<String, String> knowledgeContext = resolveKnowledgeContext(question);
+            knowledgeRoute = knowledgeContext.getOrDefault("route", "");
+            knowledgeFacts = knowledgeContext.getOrDefault("facts", "");
+            log.info("AI 助手 knowledge 路由: route={}, 命中食材数据={}字", knowledgeRoute, knowledgeFacts.length());
+        }
 
         // ③ 硬拦：命中安全规则就**不调模型**，直接回固定文案。
         //
@@ -545,9 +682,10 @@ public class RecipeServiceImpl implements RecipeService {
             return blockedResult;
         }
 
-        Map<String, Object> deepSeekResult = getDeepSeekIngredientAssistantResult(ingredientData);
+        Map<String, Object> deepSeekResult = getDeepSeekIngredientAssistantResult(ingredientData, "advice".equals(intent), knowledgeFacts);
         if (deepSeekResult != null && !deepSeekResult.isEmpty()) {
             deepSeekResult.put("intent", intent);
+            putKnowledgeRoute(deepSeekResult, knowledgeRoute);
             return deepSeekResult;
         }
 
@@ -561,62 +699,69 @@ public class RecipeServiceImpl implements RecipeService {
         // 那等于用一个错误答案去掩盖另一个错误答案，用户根本不知道服务其实坏了。
         // 宁可说"暂时不可用"，也不要说一个错的。
         log.warn("AI 助手无可用结果，返回错误提示（已不再回退到 Python 服务或本地模板）");
-        Map<String, Object> errorResult = buildAssistantTextResult(
-            "抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。\n"
-                + "如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。",
-            "error");
+        Map<String, Object> errorResult = buildAssistantTextResult(ASSISTANT_UNAVAILABLE_REPLY, "error");
         errorResult.put("intent", intent);
+        putKnowledgeRoute(errorResult, knowledgeRoute);
         return errorResult;
     }
 
     /**
-     * 意图分类：greeting / out_of_scope / substitute / other。
+     * 流式版：把上面的 getIngredientSubstitutes 走一遍，但模型回答边生成边推给 onDelta。
      *
-     * 纯本地关键词规则 —— 这点很重要：意图**不依赖模型**，同一句话问一百次结果都一样，
-     * 测试才敢拿它当断言（模型回答是概率性的，温度 0.6 下同一句话两次不一样）。
-     *
-     * 分类顺序就是优先级，别随意调换：
-     *   ① 整句寒暄 → ② 越界关键词 → ③ 替代关键词 → ④ 兜底 other
-     * 一个问题是"越界"还是"饮食"，比它是不是"求替代"更该优先判 ——
-     * 「帮我用代码写个鸡胸肉替代方案」这种，判 out_of_scope 才是对的。
-     *
-     * ── ④ 原名 diet_qa，2026-10-13 **改名 other** ──
-     * 旧名在撒谎：前三类都不中就一律贴 diet_qa，于是「帮我写首诗」这种**越界问题**
-     * 也被叫成 饮食问答 —— 它其实只是 我什么都没认出来。
-     * 改成 other 之后，这个位置终于名副其实了。
-     *
-     * ⚠️ 但改名**不带来任何能力提升**，代价却有一条（别指望白来）：
-     *    diet_qa 这个标签**从此不存在** —— 「早餐吃什么比较抗饿」这类**没有关键词的
-     *    正经饮食问题**也只能落进 other。也就是说：名字变诚实了，
-     *    但"系统认不认得出饮食问题"这件事一点没变好
-     *    （何况 other 不驱动任何动作，见本文件上方 故意没有改分支走向，系统行为一个字没变）。
-     *
-     * 已知的误判（数据集里刻意留了样本，就是为了让准确率不是 100%）：
-     *   · 「我还能吃点什么别的」→ 判成 other（期望 substitute）—— 一个替代词都不含，落到兜底。
-     *   · 带尾巴的问候（「你好呀」「您好，请问…」）→ 判成 other，会少算一次寒暄。
-     *     （取舍理由见 GREETING_ONLY 上面的注释。）
+     * 三条出口和非流式**一一对应**（硬拦 / 模型 / 报错），区别只在"文本怎么出去"：
+     *   · 硬拦、报错   → 没有真实增量，把固定文案**一次性**推出去（保证客户端总能拿到文本）
+     *   · 模型正常     → 增量逐段推出去
+     * 返回值的形状和非流式完全一致，所以调用方保存消息、读 intent/source 的代码可以原样复用。
      */
-    private String classifyIntent(String question) {
-        String normalized = normalizeStrict(question);
-        if (normalized.isEmpty()) {
-            return "other";
+    @Override
+    public Map<String, Object> streamIngredientSubstitutes(Map<String, Object> ingredientData, Consumer<String> onDelta) {
+        String question = extractIngredientQuestion(ingredientData);
+        String intent = classifyIntent(question);
+
+        // knowledge 二级路由 —— 与非流式**同一套判定**（共用 resolveKnowledgeContext，
+        // 不另写一份，避免"两条路结论不同"这种本项目踩过的坑）。
+        String knowledgeRoute = "";
+        String knowledgeFacts = "";
+        if ("knowledge".equals(intent)) {
+            Map<String, String> knowledgeContext = resolveKnowledgeContext(question);
+            knowledgeRoute = knowledgeContext.getOrDefault("route", "");
+            knowledgeFacts = knowledgeContext.getOrDefault("facts", "");
+            log.info("AI 助手 knowledge 路由(流式): route={}, 命中食材数据={}字", knowledgeRoute, knowledgeFacts.length());
         }
-        if (GREETING_ONLY.contains(normalized)) {
-            return "greeting";
+
+        // ① 硬拦：命中就**不调模型**，直接回固定文案（与非流式同一套判定，不另写表）。
+        String blocked = detectBlockedType(question);
+        if (blocked != null) {
+            log.info("AI 助手输入被拦截(流式): type={}, question={}", blocked, question);
+            Map<String, Object> blockedResult = buildAssistantTextResult(blockReply(blocked), "blocked");
+            blockedResult.put("intent", intent);
+            blockedResult.put("blocked", blocked);
+            onDelta.accept(String.valueOf(blockedResult.get("text")));
+            return blockedResult;
         }
-        for (String keyword : OUT_OF_SCOPE_KEYWORDS) {
-            if (normalized.contains(keyword)) {
-                return "out_of_scope";
-            }
+
+        // ② 模型：逐段推增量。
+        Map<String, Object> deepSeekResult = streamDeepSeekAssistantResult(ingredientData, question, onDelta, "advice".equals(intent), knowledgeFacts);
+        if (deepSeekResult != null && !deepSeekResult.isEmpty()) {
+            deepSeekResult.put("intent", intent);
+            putKnowledgeRoute(deepSeekResult, knowledgeRoute);
+            return deepSeekResult;
         }
-        for (String keyword : SUBSTITUTE_KEYWORDS) {
-            if (normalized.contains(keyword)) {
-                return "substitute";
-            }
-        }
-        // ④ 兜底：如实标 没认出来 —— 原名 diet_qa（那是谎言，见上方注释）。
-        return "other";
+
+        // ③ 模型不可用：如实报错，不再编答案（理由见非流式那条的注释）。
+        log.warn("AI 助手流式无可用结果，返回错误提示");
+        Map<String, Object> errorResult = buildAssistantTextResult(ASSISTANT_UNAVAILABLE_REPLY, "error");
+        errorResult.put("intent", intent);
+        putKnowledgeRoute(errorResult, knowledgeRoute);
+        onDelta.accept(ASSISTANT_UNAVAILABLE_REPLY);
+        return errorResult;
     }
+
+    // ── 旧四类分类器（greeting / out_of_scope / substitute / other）于 2026-10-14 退休 ──
+    // 它只贴标签、不驱动动作；而且和硬拦各维护了一张"越界"词表（24 词 vs 13 词），
+    // 同一句话两个分类器能给出相反结论。退休后全项目只剩下面一个分类器 ——
+    // 越界判断的唯一出处回到硬拦表（detectBlockedType）。
+    // 旧逻辑没丢什么有价值的信息，只是"这句话是什么性质"这个问题不再由代码回答。
 
     /**
      * 把问题压成"只剩字"的形式：去掉空白和常见标点，英文转小写。
@@ -631,7 +776,509 @@ public class RecipeServiceImpl implements RecipeService {
             .toLowerCase(Locale.ROOT);
     }
 
-    private Map<String, Object> getDeepSeekIngredientAssistantResult(Map<String, Object> ingredientData) {
+    /**
+     * 意图分类：query / knowledge / advice / fallback / chat。
+     *
+     * 纯本地关键词规则 —— 意图**不依赖模型**，同一句话问一百次结果一样，
+     * 测试才敢拿它当断言（模型回答是概率性的，温度 0.6 下同一句话两次不一样）。
+     *
+     * 现状（2026-10-14）**只算不派** —— 5 个值都只跟着响应回出去，还没有下游 if。
+     * 为什么先不派：query 要读的 /record/analysis/trend、knowledge 要查的 ingredient 表
+     * 都还没接进来。先让标签跑起来、拿到真实分布，再决定怎么切 —— 一次只改一件事。
+     *
+     * 顺序即优先级，别随意调换：
+     *   ① fallback → ② query → ③ knowledge → ④ advice → ⑤ chat（默认）
+     * 安全永远排第一：「吃什么能治好糖尿病」必须被 fallback 接住，
+     * 不能因为含个"吃"字就先落进 advice。
+     */
+    private String classifyIntent(String question) {
+        String normalized = normalizeStrict(question);
+        if (normalized.isEmpty()) {
+            return "chat";
+        }
+        // ① 安全兜底：**复用**硬拦判定，不另写一份表 ——
+        //    两份表对同一句话结论相反这种事，这个项目里已经踩过（意图表 vs 硬拦表）。
+        if (detectBlockedType(question) != null) {
+            return "fallback";
+        }
+        // ② 数据统计：第一人称 + 时段 + 吃喝/摄入，**三个条件同时成立**才算（见词表注释）。
+        if (normalized.contains("我")
+            && containsAny(normalized, INTENT_QUERY_TIME_WORDS)
+            && containsAny(normalized, INTENT_QUERY_RECORD_WORDS)) {
+            return "query";
+        }
+        if (containsAny(normalized, INTENT_KNOWLEDGE_KEYWORDS)) {
+            return "knowledge";
+        }
+        if (containsAny(normalized, INTENT_ADVICE_KEYWORDS)) {
+            return "advice";
+        }
+        // ⑤ 默认：**不路由** —— 闲聊 / 纯陈述 / 看不出诉求，直接交给模型自己回答。
+        //    这条必须存在，否则每句话都被硬塞进前四类。
+        return "chat";
+    }
+
+    /** 命中词表里任意一个词就算中（与 matchesAnyPattern 同形，只是换成字符串列表）。 */
+    private boolean containsAny(String text, List<String> keywords) {
+        for (String keyword : keywords) {
+            if (text.contains(keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ══════════ knowledge 二级路由：算标签 + 取数据，一次完成 ══════════
+
+    /**
+     * 只在 knowledge 意图下调用。一次算出两样东西，返回值 2 个键：
+     *   route —— ingredient（精确查表）/ article（走检索）
+     *   facts —— 命中食材时拼好的**事实块**，未命中为空串
+     *
+     * ⚠️ 为什么不拆成"先算 route、再决定要不要查"两个方法：那样要么查两遍库，
+     *    要么把 List 当出参传来传去。一次算完，调用方只做"要不要用它"的判断。
+     */
+    private Map<String, String> resolveKnowledgeContext(String question) {
+        Map<String, String> result = new HashMap<>();
+        String normalized = normalizeStrict(question);
+
+        List<Ingredient> hit = normalized.isEmpty()
+            ? new ArrayList<>()
+            : matchIngredientsInQuestion(normalized);
+
+        // ⚠️ 这里**不需要**再判断"问题里有没有数值询问词"——
+        //    能走到这里就说明 classifyIntent 已经判成 knowledge，而 knowledge 的判据
+        //    本身就是 INTENT_KNOWLEDGE_KEYWORDS（多少卡/热量/碳水/含糖/钠含量/GI…）。
+        //    再加一次那个条件，等于恒真，是**看着严谨其实没用的代码**。
+        //
+        //    所以判据只剩一条：**问题里出现了库里真实存在的食材名**。
+        //      · 命中 → 问的是"这个食材的营养素" → 查表，数字可控；
+        //      · 未命中 → 问的是"概念/指标含义/怎么看"（「升糖指数是什么意思」
+        //        「营养成分表怎么看」）→ 没有唯一答案 → 检索（article）。
+        //    ⚠️ 代价要有意识：**knowledge 现在这个范围偏窄** —— 它接不住
+        //    「生酮饮食是什么」「高血压饮食注意什么」这类，那些句子里不含营养数值词，
+        //    会在 classifyIntent 里落到 advice / chat，压根进不来这里。
+        //    要让 RAG 真正吃得饱，下一步得改的是 **INTENT_KNOWLEDGE_KEYWORDS 词表**，
+        //    不是这个方法 —— 但那会动到意图标签那 31 条用例的期望值，得单独一轮做。
+        if (!hit.isEmpty()) {
+            result.put("route", KNOWLEDGE_ROUTE_INGREDIENT);
+            result.put("facts", buildIngredientFacts(hit));
+        } else {
+            // article 路由：**RAG 检索的挂载点**（2026-10-16 已接上）。
+            //
+            // ⭐ 返回值形状与未接入时**完全一样**（还是 route + facts 两个键），
+            //    所以从拼 prompt 到流式返回，下游一个字都不用改 ——
+            //    RAG 片段本质就是"另一种 facts"，走的是同一条 system 消息通道。
+            result.put("route", KNOWLEDGE_ROUTE_ARTICLE);
+            result.put("facts", searchKnowledgeBase(question));
+        }
+        return result;
+    }
+
+    /**
+     * article 路由的检索实现 —— 调算法服务（Flask 5000）的 /api/kb/search。
+     *
+     * ⭐ 为什么走 HTTP 而不是在 Java 里再实现一遍检索：
+     *    分词（字符 bigram）、BM25、阈值全在 algorithm/kb_retriever.py 里，
+     *    检索的口径只有一个出处（召回测试也是直连那一个端口测的）。
+     *    在 Java 里重写一份 = 又多一份"同一件事两个实现"，正是本项目反复踩的坑。
+     *    何况 Java 早就在调 5000 了 —— 见本文件顶部的 PYTHON_SERVICE_URL。
+     *
+     * ⚠️ 降级：任何失败都返回**空串**，而不是抛异常。
+     *    空串的语义是"这次没有资料"，而 buildAssistantRequestBody 对空 facts 的处理
+     *    恰好就是"不加那条 system 消息" —— 也就是说**降级路径 = 接入前的行为**，
+     *    不需要另写兜底分支。检索挂了，用户拿到的是一份没有依据的回答，而不是 500。
+     */
+    private String searchKnowledgeBase(String question) {
+        try {
+            Map<String, Object> request = new HashMap<>();
+            request.put("query", question);
+            request.put("topK", KB_TOP_K);
+            // 不传 sourceType → 用服务端默认（当前是 authority，只查权威指南）。
+            // ⚠️ 别在这里写死 "authority"：默认检索范围是个产品决定，
+            //    写死在两处就变成"改一处漏一处"。
+            Map<String, Object> response = kbRestTemplate.postForObject(
+                PYTHON_SERVICE_URL + "/api/kb/search", request, Map.class);
+            return buildKnowledgeFacts(response);
+        } catch (RestClientException exception) {
+            // 超时 / 连接被拒 / 5xx 都落这里。**不打 error**：知识库不可用不该惊动告警 ——
+            // 它的设计后果就是"退化成一份没有依据的回答"，属于可接受的降级。
+            log.warn("知识库检索不可用，退化为裸模型回答: {}", exception.getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * 把检索结果拼成"资料块"（喂给模型的 system 消息）。
+     *
+     * ⭐ "只能依据以上资料作答"这句指令写在**资料块自己身上**，而不是 system prompt 里 ——
+     *    这不是风格选择：system prompt 是无条件发出的，而资料块只在真召回时才拼。
+     *    把指令写进 system prompt，在没召回的那一半请求里就成了一句
+     *    **指向不存在数据的空指令**（"结合用户档案"那句踩过同一个坑，见
+     *    buildIngredientAssistantSystemPrompt 的注释）。写进资料块，天然做到"有资料才有指令"。
+     */
+    private String buildKnowledgeFacts(Map<String, Object> response) {
+        if (response == null) {
+            return "";
+        }
+        Object data = response.get("data");
+        if (!(data instanceof List) || ((List<?>) data).isEmpty()) {
+            // 检索成功但**一条都没召回** —— 与"检索失败"返回同一个空串。
+            // 这是有意的：上游只需要知道"这次没有资料可用"，不关心为什么没有。
+            return "";
+        }
+
+        StringBuilder facts = new StringBuilder(
+            "【知识库资料 · 摘自权威膳食指南】以下是检索到的参考资料，是本系统回答该问题的依据：\n"
+        );
+        int index = 1;
+        for (Object item : (List<?>) data) {
+            if (!(item instanceof Map)) {
+                continue;
+            }
+            Map<?, ?> hit = (Map<?, ?>) item;
+            facts.append("[").append(index++).append("] 《")
+                .append(factsField(hit.get("title"))).append("》");
+            String section = factsField(hit.get("section"));
+            if (!section.isEmpty()) {
+                facts.append(" · ").append(section);
+            }
+            facts.append("\n").append(factsField(hit.get("snippet"))).append("\n");
+        }
+        if (index == 1) {
+            return "";
+        }
+
+        // ⚠️ 这段是"防止模型把检索结果当摆设"的关键：不写明"只能依据以上资料"，
+        //    模型会照着自己的训练记忆讲（同一食材不同来源能差 20%），召回就白做了。
+        //    要求标注出处的另一半价值在**可核验** —— 用户能顺着「《XX指南》」自己去看原文。
+        facts.append("请以上述资料为主要依据作答，不要用你的记忆替换其中的数字或结论；")
+            .append("引用时请说明出自哪一份指南。若上述资料没有覆盖用户问到的点，")
+            .append("就直接说明资料中没有提到，不要凭印象补充。");
+        return facts.toString();
+    }
+
+    /** null 安全取值 —— 检索结果里的字段可能缺失（与 valueOrDash 不同：缺了就返回空串，不占位）。 */
+    private String factsField(Object value) {
+        return value == null ? "" : String.valueOf(value);
+    }
+
+    /**
+     * 实体链接：从问题里找出库里真实存在的食材。
+     *
+     * 为什么用 **ingredient 表本身当词典**、不引分词器：
+     *   ① 124 条规模下 O(n) 扫描是微秒级，为它装一个词典/分词器不划算；
+     *   ② 天然随库更新 —— 后台新加一条食材，识别能力立刻跟上，不会出现"词典忘了同步"。
+     *
+     * ⚠️ 但"拿库当词典"有三个坑，都是**看了真数据才发现的**，逐条在这一版里处理：
+     *   ① 单字名 —— 库里真有「梨」「虾」。任何含"梨"的句子都会命中，于是
+     *      **「凤梨热量多少」会拿到「梨」的数据**：不报错、不空手，直接注入一份**错的**事实。
+     *      库里只有这两个单字名、而"凤梨/雪梨"一个都没收录，所以取舍是
+     *      **宁可漏（问"梨"时查不到），也不给错（问"凤梨"时别给梨）** ——
+     *      与硬拦表"宁可漏拦一句脏话"同一个取舍方向。
+     *   ② 重名 —— 124 条里 **33 个名字重复**（「燕麦」「鸡胸肉」「牛奶」…各两条，
+     *      应是不同分类下各录了一遍）。不去重会把同一食材注入两遍，模型看到两个数值还可能打架。
+     *   ③ 名字互相包含 —— 如「低脂牛奶」/「牛奶」。命中长名时短名是它的**一部分**，
+     *      不是并列的第二种食材（「低脂牛奶的热量」不该同时塞一份「牛奶」的数据）。
+     */
+    private List<Ingredient> matchIngredientsInQuestion(String normalizedQuestion) {
+        List<Ingredient> all = ingredientMapper.selectList(
+            new QueryWrapper<Ingredient>().eq("status", 1)
+        );
+
+        List<Ingredient> matched = new ArrayList<>();
+        for (Ingredient ingredient : all) {
+            String normalizedName = normalizeStrict(ingredient.getName());
+            // 名字归一化后可能变空（名字全是标点）→ 必须跳过，
+            // 否则 contains("") 恒为 true，整个库都会被当成"命中"。
+            // 单字名一并跳过 —— 理由见上面 ①。
+            if (normalizedName.length() < 2) {
+                continue;
+            }
+            if (normalizedQuestion.contains(normalizedName)) {
+                matched.add(ingredient);
+            }
+        }
+
+        // 名称长的排前面：「鸡胸肉」优先于「鸡肉」。
+        matched.sort((a, b) -> b.getName().length() - a.getName().length());
+
+        // 去重 + 剔除"被更长命中名包含"的短名（坑 ② 与 ③）。
+        // 因为已按长度降序，所以 result 里先存的必然是更长的名字。
+        List<Ingredient> result = new ArrayList<>();
+        for (Ingredient candidate : matched) {
+            String candidateName = candidate.getName();
+            boolean redundant = false;
+            for (Ingredient chosen : result) {
+                if (chosen.getName().equals(candidateName) || chosen.getName().contains(candidateName)) {
+                    redundant = true;
+                    break;
+                }
+            }
+            if (!redundant) {
+                result.add(candidate);
+            }
+        }
+
+        return result.size() > MAX_KNOWLEDGE_INGREDIENTS
+            ? new ArrayList<>(result.subList(0, MAX_KNOWLEDGE_INGREDIENTS))
+            : result;
+    }
+
+    /**
+     * 把命中的食材记录拼成**确定性的事实块**，交给模型去表述。
+     *
+     * ⭐ 整个"精确查表"路线的核心就在这段文字里：**数字由代码提供，模型只负责组织语言**。
+     *    这也是它和 RAG 检索的本质区别 —— 这里的每个数字都能回溯到库里某一行，
+     *    而检索回来的文字只是"相似"，不保证是"正确"。
+     *
+     * 所以必须明写"只能使用以下数值"。否则模型会按训练记忆里的"常识"覆盖它 ——
+     * 而它记的数字经常是错的（同一食材不同来源能差 20%）。
+     */
+    private String buildIngredientFacts(List<Ingredient> ingredients) {
+        if (ingredients == null || ingredients.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder facts = new StringBuilder(
+            "【食材营养数据 · 每 100 克】以下数值直接取自本系统的食材库，是权威数据：\n"
+        );
+        for (Ingredient ingredient : ingredients) {
+            facts.append("- ").append(ingredient.getName()).append("：")
+                .append("热量 ").append(formatNutrient(ingredient.getCaloriesPer100g())).append(" 千卡，")
+                .append("蛋白质 ").append(formatNutrient(ingredient.getProteinPer100g())).append(" 克，")
+                .append("碳水化合物 ").append(formatNutrient(ingredient.getCarbsPer100g())).append(" 克，")
+                .append("脂肪 ").append(formatNutrient(ingredient.getFatPer100g())).append(" 克");
+            // 后四项**只在有值时追加** —— 库里大量记录这几列是 NULL，
+            // 全拼出来会变成一串"—"，既没用还挤占上下文。
+            appendIfPresent(facts, "膳食纤维", ingredient.getFiberPer100g(), " 克");
+            appendIfPresent(facts, "糖", ingredient.getSugarPer100g(), " 克");
+            appendIfPresent(facts, "钠", ingredient.getSodiumPer100g(), " 毫克");
+            appendIfPresent(facts, "胆固醇", ingredient.getCholesterolPer100g(), " 毫克");
+            if (ingredient.getGiValue() != null) {
+                facts.append("，升糖指数 GI ").append(ingredient.getGiValue());
+            }
+            facts.append("。\n");
+        }
+
+        facts.append("请严格使用以上数值作答，不要改动、不要凭记忆替换、也不要补充表中没有的数据；")
+            .append("若问题问的指标不在上面，就直接说明该项数据缺失。");
+        return facts.toString();
+    }
+
+    /** 营养值非空时追加一段「，名称 X 单位」。 */
+    private void appendIfPresent(StringBuilder builder, String label, Double value, String unit) {
+        if (value != null) {
+            builder.append("，").append(label).append(" ").append(formatNutrient(value)).append(unit);
+        }
+    }
+
+    /**
+     * 营养数值格式化：null → "—"；整数去掉小数点（116.0 → 116）；其余保留 1 位小数。
+     * 为什么不能直接用 valueOrDash：那个走 String.valueOf(Double)，
+     * 116 会打成 "116.0"，扔进 prompt 里既难看又容易被模型"顺手四舍五入"。
+     */
+    private String formatNutrient(Double value) {
+        if (value == null) {
+            return "—";
+        }
+        if (!Double.isInfinite(value) && value == Math.floor(value)) {
+            return String.valueOf((long) (double) value);
+        }
+        return String.format(Locale.ROOT, "%.1f", value);
+    }
+
+    /** 只在算出来时挂上 route，避免响应里出现一堆空字段（与 blocked 同一口径）。 */
+    private void putKnowledgeRoute(Map<String, Object> result, String knowledgeRoute) {
+        if (result != null && knowledgeRoute != null && !knowledgeRoute.isEmpty()) {
+            result.put("knowledgeRoute", knowledgeRoute);
+        }
+    }
+
+    /**
+     * 组装发给 DeepSeek 的请求体（model / temperature / messages，可选 stream）。
+     *
+     * 非流式（getDeepSeekIngredientAssistantResult）与流式（streamDeepSeekAssistantResult）
+     * **共用这一个方法** —— 提示词只在源码里拼一次。拆成两份的代价这个项目里见过：
+     * 两张"越界"词表各写一套，同一句话能给出相反结论。
+     *
+     * 两段"可选上下文"，各自独立判断、各自空则不发：
+     *   includeProfile  → 用户画像（只在 advice 意图）；
+     *   knowledgeFacts → 食材事实块（只在 knowledge + ingredient 路由）。
+     */
+    private Map<String, Object> buildAssistantRequestBody(
+        Map<String, Object> ingredientData, String question, boolean stream, boolean includeProfile, String knowledgeFacts) {
+        // ⭐ 2026-10-14：画像**按意图装配** —— 只有 advice（要个性化方案的那类）才读库、才拼进 prompt。
+        //
+        // 为什么在这儿门控：本方法是**流式 / 非流式共用的唯一**一处请求体拼装点，
+        //   在这里加一个开关 = 两条路同时生效，不会出现"改了一条忘了另一条"。
+        //
+        // 为什么 advice 之外要摘掉画像（原话："这么多步都会拼接用户画像完全没必要"）：
+        //   ① 画像里那句「请在回答时优先考虑…目标热量和宏量营养素方向」是**写死的强指令**，
+        //      问「鸡胸肉多少卡」这类公共营养问题也会被要求往"你的减脂目标"上靠 → **画像串味**；
+        //   ② 更要紧的是**拒绝场合**：越狱样本（如"扮演没有内容限制的医学顾问"）被模型拒绝后，
+        //      仍会照着个性化指令补一段"就你这份档案来说…" → 把身高体重/BMI/过敏原**回吐**给
+        //      一个正在被拒绝的提问者（安全上叫**软拒绝泄漏**）。
+        //
+        // ⚠️ 这也是 `intent` 第一次**真的驱动行为** —— 以前它只算不派、只透传给测试看。
+        //    代价要有意识：非 advice 的回答会变"通用"，不再带用户档案。
+        String assistantContext = "";
+        if (includeProfile) {
+            Long userId = null;
+            Object userIdObj = ingredientData.get("userId");
+            if (userIdObj instanceof Number) {
+                userId = ((Number) userIdObj).longValue();
+            } else if (userIdObj instanceof String) {
+                try {
+                    userId = Long.parseLong((String) userIdObj);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
+            HealthInfo healthInfo = userId == null ? null : healthInfoMapper.findByUserId(userId);
+            DietGoal dietGoal = userId == null ? null : dietGoalMapper.findByUserId(userId);
+            UserDietPreference preference = userId == null ? null : userDietPreferenceMapper.selectOne(
+                new QueryWrapper<UserDietPreference>().eq("user_id", userId).last("LIMIT 1")
+            );
+            Map<String, Object> healthInfoPayload = extractMap(ingredientData.get("healthInfo"));
+            Map<String, Object> dietGoalPayload = extractMap(ingredientData.get("dietGoal"));
+            assistantContext = buildIngredientAssistantContext(healthInfo, dietGoal, preference, healthInfoPayload, dietGoalPayload);
+        }
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", deepSeekModel);
+        requestBody.put("temperature", 0.6);
+
+        // 这里原来有三行"加了又清"的废动作（第一版遗留的 JSON 数组提示词）：
+        //   messages.add(...); messages.add(...); messages.clear();
+        // 加完立刻 clear，等于没写；可那段"严格返回 JSON 数组"的提示词留在源码里
+        // 极具误导性 —— 读到的人会以为模型现在仍被要求返回 JSON 数组。已删除。
+        List<Map<String, String>> messages = new ArrayList<>();
+        // 基础系统提示词里的"结合用户档案"一句，与实际是否带画像保持一致：
+        // 只有 assistantContext 非空（即真的拼了画像）才让它出现，否则那句会变成指向不存在数据的空指令。
+        messages.add(buildMessage("system", buildIngredientAssistantSystemPrompt(!assistantContext.isEmpty())));
+        // 不带画像时这段 system 消息**整条不发** —— 否则会发出一条空内容的消息，
+        // 部分模型对空 content 会报 400。
+        if (!assistantContext.isEmpty()) {
+            messages.add(buildMessage("system", assistantContext));
+        }
+        // ⭐ 知识库事实块（2026-10-16 新增）：knowledge + ingredient 路由下由代码查出来的
+        //    **确定性数值**（米饭 = 116 千卡…）。模型只负责把它讲成人话，不允许改数。
+        //
+        //    与画像**各自独立判断**，不共用一个 boolean：
+        //      画像 → 只在 advice 出现；事实块 → 只在 knowledge+ingredient 出现。
+        //      两者当前不会同时非空，但**别因此合并** —— 一个字段装两个维度，
+        //      这个项目在"意图表 vs 硬拦表"上已经付过一次代价。
+        if (knowledgeFacts != null && !knowledgeFacts.isEmpty()) {
+            messages.add(buildMessage("system", knowledgeFacts));
+        }
+        // 注入本会话的多轮历史（最近窗口，按时间正序），让模型能理解"它/那个/再来一份"等指代
+        messages.addAll(buildConversationHistoryMessages(ingredientData));
+        messages.add(buildMessage("user", buildIngredientAssistantNaturalUserPrompt(question, assistantContext)));
+        requestBody.put("messages", messages);
+
+        if (stream) {
+            // 关键的一行：让 DeepSeek 按 SSE 分块吐字，而不是等整段生成完再一次性返回。
+            requestBody.put("stream", true);
+        }
+        return requestBody;
+    }
+
+    /**
+     * 流式调用 DeepSeek，把增量逐段交给 onDelta。
+     *
+     * 为什么不用 postForObject：那个方法会把响应体**整个读完**再返回，
+     * 流式的意义就没了。这里用 RestTemplate.execute + 自己的 ResponseExtractor，
+     * 直接拿着响应的 InputStream 一行行读 —— 读一行推一段，才叫流式。
+     *
+     * 没有引入新依赖：RestTemplate 本来就支持 execute（底层还是 JDK 的 HttpURLConnection，
+     * 它不会把响应缓冲起来）。
+     *
+     * 返回值和 getDeepSeekIngredientAssistantResult 同构（mode / text / source）。
+     * 半路断了但已经吐出去一些 → 返回那部分（别让用户看到的内容凭空消失）；
+     * 一个字都没吐就失败 → 返回 null，交给上层走"模型不可用"那条路。
+     */
+    private Map<String, Object> streamDeepSeekAssistantResult(Map<String, Object> ingredientData, String question, Consumer<String> onDelta, boolean includeProfile, String knowledgeFacts) {
+        // 与非流式路径对齐：这两个前置条件不满足就直接当"不可用"，别打一个注定失败的请求。
+        if (deepSeekApiKey == null || deepSeekApiKey.trim().isEmpty()) {
+            log.warn("DEEPSEEK_API_KEY 未配置或为空，AI 助手无法调用模型");
+            return null;
+        }
+        if (question == null || question.isEmpty()) {
+            return null;
+        }
+
+        Map<String, Object> requestBody = buildAssistantRequestBody(ingredientData, question, true, includeProfile, knowledgeFacts);
+        StringBuilder accumulated = new StringBuilder();
+
+        try {
+            restTemplate.execute(
+                deepSeekBaseUrl + "/chat/completions",
+                HttpMethod.POST,
+                request -> {
+                    request.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+                    request.getHeaders().setBearerAuth(deepSeekApiKey.trim());
+                    objectMapper.writeValue(request.getBody(), requestBody);
+                },
+                response -> {
+                    try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            // DeepSeek 的流是一行一个事件：`data: {...}`，最后一行是 `data: [DONE]`。
+                            // 空行是事件分隔符，忽略。
+                            if (!line.startsWith("data:")) {
+                                continue;
+                            }
+                            String payload = line.substring(5).trim();
+                            if (payload.isEmpty() || "[DONE]".equals(payload)) {
+                                continue;
+                            }
+                            String piece = extractDeltaContent(payload);
+                            if (piece != null && !piece.isEmpty()) {
+                                accumulated.append(piece);
+                                onDelta.accept(piece);
+                            }
+                        }
+                    }
+                    return null;
+                }
+            );
+        } catch (Exception exception) {
+            log.error("DeepSeek 流式调用失败: {}", exception.getMessage(), exception);
+            if (accumulated.length() == 0) {
+                return null;
+            }
+        }
+
+        if (accumulated.length() == 0) {
+            return null;
+        }
+        return buildAssistantTextResult(accumulated.toString(), "deepseek");
+    }
+
+    /**
+     * 从一个流式分片 JSON 里取出增量文字：choices[0].delta.content。
+     *
+     * 取不到就返回 null（例如首包只有 role、没有 content；或末尾包 delta 为空对象）。
+     * 解析失败也返回 null —— 单个坏分片不值得让整个回答崩掉。
+     */
+    private String extractDeltaContent(String json) {
+        try {
+            JsonNode root = objectMapper.readTree(json);
+            JsonNode choices = root.path("choices");
+            if (!choices.isArray() || choices.isEmpty()) {
+                return null;
+            }
+            JsonNode content = choices.get(0).path("delta").path("content");
+            return content.isMissingNode() || content.isNull() ? null : content.asText();
+        } catch (Exception exception) {
+            log.warn("解析 DeepSeek 流式分片失败: {}", exception.getMessage());
+            return null;
+        }
+    }
+
+    private Map<String, Object> getDeepSeekIngredientAssistantResult(Map<String, Object> ingredientData, boolean includeProfile, String knowledgeFacts) {
         if (deepSeekApiKey == null || deepSeekApiKey.trim().isEmpty()) {
             // 以前这里是静默 return null —— 日志里一个字都不留。
             // 结果是"回答全是本地模板"这个现象，只能靠人肉比对文本来判断，
@@ -645,46 +1292,12 @@ public class RecipeServiceImpl implements RecipeService {
             return null;
         }
 
-        Long userId = null;
-        Object userIdObj = ingredientData.get("userId");
-        if (userIdObj instanceof Number) {
-            userId = ((Number) userIdObj).longValue();
-        } else if (userIdObj instanceof String) {
-            try {
-                userId = Long.parseLong((String) userIdObj);
-            } catch (NumberFormatException ignored) {
-            }
-        }
-
-        HealthInfo healthInfo = userId == null ? null : healthInfoMapper.findByUserId(userId);
-        DietGoal dietGoal = userId == null ? null : dietGoalMapper.findByUserId(userId);
-        UserDietPreference preference = userId == null ? null : userDietPreferenceMapper.selectOne(
-            new QueryWrapper<UserDietPreference>().eq("user_id", userId).last("LIMIT 1")
-        );
-        Map<String, Object> healthInfoPayload = extractMap(ingredientData.get("healthInfo"));
-        Map<String, Object> dietGoalPayload = extractMap(ingredientData.get("dietGoal"));
-        String assistantContext = buildIngredientAssistantContext(healthInfo, dietGoal, preference, healthInfoPayload, dietGoalPayload);
-
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(deepSeekApiKey.trim());
 
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", deepSeekModel);
-            requestBody.put("temperature", 0.6);
-
-            // 这里原来有三行"加了又清"的废动作（第一版遗留的 JSON 数组提示词）：
-            //   messages.add(...); messages.add(...); messages.clear();
-            // 加完立刻 clear，等于没写；可那段"严格返回 JSON 数组"的提示词留在源码里
-            // 极具误导性 —— 读到的人会以为模型现在仍被要求返回 JSON 数组。已删除。
-            List<Map<String, String>> messages = new ArrayList<>();
-            messages.add(buildMessage("system", buildIngredientAssistantSystemPrompt()));
-            messages.add(buildMessage("system", assistantContext));
-            // 注入本会话的多轮历史（最近窗口，按时间正序），让模型能理解"它/那个/再来一份"等指代
-            messages.addAll(buildConversationHistoryMessages(ingredientData));
-            messages.add(buildMessage("user", buildIngredientAssistantNaturalUserPrompt(question, assistantContext)));
-            requestBody.put("messages", messages);
+            Map<String, Object> requestBody = buildAssistantRequestBody(ingredientData, question, false, includeProfile, knowledgeFacts);
 
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<Map> responseEntity = restTemplate.postForEntity(
@@ -700,33 +1313,22 @@ public class RecipeServiceImpl implements RecipeService {
         }
     }
 
-    private String buildIngredientAssistantContext(HealthInfo healthInfo, DietGoal dietGoal, UserDietPreference preference) {
-        StringBuilder context = new StringBuilder("以下是用户当前信息。");
-        if (healthInfo != null) {
-            context.append(" 年龄=").append(valueOrDash(healthInfo.getAge()));
-            context.append("，性别=").append(valueOrDash(healthInfo.getGender()));
-            context.append("，身高=").append(valueOrDash(healthInfo.getHeight())).append("cm");
-            context.append("，体重=").append(valueOrDash(healthInfo.getWeight())).append("kg");
-            context.append("，BMI=").append(valueOrDash(healthInfo.getBmi()));
-            context.append("，基础代谢=").append(valueOrDash(healthInfo.getBmr())).append("kcal");
-            context.append("，活动水平=").append(valueOrDash(healthInfo.getActivityLevel()));
-            context.append("，慢性疾病=").append(valueOrDash(healthInfo.getChronicDiseases())).append("。");
-        }
-        if (preference != null) {
-            context.append(" 饮食偏好中的过敏/忌口=").append(valueOrDash(preference.getAllergies())).append("。");
-        }
-        if (dietGoal != null) {
-            context.append(" 当前饮食目标=").append(valueOrDash(dietGoal.getGoalType()));
-            context.append("，目标热量=").append(valueOrDash(dietGoal.getTargetCalories())).append("kcal");
-            context.append("，蛋白质目标=").append(valueOrDash(dietGoal.getProteinTarget())).append("g");
-            context.append("，碳水目标=").append(valueOrDash(dietGoal.getCarbsTarget())).append("g");
-            context.append("，脂肪目标=").append(valueOrDash(dietGoal.getFatTarget())).append("g");
-            context.append("，饮水目标=").append(valueOrDash(dietGoal.getWaterTarget())).append("ml。");
-        }
-        context.append(" 请在回答时优先考虑饮食偏好中的过敏/忌口、慢性疾病、目标热量和宏量营养素方向。");
-        return context.toString();
-    }
-
+    /**
+     * 拼装喂给模型的「用户当前信息」上下文。
+     *
+     * ⚠️ 2026-10-14 修复一处**静默失败**（画像丢失）：
+     *    改之前这段是**整段二选一** —— 只要 payload（前端拼好的 healthInfo / dietGoal）
+     *    或 preference 任一非空，就整段走 payload 分支，**库表里刚按 userId 查出来的
+     *    healthInfo / dietGoal 被直接丢掉**。而 user_diet_preference 几乎必然有行，
+     *    所以那个"回退库表"的兜底分支实际永远走不到。
+     *    后果：不传 payload 的客户端（移动端 app/pages/assistant/chat.vue、直连 API、
+     *    自动化用例）拿到的是"你目前没有填写过敏/忌口、慢性病和目标热量信息"——
+     *    模型不是没看，是根本没收到。**不报错，只是答案悄悄变差。**
+     *
+     *    修法：改成**分段回退** —— 每一段 payload 优先（前端已拼好的直接用），
+     *    payload 为空才回退到库表实体。两路内容等价，所以网页端（走 payload）行为不变。
+     *    原 3 参重载只剩"回退"这一个用途，已随本次修复删除（它是死代码）。
+     */
     private String buildIngredientAssistantContext(
         HealthInfo healthInfo,
         DietGoal dietGoal,
@@ -734,40 +1336,60 @@ public class RecipeServiceImpl implements RecipeService {
         Map<String, Object> healthInfoPayload,
         Map<String, Object> dietGoalPayload
     ) {
-        if ((healthInfoPayload != null && !healthInfoPayload.isEmpty()) || (dietGoalPayload != null && !dietGoalPayload.isEmpty()) || preference != null) {
-            StringBuilder context = new StringBuilder("以下是用户当前信息。");
-            if (healthInfoPayload != null && !healthInfoPayload.isEmpty()) {
-                context.append(" 健康档案：")
-                    .append("年龄=").append(valueOrDash(readPayloadValue(healthInfoPayload, "age")))
-                    .append("，性别=").append(valueOrDash(readPayloadValue(healthInfoPayload, "gender")))
-                    .append("，身高=").append(valueOrDash(readPayloadValue(healthInfoPayload, "height"))).append("cm")
-                    .append("，体重=").append(valueOrDash(readPayloadValue(healthInfoPayload, "weight"))).append("kg")
-                    .append("，BMI=").append(valueOrDash(readPayloadValue(healthInfoPayload, "bmi")))
-                    .append("，基础代谢=").append(valueOrDash(readPayloadValue(healthInfoPayload, "bmr"))).append("kcal")
-                    .append("，活动水平=").append(valueOrDash(readPayloadValue(healthInfoPayload, "activityLevel")))
-                    .append("，慢病情况=").append(valueOrDash(readPayloadValue(healthInfoPayload, "chronicDiseases")))
-                    .append("。");
-            }
-            if (preference != null) {
-                context.append(" 饮食偏好：")
-                    .append("过敏/忌口=").append(valueOrDash(preference.getAllergies()))
-                    .append("，不喜欢食物=").append(valueOrDash(preference.getDislikes()))
-                    .append("。");
-            }
-            if (dietGoalPayload != null && !dietGoalPayload.isEmpty()) {
-                context.append(" 饮食目标：")
-                    .append("目标类型=").append(valueOrDash(readPayloadValue(dietGoalPayload, "goalType")))
-                    .append("，目标热量=").append(valueOrDash(readPayloadValue(dietGoalPayload, "targetCalories"))).append("kcal")
-                    .append("，蛋白质目标=").append(valueOrDash(readPayloadValue(dietGoalPayload, "proteinTarget"))).append("g")
-                    .append("，碳水目标=").append(valueOrDash(readPayloadValue(dietGoalPayload, "carbsTarget"))).append("g")
-                    .append("，脂肪目标=").append(valueOrDash(readPayloadValue(dietGoalPayload, "fatTarget"))).append("g")
-                    .append("，饮水目标=").append(valueOrDash(readPayloadValue(dietGoalPayload, "waterTarget"))).append("ml")
-                    .append("。");
-            }
-            context.append(" 请在回答时优先考虑饮食偏好中的过敏/忌口、慢性疾病、目标热量和宏量营养素方向。");
-            return context.toString();
+        StringBuilder context = new StringBuilder("以下是用户当前信息。");
+        // ① 健康档案：payload 优先（前端已拼好的直接用），payload 为空则回退库表实体。
+        if (healthInfoPayload != null && !healthInfoPayload.isEmpty()) {
+            context.append(" 健康档案：")
+                .append("年龄=").append(valueOrDash(readPayloadValue(healthInfoPayload, "age")))
+                .append("，性别=").append(valueOrDash(readPayloadValue(healthInfoPayload, "gender")))
+                .append("，身高=").append(valueOrDash(readPayloadValue(healthInfoPayload, "height"))).append("cm")
+                .append("，体重=").append(valueOrDash(readPayloadValue(healthInfoPayload, "weight"))).append("kg")
+                .append("，BMI=").append(valueOrDash(readPayloadValue(healthInfoPayload, "bmi")))
+                .append("，基础代谢=").append(valueOrDash(readPayloadValue(healthInfoPayload, "bmr"))).append("kcal")
+                .append("，活动水平=").append(valueOrDash(readPayloadValue(healthInfoPayload, "activityLevel")))
+                .append("，慢病情况=").append(valueOrDash(readPayloadValue(healthInfoPayload, "chronicDiseases")))
+                .append("。");
+        } else if (healthInfo != null) {
+            context.append(" 健康档案：")
+                .append("年龄=").append(valueOrDash(healthInfo.getAge()))
+                .append("，性别=").append(valueOrDash(healthInfo.getGender()))
+                .append("，身高=").append(valueOrDash(healthInfo.getHeight())).append("cm")
+                .append("，体重=").append(valueOrDash(healthInfo.getWeight())).append("kg")
+                .append("，BMI=").append(valueOrDash(healthInfo.getBmi()))
+                .append("，基础代谢=").append(valueOrDash(healthInfo.getBmr())).append("kcal")
+                .append("，活动水平=").append(valueOrDash(healthInfo.getActivityLevel()))
+                .append("，慢病情况=").append(valueOrDash(healthInfo.getChronicDiseases()))
+                .append("。");
         }
-        return buildIngredientAssistantContext(healthInfo, dietGoal, preference);
+        // ② 饮食偏好：只有库表一个来源（前端不传这段 payload）。
+        if (preference != null) {
+            context.append(" 饮食偏好：")
+                .append("过敏/忌口=").append(valueOrDash(preference.getAllergies()))
+                .append("，不喜欢食物=").append(valueOrDash(preference.getDislikes()))
+                .append("。");
+        }
+        // ③ 饮食目标：同 ①，payload 优先、为空回退库表。
+        if (dietGoalPayload != null && !dietGoalPayload.isEmpty()) {
+            context.append(" 饮食目标：")
+                .append("目标类型=").append(valueOrDash(readPayloadValue(dietGoalPayload, "goalType")))
+                .append("，目标热量=").append(valueOrDash(readPayloadValue(dietGoalPayload, "targetCalories"))).append("kcal")
+                .append("，蛋白质目标=").append(valueOrDash(readPayloadValue(dietGoalPayload, "proteinTarget"))).append("g")
+                .append("，碳水目标=").append(valueOrDash(readPayloadValue(dietGoalPayload, "carbsTarget"))).append("g")
+                .append("，脂肪目标=").append(valueOrDash(readPayloadValue(dietGoalPayload, "fatTarget"))).append("g")
+                .append("，饮水目标=").append(valueOrDash(readPayloadValue(dietGoalPayload, "waterTarget"))).append("ml")
+                .append("。");
+        } else if (dietGoal != null) {
+            context.append(" 饮食目标：")
+                .append("目标类型=").append(valueOrDash(dietGoal.getGoalType()))
+                .append("，目标热量=").append(valueOrDash(dietGoal.getTargetCalories())).append("kcal")
+                .append("，蛋白质目标=").append(valueOrDash(dietGoal.getProteinTarget())).append("g")
+                .append("，碳水目标=").append(valueOrDash(dietGoal.getCarbsTarget())).append("g")
+                .append("，脂肪目标=").append(valueOrDash(dietGoal.getFatTarget())).append("g")
+                .append("，饮水目标=").append(valueOrDash(dietGoal.getWaterTarget())).append("ml")
+                .append("。");
+        }
+        context.append(" 请在回答时优先考虑饮食偏好中的过敏/忌口、慢性疾病、目标热量和宏量营养素方向。");
+        return context.toString();
     }
 
     @SuppressWarnings("unchecked")
@@ -867,12 +1489,25 @@ public class RecipeServiceImpl implements RecipeService {
      * 范围放宽的同时，必须把医疗边界写死在这里 ——
      * 本轮是"只改提示词"，代码层没有任何护栏，模型守不守得住边界全靠下面这段文字。
      */
-    private String buildIngredientAssistantSystemPrompt() {
+    /**
+     * 基础系统提示词。
+     *
+     * ⚠️ 2026-10-14：「结合用户档案」这句**随画像有无一起进退**（与 buildIngredientAssistantNaturalUserPrompt 同理）。
+     * 以前这句是无条件写死的，但非 advice 调用根本不把画像塞进消息，
+     * 于是模型一边被要求"结合档案"、一边根本没有数据、又被自然 prompt 禁止提档案 —— 自相矛盾，
+     * 实测会让模型反问"请告诉我你的身高体重"或凭空编一段档案。
+     * 改成：只有真的带画像（hasProfile=true，即 assistantContext 非空）才出现这句，否则直接落到"用自然专业清晰的中文回答"。
+     */
+    private String buildIngredientAssistantSystemPrompt(boolean hasProfile) {
+        String profileClause = hasProfile
+            ? "请结合用户当前健康档案、饮食目标、过敏/忌口和慢性病信息，"
+            : "";
         return "你是一位专业的饮食与健康助手。"
             + "你可以回答：食材替代、食谱分析、三餐搭配、营养成分与热量估算、"
             + "控油控糖控钠等饮食调整、慢病相关的饮食注意事项、运动与体重管理、"
             + "以及保健品的常见作用与注意事项。"
-            + "请结合用户当前健康档案、饮食目标、过敏/忌口和慢性病信息，用自然、专业、清晰的中文回答。"
+            + profileClause
+            + "用自然、专业、清晰的中文回答。"
             + "先给结论，再解释为什么这样建议适合该用户；需要时再分点给出具体方案。"
             + "\n\n【多轮对话规则，必须遵守】"
             + "\n1. 对话历史中用户已经说过的事实（如「我不喜欢吃鸡胸肉」「我海鲜过敏」），"
@@ -897,11 +1532,24 @@ public class RecipeServiceImpl implements RecipeService {
     private String buildIngredientAssistantNaturalUserPrompt(String question, String assistantContext) {
         // 之前这里写死了"回答食材替代问题"、"为什么这些替代方案适合该用户" ——
         // 等于每句话都先把模型按回替代任务里，泛健康的问题也会被套成替代方案。
-        return "请结合以下用户信息回答。\n"
-            + assistantContext + "\n"
+        //
+        // ⚠️ 2026-10-14：画像段可能**整段缺席**（非 advice 意图不带画像，见 buildAssistantRequestBody）。
+        //    这时候"请结合以下用户信息回答"和"如果它涉及该用户的过敏/忌口…"都是**指向不存在的
+        //    信息**的空指令 —— 实测模型会顺口编一句「你目前没有填写过敏/忌口信息」，
+        //    这正是要去掉的"串味/档案回吐"。所以两句话都随画像**一起进退**。
+        boolean hasProfile = assistantContext != null && !assistantContext.isEmpty();
+        String head = hasProfile
+            ? "请结合以下用户信息回答。\n" + assistantContext + "\n"
+            : "请直接回答用户的问题。\n";
+        String requirement = hasProfile
+            ? "要求：先直接回答这个问题；如果它涉及该用户的过敏/忌口、慢性病或饮食目标，"
+                + "再简要说明为什么这样建议适合他。若问题超出饮食与健康范围，按安全边界说明你的职责。"
+            : "要求：先直接回答这个问题。若问题超出饮食与健康范围，按安全边界说明你的职责。"
+                + "不要复述、猜测或提及任何用户个人档案（身高体重、热量目标、过敏忌口等）——"
+                + "本轮没有向你提供这些信息。";
+        return head
             + "用户问题：" + question + "\n"
-            + "要求：先直接回答这个问题；如果它涉及该用户的过敏/忌口、慢性病或饮食目标，"
-            + "再简要说明为什么这样建议适合他。若问题超出饮食与健康范围，按安全边界说明你的职责。"
+            + requirement
             + "如果这是结合上文的简短追问，请只回答追问本身、避免重复前文和档案。"
             + "请用自然语言分段回答，不要返回 JSON。";
     }

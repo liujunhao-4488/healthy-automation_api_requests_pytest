@@ -1,8 +1,40 @@
-Flask==2.0.1
-Flask-CORS==3.0.10
-pandas==1.3.3
-numpy==1.21.2
-scikit-learn==0.24.2
-joblib==1.0.1
-Werkzeug==2.0.1
-PyMySQL==1.1.1
+# ============================================================
+# 算法服务依赖 —— 运行 app.py 所需
+#
+# 在 algorithm 目录下重建环境（换任何一台机器都是这三步）：
+#   python -m venv .venv
+#   .venv\Scripts\pip install -r requirements.txt
+#   .venv\Scripts\python app.py
+#
+# ---- 为什么只有 4 个包 --------------------------------------
+# 服务启动路径上真正用到的第三方库只有这些：
+#   app.py 本身                          → Flask + Flask-CORS
+#   app.py → real_data_source            → PyMySQL
+#   app.py → recommend_engine_v2
+#              → model_runtime           → joblib
+#   app.py → recommend_engine            → 纯标准库（math / re / copy）
+# Jinja2 / Werkzeug / itsdangerous / click / MarkupSafe 是 Flask 的
+# 传递依赖，交给 pip 自己解析，不在这里重复钉住。
+#
+# ---- 为什么训练用的包不在这个文件里 ----------------------------
+# training/ 下的训练脚本需要 pandas / numpy / scikit-learn。
+# 这三个包在 Python 3.11 及以上**没有预编译 wheel**，pip 会退到源码编译，
+# 需要 C 编译器和 BLAS 库，通常直接失败。
+# 而 model_runtime.py 对 training 的引用是**写在函数内部的延迟导入**
+# （见 model_runtime.py 的 train_cf_model / train_nutrition_model），
+# 所以服务运行根本不碰它们。
+# 两类混在一个文件里，后果就是"换台机器 pip install 直接报错、
+# 整个服务起不来"——而原因只是训练用的包装不上。
+# 训练依赖单独放在 requirements-training.txt。
+#
+# ---- 为什么不钉死版本号 --------------------------------------
+# 原文件写的是 Flask==2.0.1 / Werkzeug==2.0.1 这类 Python 3.8 时代的版本。
+# 钉死具体版本 → 换一个 Python 版本就装不上；
+# 这里不指定版本，让 pip 挑与当前 Python 兼容的最新版。
+# 毕业设计阶段，"任何机器都能装上"比"版本绝对可复现"更重要。
+# ============================================================
+
+Flask
+Flask-CORS
+PyMySQL
+joblib

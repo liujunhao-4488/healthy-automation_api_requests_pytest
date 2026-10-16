@@ -1,0 +1,174 @@
+/**
+ * tokens.css —— 全站唯一的设计变量来源
+ * ---------------------------------------------------------------------------
+ * 为什么要有这个文件：
+ *   之前配色/字体/阴影散落在 27 个页面里各写各的（同一个绿写了十几种），
+ *   导致页面之间"不干净"、拼凑感强。这里把所有视觉决策集中成一份变量，
+ *   页面只能"引用"，不能"自己发明颜色"。
+ *
+ * 使用方式：
+ *   在页面里写 color: var(--brand-500)，不要写 color: #7ba088。
+ *   以后想换配色，只改这一个文件，全站跟着变。
+ *
+ * 命名规则：
+ *   --brand-*    品牌色阶（500 是主色，数字越大越深）
+ *   --neutral-*  中性灰（带一点绿调，和品牌色协调）
+ *   --success/warning/danger/info  语义色，只表达"状态"，不做装饰
+ *   --text-*     文字颜色（永远用这些，不要用中性色直接做文字）
+ *   --space-*    间距
+ *   --radius-*   圆角
+ *   --shadow-*   阴影
+ *   --text-*字号 --font-* 字体 --ease/duration-* 动效
+ * ---------------------------------------------------------------------------
+ */
+
+:root {
+  /* ========== 1. 品牌色阶 ==========
+     主色沿用原来的 #7BA088（这个绿本身不难看），补齐成一整条色阶。
+     有了色阶，hover / 选中 / 浅底 / 深底 才有地方取色，不必再手写近似值。 */
+  --brand-50: #f4f8f5;
+  --brand-100: #e6efe9;
+  --brand-200: #cddfd4;
+  --brand-300: #aec9b8;
+  --brand-400: #93b5a0;
+  --brand-500: #7ba088; /* 主色 */
+  --brand-600: #668a72;
+  --brand-700: #52735c;
+  --brand-800: #3f5a48;
+  --brand-900: #2e4235;
+  --brand-950: #1e2c24;
+
+  /* ========== 2. 中性色阶 ==========
+     刻意带一点点绿味（而不是纯灰），这样和品牌绿放在一起不会"发脏"。 */
+  --neutral-0: #ffffff;
+  --neutral-25: #fbfcfb;
+  --neutral-50: #f7f9f7;
+  --neutral-100: #f1f4f2;
+  --neutral-200: #e5eae6;
+  --neutral-300: #d3dbd6;
+  --neutral-400: #b0bab3;
+  --neutral-500: #8b968f;
+  --neutral-600: #6c7770;
+  --neutral-700: #4f5a54;
+  --neutral-800: #37413b;
+  --neutral-900: #232a26;
+
+  /* ========== 3. 语义色 ==========
+     只在"成功/警告/错误/提示"时使用，且只做点缀，不做大面积背景。 */
+  --success: #5a9367;
+  --success-soft: #ebf4ec;
+  --warning: #c2863c;
+  --warning-soft: #fbf3e6;
+  --danger: #bf5e59;
+  --danger-soft: #fbeeed;
+  --info: #5b7d99;
+  --info-soft: #eef3f8;
+  --accent: #c99a66; /* 原来的琥珀点缀色，保持克制使用 */
+
+  /* 上面几个 soft 底色配套的边框色（浅底提示块用，比主色淡一档） */
+  --success-border: #cfe4d3;
+  --warning-border: #f0e0c4;
+  --danger-border: #f0d5d3;
+  --info-border: #d7e3ee;
+
+  /* ========== 4. 文字颜色 ==========
+     统一从这里取，避免出现 #3D4A3E / #344c3b / #2d4335 三种"差不多的深绿"。 */
+  --text-primary: var(--neutral-800);
+  --text-secondary: var(--neutral-600);
+  --text-tertiary: var(--neutral-500);
+  --text-disabled: var(--neutral-400);
+  --text-inverse: var(--neutral-0);
+  --text-brand: var(--brand-700);
+
+  /* ========== 5. 背景与边框 ========== */
+  --bg-page: var(--neutral-50); /* 页面底色 */
+  --bg-surface: var(--neutral-0); /* 卡片/面板 */
+  --bg-sunken: var(--neutral-100); /* 凹陷区、表头 */
+  --bg-brand-soft: var(--brand-50); /* 品牌浅底 */
+  --border-subtle: var(--neutral-200); /* 常规分隔线 */
+  --border-default: var(--neutral-300); /* 输入框等控件边框 */
+  --border-strong: var(--neutral-400);
+
+  /* ========== 6. 字体 ==========
+     原来用 @import 从 fonts.googleapis.com 拉 Noto Sans SC，国内基本加载不到，
+     等于设计里想要的字体从未生效。改用系统字体栈：任何网络环境都稳定。 */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC',
+    'WenQuanYi Micro Hei', sans-serif;
+  --font-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', Georgia,
+    serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  /* 字号阶：原来的 44px/46px 巨型标题收敛下来，克制才显质感 */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 38px;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.8;
+
+  /* ========== 7. 间距 ========== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ========== 8. 圆角 ========== */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 999px;
+
+  /* ========== 9. 阴影 ==========
+     原来的 --shadow-card: 8px 8px 24px 是"右下偏移"的老派拟物投影，显旧。
+     现代做法是居中柔和扩散，越"浮"的层级阴影越大。 */
+  --shadow-xs: 0 1px 2px rgba(35, 42, 38, 0.05);
+  --shadow-sm: 0 1px 3px rgba(35, 42, 38, 0.06), 0 1px 2px rgba(35, 42, 38, 0.04);
+  --shadow-md: 0 2px 8px rgba(35, 42, 38, 0.06), 0 1px 3px rgba(35, 42, 38, 0.04);
+  --shadow-lg: 0 8px 24px rgba(35, 42, 38, 0.08);
+  --shadow-xl: 0 20px 48px rgba(35, 42, 38, 0.12);
+  --ring-brand: 0 0 0 3px rgba(123, 160, 136, 0.16); /* 聚焦光环 */
+
+  /* ========== 10. 动效 ========== */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 0.15s;
+  --duration-normal: 0.25s;
+
+  /* ========== 11. 布局尺寸 ========== */
+  --sidebar-width: 232px;
+  --header-height: 60px;
+  --content-max: 1280px;
+
+  /* ========== 12. 向后兼容别名 ==========
+     App.vue 里原先定义过这些名字（虽然实际 0 处使用）。
+     保留同名变量，避免哪天有遗漏的引用直接失效。 */
+  --color-primary: var(--brand-500);
+  --color-primary-dark: var(--brand-600);
+  --color-primary-light: var(--brand-300);
+  --color-bg: var(--bg-page);
+  --color-bg-card: var(--bg-surface);
+  --color-text: var(--text-primary);
+  --color-text-light: var(--text-secondary);
+  --color-text-muted: var(--text-tertiary);
+  --color-border: var(--border-default);
+  --color-border-light: var(--border-subtle);
+  --color-accent: var(--accent);
+  --radius-sm-legacy: 4px;
+}

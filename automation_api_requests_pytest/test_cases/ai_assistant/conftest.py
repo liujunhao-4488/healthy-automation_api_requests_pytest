@@ -10,6 +10,7 @@
 
 import pytest
 
+from common import eval_record
 from common.logger import log_qa
 
 
@@ -26,10 +27,18 @@ def ask(api, auth_headers):
 
     yield 之后 = 清理。**不管用例成功还是失败，清理都会执行**
     （原理见 test_cases/user/test_user_profile.py 里 temp_user 的注释）。
+
+    ⚠️ 这里还兼着**评测留痕**的活（见 common/eval_record.py）：
+       每次问答都把 intent / source / blocked / 回答全文存一份，跑完落 JSON。
+       它是**旁路** —— 只读不写，不影响任何断言；记录失败也不会让用例变红。
+       放在这里而不是各用例里，是因为"所有 AI 行为用例问模型都得经过这个夹具"，
+       一处埋点覆盖全部，用例一行都不用改。
     """
     created = []
+    turn = 0
 
     def _ask(text, conversation_id=None):
+        nonlocal turn
         payload = {"rawPrompt": text}
         if conversation_id is not None:
             payload["conversationId"] = conversation_id
@@ -43,7 +52,11 @@ def ask(api, auth_headers):
 
         # 把这一问一答记进日志 —— AI 接口的价值全在 200 的 body 里，
         # 而 base_api_client 只在 4xx/5xx 时才附 body，正好漏掉它。
-        log_qa(text, body["data"]["assistantMessage"]["text"])
+        am = body["data"]["assistantMessage"]
+        log_qa(text, am["text"])
+
+        turn += 1
+        eval_record.observe(text, am, turn=turn, conversation_id=cid)
 
         return body["data"]
 

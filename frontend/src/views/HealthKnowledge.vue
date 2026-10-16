@@ -1,32 +1,39 @@
 <template>
-  <div class="knowledge-page">
-    <section class="knowledge-shell">
+  <div class="forum-page">
+    <section class="forum-shell">
       <section class="page-head">
         <div>
-          <p class="page-eyebrow">HEALTH KNOWLEDGE</p>
-          <h1>健康知识库</h1>
+          <p class="page-eyebrow">HEALTH COMMUNITY</p>
+          <h1>健康交流论坛</h1>
           <p class="page-desc">
-            汇集饮食营养、慢病管理与科学科普内容，帮助你更快找到适合自己的健康建议。
+            分享饮食心得、交流健康经验，和大家一起科学管理饮食与生活。
           </p>
         </div>
-        <div class="page-summary">
-          <strong>{{ total }}</strong>
-          <span>篇内容</span>
-          <em>当前：{{ activeTabLabel }}</em>
+        <div class="page-stats">
+          <div class="stat-item">
+            <strong>{{ total }}</strong>
+            <span>主题</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <strong>{{ activeTabLabel }}</strong>
+            <span>当前板块</span>
+          </div>
         </div>
       </section>
 
-      <div class="search-wrap">
+      <div class="toolbar">
         <el-input
           v-model="keyword"
           class="search-input"
-          placeholder="搜索感兴趣的内容"
+          placeholder="搜索帖子标题或内容"
           clearable
           @keyup.enter="handleSearch"
           @clear="handleSearch"
         />
-        <el-button class="publish-btn" type="primary" @click="openPublishDialog">
-          发布文章
+        <el-button class="post-btn" type="primary" @click="openPublishDialog">
+          <el-icon><EditPen /></el-icon>
+          <span>发布新帖</span>
         </el-button>
       </div>
 
@@ -47,20 +54,20 @@
           class="tab-item more-toggle"
           @click="openTagDialog"
         >
-          更多标签
+          更多板块
         </button>
       </div>
 
       <el-dialog
         v-model="tagDialogVisible"
-        title="选择文章标签"
+        title="选择帖子板块"
         width="680px"
         class="tag-dialog"
       >
         <el-input
           v-model="tagSearchKeyword"
           class="tag-search"
-          placeholder="搜索标签"
+          placeholder="搜索板块"
           clearable
         />
         <div v-if="filteredDialogTags.length" class="dialog-tag-list">
@@ -75,185 +82,168 @@
             {{ tag }}
           </button>
         </div>
-        <el-empty v-else description="没有匹配的标签" />
+        <el-empty v-else description="没有匹配的板块" />
       </el-dialog>
-
-      <section v-if="readHistory.length" class="history-strip">
-        <div class="history-head">
-          <strong>最近阅读</strong>
-          <span>根据最近阅读记录补充个性化推荐</span>
-        </div>
-        <div class="history-list">
-          <button
-            v-for="item in readHistory"
-            :key="item.id"
-            type="button"
-            class="history-item"
-            @click="viewDetails(item.id)"
-          >
-            <strong>{{ item.title }}</strong>
-            <p>{{ item.finished ? '已读完' : '已浏览' }} · {{ item.scrollPercent }}%</p>
-          </button>
-        </div>
-      </section>
 
       <div
         ref="articleScrollRef"
         v-loading="loading"
-        class="article-scroll"
+        class="thread-scroll"
         @scroll="handleArticleScroll"
       >
-        <div class="article-list" :class="{ 'is-empty': !articleList.length }">
+        <div class="thread-list" :class="{ 'is-empty': !articleList.length }">
           <article
             v-for="article in articleList"
             :key="article.id"
-            class="article-card"
+            class="thread-card"
             @click="viewDetails(article.id)"
           >
-            <div class="article-cover" :class="article.coverShapeClass" :style="article.coverStyle">
-              <span class="cover-category">{{ article.coverCategory }}</span>
-              <div class="cover-copy">
-                <strong>{{ article.coverHint }}</strong>
-              </div>
-            </div>
-
-            <h3 class="article-title">{{ article.title }}</h3>
-
-            <p class="article-content">{{ article.summaryText }}</p>
-
-            <div v-if="article.recommendReason" class="recommend-reason">
-              <span>推荐理由</span>
-              <p>{{ article.recommendReason }}</p>
-            </div>
-
-            <div class="article-footer">
-              <div class="author-row">
-                <div
-                  class="author-avatar"
-                  :class="{ 'has-image': Boolean(article.authorAvatar) }"
-                  :style="article.authorAvatar ? undefined : { background: article.avatarColor }"
-                >
-                  <img
-                    v-if="article.authorAvatar"
-                    :src="article.authorAvatar"
-                    :alt="`${article.authorName}头像`"
-                    class="author-avatar-image"
-                  />
-                  <template v-else>
-                    {{ article.avatarText }}
-                  </template>
-                </div>
-                <div class="author-info">
-                  <strong>{{ article.authorName }}</strong>
-                  <p class="author-meta">{{ article.publishText }}</p>
-                </div>
+            <div class="thread-main">
+              <div class="thread-tag-row">
+                <span class="thread-category">{{ article.coverCategory || '交流讨论' }}</span>
+                <span v-if="article.recommendReason" class="thread-recommend">精选</span>
               </div>
 
-              <div class="metric-row">
-                <button
-                  type="button"
-                  class="metric-item action-btn"
-                  :class="{ liked: article.liked }"
-                  :disabled="article.actionLoading"
-                  @click.stop="toggleLike(article)"
-                >
-                  <span class="metric-icon">♥</span>
-                  <span>{{ article.likeCount }}</span>
-                </button>
-                <button
-                  type="button"
-                  class="metric-item action-btn comment-btn"
-                  @click.stop="openComments(article)"
-                >
-                  <span class="metric-icon">💬</span>
-                  <span>{{ article.commentCount }}</span>
-                </button>
-                <button
-                  type="button"
-                  class="metric-item action-btn"
-                  :class="{ collected: article.collected }"
-                  :disabled="article.actionLoading"
-                  @click.stop="toggleCollect(article)"
-                >
-                  <span class="metric-icon">★</span>
-                  <span>{{ article.collectCount }}</span>
-                </button>
+              <h3 class="thread-title">{{ article.title }}</h3>
+
+              <p class="thread-summary">{{ article.summaryText }}</p>
+
+              <div class="thread-meta">
+                <div class="author-row">
+                  <div
+                    class="author-avatar"
+                    :class="{ 'has-image': Boolean(article.authorAvatar) }"
+                  >
+                    <img
+                      v-if="article.authorAvatar"
+                      :src="article.authorAvatar"
+                      :alt="`${article.authorName}头像`"
+                      class="author-avatar-image"
+                    />
+                    <template v-else>
+                      {{ article.avatarText }}
+                    </template>
+                  </div>
+                  <div class="author-info">
+                    <strong>{{ article.authorName }}</strong>
+                    <span class="author-time">{{ article.publishText }}</span>
+                  </div>
+                </div>
+
+                <div class="thread-stats">
+                  <button
+                    type="button"
+                    class="stat-action"
+                    :class="{ liked: article.liked }"
+                    :disabled="article.actionLoading"
+                    @click.stop="toggleLike(article)"
+                  >
+                    <span>♥</span>
+                    <span>{{ article.likeCount }}</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="stat-action"
+                    @click.stop="openComments(article)"
+                  >
+                    <span>💬</span>
+                    <span>{{ article.commentCount }}</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="stat-action"
+                    :class="{ collected: article.collected }"
+                    :disabled="article.actionLoading"
+                    @click.stop="toggleCollect(article)"
+                  >
+                    <span>★</span>
+                    <span>{{ article.collectCount }}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </article>
 
           <el-empty
             v-if="!loading && !articleList.length"
-            description="当前没有匹配的文章内容"
+            description="当前板块还没有帖子，来发第一帖吧"
             class="empty-block"
           />
         </div>
 
-        <div v-if="loadingMore" class="load-more-state">正在加载更多内容...</div>
+        <div v-if="loadingMore" class="load-more-state">正在加载更多...</div>
         <div v-else-if="articleList.length && !hasMore" class="load-more-state done">已经到底了</div>
       </div>
     </section>
 
     <el-dialog
       v-model="publishDialogVisible"
-      title="发布文章"
-      width="720px"
+      width="680px"
       destroy-on-close
+      class="publish-dialog"
     >
-      <el-form ref="publishFormRef" :model="publishForm" :rules="publishRules" label-position="top">
-        <el-form-item label="文章标题" prop="title">
-          <el-input v-model="publishForm.title" maxlength="100" placeholder="请输入文章标题" />
-        </el-form-item>
-
-        <div class="publish-grid">
-          <el-form-item label="文章分类" prop="category">
-            <el-select
-              v-model="publishForm.category"
-              placeholder="请选择或输入分类"
-              filterable
-              allow-create
-              default-first-option
-            >
-              <el-option
-                v-for="option in categoryOptions"
-                :key="option"
-                :label="option"
-                :value="option"
-              />
-            </el-select>
-          </el-form-item>
-
-          <el-form-item label="适用目标">
-            <el-select v-model="publishForm.goalType" clearable placeholder="可选">
-              <el-option label="减肥减脂" value="减肥减脂" />
-              <el-option label="增肌塑形" value="增肌塑形" />
-              <el-option label="维持体重" value="维持体重" />
-              <el-option label="健康增重" value="健康增重" />
-              <el-option label="控糖饮食" value="控糖饮食" />
-              <el-option label="控脂降脂" value="控脂降脂" />
-              <el-option label="控压低盐" value="控压低盐" />
-              <el-option label="孕妇营养" value="孕妇营养" />
-              <el-option label="儿童成长" value="儿童成长" />
-              <el-option label="老年养生" value="老年养生" />
-            </el-select>
-          </el-form-item>
+      <template #header>
+        <div class="dialog-header">
+          <h3>发布新帖</h3>
+          <p>分享你的饮食心得，和大家一起交流健康经验</p>
         </div>
+      </template>
 
-        <el-form-item label="文章标签">
+      <el-form ref="publishFormRef" :model="publishForm" :rules="publishRules" label-position="top" class="publish-form">
+        <el-form-item prop="title">
           <el-input
-            v-model="publishForm.tags"
-            placeholder="多个标签用中文逗号分隔，例如：控糖饮食，营养科普"
+            v-model="publishForm.title"
+            class="title-input"
+            maxlength="100"
+            placeholder="请输入帖子标题..."
           />
         </el-form-item>
 
-        <el-form-item label="正文内容" prop="content">
+        <el-form-item label="选择板块" prop="category" class="form-label-block">
+          <div class="option-chips">
+            <button
+              v-for="option in categoryOptions"
+              :key="option"
+              type="button"
+              class="chip"
+              :class="{ active: publishForm.category === option }"
+              @click="publishForm.category = option"
+            >
+              {{ option }}
+            </button>
+          </div>
+        </el-form-item>
+
+        <el-form-item label="适用目标（用于个性化推荐）" class="form-label-block">
+          <div class="option-chips">
+            <button
+              v-for="goal in goalOptions"
+              :key="goal"
+              type="button"
+              class="chip"
+              :class="{ active: publishForm.goalType === goal }"
+              @click="publishForm.goalType = publishForm.goalType === goal ? '' : goal"
+            >
+              {{ goal }}
+            </button>
+          </div>
+        </el-form-item>
+
+        <el-form-item label="帖子标签" class="form-label-block">
+          <el-input
+            v-model="publishForm.tags"
+            placeholder="多个标签用中文逗号分隔，例如：减脂，饮食分享"
+          />
+        </el-form-item>
+
+        <el-form-item label="帖子内容" prop="content" class="form-label-block">
           <el-input
             v-model="publishForm.content"
             type="textarea"
-            :rows="10"
+            :rows="8"
             maxlength="5000"
             show-word-limit
-            placeholder="请输入正文内容"
+            placeholder="分享你的饮食心得、提问或者经验吧..."
           />
         </el-form-item>
       </el-form>
@@ -261,8 +251,8 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="publishDialogVisible = false">取消</el-button>
-          <el-button type="primary" :loading="publishing" @click="submitPublish">
-            立即发布
+          <el-button type="primary" class="publish-submit" :loading="publishing" @click="submitPublish">
+            发布帖子
           </el-button>
         </div>
       </template>
@@ -274,6 +264,7 @@
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import { EditPen } from '@element-plus/icons-vue';
 import healthKnowledgeApi from '../api/healthKnowledge';
 
 const router = useRouter();
@@ -314,6 +305,19 @@ const categoryOptions = [
   '低脂饮食',
   '减脂建议',
   '营养科普'
+];
+
+const goalOptions = [
+  '减肥减脂',
+  '增肌塑形',
+  '维持体重',
+  '健康增重',
+  '控糖饮食',
+  '控脂降脂',
+  '控压低盐',
+  '孕妇营养',
+  '儿童成长',
+  '老年养生'
 ];
 
 const coverPalette = [
@@ -741,128 +745,128 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.knowledge-page {
+.forum-page {
   height: calc(100vh - 118px);
   min-height: 0;
   padding: 0;
   overflow: hidden;
 }
 
-.knowledge-shell {
+.forum-shell {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #fffdfa 0%, #ffffff 18%, #fcfaf7 100%);
-  border-radius: 30px;
-  border: 1px solid #ece4da;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e8ede9;
   overflow: hidden;
-  box-shadow: 0 20px 42px rgba(72, 55, 38, 0.06);
 }
 
 .page-head {
-  display: none;
+  display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
-  padding: 28px 28px 20px;
-  background:
-    radial-gradient(circle at right top, rgba(210, 195, 172, 0.18), transparent 38%),
-    linear-gradient(135deg, #fff9f1 0%, #f8f2ea 100%);
-  border-bottom: 1px solid #efe6dc;
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid #f0f4f1;
 }
 
 .page-eyebrow {
-  margin: 0 0 10px;
-  font-size: 12px;
-  letter-spacing: 0.16em;
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #9a7e64;
+  color: #7ba088;
+  font-weight: 500;
 }
 
 .page-head h1 {
   margin: 0;
-  color: #3f3126;
-  font-size: 32px;
-  font-weight: 700;
+  color: #2d3a30;
+  font-size: 24px;
+  font-weight: 600;
 }
 
 .page-desc {
-  max-width: 660px;
-  margin: 12px 0 0;
-  color: #75685d;
-  font-size: 15px;
-  line-height: 1.85;
+  max-width: 520px;
+  margin: 8px 0 0;
+  color: #6b7c70;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
-.page-summary {
-  min-width: 156px;
-  padding: 18px 20px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(225, 214, 201, 0.9);
-  box-shadow: 0 10px 24px rgba(95, 72, 49, 0.06);
+.page-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px;
+  background: #f7faf8;
+  border-radius: 12px;
+}
+
+.stat-item {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
+  align-items: center;
+  gap: 2px;
 }
 
-.page-summary strong {
-  color: #4b3a2d;
-  font-size: 30px;
+.stat-item strong {
+  color: #2d3a30;
+  font-size: 20px;
+  font-weight: 600;
   line-height: 1;
 }
 
-.page-summary span,
-.page-summary em {
-  color: #877667;
-  font-style: normal;
-  font-size: 13px;
+.stat-item span {
+  color: #8a988d;
+  font-size: 12px;
 }
 
-.search-wrap {
-  position: relative;
-  z-index: 3;
+.stat-divider {
+  width: 1px;
+  height: 28px;
+  background: #e0e8e2;
+}
+
+.toolbar {
   flex-shrink: 0;
-  padding: 18px 22px 16px;
-  border-bottom: 1px solid #f0e9e0;
+  padding: 16px 28px;
+  border-bottom: 1px solid #f0f4f1;
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 252, 248, 0.96);
 }
 
 .search-input {
   flex: 1;
+  max-width: 420px;
 }
 
 .search-input :deep(.el-input__wrapper) {
-  min-height: 48px;
-  border-radius: 999px;
-  background: #f8f4ef;
+  height: 40px;
+  border-radius: 8px;
+  background: #f7faf8;
   box-shadow: none;
 }
 
-.publish-btn {
-  min-width: 112px;
-  height: 46px;
-  border-radius: 999px;
+.post-btn {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 8px;
+  background: #5a8a68;
   border: none;
-  background: linear-gradient(135deg, #8b7355 0%, #6f8f72 100%);
 }
 
 .tabs-wrap {
-  position: relative;
-  z-index: 3;
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 22px 0;
-  border-bottom: 1px solid #f0e9e0;
+  gap: 8px;
+  padding: 0 28px 12px;
+  border-bottom: 1px solid #f0f4f1;
   overflow-x: auto;
   scrollbar-width: none;
-  background: rgba(255, 252, 248, 0.98);
 }
 
 .tabs-wrap::-webkit-scrollbar {
@@ -870,38 +874,30 @@ onMounted(async () => {
 }
 
 .tab-item {
-  position: relative;
-  padding: 10px 16px;
-  margin-bottom: 12px;
+  padding: 7px 14px;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: 8px;
   background: transparent;
-  color: #6f6256;
-  font-size: 14px;
+  color: #5f6f63;
+  font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.18s ease;
+  transition: all 0.15s ease;
 }
 
 .tab-item:hover {
-  color: #5d4c3d;
-  background: #faf4ec;
+  color: #3d4a3e;
+  background: #f0f5f1;
 }
 
 .tab-item.active {
-  color: #5f4c3b;
-  font-weight: 600;
-  background: #f5ede3;
-  border-color: #eadbc9;
-  box-shadow: inset 0 0 0 1px rgba(244, 233, 220, 0.55);
-}
-
-.tab-item.active::after {
-  display: none;
+  color: #fff;
+  font-weight: 500;
+  background: #5a8a68;
 }
 
 .more-toggle {
-  color: #877667;
+  color: #8a988d;
 }
 
 .tag-search {
@@ -918,318 +914,142 @@ onMounted(async () => {
 }
 
 .dialog-tag-item {
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 1px solid #d9ead1;
-  background: #fbfff8;
-  color: #4f7d45;
-  font-size: 14px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid #d8e5db;
+  background: #fafdfb;
+  color: #4f7d5c;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.15s ease;
 }
 
 .dialog-tag-item:hover,
 .dialog-tag-item.active {
   color: #fff;
-  border-color: #6fa45f;
-  background: #6fa45f;
+  border-color: #5a8a68;
+  background: #5a8a68;
 }
 
-.history-strip {
-  flex-shrink: 0;
-  padding: 12px 22px 14px;
-  border-bottom: 1px solid #f0e9e0;
-  background: rgba(255, 252, 248, 0.95);
-}
-
-.history-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.history-head strong {
-  color: #4b3a2d;
-  font-size: 14px;
-}
-
-.history-head span {
-  color: #8d7f72;
-  font-size: 12px;
-}
-
-.history-list {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.history-list::-webkit-scrollbar {
-  display: none;
-}
-
-.history-item {
-  min-width: 190px;
-  padding: 12px 14px;
-  border: 1px solid #eadfcf;
-  border-radius: 16px;
-  background: #fff;
-  text-align: left;
-  cursor: pointer;
-}
-
-.history-item strong {
-  display: block;
-  margin-bottom: 6px;
-  color: #47372a;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.history-item p {
-  margin: 0;
-  color: #8a7a6a;
-  font-size: 12px;
-}
-
-.article-scroll {
+.thread-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 18px 16px 20px;
+  padding: 16px 20px 20px;
   overscroll-behavior: contain;
 }
 
-.article-list {
-  min-height: 260px;
-  column-count: 3;
-  column-gap: 14px;
-}
-
-.article-list.is-empty {
-  display: grid;
-  column-count: auto;
-}
-
-.article-card {
-  display: inline-block;
-  width: 100%;
-  margin: 0 0 14px;
-  break-inside: avoid;
-  -webkit-column-break-inside: avoid;
-  padding: 0;
-  border-radius: 18px;
-  border: 1px solid #efe7de;
-  background: #ffffff;
-  cursor: pointer;
-  overflow: hidden;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-}
-
-.article-card:hover {
-  transform: translateY(-3px);
-  border-color: #dccab5;
-  box-shadow: 0 16px 30px rgba(70, 50, 33, 0.08);
-}
-
-.article-cover {
-  position: relative;
-  min-height: 164px;
-  padding: 12px;
+.thread-list {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
+  gap: 12px;
 }
 
-.article-cover::before,
-.article-cover::after {
-  content: '';
-  position: absolute;
-  pointer-events: none;
+.thread-list.is-empty {
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
 }
 
-.article-cover.shape-sunrise::before {
-  width: 122px;
-  height: 122px;
-  right: -26px;
-  top: -34px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.24);
+.thread-card {
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid #e8ede9;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.article-cover.shape-sunrise::after {
-  width: 76px;
-  height: 76px;
-  left: -18px;
-  bottom: -20px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
+.thread-card:hover {
+  border-color: #c5d8cb;
+  box-shadow: 0 4px 16px rgba(90, 138, 104, 0.06);
 }
 
-.article-cover.shape-wave::before {
-  width: 145px;
-  height: 72px;
-  left: -16px;
-  bottom: 18px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  transform: rotate(-12deg);
+.thread-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.article-cover.shape-wave::after {
-  width: 118px;
-  height: 118px;
-  right: -34px;
-  top: -24px;
-  border-radius: 38px;
-  background: rgba(255, 255, 255, 0.12);
-  transform: rotate(22deg);
+.thread-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.article-cover.shape-orbit::before {
-  width: 138px;
-  height: 138px;
-  right: -34px;
-  top: -28px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-}
-
-.article-cover.shape-orbit::after {
-  width: 96px;
-  height: 96px;
-  left: -24px;
-  bottom: -18px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.article-cover.shape-blob::before {
-  width: 132px;
-  height: 132px;
-  right: -26px;
-  top: -34px;
-  border-radius: 44% 56% 52% 48%;
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.article-cover.shape-blob::after {
-  width: 92px;
-  height: 92px;
-  left: -20px;
-  bottom: -18px;
-  border-radius: 60% 40% 58% 42%;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.cover-category,
-.cover-copy {
-  position: relative;
-  z-index: 1;
-}
-
-.cover-category {
+.thread-category {
   display: inline-flex;
   align-items: center;
-  width: fit-content;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
-  color: #fffdf9;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #eef5f0;
+  color: #5a8a68;
   font-size: 12px;
-  font-weight: 600;
-  backdrop-filter: blur(8px);
+  font-weight: 500;
 }
 
-.cover-copy {
-  color: #fffdf9;
+.thread-recommend {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #fdf3e7;
+  color: #c89b42;
+  font-size: 11px;
+  font-weight: 500;
 }
 
-.cover-copy strong {
-  display: block;
-  font-size: 18px;
-  line-height: 1.35;
-}
-
-.article-title {
-  margin: 12px 14px 8px;
-  color: #2f241b;
+.thread-title {
+  margin: 0;
+  color: #2d3a30;
   font-size: 16px;
-  line-height: 1.45;
-  font-weight: 700;
+  line-height: 1.4;
+  font-weight: 600;
 }
 
-.article-content {
-  margin: 0 14px;
-  color: #65584c;
+.thread-summary {
+  margin: 0;
+  color: #6b7c70;
   font-size: 13px;
-  line-height: 1.7;
+  line-height: 1.6;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.recommend-reason {
-  margin: 10px 14px 0;
-  padding: 9px 10px;
-  border-radius: 12px;
-  background: #fbf6ed;
-  border: 1px solid #efe2cf;
-}
-
-.recommend-reason span {
-  display: block;
-  margin-bottom: 4px;
-  color: #9a7549;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.recommend-reason p {
-  margin: 0;
-  color: #6a5745;
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-.article-footer {
+.thread-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin: 12px 14px 12px;
+  gap: 12px;
+  margin-top: 4px;
 }
 
 .author-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0;
   min-width: 0;
   flex: 1;
 }
 
 .author-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
+  background: #d8e5db;
+  color: #5a8a68;
+  font-size: 12px;
+  font-weight: 600;
   flex-shrink: 0;
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
 }
 
 .author-avatar.has-image {
-  background: #f3eee7;
+  background: #f0f5f1;
 }
 
 .author-avatar-image {
@@ -1241,103 +1061,67 @@ onMounted(async () => {
 
 .author-info {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
 }
 
 .author-info strong {
-  color: #3f3126;
+  color: #3d4a3e;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
-.author-meta {
-  margin: 0;
-  color: #8a7a6a;
-  font-size: 11px;
-  line-height: 1.4;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.metric-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: nowrap;
-  margin: 0;
-  flex-shrink: 0;
-}
-
-.metric-item {
-  color: #8b7d70;
+.author-time {
+  color: #9aa89e;
   font-size: 12px;
 }
 
-.action-btn {
+.thread-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.stat-action {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   border: none;
   background: transparent;
   padding: 0;
+  color: #8a988d;
+  font-size: 12px;
   cursor: pointer;
-  transition: color 0.18s ease, transform 0.18s ease;
+  transition: color 0.15s ease;
 }
 
-.action-btn:hover {
-  transform: translateY(-1px);
+.stat-action:hover {
+  color: #5a8a68;
 }
 
-.action-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.metric-icon {
-  font-size: 13px;
-  line-height: 1;
-}
-
-.action-btn.liked {
+.stat-action.liked {
   color: #d46c6c;
 }
 
-.comment-btn {
-  color: #74695f;
-}
-
-.action-btn.collected {
+.stat-action.collected {
   color: #c89b42;
 }
 
-.metric-read {
-  margin-left: auto;
-  color: #9a8b7c;
-}
-
 .load-more-state {
-  padding: 14px 0 4px;
+  padding: 16px 0 4px;
   text-align: center;
-  color: #8f8172;
+  color: #9aa89e;
   font-size: 13px;
 }
 
 .load-more-state.done {
-  color: #a09284;
+  color: #b0bcb4;
 }
 
 .empty-block {
-  grid-column: 1 / -1;
   padding: 48px 0 40px;
-}
-
-.publish-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
 }
 
 .dialog-footer {
@@ -1346,121 +1130,140 @@ onMounted(async () => {
   gap: 12px;
 }
 
-@media (max-width: 1360px) {
-  .article-list {
-    column-count: 2;
-  }
+.publish-dialog :deep(.el-dialog__header) {
+  padding: 0;
+  margin: 0;
 }
 
-@media (max-width: 900px) {
-  .article-list {
-    column-count: 1;
-  }
+.publish-dialog :deep(.el-dialog__body) {
+  padding: 20px 24px 8px;
+}
+
+.dialog-header {
+  padding: 24px 24px 0;
+}
+
+.dialog-header h3 {
+  margin: 0;
+  color: #2d3a30;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.dialog-header p {
+  margin: 6px 0 0;
+  color: #8a988d;
+  font-size: 13px;
+}
+
+.publish-form {
+  margin-top: 16px;
+}
+
+.title-input :deep(.el-input__wrapper) {
+  height: 48px;
+  border-radius: 10px;
+  background: #f7faf8;
+  box-shadow: none;
+  border: 1px solid #e8ede9;
+}
+
+.title-input :deep(.el-input__inner) {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.form-label-block :deep(.el-form-item__label) {
+  padding-bottom: 8px;
+  color: #5f6f63;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.option-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 6px 14px;
+  border: 1px solid #d8e5db;
+  border-radius: 8px;
+  background: #fafdfb;
+  color: #4f7d5c;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chip:hover {
+  border-color: #5a8a68;
+  background: #f0f5f1;
+}
+
+.chip.active {
+  background: #5a8a68;
+  border-color: #5a8a68;
+  color: #fff;
+  font-weight: 500;
+}
+
+.publish-submit {
+  background: #5a8a68;
+  border: none;
+  border-radius: 8px;
+  padding: 0 24px;
 }
 
 @media (max-width: 768px) {
-  .knowledge-page {
+  .forum-page {
     height: calc(100vh - 96px);
     min-height: 0;
     padding: 4px 0;
   }
 
-  .page-head,
-  .search-wrap {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
   .page-head {
     flex-direction: column;
     gap: 14px;
-    padding-top: 22px;
-    padding-bottom: 18px;
+    padding: 20px 16px 16px;
   }
 
   .page-head h1 {
-    font-size: 26px;
+    font-size: 22px;
   }
 
-  .page-summary {
+  .page-stats {
     width: 100%;
-    align-items: flex-start;
+    justify-content: center;
   }
 
-  .article-scroll {
-    padding: 14px 10px 16px;
-  }
-
-  .article-list {
-    column-count: 1;
-    gap: 0;
-  }
-
-  .article-cover {
-    min-height: 146px;
-    padding: 10px;
-  }
-
-  .cover-copy strong {
-    font-size: 16px;
-  }
-
-  .cover-copy p {
-    font-size: 12px;
-  }
-
-  .article-card {
-    margin-bottom: 12px;
-    border-radius: 16px;
-  }
-
-  .article-title {
-    font-size: 15px;
-    margin: 10px 12px 8px;
-  }
-
-
-  .article-content {
-    margin-left: 12px;
-    margin-right: 12px;
-  }
-
-  .article-footer {
-    margin: 10px 12px 12px;
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .author-row,
-  .metric-row {
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-  .metric-row {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-
-  .search-wrap {
+  .toolbar {
+    padding: 12px 16px;
     flex-direction: column;
     align-items: stretch;
   }
 
-  .publish-btn {
-    width: 100%;
+  .search-input {
+    max-width: 100%;
   }
 
   .tabs-wrap {
-    gap: 10px;
-    padding-left: 16px;
-    padding-right: 16px;
+    padding: 0 16px 10px;
   }
 
-  .history-strip {
-    padding-left: 16px;
-    padding-right: 16px;
+  .thread-scroll {
+    padding: 12px 12px 16px;
+  }
+
+  .thread-card {
+    padding: 14px 16px;
+  }
+
+  .thread-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
   .publish-grid {

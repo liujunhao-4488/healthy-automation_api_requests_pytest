@@ -1,0 +1,361 @@
+/**
+ * base.css —— 基础层：把 tokens 应用到真实元素上
+ * ---------------------------------------------------------------------------
+ * 职责：
+ *   1. 重置浏览器默认样式（reset）
+ *   2. 定义 html/body 的字体、底色、行高（全站排版的"基准线"）
+ *   3. 接管 Element Plus 的默认主题（让所有 el-* 组件自动变成品牌绿）
+ *   4. 提供几个"公共骨架类"，页面直接复用，少写重复 CSS
+ * ---------------------------------------------------------------------------
+ */
+
+@import './tokens.css';
+
+/* ========== 1. Reset ==========
+   box-sizing 统一为 border-box：padding 和 border 算进宽度里，
+   不用再去心算"这个盒子到底多宽"。 */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ========== 2. 文档基准 ========== */
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-page);
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--brand-600);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+a:hover {
+  color: var(--brand-700);
+}
+
+/* 标题统一用"紧一点"的行高，中文大标题才不散 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* 滚动条：去掉系统默认的粗灰条，换成细的、和背景协调的 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--neutral-300) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--neutral-300);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--neutral-400);
+  background-clip: content-box;
+}
+
+/* ========== 3. 接管 Element Plus 主题 ==========
+   这是"统一地基"里性价比最高的一步：
+   Element Plus 2.x 全部样式都读这些 CSS 变量，
+   改这里 = 全站所有 el-button / el-switch / el-pagination / el-tag
+   一次性变成品牌绿，不需要逐个组件写样式覆盖。 */
+:root {
+  --el-color-primary: var(--brand-500);
+  --el-color-primary-light-3: #a3bcac;
+  --el-color-primary-light-5: #bdd0c4;
+  --el-color-primary-light-7: #d7e3db;
+  --el-color-primary-light-8: #e5ece7;
+  --el-color-primary-light-9: #f2f6f3;
+  --el-color-primary-dark-2: #62806d;
+
+  --el-color-success: var(--success);
+  --el-color-warning: var(--warning);
+  --el-color-danger: var(--danger);
+  --el-color-error: var(--danger);
+  --el-color-info: var(--info);
+
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-secondary);
+  --el-text-color-secondary: var(--text-tertiary);
+  --el-text-color-placeholder: var(--text-disabled);
+
+  --el-border-color: var(--border-default);
+  --el-border-color-light: var(--border-subtle);
+  --el-border-color-lighter: var(--neutral-100);
+  --el-fill-color-blank: var(--bg-surface);
+
+  --el-bg-color: var(--bg-surface);
+  --el-bg-color-page: var(--bg-page);
+  --el-bg-color-overlay: var(--bg-surface);
+
+  --el-font-family: var(--font-sans);
+  --el-font-size-base: var(--text-base);
+
+  --el-border-radius-base: var(--radius-sm);
+  --el-border-radius-small: var(--radius-xs);
+  --el-border-radius-round: var(--radius-full);
+
+  --el-box-shadow-light: var(--shadow-sm);
+  --el-box-shadow: var(--shadow-md);
+  --el-box-shadow-dark: var(--shadow-lg);
+
+  --el-transition-duration: var(--duration-normal);
+}
+
+/* Element 的输入框默认带一圈内阴影描边，视觉上偏"重"。
+   换成干净的 1px 边框 + 聚焦光环，和登录页的输入框风格统一。 */
+.el-input__wrapper,
+.el-textarea__inner {
+  box-shadow: 0 0 0 1px var(--border-default) inset;
+  border-radius: var(--radius-sm);
+  transition: box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.el-input__wrapper:hover,
+.el-textarea__inner:hover {
+  box-shadow: 0 0 0 1px var(--brand-300) inset;
+}
+
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px var(--brand-500) inset, var(--ring-brand);
+}
+
+/* 按钮：统一圆角与字重，禁用态也顺手调顺眼 */
+.el-button {
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.el-button--primary {
+  --el-button-bg-color: var(--brand-600);
+  --el-button-border-color: var(--brand-600);
+  --el-button-hover-bg-color: var(--brand-700);
+  --el-button-hover-border-color: var(--brand-700);
+  --el-button-active-bg-color: var(--brand-800);
+  --el-button-active-border-color: var(--brand-800);
+}
+
+/* 卡片：默认只有 1px 边框太平，加一层柔和阴影让它"浮"起来 */
+.el-card {
+  border-radius: var(--radius-lg);
+  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* 表格：去掉最外圈的粗边框，表头用凹陷底色区分 */
+.el-table {
+  --el-table-border-color: var(--border-subtle);
+  --el-table-header-bg-color: var(--bg-sunken);
+  --el-table-header-text-color: var(--text-secondary);
+  --el-table-row-hover-bg-color: var(--brand-50);
+  font-size: var(--text-base);
+}
+
+.el-table th.el-table__cell {
+  font-weight: 600;
+}
+
+.el-table__inner-wrapper::before {
+  display: none;
+}
+
+/* 弹窗 / 消息：统一圆角和阴影层级 */
+.el-dialog {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+}
+
+.el-dialog__header {
+  margin-right: 0;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.el-dialog__title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.el-message,
+.el-popover.el-popper {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.el-menu {
+  border-right: none;
+}
+
+/* ========== 4. 公共骨架类 ==========
+   这些是"页面长相的共同部分"，抽出来后每个页面不用再自己写一遍。
+   用法示例：
+     <div class="page">
+       <header class="page-head">
+         <h1 class="page-title">饮食记录</h1>
+         <p class="page-desc">记录每天的饮食</p>
+       </header>
+       <section class="surface"> ... 内容 ... </section>
+     </div>
+*/
+
+/* 页面容器：统一左右留白与上下节奏 */
+.page {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* 页面头部：左标题右操作按钮 */
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.page-desc {
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--text-tertiary);
+}
+
+/* 卡片面板：全站所有"白底块"都用它，圆角/边框/阴影一处定义 */
+.surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+}
+
+.surface--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 分区小标题 */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 卡片网格：自适应列数，不用手写每个断点 */
+.grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-6);
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.empty-state__title {
+  font-size: var(--text-md);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* 路由切换的淡入淡出（原来定义在 App.vue 里但从没被使用，这里留成可用工具类） */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeInUp var(--duration-normal) var(--ease-out) both;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --content-max: 100%;
+  }
+}

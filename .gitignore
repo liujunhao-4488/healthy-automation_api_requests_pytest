@@ -36,6 +36,9 @@ __pycache__/
 .venv/
 venv/
 
+# 临时的 venv 备份（重建 venv 时留下的旧环境，不该入库）
+.venv.bak.*/
+
 # pytest 缓存
 .pytest_cache/
 
@@ -109,3 +112,12 @@ logs/
 .trae/
 .cursor/
 .aider*
+
+# ------------------------------------------------------------
+# 9. 评测运行产物 / 根目录调试临时文件
+#     eval_results.json 每次跑测试覆盖、机器生成（含本机绝对路径），不入库；
+#     根目录 `_` 前缀的 .py/.txt 是一次性调试脚本，不入库
+# ------------------------------------------------------------
+automation_api_requests_pytest/tools/eval_results.json
+/_*.py
+/_*.txt

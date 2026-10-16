@@ -1,0 +1,231 @@
+/**
+ * admin.css —— 后台外壳（侧边栏 + 顶栏 + 内容区）的共享样式
+ * ---------------------------------------------------------------------------
+ * 为什么单独抽一个文件：
+ *   原来 Dashboard.vue（用户端外壳）和 AdminLayout.vue（管理端外壳）
+ *   各自写了一套侧边栏和顶栏样式，颜色、圆角、间距都不一样，
+ *   同一个系统出现两副面孔。这里定义唯一一套外壳，
+ *   两个布局文件都套用同一批 class，保证长相完全一致。
+ *
+ * class 命名统一用 app- 前缀，避免和页面内的局部样式撞名。
+ * ---------------------------------------------------------------------------
+ */
+
+/* ========== 外壳骨架 ========== */
+.app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  height: 100vh;
+  background: var(--bg-page);
+  overflow: hidden;
+}
+
+/* ========== 侧边栏 ========== */
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: var(--space-6) var(--space-3) var(--space-5);
+  background: linear-gradient(180deg, var(--brand-700) 0%, var(--brand-900) 100%);
+  color: var(--neutral-100);
+  overflow: hidden;
+}
+
+/* 品牌区：小字标签 + 主标题，形成层级 */
+.app-brand {
+  padding: 0 var(--space-3) var(--space-6);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.app-brand__tag {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.app-brand__title {
+  margin-top: var(--space-2);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--neutral-0);
+}
+
+/* 导航：el-menu 默认会带自己的边框/背景/激活色，
+   这里统一覆盖成"深色侧边栏里的一排圆角条目" */
+.app-nav.el-menu {
+  flex: 1;
+  overflow-y: auto;
+  border-right: none;
+  background: transparent;
+}
+
+.app-nav .el-menu-item {
+  height: 44px;
+  line-height: 44px;
+  margin-bottom: var(--space-1);
+  padding-left: var(--space-3) !important;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  color: rgba(255, 255, 255, 0.84);
+  transition: background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.app-nav .el-menu-item .el-icon {
+  width: 18px;
+  margin-right: var(--space-3);
+  font-size: 17px;
+}
+
+.app-nav .el-menu-item:hover,
+.app-nav .el-menu-item:focus {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--neutral-0);
+}
+
+/* 当前页：实心品牌色，一眼能定位 */
+.app-nav .el-menu-item.is-active {
+  background: var(--brand-500);
+  color: var(--neutral-0);
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+/* 侧边栏底部操作区（退出登录等） */
+.app-sidebar__footer {
+  margin-top: var(--space-4);
+  padding: var(--space-4) var(--space-3) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.app-sidebar__footer .el-button {
+  width: 100%;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.app-sidebar__footer .el-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: var(--neutral-0);
+}
+
+/* ========== 右侧主体 ========== */
+.app-body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-width: 0; /* 防止内部宽表格把 grid 列撑破 */
+  overflow: hidden;
+}
+
+/* ========== 顶栏 ========== */
+.app-header {
+  flex-shrink: 0;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 0 var(--space-6);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.app-header__title {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* 顶栏里的圆形图标按钮（通知铃铛等） */
+.app-icon-btn {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--bg-sunken);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.app-icon-btn:hover {
+  border-color: var(--brand-300);
+  background: var(--brand-50);
+  color: var(--brand-700);
+}
+
+/* 顶栏用户信息 */
+.app-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.app-user:hover {
+  background: var(--bg-sunken);
+}
+
+.app-user__meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.app-user__name {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.app-user__sub {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+/* 顶栏用户区右侧的小箭头（配合 el-dropdown） */
+.app-user__arrow {
+  font-size: 13px;
+  color: var(--text-disabled);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.app-header__dropdown {
+  outline: none;
+  cursor: pointer;
+}
+
+.app-header__dropdown:focus,
+.app-header__dropdown:focus-visible {
+  outline: none;
+}
+
+/* ========== 内容区 ========== */
+.app-main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-6);
+}
+
