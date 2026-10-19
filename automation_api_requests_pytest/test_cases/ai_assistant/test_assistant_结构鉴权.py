@@ -61,8 +61,16 @@ def test_chat_empty_content(api, auth_headers, payload):
 def test_chat_with_unknown_conversation(api, auth_headers):
     """传一个不存在的 conversationId → 400「会话不存在或无权访问」。
 
-    这条顺带验证了**越权防护**：requireConversation 会比对 user_id，
-    别人的会话 id 也是同样的报错（不会告诉你"存在，但不是你的"）。
+    ⚠️ 这条**不测越权**，别被报错文案骗了：
+       999999 在库里根本不存在，后端走到 `selectById` 返回 null 就抛了，
+       `!userId.equals(conversation.getUserId())` 那半个条件**从来没被执行过**。
+       所以它证明不了"别人的会话进不来"。
+
+    真正的越权（会话**存在**、但属于别人）在 test_assistant_越权.py，
+    那边用另一个真实账号的 conversationId 测——只有这种样本才能证明归属校验生效。
+
+    它留在本文件，是因为它的关注点其实是**资源参数校验**：
+    给一个指向空资源的 id，应该规规矩矩 400，而不是 NPE 变 500。
     """
     resp = api.assistant.chat({"conversationId": 999999, "rawPrompt": "你好"},
                               headers=auth_headers)

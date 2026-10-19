@@ -8,9 +8,11 @@
 # 清理手段用的是接口自带的 DELETE（软删除），不去动数据库——
 # 能走接口解决的事，就不绕过接口直接改库。
 
+import uuid
+
 import pytest
 
-from common import eval_record
+from common import db, eval_record
 from common.logger import log_qa
 
 
@@ -76,3 +78,48 @@ def conversation(api, auth_headers):
     yield body["data"]
 
     api.assistant.delete_conversation(body["data"]["id"], headers=auth_headers)
+
+
+@pytest.fixture
+def other_user(api):
+    """造一个**独立账号 B**，并在 B 名下建一个**有内容**的会话，供越权用例当靶子。
+
+    为什么要独立账号，而不是继续用 `conversationId: 999999`：
+      · 999999 测的是「会话不存在」——后端完全可以在查库之前就拒掉；
+      · 真越权测的是「会话**存在**，但不是你的」——只有这种样本才能验证
+        `AssistantChatServiceImpl.requireConversation()` 里那句
+        `!userId.equals(conversation.getUserId())` 真的生效。
+      两者失败后果差得很远：前者顶多是报错不友好，后者是**数据泄漏**。
+
+    为什么 B 的会话里必须先聊一句：
+      空会话对任何用户都是空的。就算归属校验整段漏了，A 读到的也只是 `[]`，
+      用例照样绿——这是典型的假绿。塞一条消息进去，漏校验时才会真的读到别人的东西。
+
+    清理顺序：**先删会话，再删账号**。反了会留下无主会话污染统计。
+    不管用例成功还是失败，清理都执行（同 ask 夹具的原理）。
+    """
+    uniq = "ot_" + uuid.uuid4().hex[:10]
+    data = {"username": uniq, "password": "123456", "email": uniq + "@example.com"}
+    reg = api.assert_ok(api.auth.register(data), "注册越权靶子账号应成功")
+
+    headers = {"Authorization": "Bearer " + reg["data"]["token"]}
+    conv = api.assert_ok(api.assistant.create_conversation({}, headers=headers),
+                         "靶子账号建会话应成功")
+    cid = conv["data"]["id"]
+
+    # 塞一条真实消息：不关心它答什么，只关心"这个会话里有别人的数据"。
+    api.assert_ok(api.assistant.chat({"conversationId": cid, "rawPrompt": "你好"},
+                                     headers=headers),
+                  "靶子账号发消息应成功")
+
+    user = {
+        "userId": reg["data"]["userId"],
+        "email": data["email"],
+        "headers": headers,
+        "conversationId": cid,
+    }
+    yield user
+
+    # ---- 清理 ----
+    api.assistant.delete_conversation(cid, headers=headers)
+    db.execute("DELETE FROM `user` WHERE email = %s", (user["email"],))
