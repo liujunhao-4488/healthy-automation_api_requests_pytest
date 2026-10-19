@@ -2,7 +2,7 @@
 # ======================================================================
 # 知识库检索 golden set —— "测 RAG 召回"的基准
 #
-# 一句话：**人工标好"这个问题该命中哪篇文档"，然后让机器去查，看对不对。**
+# 一句话：**人工标好"这个问题该命中哪篇文档的哪一节"，然后让机器去查，看对不对。**
 # 它是整条 RAG 链路上唯一能给出**数字**的东西：
 #   命中率 = 命中的题数 / 总题数。改切块参数、换检索算法、加语料，
 #   都拿它量一次，才知道是变好还是变坏（这就是消融实验）。
@@ -10,89 +10,322 @@
 # 顶层必须是**列表**（list[dict]）—— 这样能直接喂给 common/data_loader.load_cases()，
 # 别处不用为它单独写一套读法。
 #
-# ⚠️ 标法说明（为什么不是"期望的那一段原文"）
-#   只判到**文档级**（该命中哪一篇），不判到"具体哪一段"。
-#   原因是段落边界会随切块参数变化，把期望值钉死在段落上，
-#   一调 CHUNK_SIZE 就全部失效，测的就不是"召回能力"而是"切块参数"了。
-#   文档级判据对切块参数**不敏感**，这才是稳定的基准。
+# ══ 2026-10-18 扩容：18 → 40 条，并引入 type 分类 ══════════════════
+#
+#   为什么扩：原 16 条正样本里有 12 条是"信息词齐全"的书面问法，
+#   等于**专挑好答的题考**。真实用户说的是"肾不好怎么吃""太胖了怎么减"——
+#   这类短句在 BM25 词面匹配下参与打分的词极少，是另一条能力线。
+#   样本不覆盖它，命中率就会系统性高估。
+#
+#   扩容后的实测证明这个担心是真的（2026-10-18）：
+#     直接事实 14/14、跨段组合 8/8、**口语改写 7/12**、语料外 6/6。
+#   掉的点不是"系统变差了"，是"以前没测到"。
+#
+#   ⚠️ 所以引用命中率必须带 type 切片 —— 只说总数会掩盖失败集中在哪里。
+#
+# type 四个值（每次扩样本都要先想清楚这条属于哪类）：
+#   direct       直接事实 —— 信息词齐全的书面问法，考"能不能找到"
+#   colloquial   口语改写 —— 真实用户会怎么说，考"换个说法还找不找得到"
+#   multi_hop    跨段组合 —— 答案分散在多个小节/附录，考"排序能不能把该看的顶上来"
+#   out_of_scope 语料外   —— 库里没有，考"会不会硬凑一条"
+#
+# ⚠️ 两级判据
+#   expect_doc     文档级 —— 该命中哪一篇（必填，positive 用）
+#   expect_section 章节级 —— 该命中哪一节（可选，填了就测）
+#
+# ⭐ 为什么要加章节级：文档级判据会**静默掩盖**"文档对、章节错"。
+#   实测：「高血压怎么吃」top-3 召回的三条 title 全是《成人高血压食养指南》，
+#   文档级全绿，但三条分别是「疾病特点与分型」「前言」「冲任失调证」——
+#   一条"怎么吃"都没有，模型只能拿训练记忆编（回答里"约一啤酒瓶盖"语料 0 命中）。
+#
+# ⚠️ expect_section 用**关键词子串**（如「食养原则」）而不是完整标题
+#   完整标题是「三、食养原则和建议」，序号和措辞会随 PDF 版本变。
 #
 # 文档标题 = 「权威文件/」里 PDF 的文件名（去掉 .pdf），一个字都不能差。
+#
+# ⚠️ 已入库的只有 9 份（2026-10-18 核对）：
+#   中国居民膳食指南(2022) / 儿童青少年生长迟缓 / 儿童青少年肥胖 / 成人慢性肾脏病 /
+#   成人糖尿病 / 成人肥胖 / 成人骨质疏松症（2026年版） / 成人高尿酸血症与痛风 / 成人高血压。
+#   权威文件/ 里另有 5 份 PDF 索引里 0 块（肌少症2026、脑卒中2026、高脂血症2023 是独有内容，
+#   糖尿病2023、骨质疏松2026 与已入库版本文件大小完全相同，属重复版本）。
+#   → 这 3 份独有指南**不要**拿来做正样本，否则测的是语料缺失，不是检索能力。
 #
 # kind：
 #   positive —— 该问题的答案就在库里，期望命中的文档出现在 top-k 里
 #   negative —— 库里压根没有这类内容，期望**没有**有效召回
-#              ⭐ 这类测的是"边界守护"：不该有的东西，别硬凑一条出来。
+#
+# ⚠️ known_defect 的用法：只在"确认语料里有答案、但检索没给到"时标。
+#   标了会挂 xfail(strict=True)：缺陷还在则 XFAIL（套件仍绿），
+#   修好后断言通过 → XPASS → strict 判失败 → 提醒回来摘标记。
+#   若只是"期望标错了"，改 expect_*，**不要**标 known_defect。
 # ======================================================================
 
-# ---- 成人高血压食养指南 ----
+# ══════════════ 成人高血压食养指南 ══════════════
 - question: 高血压患者每天吃盐不能超过多少
   expect_doc: 成人高血压食养指南
+  expect_section: 食养原则
   kind: positive
+  type: direct
   note: 减钠增钾，核心推荐里有具体克数
 
 - question: 高血压可以多吃什么水果蔬菜
   expect_doc: 成人高血压食养指南
+  expect_section: 食养原则
   kind: positive
+  type: direct
   note: 富钾食物
+
+- question: 高血压患者每天吃多少钾
+  expect_doc: 成人高血压食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: direct
+  note: 2026-10-18 新增；实测 top-2 命中「三、食养原则和建议」
 
 - question: 高血压患者的食谱怎么安排
   expect_doc: 成人高血压食养指南
   kind: positive
-  note: 附录里有各地区分季节食谱
+  type: multi_hop
+  note: 附录里按地区分季节给食谱 —— 答案分散在十几个地区小节，无唯一目标节，只判文档级
 
-# ---- 成人糖尿病食养指南 ----
+- question: 高血压怎么吃
+  expect_doc: 成人高血压食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: colloquial
+  note: 口语化 —— 有效 bigram 只有「高血/血压」，曾排第 4 被 topK=3 截断，已由查询扩写修复
+
+- question: 高血压饮食要注意什么
+  expect_doc: 成人高血压食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: colloquial
+  note: 口语化 —— 与上一条同族，措辞更接近日常提问
+
+- question: 高血压患者可以吃低钠盐吗
+  expect_doc: 成人高血压食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: multi_hop
+  note: 2026-10-18 新增；需同时用到"减钠"原则与食物选择，实测 top-1 即中
+
+- question: 血压高能吃咸菜吗
+  expect_doc: 成人高血压食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: colloquial
+  known_defect: 口语短句召回为空 —— 指南里「咸菜」1 处、「腌」4 处明确讲腌制食品，检索却返回空（2026-10-18 发现）
+  note: 2026-10-18 新增；疑为 COVERAGE_MIN 覆盖率闸门误杀（短句有效词太少）
+
+# ══════════════ 成人糖尿病食养指南 ══════════════
 - question: 糖尿病人主食应该怎么选
   expect_doc: 成人糖尿病食养指南
+  expect_section: 食养原则
   kind: positive
+  type: direct
 
 - question: 血糖高的人能吃水果吗
   expect_doc: 成人糖尿病食养指南
+  expect_section: 食养原则
   kind: positive
+  type: direct
   known_defect: 已知未命中 —— 指南里确有 9 个块讲"水果"，但检索未进 top-3（2026-10-16 首次发现）
 
-# ---- 成人肥胖食养指南 ----
+- question: 血糖高能喝粥吗
+  expect_doc: 成人糖尿病食养指南
+  kind: positive
+  type: colloquial
+  note: 2026-10-18 新增；只判文档级 —— top-1 命中但章节落到「一、前言」，章节级会红（同「糖尿病人一天三餐怎么分配热量」，属排序问题，记录未钉）
+
+- question: 糖尿病怎么吃
+  expect_doc: 成人糖尿病食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: colloquial
+  note: 口语化 —— 与「高血压怎么吃」同族，验证缺陷不是单一疾病词的偶然
+
+- question: 糖尿病人一天三餐怎么分配热量
+  expect_doc: 成人糖尿病食养指南
+  kind: positive
+  type: multi_hop
+  note: 2026-10-18 新增；只判文档级 —— 实测 top-1 是「九、鸽肉山药玉竹汤」，该看的「食养原则」排第 4，属排序问题，记录但未钉 xfail（标了会让已绿的文档级用例 XPASS 误判失败）
+
+# ══════════════ 成人肥胖食养指南 ══════════════
 - question: 肥胖的人减重期间每天吃多少能量
   expect_doc: 成人肥胖食养指南
+  expect_section: 食养原则
   kind: positive
+  type: direct
 
 - question: 减重期一日三餐怎么搭配
   expect_doc: 成人肥胖食养指南
   kind: positive
+  type: multi_hop
+  note: 答案在附录食谱，同「高血压患者的食谱怎么安排」，只判文档级
 
-# ---- 成人高尿酸血症与痛风食养指南 ----
+- question: 减肥期间能吃主食吗
+  expect_doc: 成人肥胖食养指南
+  kind: positive
+  type: colloquial
+  note: 2026-10-18 新增；文档级命中，但 top-1 是「四、脾虚不运证」，章节级会红 —— 只判文档级
+
+- question: 太胖了怎么减
+  expect_doc: 成人肥胖食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: colloquial
+  known_defect: 口语短句召回为空 —— 该指南 171 个块整篇都在讲减重，检索却返回空（2026-10-18 发现）
+  note: 2026-10-18 新增；与「血压高能吃咸菜吗」同一根因，短句被覆盖率闸门误杀
+
+# ══════════════ 成人高尿酸血症与痛风食养指南 ══════════════
 - question: 痛风患者要避免吃哪些食物
   expect_doc: 成人高尿酸血症与痛风食养指南
+  expect_section: 食养原则
   kind: positive
+  type: direct
 
 - question: 高尿酸血症能喝啤酒吗
   expect_doc: 成人高尿酸血症与痛风食养指南
+  expect_section: 食养原则
   kind: positive
+  type: direct
 
-# ---- 成人慢性肾脏病食养指南 ----
+- question: 痛风患者每天喝多少水
+  expect_doc: 成人高尿酸血症与痛风食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: direct
+  note: 2026-10-18 新增；实测 top-1 命中
+
+- question: 痛风急性发作期和缓解期饮食有什么不同
+  expect_doc: 成人高尿酸血症与痛风食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: multi_hop
+  note: 2026-10-18 新增；需跨「急性期」「间歇期」两个小节，实测 top-1 命中
+
+- question: 尿酸高可以吃豆腐吗
+  expect_doc: 成人高尿酸血症与痛风食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: colloquial
+  known_defect: 口语短句只召回 1 条噪声 —— 痛风指南里有讲豆腐（豆制品）的块，实际只返回《中国居民膳食指南》12.07 分一条（2026-10-18 发现）
+  note: 2026-10-18 新增；这是语料里确实有答案、检索却没给到的典型
+
+# ══════════════ 成人慢性肾脏病食养指南 ══════════════
 - question: 慢性肾脏病患者的蛋白质摄入怎么控制
   expect_doc: 成人慢性肾脏病食养指南
+  expect_section: 食养原则
   kind: positive
+  type: direct
 
-# ---- 成人骨质疏松症食养指南 ----
+- question: 慢性肾脏病不同分期蛋白质吃多少
+  expect_doc: 成人慢性肾脏病食养指南
+  expect_section: 分期
+  kind: positive
+  type: multi_hop
+  note: 2026-10-18 新增；实测 top-1 就是「二、慢性肾脏病分期营养管理」，章节级用「分期」子串
+
+- question: 肾病患者能吃豆制品吗
+  expect_doc: 成人慢性肾脏病食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: colloquial
+  note: 2026-10-18 新增；top-1 是糖尿病指南（噪声），但肾病指南在 top-2/3，文档级与章节级均通过
+
+- question: 肾不好怎么吃
+  expect_doc: 成人慢性肾脏病食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: colloquial
+  known_defect: 口语短句召回为空 —— 该指南 176 个块，检索返回空列表（2026-10-18 发现）
+  note: 2026-10-18 新增；"肾不好"这类转述词与语料用词（慢性肾脏病）对不上，叠加覆盖率闸门
+
+# ══════════════ 成人骨质疏松症食养指南 ══════════════
 - question: 骨质疏松每天要补多少钙
   expect_doc: 成人骨质疏松症食养指南（2026年版）
+  expect_section: 食养原则
   kind: positive
+  type: direct
 
-# ---- 儿童青少年肥胖食养指南 ----
+- question: 骨质疏松每天喝多少奶
+  expect_doc: 成人骨质疏松症食养指南（2026年版）
+  expect_section: 食养原则
+  kind: positive
+  type: direct
+  note: 2026-10-18 新增；实测 top-1 命中
+
+- question: 骨质疏松除了补钙还要注意什么
+  expect_doc: 成人骨质疏松症食养指南（2026年版）
+  expect_section: 食养原则
+  kind: positive
+  type: multi_hop
+  note: 2026-10-18 新增；需同时涉及维生素 D、蛋白质、负重运动，实测 top-1 命中
+
+# ══════════════ 儿童青少年肥胖食养指南 ══════════════
 - question: 儿童肥胖应该怎么干预
   expect_doc: 儿童青少年肥胖食养指南
+  expect_section: 食养原则
   kind: positive
+  type: direct
 
-# ---- 儿童青少年生长迟缓食养指南 ----
+- question: 儿童肥胖怎么安排一日三餐
+  expect_doc: 儿童青少年肥胖食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: multi_hop
+  note: 2026-10-18 新增；top-1 是《中国居民膳食指南》，top-2 命中「三、食养原则和建议」
+
+- question: 孩子太胖了怎么办
+  expect_doc: 儿童青少年肥胖食养指南
+  expect_section: 食养原则
+  kind: positive
+  type: colloquial
+  known_defect: 口语短句召回为空 —— 该指南 85 个块全在讲儿童肥胖，检索返回空（2026-10-18 发现）
+  note: 2026-10-18 新增；与「太胖了怎么减」同族，验证不是单一文档的偶然
+
+# ══════════════ 儿童青少年生长迟缓食养指南 ══════════════
 - question: 孩子生长迟缓该怎么调理饮食
   expect_doc: 儿童青少年生长迟缓食养指南
+  expect_section: 食养原则
   kind: positive
+  type: colloquial
+  note: 口语化但保留了专业词，是"能命中"的口语样本（对照组）
 
-# ---- 负样本：库里没有的内容，不该硬凑 ----
+# ══════════════ 中国居民膳食指南(2022) ══════════════
+- question: 成年人每天应该吃多少蔬菜水果
+  expect_doc: 中国居民膳食指南(2022)
+  kind: positive
+  type: direct
+  note: 2026-10-18 新增；只判文档级 —— 实测 top-1 落在「准则二 吃动平衡」，期望的「准则三 多吃蔬果」不在其中
+
+# ══════════════ 负样本：库里没有的内容，不该硬凑 ══════════════
 - question: 怎么修汽车发动机
   kind: negative
+  type: out_of_scope
   note: 与营养健康完全无关
 
 - question: 如何用 Python 写一个快速排序
   kind: negative
-  note: 编程问题，库里没有
+  type: out_of_scope
+  note: 编程问题，库里没有。曾靠「如何/一个」两个虚词拿到 9.28 分，已由查询侧停用词 + 覆盖率闸门修复
+
+- question: 生酮饮食怎么吃
+  kind: negative
+  type: out_of_scope
+  note: 2026-10-18 新增；"饮食"高度相关但库里无生酮内容（全语料 0 命中），考的是别拿通用饮食原则硬答
+
+- question: 阿司匹林饭前吃还是饭后吃
+  kind: negative
+  type: out_of_scope
+  note: 2026-10-18 新增；用药问题，语料里 0 命中 —— 饮食助手不该答
+
+- question: 增肌粉哪个牌子好
+  kind: negative
+  type: out_of_scope
+  note: 2026-10-18 新增；商品推荐类，语料里 0 命中
+
+- question: 熬夜吃什么补
+  kind: negative
+  type: out_of_scope
+  note: 2026-10-18 新增；语料只有 2 处提到"熬夜"，没有可作答内容
