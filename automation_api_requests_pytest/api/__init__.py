@@ -1,0 +1,34 @@
+# api/__init__.py
+# 接口层的**总入口**：用例里从此写 `api.auth.login(...)`，不再写 URL。
+#
+# 它只干一件事：把各个接口模块挂到自己身上。
+#
+# ⚠️ 关键决定：**Api 故意不继承 BaseApiClient。**
+#   以前那版让 Api 继承了底座，结果 api.post("/随便什么路径") 也能跑通 ——
+#   URL 就又多了一条偷偷漏回用例的路（而且不报错，很难发现）。
+#   现在不继承：你在用例里写 api.post("/x") 会直接报 AttributeError，
+#   路径想漏都漏不出去 —— 这条防线是"结构上不给"，比"约定上不写"硬。
+
+from .assistant_api import AssistantApi
+from .auth_api import AuthApi
+from .base_api_client import BaseApiClient
+from .health_api import HealthApi
+from .kb_api import KbApi
+from .user_api import UserApi
+
+
+class Api:
+    def __init__(self):
+        self.auth = AuthApi()            # 用例里：api.auth.login(...)
+        self.user = UserApi()            # 用例里：api.user.get_profile(...)
+        self.health = HealthApi()        # 用例里：api.health.get_info(...)
+        self.assistant = AssistantApi()  # 用例里：api.assistant.chat(...)
+        # ⚠️ 它打在算法服务（Flask 5000）上，不是 Java 后端 —— 见 kb_api.py 顶部说明
+        self.kb = KbApi()                # 用例里：api.kb.search("高血压怎么吃")
+
+    def assert_ok(self, resp, msg="接口应成功"):
+        """把底座的判定器借过来（用例里 api.assert_ok(resp) 照旧能用）。
+
+        判定器不属于任何一个具体接口，所以不挂在 self.auth 下面，而是放在总入口。
+        """
+        return BaseApiClient.assert_ok(resp, msg)
