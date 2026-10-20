@@ -1,0 +1,22 @@
+{
+  "annotator": "user",
+  "labeled_at": "2026-10-20T15:31:28+08:00",
+  "scale": {
+    "faithful": "忠实：回答里的具体主张都能在检索资料里找到出处",
+    "hallucinated": "有编造：出现了资料里没有的具体主张",
+    "unclear": "说不清：资料模糊或回答只有方向性表述"
+  },
+  "note": "人工基线，judge 校准的对照标准。判据见 label_sheet.md 表头。",
+  "labels": {
+    "S01": "faithful",
+    "S02": "faithful",
+    "S03": "faithful",
+    "S04": "hallucinated",
+    "S05": "hallucinated",
+    "S06": "faithful",
+    "S07": "faithful",
+    "S08": "hallucinated",
+    "S09": "hallucinated",
+    "S10": "faithful"
+  }
+}
