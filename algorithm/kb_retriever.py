@@ -149,15 +149,50 @@ COVERAGE_MIN = 0.3
 #      数值命中必须靠用户自己说出的词，否则"每天吃盐多少"会靠扩写拿到通用分。
 INTENT_EXPANSION_RULES = (
     (
-        # 触发短语：口语里"问怎么吃"的各种说法
+        # 触发短语：口语里"问怎么吃/怎么分配/能不能吃"的各种说法。
+        # 2026-10-21 补了「怎么分配 / 怎么减 / 能不能吃 / 可以吃」——
+        # 这几类问法之前完全不触发扩写，正确章节因此排在第 4~8 位。
         (
             "怎么吃", "如何吃", "吃什么", "怎么饮食", "饮食注意",
             "要注意什么", "饮食建议", "怎么调理", "怎么安排", "怎么选",
+            "怎么分配", "怎么搭配", "怎么减", "怎么办",
+            "能不能吃", "可以吃", "期间能吃", "适合吃",
         ),
         # 扩写词：慢病指南里表达同一意图的固定说法（第三章标题就是「食养原则和建议」）
         ("食养", "膳食", "饮食", "原则"),
     ),
+    (
+        # 「三餐怎么分」这类问题，指南里常用的不是「分配」，而是「供能比 / 比例 / 餐次」。
+        # 这一组只补打分，不补覆盖率（理由见 INTENT_EXPANSION_RULES 上方注释）。
+        ("怎么分配", "怎么安排", "怎么搭配", "一天三餐", "一日三餐"),
+        ("合理分配", "供能比", "比例", "规律进餐", "餐次"),
+    ),
 )
+
+# ⭐ 来源分层（2026-10-21）
+# 权威源里同时混着两类东西：
+#   · 官方指南 PDF（每篇 64~212 块，术语是「能量 / 减重 / 谷薯类」）
+#   · 站内整理的编号 .md 摘要（每篇 6~14 块，口语是「热量 / 减肥 / 主食」）
+# 两类都标 sourceType=authority，但摘要短、口语化，BM25 天然更容易赢。
+# 这里不删摘要，只在排序时把摘要降权，让官方指南先被选中。
+SUMMARY_PENALTY = 0.50
+
+# ⭐ 疾病实体加权（2026-10-21）
+# 「糖尿病人」不只是一个普通查询词，它是这句话的**范围约束**。
+# 一个完全没提糖尿病的块，不该因为「热量 / 三餐 / 分配」这些通用词拿第一。
+# 软加权而不是硬过滤：多疾病查询（高血压合并糖尿病）硬过滤会误杀。
+ENTITY_BOOST = 1.30
+
+# ⭐ 章节意图先验（2026-10-21）
+# 「怎么吃 / 怎么分配」在指南里对应「食养原则」；
+# 「能不能吃 / 可以吃」对应「食物选择 / 食养原则」。
+# 只做小幅加权，不覆盖 BM25 本身的排序。
+SECTION_BOOST = 1.15
+
+# ⭐ 否定惩罚（2026-10-21）
+# 字符 bigram 会把「不能吃主食」切成「能吃 / 吃主 / 主食」，
+# 于是一个语义相反的块也能答「能吃主食吗」。这里只惩罚**否定词紧邻目标词**的块。
+NEGATION_PENALTY = 0.70
 
 SOURCE_AUTHORITY = "authority"   # 国家卫健委食养指南
 SOURCE_ARTICLE = "article"       # 站内 health_article
@@ -173,6 +208,57 @@ ALL_SOURCE_TYPES = (SOURCE_AUTHORITY, SOURCE_ARTICLE)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 AUTHORITY_FILE = os.path.join(BASE_DIR, "kb_data", "authority_chunks.json")
+ALIAS_FILE = os.path.join(BASE_DIR, "kb_data", "query_aliases.json")
+
+# 查询同义词表是**数据**，不是代码：改词表不该改 Python。
+# 读取失败时只打印警告并退化成"没有别名"，不影响检索主流程。
+_QUERY_ALIASES = None
+
+
+def load_query_aliases(path=ALIAS_FILE):
+    """读 query_aliases.json，返回 {entities, terms, intents} 三组 (triggers, terms)。"""
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (FileNotFoundError, ValueError) as exc:
+        print("⚠️ 查询同义词表读取失败，仅用内置扩写规则: %s" % exc)
+        return {"entities": (), "terms": (), "intents": ()}
+
+    def normalize(raw_rules):
+        rules = []
+        for rule in raw_rules or []:
+            triggers = tuple(str(item) for item in rule.get("triggers", ()) if item)
+            terms = tuple(str(item) for item in rule.get("terms", ()) if item)
+            if triggers and terms:
+                rules.append((triggers, terms))
+        return tuple(rules)
+
+    return {
+        "entities": normalize(payload.get("entities")),
+        "terms": normalize(payload.get("terms")),
+        "intents": normalize(payload.get("intents")),
+    }
+
+
+def get_query_aliases():
+    """懒加载同义词表；进程内只读一次（改表后重启服务或调用 /api/kb/reload）。"""
+    global _QUERY_ALIASES
+    if _QUERY_ALIASES is None:
+        _QUERY_ALIASES = load_query_aliases()
+    return _QUERY_ALIASES
+
+
+def infer_doc_type(title, source_type=SOURCE_AUTHORITY):
+    """按标题判断是官方指南还是站内摘要。
+
+    现有 JSON 还没有 docType 字段，先靠标题约定兜底：
+    编号开头的 `.md`（02_高血脂饮食建议、12_控糖饮食建议……）是摘要，
+    其余权威文档（成人糖尿病食养指南、中国居民膳食指南）是官方指南。
+    重新跑 ingest_authority.py 后，JSON 会直接带 docType，这里只做兜底。
+    """
+    if source_type == SOURCE_ARTICLE:
+        return "article"
+    return "summary" if re.match(r"^\d+_", title or "") else "guideline"
 
 _HAN = re.compile(r"[\u4e00-\u9fff]+")   # 连续汉字段
 _ASCII_WORD = re.compile(r"[a-z0-9]+")   # 连续英文/数字
@@ -203,6 +289,52 @@ def tokenize(text):
             for i in range(len(segment) - 1):
                 tokens.append(segment[i:i + 2])
     return tokens
+
+
+# 章节意图先验：问题在问"怎么吃/怎么分配"时，优先看「食养原则」；
+# 问"能不能吃"时，「食物选择」和「食养原则」都算答案所在。
+SECTION_INTENT_RULES = (
+    (
+        ("怎么吃", "如何吃", "怎么分配", "怎么安排", "怎么搭配",
+         "饮食注意", "食养", "原则", "怎么减", "怎么办",
+         "吃多少", "喝多少"),
+        ("食养原则",),
+    ),
+    (
+        ("能吃", "可以吃", "能不能吃", "适合吃"),
+        ("食物选择", "食养原则"),
+    ),
+)
+
+# 否定词必须**紧邻**目标词才算否定，否则「避免高糖，主食可以吃」会被误伤。
+_NEGATION_BEFORE = re.compile(r"(不能|避免|不宜|少吃|不要|禁|勿)[^。！？!?\n]{0,6}$")
+_NEGATION_TARGET = re.compile(r"能吃|吃主食|主食")
+
+
+def _match_rules(query, rules):
+    """命中任一触发短语，就把该规则的词加入打分词集合。返回 (词集合, 是否命中)。"""
+    terms = set()
+    fired = False
+    for triggers, extras in rules:
+        if any(trigger in query for trigger in triggers):
+            fired = True
+            for extra in extras:
+                terms |= set(tokenize(extra)) - STOPWORDS
+    return terms, fired
+
+
+def _has_negated_answer(text, query):
+    """问「能吃吗」时，块里「不能吃 / 避免吃」不能当成肯定回答。
+
+    只看目标词前 6 个字以内，避免整块里出现一个「避免」就把所有内容都罚掉。
+    """
+    if not any(marker in query for marker in ("能吃", "可以吃", "能不能吃")):
+        return False
+    for match in _NEGATION_TARGET.finditer(text or ""):
+        before = text[max(0, match.start() - 8):match.start()]
+        if _NEGATION_BEFORE.search(before):
+            return True
+    return False
 
 
 def split_into_chunks(text, size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
@@ -256,14 +388,16 @@ class _Chunk:
        但展示给用户的 snippet 只取正文，免得回一条"成人高血压食养指南 一、前言"。
     """
 
-    __slots__ = ("doc_id", "title", "section", "source_type",
+    __slots__ = ("doc_id", "title", "section", "source_type", "doc_type",
                  "text", "search_text", "term_freq", "length")
 
-    def __init__(self, doc_id, title, text, section="", source_type=SOURCE_ARTICLE):
+    def __init__(self, doc_id, title, text, section="", source_type=SOURCE_ARTICLE,
+                 doc_type=""):
         self.doc_id = doc_id
         self.title = title
         self.section = section or ""
         self.source_type = source_type
+        self.doc_type = doc_type or infer_doc_type(title, source_type)
         self.text = text
         self.search_text = "\n".join(
             part for part in (title, self.section, text) if part
@@ -319,12 +453,15 @@ class KnowledgeRetriever:
                 self.duplicates_dropped += 1
                 continue
             seen_texts.add(fingerprint)
+            title = (item.get("title") or "").strip()
+            source_type = item.get("sourceType") or SOURCE_ARTICLE
             self.chunks.append(_Chunk(
                 doc_id=item.get("docId"),
-                title=(item.get("title") or "").strip(),
+                title=title,
                 text=text,
                 section=item.get("section") or "",
-                source_type=item.get("sourceType") or SOURCE_ARTICLE,
+                source_type=source_type,
+                doc_type=item.get("docType") or infer_doc_type(title, source_type),
             ))
 
         # 重建倒排索引
@@ -378,12 +515,22 @@ class KnowledgeRetriever:
         if not query_terms:
             return []
 
-        # 查询扩写：只影响**打分**，不参与下面的覆盖率分母（见 INTENT_EXPANSION_RULES）。
-        score_terms = set(query_terms)
-        for triggers, extras in INTENT_EXPANSION_RULES:
-            if any(trigger in query for trigger in triggers):
-                for extra in extras:
-                    score_terms |= set(tokenize(extra)) - STOPWORDS
+        # ── 查询归一化（2026-10-21）────────────────────────────────
+        # 用户口语 -> 指南书面语。分三类，用途不同：
+        #   entity_terms  疾病实体：参与打分、实体加权、覆盖率
+        #   content_terms 内容同义词（热量->能量、主食->谷薯类）：参与打分、覆盖率
+        #   intent_terms  意图扩写（怎么吃->食养/膳食/原则）：**只参与打分**
+        # 意图词不进覆盖率，否则「生酮饮食怎么吃」会靠自己加的「饮食/原则」过关。
+        aliases = get_query_aliases()
+        entity_terms, _ = _match_rules(query, aliases["entities"])
+        content_terms, _ = _match_rules(query, aliases["terms"])
+        intent_terms, _ = _match_rules(query, aliases["intents"])
+        legacy_intent_terms, _ = _match_rules(query, INTENT_EXPANSION_RULES)
+        score_terms = (
+            set(query_terms) | entity_terms | content_terms
+            | intent_terms | legacy_intent_terms
+        )
+        mapped_terms = entity_terms | content_terms
 
         # 候选范围：按来源过滤时，df 和平均长度也都只按这个子集算，
         # 否则分数会被另一个源的块大小拖偏（两个源块长不一样）。
@@ -402,9 +549,10 @@ class KnowledgeRetriever:
         ) or 1.0
 
         scores = defaultdict(float)
-        # 覆盖率按"在**本次检索范围**里出现过的查询词"算，而不是按全索引算 ——
+        # 覆盖率按"在**本次检索范围**里出现过的词"算，而不是按全索引算 ——
         # 只查权威源时，一个只存在于站内文章里的词不该算"覆盖到了"。
-        covered_terms = set()
+        raw_covered = set()
+        mapped_covered = set()
         for term in score_terms:
             hit_indexes = self.inverted.get(term)
             if not hit_indexes:
@@ -412,10 +560,10 @@ class KnowledgeRetriever:
             in_scope = [index for index in hit_indexes if index in candidate_set]
             if not in_scope:
                 continue
-            # ⚠️ 只有**用户原话**里的词才算覆盖；扩写词只贡献分数。
-            #    否则"我自己加的食养/膳食"会把覆盖率垫高，离题问句也能过关。
             if term in query_terms:
-                covered_terms.add(term)
+                raw_covered.add(term)
+            if term in mapped_terms:
+                mapped_covered.add(term)
             df = len(in_scope)
             # BM25 的 IDF（加 1 是为了在 df 很大时也不出现负数，小语料里很常见）
             idf = math.log(1 + (total - df + 0.5) / (df + 0.5))
@@ -428,11 +576,45 @@ class KnowledgeRetriever:
                 scores[index] += idf * tf * (BM25_K1 + 1) / denominator
 
         # 覆盖率闸门：详见 COVERAGE_MIN 上的注释。
-        # 放在打分之后是为了用**范围内**的命中判定，不多扫一遍索引；
-        # 千级块这个规模的浪费可以忽略。
-        coverage = len(covered_terms) / len(query_terms)
+        # 2026-10-21：短口语（「太胖了怎么减」）的原始词在语料里 0 命中，
+        # 会被原来的闸门直接判死。现在允许**实体/内容同义词**参与覆盖率，
+        # 但仍不把意图扩写词算进去 —— 离题问句没有实体/内容映射，照样过不了。
+        raw_coverage = len(raw_covered) / len(query_terms)
+        coverage = raw_coverage
+        if mapped_terms and mapped_covered:
+            normalized_denominator = len(query_terms | mapped_terms)
+            normalized_coverage = (
+                len(raw_covered | mapped_covered) / normalized_denominator
+            )
+            coverage = max(raw_coverage, normalized_coverage)
         if coverage < COVERAGE_MIN:
             return []
+
+        # ── 排序后处理（2026-10-21）────────────────────────────────
+        # 章节意图：问题在问「怎么吃/怎么分配」时，把「食养原则」往前放。
+        section_targets = set()
+        for triggers, sections in SECTION_INTENT_RULES:
+            if any(trigger in query for trigger in triggers):
+                section_targets.update(sections)
+
+        for index in list(scores):
+            chunk = self.chunks[index]
+            # 1) 疾病实体：完全没提糖尿病的块，不该赢糖尿病问题。
+            if entity_terms and any(
+                chunk.term_freq.get(term, 0) for term in entity_terms
+            ):
+                scores[index] *= ENTITY_BOOST
+            # 2) 来源分层：官方指南优先，编号 .md 摘要降权。
+            if chunk.source_type == SOURCE_AUTHORITY and chunk.doc_type == "summary":
+                scores[index] *= SUMMARY_PENALTY
+            # 3) 章节先验：「食养原则」/「食物选择」小幅加权。
+            if section_targets and any(
+                target in chunk.section for target in section_targets
+            ):
+                scores[index] *= SECTION_BOOST
+            # 4) 否定句：「不能吃主食」不能当成「能吃主食吗」的肯定回答。
+            if _has_negated_answer(chunk.text, query):
+                scores[index] *= NEGATION_PENALTY
 
         # 分数相同的按块下标排，保证结果稳定（同样的输入永远同样的输出）
         ranked = sorted(scores.items(), key=lambda item: (-item[1], item[0]))
@@ -450,6 +632,7 @@ class KnowledgeRetriever:
                 "title": chunk.title,
                 "section": chunk.section,
                 "sourceType": chunk.source_type,
+                "docType": chunk.doc_type,
                 "score": round(score, 4),
                 "snippet": _WHITESPACE.sub(" ", chunk.text)[:200],
             })
@@ -507,11 +690,13 @@ def load_authority_chunks(path=AUTHORITY_FILE):
 
     chunks = []
     for item in payload.get("chunks") or []:
+        title = item.get("docTitle") or item.get("title") or ""
         chunks.append({
             "docId": item.get("docId"),
-            "title": item.get("docTitle") or item.get("title") or "",
+            "title": title,
             "section": item.get("section") or "",
             "sourceType": item.get("sourceType") or SOURCE_AUTHORITY,
+            "docType": item.get("docType") or infer_doc_type(title, SOURCE_AUTHORITY),
             "text": item.get("text") or "",
         })
     return chunks

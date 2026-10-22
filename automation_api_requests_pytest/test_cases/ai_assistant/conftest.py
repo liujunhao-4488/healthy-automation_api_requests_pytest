@@ -121,5 +121,24 @@ def other_user(api):
     yield user
 
     # ---- 清理 ----
-    api.assistant.delete_conversation(cid, headers=headers)
-    db.execute("DELETE FROM `user` WHERE email = %s", (user["email"],))
+    # ① 先走接口软删除：和产品行为保持一致，也顺带验证 B 自己能删自己的会话。
+    # ② 再在库里硬删消息/会话：后端 deleteConversation 只是把 is_deleted 置 1，
+    #    行还在，外键 fk_assistant_conversation_user 会挡住下面删账号（1451）。
+    #    所以光调接口清不干净，必须补这一步。
+    # ③ 最后删账号。顺序不能反：assistant_message → assistant_conversation → user。
+    try:
+        api.assistant.delete_conversation(cid, headers=headers)
+    finally:
+        # 按会话删消息，而不是按 user_id：万一越权用例真的把 A 的消息写进了
+        # B 的会话，那条消息的 user_id 是 A，按 B 的 user_id 删会漏掉，
+        # 接着删会话时又会被 fk_assistant_message_conversation 挡住。
+        db.execute(
+            "DELETE FROM `assistant_message` WHERE `conversation_id` IN "
+            "(SELECT `id` FROM `assistant_conversation` WHERE `user_id` = %s)",
+            (user["userId"],),
+        )
+        db.execute(
+            "DELETE FROM `assistant_conversation` WHERE `user_id` = %s",
+            (user["userId"],),
+        )
+        db.execute("DELETE FROM `user` WHERE `id` = %s", (user["userId"],))

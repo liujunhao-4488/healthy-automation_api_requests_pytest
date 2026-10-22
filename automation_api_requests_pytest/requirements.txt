@@ -3,3 +3,7 @@ requests
 pyyaml
 openpyxl
 pymysql
+# Allure 报告：pytest 插件（产出 reports/allure-results/*.json）。
+# 它只负责"产出原始结果"，把结果渲染成网页还要 Allure 命令行工具 ——
+# 见 tools/allure_report.py 顶部说明与 docs/Allure报告-使用说明.md。
+allure-pytest

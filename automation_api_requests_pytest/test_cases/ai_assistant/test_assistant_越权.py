@@ -167,13 +167,28 @@ def test_cross_user_stream_denied(api, auth_headers, other_user):
         timeout=30,
     )
 
-    assert not (200 <= result["status_code"] < 300), (
-        f"流式聊天越权成功了：用 A 的 token 操作 B 的会话，"
-        f"返回 {result['status_code']}。\n"
+    # ⚠️ SSE 的拒绝不是 HTTP 4xx：Controller 先返回 SseEmitter，状态码必然是 200，
+    #    真正的拒绝是流里的 error 事件。所以判据是"两者至少有一个"：
+    #      · 非 2xx —— 如果将来改成在返回 emitter 之前就拒掉，也可以；
+    #      · 2xx + error 事件 —— 当前实现的正常拒绝形态。
+    denied_by_status = not (200 <= result["status_code"] < 300)
+    denied_by_event = result["error"] is not None
+    assert denied_by_status or denied_by_event, (
+        f"流式聊天越权没有被拒绝：HTTP {result['status_code']}，"
+        f"事件={[name for name, _ in result['events']]}，error={result['error']!r}。\n"
         f"→ 流式接口漏了归属校验（非流式做对不代表这条也对）。"
     )
 
-    # 就算状态码是 200（把错误包进 SSE 里），也不能真的吐出回答。
+    # 拒绝文案必须和非流式统一，避免靠报错差异枚举会话是否存在。
+    if denied_by_event:
+        message = (result["error"] or {}).get("message", "")
+        assert message == EXPECTED_MSG, (
+            f"流式接口拒绝了，但报错文案不统一：{message!r}（期望 {EXPECTED_MSG!r}）。\n"
+            f"→ 如果「别人的会话」和「不存在的会话」返回不同文案，"
+            f"攻击者可以用它枚举出哪些会话 id 真实存在（资源枚举）。"
+        )
+
+    # 最关键的一条：不管状态码是什么，都不能真的吐出回答内容。
     assert not result["text"].strip(), (
         f"流式接口返回 {result['status_code']}，但已经产出了回答内容："
         f"{result['text'][:200]!r}\n"

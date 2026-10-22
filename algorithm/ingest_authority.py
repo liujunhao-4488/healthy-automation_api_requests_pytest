@@ -207,6 +207,7 @@ def ingest_one(pdf_path):
                 "docTitle": title,
                 "year": year,
                 "sourceType": "authority",     # ⭐ 双源架构的标记位
+                "docType": "guideline",        # PDF = 官方指南
                 "section": section_name,
                 "text": piece,
             })
@@ -287,6 +288,9 @@ def ingest_one_markdown(md_path):
                 "docTitle": title,
                 "year": year,
                 "sourceType": "authority",
+                # 编号 .md（12_控糖饮食建议等）是站内整理的摘要，不是官方指南；
+                # 《中国居民膳食指南(2022)》虽然不是编号文件，但属于官方指南。
+                "docType": "summary" if re.match(r"^\d+_", title) else "guideline",
                 "section": section_name,
                 "text": piece,
             })

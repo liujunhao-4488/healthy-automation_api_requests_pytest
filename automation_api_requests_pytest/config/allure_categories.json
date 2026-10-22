@@ -1,0 +1,27 @@
+[
+  {
+    "name": "环境问题：后端 / 数据库没起",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*(ConnectionError|Connection refused|Max retries exceeded|NewConnectionError|NameResolutionError|ProxyError|SSLError|Read timed out|ConnectTimeout).*"
+  },
+  {
+    "name": "已知缺陷已修复（XPASS，该摘 xfail 标记了）",
+    "matchedStatuses": ["failed"],
+    "messageRegex": ".*XPASS.*"
+  },
+  {
+    "name": "断言不符：接口行为与预期不一致",
+    "matchedStatuses": ["failed"],
+    "messageRegex": ".*(AssertionError|assert ).*"
+  },
+  {
+    "name": "已知缺陷（xfail 固化，等后端修）",
+    "matchedStatuses": ["skipped"],
+    "messageRegex": ".*XFAIL.*"
+  },
+  {
+    "name": "用例 / 夹具自身出错（不是后端的问题）",
+    "matchedStatuses": ["broken"],
+    "messageRegex": ".*"
+  }
+]

@@ -5,6 +5,10 @@ reports/
 __pycache__/
 *.pyc
 
+# Allure 命令行工具（~29 MB 的 Java 包，按需下载，别进仓库）
+# 下载方式见 docs/Allure报告-使用说明.md 的「第一次用要准备什么」
+tools/allure-cli/
+
 # 虚拟环境
 .venv/
 

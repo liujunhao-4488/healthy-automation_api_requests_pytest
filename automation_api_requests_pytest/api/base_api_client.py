@@ -10,6 +10,7 @@
 
 import requests
 
+from common import allure_helper
 from common.logger import log, short_url
 from config.config import BASE_URL, TIMEOUT
 
@@ -69,6 +70,9 @@ class BaseApiClient:
           · 4xx 的响应体跟着记 —— 失败原因（message）就藏在里面；
           · **只有 5xx 才是 WARNING**。400 是我们主动测出来的正常剧情，
             全标成警告的话，警告就泛滥成噪音、失去"一眼挑出问题"的作用。
+        · 顺手把这次交互贴进 Allure 报告（见 common/allure_helper.py）。
+            放在这儿同样是"一处埋点、全覆盖"：所有业务请求都过 _log，
+            98 条用例一行都不用改，报告里天然带完整现场。
         """
         ms = resp.elapsed.total_seconds() * 1000
         line = "→ %-4s %-18s %3d %6.0fms" % (
@@ -86,6 +90,9 @@ class BaseApiClient:
             log.warning(line)
         else:
             log.info(line)
+
+        # 报告是**旁路**：它内部已经把异常吞干净了，不会影响这条请求的结果。
+        allure_helper.attach_http(resp)
 
     # ---- 判结果 ----
 

@@ -9,7 +9,7 @@ from datetime import datetime
 import pytest
 
 from api import Api
-from common import eval_record
+from common import allure_helper, eval_record
 from common.logger import begin_run_log, log, pad
 from config.config import TEST_USER
 
@@ -65,6 +65,10 @@ _module_duration = {}    # 模块名 -> 累计耗时（setup + call + teardown �
 # 评测留痕的落盘位置（--eval-out 可覆盖，默认 tools/eval_results.json）
 _eval_out = None
 _eval_path = None        # 本次实际写到了哪（结尾汇总要显示给用户）
+
+# Allure 结果目录（None = 本次不出报告，所有上报动作自动变成空操作）
+_allure_dir = None
+_started_wall = None     # 会话开始的"墙上时间"，environment.properties 要用
 
 
 def _term_write(text, **markup):
@@ -142,16 +146,40 @@ def pytest_addoption(parser):
     )
 
 
+@pytest.hookimpl(tryfirst=True)
 def pytest_configure(config):
+    """会话配置：建运行日志 + 定下 Allure 结果目录。
+
+    ⚠️ 为什么挂 tryfirst：Allure 结果目录必须在 **allure 自己的
+    pytest_configure 之前**定下来。allure-pytest 的实现是
+    （plugin.py: `report_dir = config.option.allure_report_dir`）——
+    它读的是当时的选项值，读不到就直接不出报告。
+    而默认值是 None，所以我们要抢在它前面把路径塞进去。
+
+    为什么不在 pytest.ini 里写 `--alluredir=reports/allure-results`：
+      ① 相对路径是按**当前工作目录**解析的。在 PyCharm 里把工作目录设成
+         test_cases/ 时，结果会写到 test_cases/reports/ 下面 —— 找不到，
+         还以为是"报告没生成"；
+      ② 没装 allure-pytest 的机器上，addopts 里的 --alluredir 会让
+         pytest 直接报"unrecognized arguments"，**全场用例一条都跑不起来**。
+         一个可选的报告不该有这种杀伤力。
+    所以默认目录在这里算（按 rootdir 算绝对路径），装没装都不影响跑用例。
+    """
+    global _allure_dir
+
     # 先建本次运行的日志文件。terminalreporter / capturemanager 在 sessionstart 时使用。
     run_file = begin_run_log()
     meta_log.info("══════════ 会话开始 %s  本次日志: %s ══════════",
                   datetime.now().strftime("%Y-%m-%d %H:%M:%S"), run_file)
 
+    # 本次运行要不要出 Allure 报告（没装 allure 时返回 None，后面全员降级）
+    _allure_dir = allure_helper.results_dir(config)
+
 
 def pytest_sessionstart(session):
-    global _reporter, _capturemanager, _handler, _started_at, _eval_out
+    global _reporter, _capturemanager, _handler, _started_at, _eval_out, _started_wall
     _started_at = time.perf_counter()          # 结尾汇总要用"整场跑了多久"
+    _started_wall = datetime.now()
     config = session.config
     _reporter = config.pluginmanager.get_plugin("terminalreporter")
     _capturemanager = config.pluginmanager.get_plugin("capturemanager")
@@ -162,6 +190,11 @@ def pytest_sessionstart(session):
     # 评测留痕：清空上一轮（同一个进程里跑多次 pytest.main 时才会有残留）
     eval_record.reset()
     _eval_out = config.getoption("--eval-out")
+
+    # ⚠️ 上报开关只在**动手跑用例**的会话里打开。
+    #    --collect-only 也走 sessionstart，但那种会话不该往报告里写半截数据。
+    allure_helper.activate(
+        _allure_dir is not None and not config.getoption("--collect-only", default=False))
 
 
 def _short_name(nodeid):
@@ -348,10 +381,120 @@ def pytest_runtest_logreport(report):
         meta_log.error("✗ [%s 阶段] %s  %s", report.when, report.nodeid, reason)
 
 
-def pytest_sessionfinish(session, exitstatus):
-    """会话结束：把评测留痕落盘，供 tools/eval_runner.py 离线算指标。
+def _collect_summary(terminalreporter):
+    """从 terminalreporter.stats 汇总一次，返回统计结果（无 reporter 时返回 None）。
 
-    ⚠️ 只在**真的采到观测**时才写 —— 跑一批非 AI 用例（0 次模型调用）
+    抽成独立函数是因为**两个钩子都要用**：
+      · pytest_sessionfinish    → 写文件日志（不受 --no-summary 影响）
+      · pytest_terminal_summary → 写控制台（会被 --no-summary 跳过）
+    """
+    if terminalreporter is None:
+        return None
+
+    stats = terminalreporter.stats
+
+    # ⚠️ 必须按 nodeid 归并三个阶段（setup / call / teardown）的报告，不能直接数 report：
+    #   一条用例可能 call 通过、teardown 报错（典型：越权用例的清理失败），
+    #   在 stats 里会同时占 passed 和 error 两条 —— 直接相加，
+    #   216 条用例会算成 221 条，总数从此不可信。
+    by_node = {}
+    for key in ("passed", "failed", "skipped", "xfailed", "error"):
+        for rep in stats.get(key, []):
+            by_node.setdefault(rep.nodeid, []).append(rep)
+
+    outcome_of = {}
+    for nodeid, reps in by_node.items():
+        call = next((r for r in reps if r.when == "call"), None)
+        has_error = any(r.when in ("setup", "teardown") and r.failed for r in reps)
+
+        if call is not None and call.passed:
+            # call 过了但 teardown 炸了，整条仍算"错误"——清场没做干净不能报绿
+            outcome_of[nodeid] = "error" if has_error else "passed"
+        elif call is not None and call.failed:
+            outcome_of[nodeid] = "failed"
+        elif call is not None and call.skipped:
+            outcome_of[nodeid] = (
+                "xfailed" if getattr(call, "wasxfail", None) is not None else "skipped"
+            )
+        else:
+            # 没有 call 报告：setup 就挂了 / setup 里 skip 了
+            outcome_of[nodeid] = "error" if has_error else "skipped"
+
+    passed_n = sum(1 for o in outcome_of.values() if o == "passed")
+    call_failed_n = sum(1 for o in outcome_of.values() if o == "failed")
+    error_n = sum(1 for o in outcome_of.values() if o == "error")
+    skipped_n = sum(1 for o in outcome_of.values() if o == "skipped")
+    xfailed_n = sum(1 for o in outcome_of.values() if o == "xfailed")
+    failed_n = call_failed_n + error_n
+    total_n = len(outcome_of)
+
+    # 按模块聚合：只统计"这次真跑过"的模块，没跑的模块不占一行
+    rows = {}
+    field_of = {"passed": "passed", "failed": "failed",
+                "error": "failed", "skipped": "skipped", "xfailed": "xfailed"}
+    for nodeid, outcome in outcome_of.items():
+        name = _module_of(nodeid)
+        rows.setdefault(name, {"passed": 0, "failed": 0, "skipped": 0, "xfailed": 0})
+        rows[name][field_of[outcome]] += 1
+
+    # 失败清单：一条用例只出一条（call 失败优先；只有夹具错误时用 error 报告）
+    failed_reports = []
+    for nodeid, outcome in outcome_of.items():
+        if outcome not in ("failed", "error"):
+            continue
+        reps = by_node[nodeid]
+        rep = next((r for r in reps if r.when == "call" and r.failed), None)
+        if rep is None:
+            rep = next(r for r in reps if r.when in ("setup", "teardown") and r.failed)
+        failed_reports.append(rep)
+
+    return {
+        "passed_n": passed_n,
+        "failed_n": failed_n,
+        "error_n": error_n,
+        "skipped_n": skipped_n,
+        "xfailed_n": xfailed_n,
+        "total_n": total_n,
+        "call_failed_n": call_failed_n,
+        "rows": rows,
+        "failed_reports": failed_reports,
+    }
+
+
+def _log_summary(summary):
+    """把总账写进文件日志。
+
+    ⚠️ 必须由 pytest_sessionfinish 调用，不能只放在 pytest_terminal_summary：
+      pytest 的 TerminalReporter 在 `--no-summary` 下会**整个跳过**
+      pytest_terminal_summary 钩子（_pytest/terminal.py：
+      `if exitstatus in summary_exit_codes and not self.no_summary:`）。
+      而 PyCharm 默认的 pytest 参数就带 `--no-header --no-summary -q`，
+      于是日志里只剩逐条结果，没有总数。
+      pytest_sessionfinish 不受这个开关影响，总账放这里才稳。
+    """
+    elapsed = (time.perf_counter() - _started_at) if _started_at else 0.0
+    meta_log.info(
+        "══════════ 会话结束  passed=%d failed=%d error=%d skipped=%d "
+        "xfailed=%d  总=%d  用时=%.1fs ══════════",
+        summary["passed_n"], summary["call_failed_n"], summary["error_n"],
+        summary["skipped_n"], summary["xfailed_n"],
+        summary["total_n"], elapsed,
+    )
+    for name in sorted(summary["rows"]):
+        r = summary["rows"][name]
+        meta_log.info("  %-14s 通过=%-3d 失败=%-3d 跳过=%-3d 预期失败=%-3d 耗时=%.1fs",
+                      name, r["passed"], r["failed"], r["skipped"], r["xfailed"],
+                      _module_duration.get(name, 0.0))
+    if summary["failed_reports"]:
+        meta_log.error("  失败用例（%d 条）：", summary["failed_n"])
+        for rep in summary["failed_reports"]:
+            meta_log.error("  ✘ %s  %s", rep.nodeid, _reason(rep))
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """会话结束：把评测留痕落盘，并把总账写进文件日志。
+
+    ⚠️ 评测留痕只在**真的采到观测**时才写 —— 跑一批非 AI 用例（0 次模型调用）
     不该把上一份完整评测数据覆盖成一份空的。
     """
     global _eval_path
@@ -360,6 +503,22 @@ def pytest_sessionfinish(session, exitstatus):
         "rootdir": str(session.config.rootdir),
     })
     _eval_path = str(path) if path else None
+
+    # 文件日志的总账放在这里：--no-summary（PyCharm 默认参数）会跳过
+    # pytest_terminal_summary，但不会跳过 sessionfinish。
+    reporter = session.config.pluginmanager.getplugin("terminalreporter")
+    summary = _collect_summary(reporter)
+    # --collect-only 这类"没真跑用例"的会话不写全零总账，免得日志里多一行噪声
+    if summary is not None and summary["total_n"]:
+        _log_summary(summary)
+
+    # ---- Allure：补上"环境信息"和"缺陷分类" ----
+    # 这两样不属于任何一条用例，所以放在会话收尾统一写进结果目录。
+    # 注意顺序无所谓：allure 是在**生成报告时**才去读它们的。
+    if _allure_dir is not None:
+        allure_helper.write_environment(
+            _allure_dir, session.config, summary, started_at=_started_wall)
+        allure_helper.copy_categories(_allure_dir)
 
 
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
@@ -383,49 +542,25 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
       · skipped 全算（函数体内 skip 记在 call，夹具里 skip 记在 setup）；
       · 耗时按模块累加**三条** report（setup + call + teardown）——
         只算 call 会漏掉夹具里登录 / 清场的时间，那部分常常比用例本身还久。
+
+    ⚠️ 文件日志的总账**不在这里写**，放在 pytest_sessionfinish：
+      本钩子会被 `--no-summary` 整个跳过（PyCharm 默认就带这个参数），
+      写在这里等于"IDE 里跑就没有总数"。
     """
-    stats = terminalreporter.stats
+    summary = _collect_summary(terminalreporter)
+    if summary is None:
+        return
 
-    def _reports(key, when=None):
-        return [r for r in stats.get(key, []) if when is None or r.when == when]
-
-    passed_reports = _reports("passed", "call")
-    skipped_reports = _reports("skipped")
-    xfailed_reports = _reports("xfailed")
-    failed_reports = _reports("failed", "call") + _reports("error")
-
-    passed_n = len(passed_reports)
-    skipped_n = len(skipped_reports)
-    xfailed_n = len(xfailed_reports)
-    failed_n = len(failed_reports)
-    total_n = passed_n + failed_n + skipped_n + xfailed_n
+    passed_n = summary["passed_n"]
+    failed_n = summary["failed_n"]
+    skipped_n = summary["skipped_n"]
+    xfailed_n = summary["xfailed_n"]
+    total_n = summary["total_n"]
+    rows = summary["rows"]
+    failed_reports = summary["failed_reports"]
     elapsed = (time.perf_counter() - _started_at) if _started_at else 0.0
 
-    # 按模块聚合：只统计"这次真跑过"的模块，没跑的模块不占一行
-    rows = {}
-    for key, when, field in (("passed", "call", "passed"),
-                             ("failed", "call", "failed"),
-                             ("error", None, "failed"),
-                             ("skipped", None, "skipped"),
-                             ("xfailed", None, "xfailed")):
-        for rep in _reports(key, when):
-            rows.setdefault(_module_of(rep.nodeid),
-                            {"passed": 0, "failed": 0, "skipped": 0, "xfailed": 0})
-            rows[_module_of(rep.nodeid)][field] += 1
-
-    # ---------- ① 文件日志：留一份完整记账 ----------
-    meta_log.info("══════════ 会话结束  passed=%d failed=%d error=%d skipped=%d xfailed=%d ══════════",
-                  len(_reports("passed")), len(_reports("failed")),
-                  len(_reports("error")), skipped_n, xfailed_n)
-    for name in sorted(rows):
-        r = rows[name]
-        meta_log.info("  %-14s 通过=%-3d 失败=%-3d 跳过=%-3d 预期失败=%-3d 耗时=%.1fs",
-                      name, r["passed"], r["failed"], r["skipped"], r["xfailed"],
-                      _module_duration.get(name, 0.0))
-    for rep in failed_reports:
-        meta_log.error("  ✘ %s  %s", rep.nodeid, _reason(rep))
-
-    # ---------- ② 控制台：接管 pytest 的末尾汇总行 ----------
+    # 控制台：接管 pytest 的末尾汇总行
     def _enhanced_summary():
         terminalreporter.write_sep(
             "=", "测试结果: %d passed, %d failed, %d skipped, %d xfailed, %d in %.1fs"
@@ -468,3 +603,47 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                 cyan=True)
 
     terminalreporter.summary_stats = _enhanced_summary
+
+
+# ==================== Allure 报告的层级标签 ====================
+# 目标：报告里能按 「接口自动化 → 模块 → 文件 → 用例」 点开，
+#       而不是 98 条用例平铺成一坨、只能靠搜文件名。
+#
+# ⚠️ 关键决定：**不给用例加装饰器，按 nodeid 自动推标签。**
+#   逐个加 `@allure.feature("登录")` 的代价不是"多打几行字"：
+#     · 加新用例时**一定会忘**，忘了就掉进报告里一个无分类的孤儿；
+#     · 想调整分组（"AI 助手"要不要再拆成"安全"和"功能"）要动几十个文件。
+#   目录名 = 模块、文件名 = 资源，本来就是项目约定（README 第五节第 6 条），
+#   标签直接从这套约定里长出来，**零维护**。
+#
+# 标签取值表放在 common/allure_helper.py（一张 dict），要改名去那里改。
+# 用例若自己想要更细的标价，直接加装饰器即可 —— 这里会跳过已有的类型。
+
+def _has_allure_label(item, label_type):
+    """这条用例是不是已经有某类 allure 标签了（装饰器加的优先）。"""
+    return any(mark.kwargs.get("label_type") == label_type
+               for mark in item.iter_markers(name="allure_label"))
+
+
+def pytest_collection_modifyitems(items):
+    """收集完、开跑前，把层级标签挂到每条用例上。
+
+    为什么可以在这里加、值又是什么时候被读走的：
+      allure-pytest 是在 **pytest_runtest_teardown** 里读 `allure_label`
+      标记的（listener.py: `test_result.labels.extend(...allure_labels(item))`），
+      远晚于收集阶段 —— 所以此刻 add_marker 来得及。
+
+    ⚠️ 不能在这里用 `allure.dynamic.feature(...)`：
+      那套 API 要求"当前有正在执行的用例"，收集阶段一条都还没跑，调用无效。
+      记录这一点，是因为它看起来更"正宗"，很容易踩。
+    """
+    if not allure_helper.available():
+        return
+
+    for item in items:
+        for label_type, value in allure_helper.derive_labels(item.nodeid):
+            if not _has_allure_label(item, label_type):
+                # 注意参数顺序：值是 args，类型是 kwargs["label_type"]。
+                # 写成 allure_label(label_type, value) 会静默不生效 —— 标记照挂，
+                # 但 allure 读不到 label_type，报告里那一栏永远是空的。
+                item.add_marker(pytest.mark.allure_label(value, label_type=label_type))

@@ -27,6 +27,8 @@ from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+from common import allure_helper
+
 # logs/ 在项目根下（本文件在 common/ 里，所以往上一级）
 LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
 RUNS_DIR = LOG_DIR / "runs"
@@ -153,15 +155,26 @@ def log_response(resp, max_chars=0):
 
     完整 body 只进日志文件；控制台默认不展开（由 conftest 的分块 handler 过滤）。
     5xx 才算警告——4xx 是我们主动测出来的正常剧情，"错得对不对"由断言判。
+
+    同时把这份完整响应贴进 Allure 报告：**手动调用它的场合，本来就说明
+    "这次响应值得细看"**（例如 RAG 召回结果、模型原始回答），
+    而报告里能直接点开看，比去 logs/runs/ 里翻文件方便得多。
     """
     level = logging.WARNING if resp.status_code >= 500 else logging.INFO
     log.log(level, "%s", format_response(resp, max_chars=max_chars))
+    allure_helper.attach_text("响应详情　%s" % short_url(resp.request.url),
+                              format_response(resp, max_chars=max_chars))
     return resp
 
 
 def log_qa(question, answer, max_chars=100):
-    """把"问了什么 → 答了什么"压成**一行**，给 AI 类用例当"肉眼观察窗"。"""
+    """把"问了什么 → 答了什么"压成**一行**，给 AI 类用例当"肉眼观察窗"。
+
+    控制台/日志文件里是一行（长回答会截断）；**报告里贴的是全文**。
+    两者刻意不同：控制台要能扫，报告要能复盘"它到底答了什么"。
+    """
     text = " ".join(str(answer).split())
     if len(text) > max_chars:
         text = text[:max_chars] + "…"
     log.info("· AI    %s → %s", pad("问「%s」" % question, 22), text)
+    allure_helper.attach_qa(question, answer)

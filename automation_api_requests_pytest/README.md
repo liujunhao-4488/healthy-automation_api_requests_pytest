@@ -91,6 +91,12 @@ pytest + requests 写的接口自动化测试，被测系统：健康饮食后�
 | **只改一个字段，别的会不会被冲掉** | `user/test_user_profile.py` | `test_update_single_field_keeps_others`（局部更新 vs 全量覆盖） |
 | **怎么写"期望失败"的边界用例** | `user/test_user_profile.py` | 组 4：手写 status_code + code + message 三层断言 |
 | **`%` 在 SQL 里被 pymysql 当成占位符** | 本节第六节 | `like 'tmp\_%%'` 要写成参数化的 `%s` |
+| **报告怎么看？失败了怎么查？** | `docs/Allure报告-使用说明.md` | 六个视图各回答什么问题、单条用例详情页里有什么 |
+| **请求/响应原文去哪看** | `docs/Allure报告-使用说明.md` §四决定 3 | 每次 HTTP 交互自动贴成两个附件；控制台只留一行摘要 |
+| **报告里的层级和严重级别是谁打的** | `common/allure_helper.py` | `derive_labels()` —— 按目录/文件名推，**不用给用例加装饰器** |
+| **为什么报告目录不写在 pytest.ini 里** | `conftest.py` 的 `pytest_configure` | 相对路径坑 + 没装 allure 时不该把全场用例带崩 |
+| **报告里的 token 怎么变 `***` 了** | `common/allure_helper.py` | `_mask_header()` / `_mask_value()`；要明文看就设 `ALLURE_NO_MASK=1` |
+| **红的归类（后端挂了 / 断言不符 / 已知缺陷）** | `config/allure_categories.json` | 五条规则，先匹配先算 |
 
 
 ---
@@ -100,8 +106,10 @@ pytest + requests 写的接口自动化测试，被测系统：健康饮食后�
 ```
 automation_api_requests_pytest/
 ├── README.md            ← 你正在看的这份知识点索引
-├── config.py            ← 配置中心：BASE_URL / TIMEOUT / 测试账号
+├── config/              ← 配置中心：BASE_URL / TIMEOUT / 测试账号（config.py 里）
+│   └── allure_categories.json ← 报告里的缺陷分类规则（后端挂了 / 断言不符 / 已知缺陷…）
 ├── conftest.py          ← 公共夹具：api / token / auth_headers（+ collect_ignore）
+│                          另外：Allure 的结果目录、层级标签、环境信息也在这里装配
 ├── api/                 ← 【接口封装层】一个接口 = 一个方法，**接口路径只写在这一层**
 │   ├── __init__.py      ← `Api` 聚合同入口：自己继承 BaseApiClient，把 auth / user / health / recipe 挂成属性
 │   ├── base_api_client.py ← 【唯一底座】接口类继承它，就有 get/post/put/delete + assert_ok
@@ -110,7 +118,8 @@ automation_api_requests_pytest/
 │   ├── health_api.py    ← GET / POST /health/info、/health/goal
 │   └── recipe_api.py    ← GET /recipe/list、/recipe/detail/{id}、/recipe/search
 ├── docs/
-│   └── 接口覆盖矩阵.md   ← 施工图：77 个接口的覆盖状态 + 优先级排序
+│   ├── 接口覆盖矩阵.md   ← 施工图：77 个接口的覆盖状态 + 优先级排序
+│   └── Allure报告-使用说明.md ← 报告怎么看 / 怎么跑 / 为什么这么集成
 ├── pytest.ini           ← pytest 运行配置（pythonpath / 中文用例名显示 / SQL 日志）
 ├── requirements.txt     ← 依赖清单
 ├── test_cases/          ← 测试用例，按业务模块分目录（知识点地图见第一节）
@@ -141,11 +150,15 @@ automation_api_requests_pytest/
 ├── common/              ← 可复用零件（与"接口"无关的通用工具）
 │   ├── data_loader.py   ← 统一读数据：json / csv / yaml / xlsx → list[dict]
 │   ├── data_factory.py  ← 批量生成数据：组合 / 边界 / fuzz
-│   └── db.py            ← MySQL 工具：连接复用 + 读/写 + 事务 + SQL 日志
+│   ├── db.py            ← MySQL 工具：连接复用 + 读/写 + 事务 + SQL 日志
+│   ├── logger.py        ← 日志：控制台一行摘要 / 文件留全量 / 顺手贴进 Allure
+│   └── allure_helper.py ← 【Allure 唯一出口】请求响应附件、脱敏、层级标签、环境信息
 ├── tools/               ← 辅助脚本（**不是用例**：产出数字/清单，不产出红绿）
 │   ├── latency_report.py   ← 拿提问集跑一遍，量耗时并导出 Excel
 │   ├── jailbreak_report.py ← 红队对抗：跑越狱样本集，算攻破率并导出 Excel
 │   ├── run_tests.py        ← 跑 pytest 并把输出写文件（本机抓不到 stdout 的兜底）
+│   ├── allure_report.py    ← 把结果渲染成 Allure 网页（--run 可顺手跑一轮）
+│   ├── allure_selftest/    ← 故意做红的自检用例（只验报告本身对不对）
 │   └── clean_artifacts.py  ← 清理 logs/runs 与 reports 的旧文件（默认演习，加 --yes 才真删）
 └── data/                ← 外部数据文件（同一份 6 行登录数据的 4 个孪生版本）
     ├── login_cases.json
@@ -193,6 +206,35 @@ cd D:\jiankang\healthy\automation_api_requests_pytest
 .venv\Scripts\python.exe tools/clean_artifacts.py
 ```
 
+**看 Allure 报告**（跑完用例才会有所得看；完整说明见 `docs/Allure报告-使用说明.md`）：
+
+```bash
+# 两步：先跑用例（顺带产出 reports/allure-results/），再渲染成网页并打开
+.venv\Scripts\python.exe -m pytest test_cases -q
+.venv\Scripts\python.exe tools/allure_report.py --open
+
+# 一条命令搞定：跑全套 → 清旧结果 → 出报告 → 打开浏览器
+.venv\Scripts\python.exe tools/allure_report.py --run --open
+
+# 只跑一个模块并出报告（--run 后面的参数原样透给 pytest）
+.venv\Scripts\python.exe tools/allure_report.py --run test_cases/auth -q --open
+
+# 只看"严重级别 = critical"（登录 / 用户资料，挂了说明鉴权和越权出问题）
+.venv\Scripts\python.exe -m pytest test_cases --allure-severities=critical -q
+
+# 只跑某个业务功能（层级标签是自动打的，用例不用改）
+.venv\Scripts\python.exe -m pytest test_cases --allure-features="AI 助手" -q
+```
+
+> ⚠️ **别直接双击 `reports/allure-report/index.html`** —— 报告是纯前端 + 一堆 JSON，
+> `file://` 下读本地 JSON 会被浏览器拦掉，页面一片空白。必须 `--open` 起个本地服务。
+>
+> 报告里的"请求/响应"是自动贴的（`api/base_api_client.py` 一处埋点全覆盖），
+> 里面的 `Authorization` 和 `password` **默认打码**；要明文排查就设 `$env:ALLURE_NO_MASK=1`。
+>
+> 第一次用还缺两样东西：`pip install -r requirements.txt`（拿到 `allure-pytest`）
+> 和 Allure 命令行工具（解压到 `tools/allure-cli/`，见 `docs/Allure报告-使用说明.md` 第二节）。
+
 **前置条件**（后端没起会全红）：
 ```bash
 # 1) 先确认 MySQL 在跑（3306 有监听即可）
@@ -219,7 +261,7 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/api/recipe/list
 
 ---
 
-## 五、十一条约定（防止以后再次迷路）
+## 五、十二条约定（防止以后再次迷路）
 
 1. **命名**：新增文件用 `test_<被测对象>_<知识点>.py`，例如 `test_recipe_parametrize.py`、`test_order_ddt.py`。
    名字里带上"知识点"，光看文件名就知道它教什么。
@@ -286,6 +328,21 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/api/recipe/list
      Python 就不再自动用父类的，Session 不会被创建，一调就 `AttributeError`。
    - ⚠️ **代价要说清**：`Api` 现在也带着继承来的 `get/post`，所以 `api.user.post("/任意路径")`
      语法上能跑。防线从"结构上不给"变成了"约定上不用"——靠这条约定和 code review 守。
+
+12. **Allure 只许"旁路"：报告挂掉不许把用例搞红；标签只在一个文件里维护。**（2026-10-21 定）
+    - **新增测试文件 → 去 `common/allure_helper.py` 的 `STORY_LABELS` 补一行中文名。**
+      漏了不会报错（有兜底：`test_recipe_search` → `recipe search`），只是报告里不好看。
+    - **不许在用例里 `import allure` 自己贴东西。** 请求/响应、AI 问答已经在
+      `api/base_api_client.py` 和 `common/logger.py` 埋好了，一处埋点全场覆盖；
+      用例各贴各的，就会出现"有的用例有附件、有的没有"，报告的价值立刻塌一半。
+    - **不许绕过 `common/allure_helper.py` 直接调 `allure.attach`。** 那个文件里做了
+      **截断**（单段 2 万字符，SSE 和大响应体不作截断能把报告干到几百 MB）和
+      **脱敏**（`Authorization` / `password`）——绕过去等于把凭据明文摊进一份会被转发的 HTML。
+    - 加任何"报告层面"的东西之前先问一句：**它挂了会不会把绿的用例搞红？**
+      会 → 包进 `_safe()`，或者干脆别做。**观测工具不该成为被测对象。**
+    - ⚠️ **别在埋点里读不该读的东西**：对 `stream=True` 的响应调 `resp.text`
+      会把整条流读干，`test_assistant_流式.py` 当场挂。判据是
+      "贴给报告的内容，必须是本来就该读、且读一次没关系的东西"。
 
 ---
 
