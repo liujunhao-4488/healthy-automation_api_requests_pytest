@@ -686,11 +686,23 @@ public class RecipeServiceImpl implements RecipeService {
         //   · article 路由    → 检索服务尚未接入，facts 为空，等于走原来的裸模型回答。
         String knowledgeRoute = "";
         String knowledgeFacts = "";
+        // 可观测性三件套（2026-10-22）：route 只说明"打算走哪条路"，这三样才说明"路上有没有拿到东西"。
+        //   · ragUsed        —— 检索结果是否真的拼进了 prompt；
+        //   · sources        —— 实际交给模型的资料（title / section / docId / score）；
+        //   · retrievalStatus—— hit / empty / error / ingredient / not_attempted。
+        // 以前三者都不可见，导致「召回 3 条」「召回 0 条」「5000 挂了」在响应里长得一模一样。
+        boolean ragUsed = false;
+        List<Map<String, Object>> knowledgeSources = new ArrayList<>();
+        String retrievalStatus = "not_attempted";
         if ("knowledge".equals(intent)) {
-            Map<String, String> knowledgeContext = resolveKnowledgeContext(question);
-            knowledgeRoute = knowledgeContext.getOrDefault("route", "");
-            knowledgeFacts = knowledgeContext.getOrDefault("facts", "");
-            log.info("AI 助手 knowledge 路由: route={}, 命中食材数据={}字", knowledgeRoute, knowledgeFacts.length());
+            Map<String, Object> knowledgeContext = resolveKnowledgeContext(question);
+            knowledgeRoute = contextText(knowledgeContext, "route");
+            knowledgeFacts = contextText(knowledgeContext, "facts");
+            ragUsed = Boolean.TRUE.equals(knowledgeContext.get("ragUsed"));
+            knowledgeSources = contextSources(knowledgeContext.get("sources"));
+            retrievalStatus = contextText(knowledgeContext, "status");
+            log.info("AI 助手 knowledge 路由: route={}, status={}, ragUsed={}, sources={}, 命中数据={}字",
+                knowledgeRoute, retrievalStatus, ragUsed, knowledgeSources.size(), knowledgeFacts.length());
         }
 
         // ③ 硬拦：命中安全规则就**不调模型**，直接回固定文案。
@@ -709,13 +721,14 @@ public class RecipeServiceImpl implements RecipeService {
             Map<String, Object> blockedResult = buildAssistantTextResult(blockReply(blocked), "blocked");
             blockedResult.put("intent", intent);
             blockedResult.put("blocked", blocked);
+            putKnowledgeDiagnostics(blockedResult, knowledgeRoute, ragUsed, knowledgeSources, retrievalStatus);
             return blockedResult;
         }
 
         Map<String, Object> deepSeekResult = getDeepSeekIngredientAssistantResult(ingredientData, "advice".equals(intent), knowledgeFacts);
         if (deepSeekResult != null && !deepSeekResult.isEmpty()) {
             deepSeekResult.put("intent", intent);
-            putKnowledgeRoute(deepSeekResult, knowledgeRoute);
+            putKnowledgeDiagnostics(deepSeekResult, knowledgeRoute, ragUsed, knowledgeSources, retrievalStatus);
             return deepSeekResult;
         }
 
@@ -731,7 +744,7 @@ public class RecipeServiceImpl implements RecipeService {
         log.warn("AI 助手无可用结果，返回错误提示（已不再回退到 Python 服务或本地模板）");
         Map<String, Object> errorResult = buildAssistantTextResult(ASSISTANT_UNAVAILABLE_REPLY, "error");
         errorResult.put("intent", intent);
-        putKnowledgeRoute(errorResult, knowledgeRoute);
+        putKnowledgeDiagnostics(errorResult, knowledgeRoute, ragUsed, knowledgeSources, retrievalStatus);
         return errorResult;
     }
 
@@ -752,11 +765,18 @@ public class RecipeServiceImpl implements RecipeService {
         // 不另写一份，避免"两条路结论不同"这种本项目踩过的坑）。
         String knowledgeRoute = "";
         String knowledgeFacts = "";
+        boolean ragUsed = false;
+        List<Map<String, Object>> knowledgeSources = new ArrayList<>();
+        String retrievalStatus = "not_attempted";
         if ("knowledge".equals(intent)) {
-            Map<String, String> knowledgeContext = resolveKnowledgeContext(question);
-            knowledgeRoute = knowledgeContext.getOrDefault("route", "");
-            knowledgeFacts = knowledgeContext.getOrDefault("facts", "");
-            log.info("AI 助手 knowledge 路由(流式): route={}, 命中食材数据={}字", knowledgeRoute, knowledgeFacts.length());
+            Map<String, Object> knowledgeContext = resolveKnowledgeContext(question);
+            knowledgeRoute = contextText(knowledgeContext, "route");
+            knowledgeFacts = contextText(knowledgeContext, "facts");
+            ragUsed = Boolean.TRUE.equals(knowledgeContext.get("ragUsed"));
+            knowledgeSources = contextSources(knowledgeContext.get("sources"));
+            retrievalStatus = contextText(knowledgeContext, "status");
+            log.info("AI 助手 knowledge 路由(流式): route={}, status={}, ragUsed={}, sources={}, 命中数据={}字",
+                knowledgeRoute, retrievalStatus, ragUsed, knowledgeSources.size(), knowledgeFacts.length());
         }
 
         // ① 硬拦：命中就**不调模型**，直接回固定文案（与非流式同一套判定，不另写表）。
@@ -766,6 +786,7 @@ public class RecipeServiceImpl implements RecipeService {
             Map<String, Object> blockedResult = buildAssistantTextResult(blockReply(blocked), "blocked");
             blockedResult.put("intent", intent);
             blockedResult.put("blocked", blocked);
+            putKnowledgeDiagnostics(blockedResult, knowledgeRoute, ragUsed, knowledgeSources, retrievalStatus);
             onDelta.accept(String.valueOf(blockedResult.get("text")));
             return blockedResult;
         }
@@ -774,7 +795,7 @@ public class RecipeServiceImpl implements RecipeService {
         Map<String, Object> deepSeekResult = streamDeepSeekAssistantResult(ingredientData, question, onDelta, "advice".equals(intent), knowledgeFacts);
         if (deepSeekResult != null && !deepSeekResult.isEmpty()) {
             deepSeekResult.put("intent", intent);
-            putKnowledgeRoute(deepSeekResult, knowledgeRoute);
+            putKnowledgeDiagnostics(deepSeekResult, knowledgeRoute, ragUsed, knowledgeSources, retrievalStatus);
             return deepSeekResult;
         }
 
@@ -782,7 +803,7 @@ public class RecipeServiceImpl implements RecipeService {
         log.warn("AI 助手流式无可用结果，返回错误提示");
         Map<String, Object> errorResult = buildAssistantTextResult(ASSISTANT_UNAVAILABLE_REPLY, "error");
         errorResult.put("intent", intent);
-        putKnowledgeRoute(errorResult, knowledgeRoute);
+        putKnowledgeDiagnostics(errorResult, knowledgeRoute, ragUsed, knowledgeSources, retrievalStatus);
         onDelta.accept(ASSISTANT_UNAVAILABLE_REPLY);
         return errorResult;
     }
@@ -861,15 +882,18 @@ public class RecipeServiceImpl implements RecipeService {
     // ══════════ knowledge 二级路由：算标签 + 取数据，一次完成 ══════════
 
     /**
-     * 只在 knowledge 意图下调用。一次算出两样东西，返回值 2 个键：
-     *   route —— ingredient（精确查表）/ article（走检索）
-     *   facts —— 命中食材时拼好的**事实块**，未命中为空串
+     * 只在 knowledge 意图下调用。一次算完 route + 取数 + 状态，返回 5 个键：
+     *   route  —— ingredient（精确查表）/ article（走检索）
+     *   facts  —— 命中食材时拼好的**事实块**，未命中为空串
+     *   ragUsed—— 检索结果是否真的拼进了 prompt
+     *   sources—— 实际交给模型的资料清单（ingredient 路由为空）
+     *   status —— ingredient / hit / empty / error
      *
      * ⚠️ 为什么不拆成"先算 route、再决定要不要查"两个方法：那样要么查两遍库，
      *    要么把 List 当出参传来传去。一次算完，调用方只做"要不要用它"的判断。
      */
-    private Map<String, String> resolveKnowledgeContext(String question) {
-        Map<String, String> result = new HashMap<>();
+    private Map<String, Object> resolveKnowledgeContext(String question) {
+        Map<String, Object> result = new HashMap<>();
         String normalized = normalizeStrict(question);
 
         List<Ingredient> hit = normalized.isEmpty()
@@ -885,22 +909,33 @@ public class RecipeServiceImpl implements RecipeService {
         //      · 命中 → 问的是"这个食材的营养素" → 查表，数字可控；
         //      · 未命中 → 问的是"概念/指标含义/怎么看"（「升糖指数是什么意思」
         //        「营养成分表怎么看」）→ 没有唯一答案 → 检索（article）。
-        //    ⚠️ 代价要有意识：**knowledge 现在这个范围偏窄** —— 它接不住
-        //    「生酮饮食是什么」「高血压饮食注意什么」这类，那些句子里不含营养数值词，
-        //    会在 classifyIntent 里落到 advice / chat，压根进不来这里。
-        //    要让 RAG 真正吃得饱，下一步得改的是 **INTENT_KNOWLEDGE_KEYWORDS 词表**，
-        //    不是这个方法 —— 但那会动到意图标签那 31 条用例的期望值，得单独一轮做。
+        //    ⚠️ 代价要有意识：**knowledge 现在这个范围仍然偏窄** —— 词表扩过一轮
+        //    （慢病词 + 生酮 / 轻断食 / 食养），但「减肥期间能吃主食吗」「主食怎么搭配」
+        //    这类不含数值 / 慢病 / 概念词的日常问题仍会落到 advice，压根进不来这里。
+        //    要让 RAG 真正吃得饱，下一步得改的是 **INTENT_KNOWLEDGE_KEYWORDS 词表**
+        //    或 advice 也放行检索，不是这个方法 —— 那会动到意图标签那 31 条用例的期望值，
+        //    得单独一轮做。
         if (!hit.isEmpty()) {
             result.put("route", KNOWLEDGE_ROUTE_INGREDIENT);
             result.put("facts", buildIngredientFacts(hit));
+            result.put("ragUsed", false);
+            result.put("sources", new ArrayList<Map<String, Object>>());
+            result.put("status", "ingredient");
         } else {
             // article 路由：**RAG 检索的挂载点**（2026-10-16 已接上）。
             //
-            // ⭐ 返回值形状与未接入时**完全一样**（还是 route + facts 两个键），
-            //    所以从拼 prompt 到流式返回，下游一个字都不用改 ——
-            //    RAG 片段本质就是"另一种 facts"，走的是同一条 system 消息通道。
+            // 2026-10-22：检索结果不再只返回一个 facts 字符串，而是一份带状态的结构：
+            //   facts      —— 拼好的资料块（空串 = 没有资料）；
+            //   ragUsed    —— 是否真的有资料进了 prompt；
+            //   sources    —— 实际交给模型的资料清单；
+            //   status     —— hit / empty / error。
+            // 这样调用方才能把"检索到了""没检索到""检索挂了"区分开。
             result.put("route", KNOWLEDGE_ROUTE_ARTICLE);
-            result.put("facts", searchKnowledgeBase(question));
+            Map<String, Object> retrieval = searchKnowledgeBase(question);
+            result.put("facts", contextText(retrieval, "facts"));
+            result.put("ragUsed", retrieval.get("ragUsed"));
+            result.put("sources", retrieval.get("sources"));
+            result.put("status", contextText(retrieval, "status"));
         }
         return result;
     }
@@ -919,7 +954,12 @@ public class RecipeServiceImpl implements RecipeService {
      *    恰好就是"不加那条 system 消息" —— 也就是说**降级路径 = 接入前的行为**，
      *    不需要另写兜底分支。检索挂了，用户拿到的是一份没有依据的回答，而不是 500。
      */
-    private String searchKnowledgeBase(String question) {
+    private Map<String, Object> searchKnowledgeBase(String question) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("facts", "");
+        result.put("ragUsed", false);
+        result.put("sources", new ArrayList<Map<String, Object>>());
+        result.put("status", "error");
         try {
             Map<String, Object> request = new HashMap<>();
             request.put("query", question);
@@ -929,12 +969,13 @@ public class RecipeServiceImpl implements RecipeService {
             //    写死在两处就变成"改一处漏一处"。
             Map<String, Object> response = kbRestTemplate.postForObject(
                 PYTHON_SERVICE_URL + "/api/kb/search", request, Map.class);
-            return buildKnowledgeFacts(response);
+            return buildKnowledgeContext(response);
         } catch (RestClientException exception) {
             // 超时 / 连接被拒 / 5xx 都落这里。**不打 error**：知识库不可用不该惊动告警 ——
             // 它的设计后果就是"退化成一份没有依据的回答"，属于可接受的降级。
+            // 但降级不再静默：status=error 会随响应回出去，测试能断言"这次检索挂了"。
             log.warn("知识库检索不可用，退化为裸模型回答: {}", exception.getMessage());
-            return "";
+            return result;
         }
     }
 
@@ -947,15 +988,20 @@ public class RecipeServiceImpl implements RecipeService {
      *    **指向不存在数据的空指令**（"结合用户档案"那句踩过同一个坑，见
      *    buildIngredientAssistantSystemPrompt 的注释）。写进资料块，天然做到"有资料才有指令"。
      */
-    private String buildKnowledgeFacts(Map<String, Object> response) {
+    private Map<String, Object> buildKnowledgeContext(Map<String, Object> response) {
+        Map<String, Object> result = new HashMap<>();
+        List<Map<String, Object>> sources = new ArrayList<>();
+        result.put("facts", "");
+        result.put("ragUsed", false);
+        result.put("sources", sources);
+        result.put("status", "empty");
         if (response == null) {
-            return "";
+            return result;
         }
         Object data = response.get("data");
         if (!(data instanceof List) || ((List<?>) data).isEmpty()) {
-            // 检索成功但**一条都没召回** —— 与"检索失败"返回同一个空串。
-            // 这是有意的：上游只需要知道"这次没有资料可用"，不关心为什么没有。
-            return "";
+            // 检索成功但**一条都没召回**：status=empty，与"检索挂了"（error）区分开。
+            return result;
         }
 
         StringBuilder facts = new StringBuilder(
@@ -974,9 +1020,19 @@ public class RecipeServiceImpl implements RecipeService {
                 facts.append(" · ").append(section);
             }
             facts.append("\n").append(factsField(hit.get("snippet"))).append("\n");
+
+            // sources 只记录**真的拼进 facts 的条目**，顺序、条数与资料块一致。
+            // 测试拿它比对"模型引用的书是不是这次真给过的"，不用再自己猜 topK。
+            Map<String, Object> source = new HashMap<>();
+            source.put("docId", hit.get("docId"));
+            source.put("title", factsField(hit.get("title")));
+            source.put("section", section);
+            source.put("docType", factsField(hit.get("docType")));
+            source.put("score", hit.get("score"));
+            sources.add(source);
         }
-        if (index == 1) {
-            return "";
+        if (sources.isEmpty()) {
+            return result;
         }
 
         // ⚠️ 这段是"防止模型把检索结果当摆设"的关键：不写明"只能依据以上资料"，
@@ -985,7 +1041,10 @@ public class RecipeServiceImpl implements RecipeService {
         facts.append("请以上述资料为主要依据作答，不要用你的记忆替换其中的数字或结论；")
             .append("引用时请说明出自哪一份指南。若上述资料没有覆盖用户问到的点，")
             .append("就直接说明资料中没有提到，不要凭印象补充。");
-        return facts.toString();
+        result.put("facts", facts.toString());
+        result.put("ragUsed", true);
+        result.put("status", "hit");
+        return result;
     }
 
     /** null 安全取值 —— 检索结果里的字段可能缺失（与 valueOrDash 不同：缺了就返回空串，不占位）。 */
@@ -1118,11 +1177,54 @@ public class RecipeServiceImpl implements RecipeService {
         return String.format(Locale.ROOT, "%.1f", value);
     }
 
-    /** 只在算出来时挂上 route，避免响应里出现一堆空字段（与 blocked 同一口径）。 */
-    private void putKnowledgeRoute(Map<String, Object> result, String knowledgeRoute) {
-        if (result != null && knowledgeRoute != null && !knowledgeRoute.isEmpty()) {
+    /**
+     * 把 knowledge 路由的可观测结果挂到响应上（2026-10-22）。
+     *
+     * route 只在算出来时出现（与 blocked 同一口径）；ragUsed / sources / retrievalStatus
+     * **总是出现**，因为"没走 RAG"本身也是一个需要被断言的事实 —— 缺字段和 false 是两回事。
+     */
+    private void putKnowledgeDiagnostics(Map<String, Object> result, String knowledgeRoute,
+                                         boolean ragUsed, List<Map<String, Object>> sources,
+                                         String retrievalStatus) {
+        if (result == null) {
+            return;
+        }
+        if (knowledgeRoute != null && !knowledgeRoute.isEmpty()) {
             result.put("knowledgeRoute", knowledgeRoute);
         }
+        result.put("ragUsed", ragUsed);
+        result.put("sources", sources == null ? new ArrayList<Map<String, Object>>() : sources);
+        if (retrievalStatus != null && !retrievalStatus.isEmpty()) {
+            result.put("retrievalStatus", retrievalStatus);
+        }
+    }
+
+    /** Map<String,Object> 里取字符串（缺键 / null 都返回空串，不返回 "null"）。 */
+    private String contextText(Map<String, Object> context, String key) {
+        if (context == null) {
+            return "";
+        }
+        Object value = context.get(key);
+        return value == null ? "" : String.valueOf(value);
+    }
+
+    /** 安全复制检索来源列表，避免把内部可变 List 直接暴露给调用方。 */
+    private List<Map<String, Object>> contextSources(Object value) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (!(value instanceof List)) {
+            return result;
+        }
+        for (Object item : (List<?>) value) {
+            if (!(item instanceof Map)) {
+                continue;
+            }
+            Map<String, Object> source = new HashMap<>();
+            for (Map.Entry<?, ?> entry : ((Map<?, ?>) item).entrySet()) {
+                source.put(String.valueOf(entry.getKey()), entry.getValue());
+            }
+            result.add(source);
+        }
+        return result;
     }
 
     /**

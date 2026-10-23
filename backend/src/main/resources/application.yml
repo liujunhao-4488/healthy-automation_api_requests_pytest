@@ -2,9 +2,13 @@ spring:
   application:
     name: health-diet-backend
   datasource:
-    url: jdbc:mysql://localhost:3306/health_diet?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: 123456
+    # 默认仍连开发库 health_diet，保证本地直接启动不变。
+    # 跑自动化测试时用环境变量指向独立测试库：
+    #   set DB_NAME=health_diet_test
+    #   cd backend && mvnw spring-boot:run
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:health_diet}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:123456}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss

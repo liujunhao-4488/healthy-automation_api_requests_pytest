@@ -6,10 +6,24 @@
 # 按项目约定，夹具粒度要匹配用例需求 —— 别的模块用不到，就别放公共间里占地方。
 
 import uuid
+from pathlib import Path
 
 import pytest
 
 from common import db
+
+_HERE = Path(__file__).resolve().parent
+
+
+def pytest_collection_modifyitems(items):
+    """health 用例都会直接查库/删库，统一标记为 requires_db。
+
+    ⚠️ conftest 的 hook 会收到**全量** items，必须按路径过滤，
+    否则会把别的模块也一起标成 requires_db（实测踩过）。
+    """
+    for item in items:
+        if Path(str(item.fspath)).resolve().parent == _HERE:
+            item.add_marker(pytest.mark.requires_db)
 
 
 @pytest.fixture

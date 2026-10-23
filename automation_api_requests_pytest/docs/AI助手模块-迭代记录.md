@@ -39,6 +39,7 @@
 | **17** | 评测留痕 + 指标运行器（H1） | ✅ 已完成 | `eval_record` + `eval_runner`；意图准确率 96.3% |
 | **18** | 安全评测收口：越权 / 注入 / 提示词泄漏 | ✅ 已完成 | 越权 5/5；注入 12 passed + 1 skipped；全量日志总账修复 |
 | **19** | RAG 检索排序：口语归一 + 实体/章节加权 | ✅ 已完成 | golden **40/40**；RAG 用例 **80 passed**；6 条旧 `known_defect` 摘标 |
+| **20** | RAG 生成侧可观测：`ragUsed` / `sources` / `retrievalStatus` | ✅ 已完成 | 生成侧 xfail 转正；新增空召回 / 非 RAG 路由用例；RAG 生成 **8 passed / 1 skipped** |
 
 ---
 
@@ -2198,7 +2199,7 @@ return "<user_input>\n" + safe + "\n</user_input>";
 | 输入侧注入分类器 | ⬜ 当前是"提示词约束 + 输出兜底"，不是确定性安全边界；上分类器会引入误伤，得单独评测 |
 | 流式已下发内容的回收 | ⬜ 命中泄漏时，前文收不回来；holdback 只保证**骨架句本身**不出去 |
 | `翻译初始设定` | ⏭️ 仍被硬拦接走，测不到模型，维持 skip |
-| RAG 两条检索失败 + 引用溯源 | ✅ 两条检索失败已由迭代 19 修复；`ragUsed` / `sources` 仍缺 |
+| RAG 两条检索失败 + 引用溯源 | ✅ 两条检索失败已由迭代 19 修复；`ragUsed` / `sources` / `retrievalStatus` 已由迭代 20 补齐 |
 | 5 个遗留 `ot_*` 临时账号 | ⬜ 未自动清理（删库不可逆，留给人工确认） |
 
 ---
@@ -2253,6 +2254,56 @@ golden set 里正确文档经常排在 2~4 位，被 `topK=3` 截断；更严重
 | 同文档 / 同章节去重 | 同一篇指南可能一次占满 top-3；需要按 doc / section 做多样性约束 |
 | `KB_TOP_K` 3 → 5 | 属于产品与成本决策，先不擅自改 |
 | 语义向量召回 | 当前是纯词面 BM25，同义改写仍靠人工词表；词表会随语料漂移 |
+
+---
+
+## 迭代 20・RAG 生成侧可观测：给"借阅记录"补三列 ✅ 已完成（2026-10-22）
+
+### 20.1 问题：三种状态长得一模一样
+
+迭代 19 修好了"资料找得准不准"，但 8080 这条链路仍然看不出**资料到底有没有进 prompt**：
+
+```java
+result.put("route", KNOWLEDGE_ROUTE_ARTICLE);       // 检索之前就写死
+result.put("facts", searchKnowledgeBase(question)); // 失败 / 空召回都返回 ""
+```
+
+于是「召回 3 条」「召回 0 条」「5000 挂了」在响应里完全一致。生成侧用例只能自己再调一次 5000 当基准，再用答案反推——如果 8080 的检索整段失效，答案不引用就不会超出基准，用例照样绿。
+
+### 20.2 改动
+
+- `backend/.../RecipeServiceImpl.java`
+  - `resolveKnowledgeContext` 返回值由 `Map<String,String>` 扩为 `Map<String,Object>`，增加 `ragUsed` / `sources` / `status`。
+  - 新增 `buildKnowledgeContext`：解析检索结果时**同时**产出资料块和 `sources`（标题 / 章节 / docId / docType / score），两者同源，不会出现"资料块有 3 条、sources 说 2 条"。
+  - 检索状态三分：`hit` / `empty` / `error`；非 knowledge 意图为 `not_attempted`，ingredient 路由为 `ingredient`。
+  - 流式与非流式共用同一套判定，两条出口都带上这三个字段。
+- `backend/.../AssistantChatServiceImpl.java`
+  - 新增 `buildKnowledgeMeta`，把字段透传到 `assistantMessage`（非流式 `POST /assistant/chat` 与流式 `done` 事件都覆盖）。
+- `test_cases/ai_assistant/test_assistant_RAG生成.py`
+  - `test_rag_effect_observable` 从 strict xfail 转正：断言 `ragUsed=true`、`retrievalStatus=hit`、`sources` 非空，且 **sources 标题集合 == 同题直连 5000 的 top3 基准**。
+  - 新增 `test_rag_empty_recall_is_observable`：用「生酮饮食是什么」（含知识词、语料未覆盖）断言 `ragUsed=false` + `retrievalStatus=empty` + `sources=[]`，把"空召回"和"检索挂了"分开。
+  - 新增 `test_non_rag_routes_are_labeled`：查表（`ingredient`）与意图未进 knowledge（`not_attempted`）也必须 `ragUsed=false`、`sources=[]`，且状态可区分。
+
+### 20.3 实测
+
+- 新构建的 8080 探针：
+
+  | 问题 | intent | route | ragUsed | status | sources |
+  | --- | --- | --- | --- | --- | --- |
+  | 高血压怎么吃 | knowledge | article | true | hit | 3 条 |
+  | 生酮饮食是什么 | knowledge | article | false | empty | `[]` |
+  | 减肥期间能吃主食吗 | advice | — | false | not_attempted | `[]` |
+  | 鸡胸肉每100克多少卡 | knowledge | ingredient | false | ingredient | `[]` |
+
+- `test_assistant_RAG生成.py`：**8 passed / 0 failed / 1 skipped / 0 xfailed**（跳过的是"关键数值"样本未标数值，非环境问题）。
+
+### 20.4 这一轮没做的
+
+| 项 | 原因 / 下一步 |
+| --- | --- |
+| `ragUsed` / `sources` 落库 | 与 `intent` / `source` 同一缺口：只有当前轮响应有，`GET .../messages` 翻历史没有；要加列需单独一轮 |
+| 5000 挂掉的用例 | 要造"检索失败"得停服务或注入故障，属于故障演练；当前只覆盖 hit / empty |
+| advice 意图是否也走 RAG | 本轮只做观测，**没动路由**。「减肥期间能吃主食吗」仍是 advice → `not_attempted`，直接在 5000 上测出的排序修复不会作用于这句话的聊天回答；这是产品决策，需单独评估 |
 
 ---
 
@@ -2328,5 +2379,6 @@ golden set 里正确文档经常排在 2~4 位，被 `topK=3` 截断；更严重
 | 2026-10-14 | 16 → 17 | **评测留痕 + 指标运行器（H1）**：新增 `common/eval_record.py`（观测 + 用例结果落 `tools/eval_results.json`）与 `tools/eval_runner.py`（混淆矩阵 / 每类 P·R·F1 / **漏拦率 + 误拦率** / 攻破率 B1~B4 分桶 / 小样本告警）；埋点只在 `ask` 夹具与顶层 conftest，**未改任何 `test_*.py`**；首版指标 **意图准确率 96.3%（26/27）、漏拦率 0%、误拦率 0%、攻破率 0%（0/15）**；顺带修掉 **strict XPASS 被误记成 FAILED** 的真缺陷（pytest 对 XPASS **不设 `wasxfail`**），并用**离线改口径**避免重跑 94 次调用 |
 | 2026-10-21 | 17 → 18 | **安全评测收口**：① 全量日志总账改到 `pytest_sessionfinish`（`--no-summary` 会跳过 `pytest_terminal_summary`），并按 nodeid 去重（call 通过 + teardown 失败只算一次 error）；② 越权组 2 条假红修复（SSE 拒绝是 200 + `error` 事件；软删除后按 message → conversation → user 顺序硬删）；③ 注入/泄漏三层修复（system 加【输入边界】+ `<user_input>` 数据标签 + 输出骨架句兜底与流式 holdback）；④ 注入判据排除"拒绝时复述标记"误报。实测越权 **5/5**、注入 **12 passed + 1 skipped** |
 | 2026-10-21 | 18 → 19 | **RAG 检索排序修复**：口语同义词表 `query_aliases.json`（12 实体 + 9 内容 + 2 意图）+ 覆盖率归一化 + 实体/章节/摘要/否定四类加权；`docType` 透传；6 条 `known_defect` 摘标，2 条加强为章节级断言。离线 golden **40/40**，线上探针 top-1 命中，RAG 用例 **80 passed / 0 failed** |
+| 2026-10-22 | 19 → 20 | **RAG 生成侧可观测**：`assistantMessage` 新增 `ragUsed` / `sources` / `retrievalStatus`（hit / empty / error / ingredient / not_attempted），流式与非流式同时透传；生成侧 strict xfail 转正，新增空召回 / 非 RAG 路由用例；`test_assistant_RAG生成.py` **8 passed / 1 skipped / 0 failed** |
 | 待定         | 1c → 2  | 服务端加意图路由（**诚实降级部分已由 1c 完成**；**"按意图装配上下文"已由迭代 16 落了一步**）                                                                               |
 | 待定         | 3 → 4   | 意图识别升级为模型分类（**误判率已量化：14/15**，是否升级见迭代 4 的状态更新）                                                                                                     |

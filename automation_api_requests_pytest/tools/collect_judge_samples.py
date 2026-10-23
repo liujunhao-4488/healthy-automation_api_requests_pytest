@@ -4,7 +4,7 @@
 #           ⚠️ 不含任何评分/判断 —— 必须让人先盲标，否则校准不算数。
 #
 # 为什么资料要单独从 5000 拿：Java 只把检索结果拼进 prompt，不对外返回。
-#   Java 侧 buildKnowledgeFacts() 用的就是 topK=3 的 title/section/snippet，
+#   Java 侧 buildKnowledgeContext() 用的就是 topK=3 的 title/section/snippet，
 #   这里用同样的参数再取一次，内容与模型实际看到的基本一致。
 #
 # 用法：python tools/collect_judge_samples.py
@@ -43,7 +43,7 @@ CANDIDATES = [
 ]
 
 WANT = 10          # 想凑够的样本数
-TOP_K = 3          # 与 Java buildKnowledgeFacts 保持一致
+TOP_K = 3          # 与 Java buildKnowledgeContext 保持一致
 OUT_DIR = os.path.join(BASE_DIR, "eval", "judge_calibration")
 
 

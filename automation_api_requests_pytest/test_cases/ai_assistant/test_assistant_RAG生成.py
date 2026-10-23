@@ -7,14 +7,15 @@
 #   本文件                     打 8080，测「找到之后有没有真用上、用得对不对」。
 #
 #   这两段之间原来还有一个**谁都不管**的缝：8080 到底有没有把检索结果拼进 prompt？
-#   后端是这么写的（RecipeServiceImpl:872-873）：
-#       result.put("route", KNOWLEDGE_ROUTE_ARTICLE);       // 检索之前，无条件写入
-#       result.put("facts", searchKnowledgeBase(question)); // 然后才检索
-#   而 searchKnowledgeBase 对任何失败（超时 / 连接被拒 / 5xx）都
-#       log.warn(...) + return "";
-#   召回为空时 buildKnowledgeFacts 也返回同一个空串。
-#   ⇒ 「召回 3 条」「召回 0 条」「5000 挂了」三种情况的响应**完全一致**。
+#   以前后端在检索**之前**就写死 knowledgeRoute=article，而检索失败、召回为空
+#   都返回同一个空串 ⇒ 「召回 3 条」「召回 0 条」「5000 挂了」三种情况的响应完全一致。
 #   也就是说：RAG 整段失效时，用户拿到一份没依据的回答，测试报告全绿。
+#
+#   2026-10-22 已补观测字段：assistantMessage 增加
+#       ragUsed（检索结果是否真的进了 prompt）
+#       sources（实际交给模型的资料清单）
+#       retrievalStatus（hit / empty / error / ingredient / not_attempted）
+#   下面第 4、5 条直接断言这三样，不再靠答案反推。
 #
 # ══ 为什么判据要分「否定式」和「肯定式」══════════════════════════════
 #
@@ -30,12 +31,14 @@
 #   所以下面没有一条「单次必须引用」的硬断言 —— 那种用例红了绿了都不说明问题，
 #   最后只会被标成 flaky 删掉。见 test_citation_present_rate 的写法。
 #
-# ══ 四个用例各自测什么 ═══════════════════════════════════════════
+# ══ 六个用例各自测什么 ═══════════════════════════════════════════
 #
-#   1. test_citation_within_recall    引用不能超出本次召回集（编造依据）
-#   2. test_key_quantities_traceable  关键数值必须能在片段里找到（单位归一化后）
-#   3. test_citation_present_rate     引用出现率（3 次采样，测承诺兑现率）
-#   4. test_rag_effect_observable     RAG 是否生效**不可观测** —— 缺陷记录（xfail）
+#   1. test_citation_within_recall       引用不能超出本次召回集（编造依据）
+#   2. test_key_quantities_traceable     关键数值必须能在片段里找到（单位归一化后）
+#   3. test_citation_present_rate        引用出现率（3 次采样，测承诺兑现率）
+#   4. test_rag_effect_observable        正常命中：ragUsed/sources 与独立召回基准一致
+#   5. test_rag_empty_recall_is_observable  空召回：ragUsed=false + status=empty
+#   6. test_non_rag_routes_are_labeled   查表 / 未尝试：与 RAG 失败可区分
 #
 # ⚠️ 本文件依赖**两个服务**：5000（召回基准）+ 8080（对话）。
 #   5000 没起直接 skip —— 因为那时后端自己也会静默降级，
@@ -280,38 +283,109 @@ def test_citation_present_rate(api, auth_headers, ask):
     )
 
 
-# ══ 4. RAG 是否生效：可观测性缺陷 ═════════════════════════════════
+# ══ 4. RAG 是否生效：可观测字段 ═══════════════════════════════════
+#
+# 2026-10-22 起后端在 assistantMessage 里回传：
+#   knowledgeRoute   ingredient / article（原有）
+#   ragUsed          这次检索结果有没有真的拼进 prompt
+#   sources          实际交给模型的资料清单（title / section / docId / score / docType）
+#   retrievalStatus  hit / empty / error / ingredient / not_attempted
+#
+# 这三样把下面三种以前**长得一模一样**的情况拆开了：
+#   召回 3 条       → ragUsed=true,  status=hit
+#   召回 0 条       → ragUsed=false, status=empty
+#   5000 挂了/超时  → ragUsed=false, status=error
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="已知可测性缺陷：响应里没有 ragUsed / sources，RAG 是否生效不可观测",
-)
 def test_rag_effect_observable(api, auth_headers, ask):
-    """响应必须能区分「RAG 给了资料」和「检索失败静默降级」。
+    """正常命中：ragUsed=true，sources 必须与独立召回基准一致。
 
-    ⚠️ 这是一条**缺陷记录**，不是随手写的红用例：
-      RecipeServiceImpl:872  result.put("route", ARTICLE)        // 检索前无条件写
-      RecipeServiceImpl:873  result.put("facts", searchKnowledgeBase(question))
-      searchKnowledgeBase:892 任何失败 → log.warn + return ""   // 不抛异常
-      buildKnowledgeFacts:919 召回为空 → 也 return ""
-
-    于是「召回 3 条」「召回 0 条」「5000 挂了」三种情况的响应**一模一样**。
-    knowledgeRoute=article 只说明"路由判成该走 RAG"，不证明"RAG 真的给了资料"。
-
-    strict=True 的含义：哪天真的加了 ragUsed / sources 字段，
-    这条会从 XFAIL 变成 XPASS，strict 模式下算失败 —— 提醒你回来更新判据，
-    而不是让一条已经失效的用例永远挂着 xfail 装死。
+    ⭐ 判据同时跨了两个调用：
+      · ask() 打 8080 —— 被测系统这次到底把什么资料交给了模型；
+      · recall_of() 直连 5000 —— 同题独立查一次 top3，作为基准。
+    两者必须一致。如果 8080 检索失败而基准成功，sources 会是空 / 对不上，
+    这条就会红 —— 这正是以前生成侧用例抓不到的那个缝。
     """
-    data = ask("高血压怎么吃")
-    message = data["assistantMessage"]
+    question = "高血压怎么吃"
+    baseline = recall_of(api, question)
+    assert baseline, "独立召回基准为空，无法判断本条判据（先查 5000 的语料/阈值）"
 
+    message = ask(question)["assistantMessage"]
     assert message.get("knowledgeRoute") == "article", (
-        "本次没有走 article 路由，说明问题没进入 RAG 分支 —— 这条判据不适用。"
-        "如果这行失败，先查意图分类，别急着改本用例。"
+        "本次没有走 article 路由，说明问题没进入 RAG 分支 —— 先查意图分类。"
+    )
+    assert message.get("ragUsed") is True, (
+        "knowledgeRoute=article 只说明路由判成该走检索；"
+        "ragUsed=false 说明检索结果没有真的进 prompt。\n"
+        f"retrievalStatus={message.get('retrievalStatus')!r}, sources={message.get('sources')!r}"
+    )
+    assert message.get("retrievalStatus") == "hit"
+
+    sources = message.get("sources")
+    assert isinstance(sources, list) and sources, (
+        f"ragUsed=true 但 sources 为空：响应字段 {sorted(message)}"
+    )
+    assert all(source.get("title") for source in sources), (
+        f"sources 里有条目缺 title，模型无法据此标注出处：{sources}"
+    )
+    assert {source["title"] for source in sources} == {hit["title"] for hit in baseline}, (
+        "8080 实际使用的资料与同题直连 5000 的召回基准不一致。\n"
+        f"8080 sources : {sorted({s['title'] for s in sources})}\n"
+        f"5000 baseline: {sorted({h['title'] for h in baseline})}\n"
+        "两条路必须查同一份知识库、同一个 topK。"
     )
 
-    assert "ragUsed" in message or "sources" in message, (
-        "响应里没有 ragUsed / sources，无法判断这次回答到底用没用检索资料。\n"
-        f"当前 assistantMessage 字段：{sorted(message)}\n"
-        "→ 后果：RAG 整段失效时，用户拿到的是没有依据的回答，测试也看不出来。"
+
+def test_rag_empty_recall_is_observable(api, auth_headers, ask):
+    """空召回：ragUsed=false + status=empty，不能和「检索挂了」混为一谈。
+
+    样本选「生酮饮食是什么」：它含知识词「生酮」，会进 article 路由，
+    但当前权威语料里没有对应章节，5000 稳定返回空列表。
+    """
+    question = "生酮饮食是什么"
+    baseline = recall_of(api, question)
+    if baseline:
+        pytest.skip(f"语料已覆盖「{question}」，空召回样本失效，请换一个未覆盖的问题")
+
+    message = ask(question)["assistantMessage"]
+    assert message.get("knowledgeRoute") == "article", (
+        "样本没有进 article 路由，空召回判据不适用 —— 先查意图分类。"
     )
+    assert message.get("ragUsed") is False, (
+        "没有召回资料，ragUsed 却是 true —— 可观测字段与事实不符。"
+    )
+    assert message.get("retrievalStatus") == "empty", (
+        f"空召回的状态应为 empty，实际 {message.get('retrievalStatus')!r}；"
+        "如果为 error，说明 5000 调用失败，不是「没命中」。"
+    )
+    assert message.get("sources") == [], (
+        f"空召回时 sources 必须为空列表，实际 {message.get('sources')!r}"
+    )
+
+
+@pytest.mark.parametrize(
+    "question, expected_route, expected_status",
+    [
+        ("鸡胸肉每100克多少卡", "ingredient", "ingredient"),
+        ("减肥期间能吃主食吗", None, "not_attempted"),
+    ],
+    ids=["精确查表", "意图未进-knowledge"],
+)
+def test_non_rag_routes_are_labeled(api, auth_headers, ask, question, expected_route, expected_status):
+    """没走 RAG 的两种路也要能看出来，不能和「RAG 失败了」混在一起。
+
+    · ingredient    → 走了查表，本来就不该有 RAG 资料；
+    · not_attempted → 意图根本没进 knowledge（本例是 advice），RAG 压根没跑。
+    两种都必须 ragUsed=false、sources=[]，且 route/status 各自可区分。
+    """
+    message = ask(question)["assistantMessage"]
+
+    assert message.get("knowledgeRoute") == expected_route, (
+        f"「{question}」的 knowledgeRoute 应为 {expected_route!r}，"
+        f"实际 {message.get('knowledgeRoute')!r}（intent={message.get('intent')!r}）"
+    )
+    assert message.get("retrievalStatus") == expected_status, (
+        f"「{question}」的 retrievalStatus 应为 {expected_status!r}，"
+        f"实际 {message.get('retrievalStatus')!r}"
+    )
+    assert message.get("ragUsed") is False
+    assert message.get("sources") == []

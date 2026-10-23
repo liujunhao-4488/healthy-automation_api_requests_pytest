@@ -3,7 +3,18 @@
 
 import pytest
 
+from common.accounts import ensure_login_seed_account
 from common.data_loader import load_cases
+
+
+@pytest.fixture(scope="module", autouse=True)
+def seed_login_account():
+    """确保数据文件依赖的 123456@qq.com 存在。
+
+    seed_test.sql 是主路径；这里兜底，防止"只建了表没导种子"时
+    正常登录用例红成"用户不存在"。
+    """
+    ensure_login_seed_account()
 
 # 数据来源：data/login_cases.yaml
 # 想换格式？只改这一行的文件名即可（json / csv / xlsx 都支持，用例一个字不用动）。

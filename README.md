@@ -16,7 +16,20 @@
 ## 启动顺序
 
 ### 1. 启动数据库 (MySQL)
-确保 MySQL 服务已启动，默认端口 3306
+确保 MySQL 服务已启动，默认端口 3306。
+
+开发库 `health_diet` 用 `database/health_diet.sql` 手工导入（全量数据，含示例账号）。
+
+**跑接口自动化时不要用开发库**，单独建测试库：
+
+```bash
+database\rebuild_test_db.bat
+# 等价于：python database/init_test_db.py --db health_diet_test
+```
+
+脚本会建 `health_diet_test`、导入 `schema.sql`（表结构）和 `seed_test.sql`
+（两个测试账号 + 食材数据），并拒绝清空开发库 `health_diet`。
+启动后端时指定同一个库：`set DB_NAME=health_diet_test`。
 
 ### 2. 启动算法服务 (Python Flask)
 ```bash
@@ -59,7 +72,7 @@ npm run dev
 ## 快速启动脚本
 
 在 Windows 上可以使用以下脚本一键启动：
-1. `database/rebuild.bat` - 重建数据库
+1. `database/rebuild_test_db.bat` - 重建自动化测试库（`health_diet_test`，不会动开发库）
 2. `algorithm/start_algorithm.bat` - 启动算法服务
 3. 后端通过 IDE 或命令行启动
 4. 前端 `npm run dev`

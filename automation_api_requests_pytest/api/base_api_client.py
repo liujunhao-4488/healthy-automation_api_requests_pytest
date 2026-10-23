@@ -14,6 +14,21 @@ from common import allure_helper
 from common.logger import log, short_url
 from config.config import BASE_URL, TIMEOUT
 
+# 401 重登钩子：由 conftest 的会话夹具安装。
+# 放在模块级而不是实例上，是因为 Api 聚合了 auth/user/health/assistant/kb 五个 client，
+# 逐个挂钩子既啰嗦、又容易漏掉新加的接口类。
+_on_unauthorized = None
+
+
+def set_unauthorized_handler(handler):
+    """handler(used_authorization) -> 新 Authorization | None。
+
+    入参是这次请求实际带出去的 Authorization —— 钩子据此判断
+    "是会话 token 过期了"还是"用例故意用错 token 测 401"。
+    """
+    global _on_unauthorized
+    _on_unauthorized = handler
+
 
 class BaseApiClient:
     # 这个 client 打到哪台机器。默认是 Java 后端；
@@ -32,31 +47,44 @@ class BaseApiClient:
     # 每次请求都自动记一行日志（见 _log），用例里不用自己打印请求过程。
 
     def get(self, path, **kwargs):
-        kwargs.setdefault("timeout", TIMEOUT)  # 没传超时就用统一值
-        resp = self._session.get(self.base_url + path, **kwargs)
-        self._log(resp)
-        return resp
+        return self._request("GET", path, **kwargs)
 
     def post(self, path, **kwargs):
-        kwargs.setdefault("timeout", TIMEOUT)
-        resp = self._session.post(self.base_url + path, **kwargs)
-        self._log(resp)
-        return resp
+        return self._request("POST", path, **kwargs)
 
     def put(self, path, **kwargs):
-        # 和 post 只差中间那一行（session.put / session.post）。
-        # 这就是"请求能力集中在一处"的直接好处：加一种请求方式只要 4 行，
-        # 所有接口类立刻都能用，用例那边一个字都不用动。
-        kwargs.setdefault("timeout", TIMEOUT)
-        resp = self._session.put(self.base_url + path, **kwargs)
-        self._log(resp)
-        return resp
+        return self._request("PUT", path, **kwargs)
 
     def delete(self, path, **kwargs):
-        # 第四种动词。加它只花了 4 行 —— 这就是"请求能力集中在一处"的好处：
-        # 加完所有接口类立刻都能用，用例那边一个字都不用改。
+        return self._request("DELETE", path, **kwargs)
+
+    def _request(self, method, path, **kwargs):
+        """所有动词的唯一出口：统一超时 + 401 自动重登一次。
+
+        ⚠️ 401 **不能无脑重登**：用例里"不带 token / 伪 token → 401"是**预期结果**，
+        重登会把这类负向用例变成 200。所以只问钩子一句：
+        "这次请求用的 Authorization 是不是当前会话 token？"
+          · 是 → 重登、换新 token 重发一次；
+          · 不是（没带 / 伪造 / 别人的 token）→ 原样返回 401。
+        """
         kwargs.setdefault("timeout", TIMEOUT)
-        resp = self._session.delete(self.base_url + path, **kwargs)
+        url = self.base_url + path
+
+        resp = self._session.request(method, url, **kwargs)
+        if resp.status_code == 401 and _on_unauthorized is not None:
+            used = (kwargs.get("headers") or {}).get("Authorization")
+            fresh = _on_unauthorized(used)
+            if fresh:
+                # 直接在原 headers 上改，不复制：auth_headers 是**每条用例一份**的字典，
+                # 同一条用例后面还会拿它发好几次请求 —— 只改副本的话，
+                # 第二次请求又带着旧 token，钩子会以为"这不是当前 token"而不再重登。
+                headers = kwargs.get("headers")
+                if headers is None:
+                    headers = {}
+                    kwargs["headers"] = headers
+                headers["Authorization"] = fresh
+                resp = self._session.request(method, url, **kwargs)
+
         self._log(resp)
         return resp
 

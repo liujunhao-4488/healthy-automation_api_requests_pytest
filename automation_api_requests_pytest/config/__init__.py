@@ -13,4 +13,12 @@
 #    （short_url 里有 except 兜底），后果是日志里的请求行**打回完整 URL**——
 #    不报错、不崩溃，只是悄悄变难看了（踩过一次）。
 
-from .config import BASE_URL, TIMEOUT, TEST_USER, DB
+from .config import (
+    BASE_URL,
+    TIMEOUT,
+    TEST_USER,
+    TEST_USERNAME,
+    SEED_LOGIN_USER,
+    DB,
+    REQUIRE_DB,
+)

@@ -14,10 +14,20 @@ import uuid
 import pytest
 
 from common import db
+from common.accounts import ensure_login_seed_account
 from common.data_loader import load_cases
+
+# 本模块会直接查库/删库（注册后对账、清理），数据库不可用时由根 conftest 跳过。
+pytestmark = pytest.mark.requires_db
 
 # 失败场景：每次只有一个字段不合法，期望值全部来自实测（见数据文件注释）。
 CASES = load_cases("register_cases.yaml")
+
+
+@pytest.fixture(scope="module", autouse=True)
+def seed_login_account():
+    """重复邮箱用例依赖 123456@qq.com 已存在；种子没导时自动补建。"""
+    ensure_login_seed_account()
 
 
 def case_name(case):

@@ -9,11 +9,25 @@
 # 能走接口解决的事，就不绕过接口直接改库。
 
 import uuid
+from pathlib import Path
 
 import pytest
 
 from common import db, eval_record
 from common.logger import log_qa
+
+_HERE = Path(__file__).resolve().parent
+
+
+def pytest_collection_modifyitems(items):
+    """AI 用例的清理要硬删会话/账号，统一标记为 requires_db。
+
+    ⚠️ conftest 的 hook 会收到**全量** items，必须按路径过滤，
+    否则会把别的模块也一起标成 requires_db（实测踩过）。
+    """
+    for item in items:
+        if Path(str(item.fspath)).resolve().parent == _HERE:
+            item.add_marker(pytest.mark.requires_db)
 
 
 @pytest.fixture

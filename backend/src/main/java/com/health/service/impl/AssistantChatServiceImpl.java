@@ -168,7 +168,9 @@ public class AssistantChatServiceImpl implements AssistantChatService {
         String source = readText(assistantResult == null ? null : assistantResult.get("source"));
         String blocked = readText(assistantResult == null ? null : assistantResult.get("blocked"));
         // knowledge 的二级路由（ingredient / article），同样只透传、不落库。
-        String knowledgeRoute = readText(assistantResult == null ? null : assistantResult.get("knowledgeRoute"));
+        // 2026-10-22 起连同 ragUsed / sources / retrievalStatus 一起透传：
+        // route 只说明"打算走哪条路"，这三样才说明"到底有没有拿到资料"。
+        Map<String, Object> knowledgeMeta = buildKnowledgeMeta(assistantResult);
         AssistantMessage assistantMessage = saveAssistantReply(conversation.getId(), userId, assistantResult);
 
         refreshConversation(conversation, rawPrompt, assistantMessage.getContent());
@@ -178,7 +180,7 @@ public class AssistantChatServiceImpl implements AssistantChatService {
         result.put("conversation", toConversationMap(conversation));
         result.put("userMessage", toMessageMap(userMessage));
         result.put("contextMessage", contextMessage == null ? null : toMessageMap(contextMessage));
-        result.put("assistantMessage", toMessageMap(assistantMessage, intent, source, blocked, knowledgeRoute));
+        result.put("assistantMessage", toMessageMap(assistantMessage, intent, source, blocked, knowledgeMeta));
         return result;
     }
 
@@ -254,7 +256,7 @@ public class AssistantChatServiceImpl implements AssistantChatService {
             String intent = readText(assistantResult == null ? null : assistantResult.get("intent"));
             String source = readText(assistantResult == null ? null : assistantResult.get("source"));
             String blocked = readText(assistantResult == null ? null : assistantResult.get("blocked"));
-            String knowledgeRoute = readText(assistantResult == null ? null : assistantResult.get("knowledgeRoute"));
+            Map<String, Object> knowledgeMeta = buildKnowledgeMeta(assistantResult);
 
             // 落库在**流结束之后**一次性完成，不是边流边写。
             // 这样历史记录里那条消息和非流式完全一致，翻历史的断言口径不用改。
@@ -264,7 +266,7 @@ public class AssistantChatServiceImpl implements AssistantChatService {
             Map<String, Object> doneData = new HashMap<>();
             doneData.put("conversationId", conversation.getId());
             doneData.put("conversation", toConversationMap(conversation));
-            doneData.put("assistantMessage", toMessageMap(assistantMessage, intent, source, blocked, knowledgeRoute));
+            doneData.put("assistantMessage", toMessageMap(assistantMessage, intent, source, blocked, knowledgeMeta));
             sendEvent(emitter, "done", doneData);
 
             emitter.complete();
@@ -424,14 +426,14 @@ public class AssistantChatServiceImpl implements AssistantChatService {
     }
 
     /**
-     * 带 intent / source / blocked 的消息视图。
+     * 带 intent / source / blocked / knowledge 诊断信息的消息视图。
      *
-     * ⚠️ 这三个字段都是**算出来的**，没有落库 —— assistant_message 表就 8 列，
+     * ⚠️ 这些字段都是**算出来的**，没有落库 —— assistant_message 表就 8 列，
      *    没有它们的位置。所以：
      *      · POST /assistant/chat 的 assistantMessage 里有它们（回到当前的这一轮）；
      *      · GET  /assistant/conversations/{id}/messages（翻历史）里**没有**。
      *    这是当前实现的已知缺口。要让历史消息也带上，得给表加列 + 改实体，
-     *    属于下一步；现在先保证"新问的一轮看得出来"，够写意图断言了。
+     *    属于下一步；现在先保证"新问的一轮看得出来"，够写意图 / RAG 断言了。
      *
      * intent 取值：query / knowledge / advice / fallback / chat（2026-10-14 归一后的唯一一套；
      *              旧四类 greeting / out_of_scope / substitute / other 已退休）。
@@ -440,8 +442,10 @@ public class AssistantChatServiceImpl implements AssistantChatService {
      * knowledgeRoute 取值：ingredient（knowledge 意图下走**精确查食材表**）/
      *                     article（走检索，RAG 的挂载点）。2026-10-16 新增，
      *                     同样只在算出来时出现（非 knowledge 意图不带这个键）。
+     * ragUsed / sources / retrievalStatus：2026-10-22 新增，见 buildKnowledgeMeta。
      */
-    private Map<String, Object> toMessageMap(AssistantMessage message, String intent, String source, String blocked, String knowledgeRoute) {
+    private Map<String, Object> toMessageMap(AssistantMessage message, String intent, String source, String blocked,
+                                             Map<String, Object> knowledgeMeta) {
         Map<String, Object> data = new HashMap<>();
         data.put("id", message.getId());
         data.put("role", message.getRole());
@@ -458,12 +462,45 @@ public class AssistantChatServiceImpl implements AssistantChatService {
         if (blocked != null && !blocked.isEmpty()) {
             data.put("blocked", blocked);
         }
-        // knowledge 的二级路由（2026-10-16）：没有它，"这次到底查表还是检索"
-        // 从响应里看不出来 —— RAG 的用例就没法断言"该检索的走了检索"。
-        if (knowledgeRoute != null && !knowledgeRoute.isEmpty()) {
-            data.put("knowledgeRoute", knowledgeRoute);
+        if (knowledgeMeta != null) {
+            // knowledge 的二级路由（2026-10-16）：没有它，"这次到底查表还是检索"
+            // 从响应里看不出来 —— RAG 的用例就没法断言"该检索的走了检索"。
+            String knowledgeRoute = readText(knowledgeMeta.get("knowledgeRoute"));
+            if (!knowledgeRoute.isEmpty()) {
+                data.put("knowledgeRoute", knowledgeRoute);
+            }
+            // 2026-10-22：这三个字段是 RAG 生成侧真正的观测点。
+            //   · ragUsed=false + status=empty  → 检索成功但没命中；
+            //   · ragUsed=false + status=error  → 5000 挂了 / 超时；
+            //   · ragUsed=false + status=not_attempted → 意图没进 knowledge，RAG 压根没跑。
+            // 以前这三种情况在响应里完全一样，生成侧用例只能靠答案反推。
+            data.put("ragUsed", Boolean.TRUE.equals(knowledgeMeta.get("ragUsed")));
+            Object sources = knowledgeMeta.get("sources");
+            data.put("sources", sources instanceof List ? sources : new ArrayList<>());
+            String retrievalStatus = readText(knowledgeMeta.get("retrievalStatus"));
+            if (!retrievalStatus.isEmpty()) {
+                data.put("retrievalStatus", retrievalStatus);
+            }
         }
         return data;
+    }
+
+    /** 从 RecipeServiceImpl 的返回值里摘出 knowledge 可观测字段，缺省值明确为空 / false。 */
+    private Map<String, Object> buildKnowledgeMeta(Map<String, Object> assistantResult) {
+        Map<String, Object> meta = new HashMap<>();
+        if (assistantResult == null) {
+            meta.put("knowledgeRoute", "");
+            meta.put("ragUsed", false);
+            meta.put("sources", new ArrayList<>());
+            meta.put("retrievalStatus", "");
+            return meta;
+        }
+        meta.put("knowledgeRoute", readText(assistantResult.get("knowledgeRoute")));
+        meta.put("ragUsed", Boolean.TRUE.equals(assistantResult.get("ragUsed")));
+        Object sources = assistantResult.get("sources");
+        meta.put("sources", sources instanceof List ? sources : new ArrayList<>());
+        meta.put("retrievalStatus", readText(assistantResult.get("retrievalStatus")));
+        return meta;
     }
 
     private List<Map<String, Object>> extractCards(Map<String, Object> assistantResult) {

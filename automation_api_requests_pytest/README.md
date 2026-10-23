@@ -5,19 +5,23 @@ pytest + requests 写的接口自动化测试，被测系统：健康饮食后�
 > **本文件是项目的"知识点地图"。**
 > 打开 `test_cases/` 看见一堆文件、不知道哪个在讲什么的时候，先回这里查表。
 
-> ⚠️ **2026-10-12 现状提示：§一 / §二 里的表格仍是重构前的记录**（151 条用例，
-> `recipe/` `toolbox/test_data_factory.py` 等文件已不存在），**尚未重写**。
+> ⚠️ **历史记录提示：§一 / §二 的表格是重构前的学习向记录**（合计 151 条，
+> `recipe/`、`toolbox/test_data_factory.py` 等文件已删除），**只作演进史参考，不要当当前清单用**。
 >
-> **当前真实状态**：
-> - 用例 98 条（89 passed + 8 skipped + 1 xfailed），约 62 秒
-> - 目录：`auth/` `user/` `health/` `assistant/` `toolbox/` + `api/` `common/` `config/` `data/` `tools/`
-> - 已覆盖 14 个接口（含 `/assistant/*` 全部 5 个）
+> **当前真实状态（2026-10-23 `--collect-only` 实测）**：
+> - 用例 **293 条**：AI 助手 221 / health 35 / user 15 / auth 15 / toolbox 7
+> - 目录：`ai_assistant/` `auth/` `health/` `toolbox/` `user/` + `api/` `common/` `config/` `data/` `tools/`
+> - 后端接口：控制器实测 **78 个**（方法级）；已覆盖 **15 个**（auth 2 / user 2 / health 5 / assistant 6，含 SSE）
+> - `api/` 层封装 18 个方法 = 15 个后端接口 + 3 个算法服务（KB）接口
 > - 覆盖矩阵见 `docs/接口覆盖矩阵.md` 顶部；AI 助手的来龙去脉见 `docs/AI助手模块-迭代记录.md`
-> - 下面的**目录树**（§三）是准的，可以照着找文件。
+> - 下面的**目录树**（§三）已按当前结构更新，可以照着找文件。
 
 ---
 
 ## 一、知识点地图（按学习顺序）
+
+> ⚠️ 下表是 2026-09 的学习顺序记录，列出的 `recipe/`、`toolbox/test_data_factory.py` 等文件已删除，
+> 「合计 151」也早已过期。**当前用例清单见 §三 的 `test_cases/`**。
 
 | 序 | 编号 | 测试文件 | 这个文件在讲什么（人话） | 新学的核心概念 | 用例数 | 数据从哪来 |
 |:--:|:--|:--|:--|:--|:--:|:--|
@@ -108,52 +112,60 @@ automation_api_requests_pytest/
 ├── README.md            ← 你正在看的这份知识点索引
 ├── config/              ← 配置中心：BASE_URL / TIMEOUT / 测试账号（config.py 里）
 │   └── allure_categories.json ← 报告里的缺陷分类规则（后端挂了 / 断言不符 / 已知缺陷…）
-├── conftest.py          ← 公共夹具：api / token / auth_headers（+ collect_ignore）
-│                          另外：Allure 的结果目录、层级标签、环境信息也在这里装配
+├── conftest.py          ← 公共夹具：api / token / auth_headers
+│                          另外：环境预检（MySQL → 后端 → 算法服务，缺一个就中止整场）、
+│                          Allure 的结果目录 / 层级标签 / 环境信息也在这里装配
 ├── api/                 ← 【接口封装层】一个接口 = 一个方法，**接口路径只写在这一层**
-│   ├── __init__.py      ← `Api` 聚合同入口：自己继承 BaseApiClient，把 auth / user / health / recipe 挂成属性
+│   ├── __init__.py      ← `Api` 聚合同入口：自己继承 BaseApiClient，把 auth / user / health / assistant / kb 挂成属性
 │   ├── base_api_client.py ← 【唯一底座】接口类继承它，就有 get/post/put/delete + assert_ok
 │   ├── auth_api.py      ← POST /auth/login、/auth/register
 │   ├── user_api.py      ← GET / PUT /user/profile
-│   ├── health_api.py    ← GET / POST /health/info、/health/goal
-│   └── recipe_api.py    ← GET /recipe/list、/recipe/detail/{id}、/recipe/search
+│   ├── health_api.py    ← GET/POST /health/info、GET /health/history、GET/POST /health/goal
+│   ├── assistant_api.py ← POST /assistant/chat、/assistant/chat/stream、会话增删查
+│   └── kb_api.py        ← 算法服务（Flask）的 /api/kb/search、/api/kb/stats、/api/kb/reload
 ├── docs/
-│   ├── 接口覆盖矩阵.md   ← 施工图：77 个接口的覆盖状态 + 优先级排序
+│   ├── 接口覆盖矩阵.md   ← 施工图：后端 78 个接口的覆盖状态 + 优先级排序
+│   ├── 接口自动化-缺口清单.md ← 对照标准框架的能力缺口与 P0/P1/P2 排期
 │   └── Allure报告-使用说明.md ← 报告怎么看 / 怎么跑 / 为什么这么集成
 ├── pytest.ini           ← pytest 运行配置（pythonpath / 中文用例名显示 / SQL 日志）
 ├── requirements.txt     ← 依赖清单
-├── test_cases/          ← 测试用例，按业务模块分目录（知识点地图见第一节）
-│   │                      目录名 = URL 前缀（auth / health / recipe …），一个模块一个目录
-│   ├── auth/            ← /auth/*        登录、注册                        ★ 已覆盖
-│   │   ├── test_login.py        ← 45 条，登录接口的全部用例（4 个写法版本合并）
-│   │   └── test_register.py     ← 6 条
-│   ├── health/          ← /health/*      健康档案、饮食目标               ★ 已覆盖
-│   │   ├── test_health_info.py
-│   │   └── test_health_goal.py
-│   ├── recipe/          ← /recipe/*      食谱                            ◐ 部分覆盖
-│   │   ├── test_recipe_v2.py
-│   │   ├── test_recipe_search.py
-│   │   └── test_recipe.py       ⚠️ 旧风格对照，默认不跑
-│   ├── toolbox/         ← 工具零件自测（不对应任何业务接口）
-│   │   └── test_data_loader.py  ← 数据加载器自测（Excel 多工作表：工作表名携带期望值）
-│   ├── user/            ← /user/*        个人资料、饮食偏好               ◐ 部分覆盖
-│   │   └── test_user_profile.py ← 35 条（34 passed + 1 xfailed 缺陷 #9）
-│   ├── record/          ← /record/*      饮食记录                        ⬜ 待补
-│   ├── ingredient/      ← /ingredient/*  食材                            ⬜ 待补
-│   ├── recommend/       ← /recommend/*   三餐推荐、食材替代               ⬜ 待补
-│   ├── article/         ← /article/*     健康文章（22 个接口，最多）      ⬜ 待补
-│   ├── assistant/       ← /assistant/*   AI 助手                         ✅ 已覆盖（26 条：结构 11 + 意图 15）
-│   │   ├── test_assistant_结构鉴权.py   ← 结构 / 鉴权 / 参数校验 / 会话持久化
-│   │   └── test_assistant_意图识别.py ← 问什么、答得对不对（8 条 skip：意图观测不到）
-│   ├── notification/    ← /notification/* 通知                           ⬜ 待补
-│   └── admin/           ← /admin/*       后台总览                        ⬜ 待补
+├── test_cases/          ← 测试用例，按业务模块分目录（合计 293 条，2026-10-23 收集数）
+│   ├── ai_assistant/    ← /assistant/* + 算法服务 RAG                  ★ 已覆盖（221 条）
+│   │   ├── test_assistant_结构鉴权.py            11
+│   │   ├── test_assistant_安全拦截.py            24
+│   │   ├── test_assistant_意图标签.py            31
+│   │   ├── test_assistant_意图识别.py            10
+│   │   ├── test_assistant_越狱.py                21
+│   │   ├── test_assistant_注入.py                13
+│   │   ├── test_assistant_上下文.py              5
+│   │   ├── test_assistant_流式.py                9
+│   │   ├── test_assistant_越权.py                5
+│   │   ├── test_assistant_通用问题不追问档案.py   3
+│   │   ├── test_assistant_RAG召回.py             80
+│   │   └── test_assistant_RAG生成.py             9
+│   ├── auth/            ← /auth/*                                    ★ 已覆盖（15 条）
+│   │   ├── test_login.py                         6
+│   │   └── test_register.py                      9
+│   ├── health/          ← /health/*                                  ★ 已覆盖（35 条）
+│   │   ├── test_health_info.py                   21
+│   │   └── test_health_goal.py                   14
+│   ├── user/            ← /user/*                                    ★ 已覆盖（15 条）
+│   │   └── test_user_profile.py                  15
+│   └── toolbox/         ← 工具零件自测（不对应业务接口）             7 条
+│       └── test_data_loader.py                   ← Excel 多工作表加载
 ├── common/              ← 可复用零件（与"接口"无关的通用工具）
+│   ├── accounts.py      ← 账号自愈：测试账号缺失/密码不符时自动补建
 │   ├── data_loader.py   ← 统一读数据：json / csv / yaml / xlsx → list[dict]
 │   ├── data_factory.py  ← 批量生成数据：组合 / 边界 / fuzz
 │   ├── db.py            ← MySQL 工具：连接复用 + 读/写 + 事务 + SQL 日志
+│   ├── eval_record.py   ← AI 评测留痕（旁路，不影响断言结果）
 │   ├── logger.py        ← 日志：控制台一行摘要 / 文件留全量 / 顺手贴进 Allure
 │   └── allure_helper.py ← 【Allure 唯一出口】请求响应附件、脱敏、层级标签、环境信息
 ├── tools/               ← 辅助脚本（**不是用例**：产出数字/清单，不产出红绿）
+│   ├── smoke_check.py      ← 核心链路冒烟
+│   ├── eval_runner.py      ← 离线算 AI 评测指标（改口径不重跑模型）
+│   ├── collect_judge_samples.py / judge_faithfulness.py ← LLM-as-Judge 采样与校准
+│   ├── followup_probe.py / memory_probe.py ← 多轮追问、上下文集探针
 │   ├── latency_report.py   ← 拿提问集跑一遍，量耗时并导出 Excel
 │   ├── jailbreak_report.py ← 红队对抗：跑越狱样本集，算攻破率并导出 Excel
 │   ├── run_tests.py        ← 跑 pytest 并把输出写文件（本机抓不到 stdout 的兜底）
@@ -177,13 +189,20 @@ automation_api_requests_pytest/
 ```bash
 cd D:\jiankang\healthy\automation_api_requests_pytest
 
-# 跑全套（98 条，2026-10-12 实测 89 passed + 8 skipped + 1 xfailed，约 62 秒）
-# 注1：health 那 4 条"缺陷固化"用例，后端已修复 → XFAIL 变 XPASS → 标记已摘，
-#      现在它们是正式断言（哪天再退化会直接变红）。
-# 注2：user 那 1 条 xfail 用例是**已知缺陷 #9**（PUT 后 updateTime 不刷新），
-#      后端修好后会自己变成 XPASS —— 那时把 @pytest.mark.xfail 摘掉即可。
-# 注3：ai_assistant 的 8 条 skip **不是失败也不是待修**，是"意图观测不到、断不了"——
-#      后端哪天把 intent 回传出来，它们就能转成真断言（见 docs/AI助手模块-迭代记录.md §3b.4）。
+# 0) 首次/换机器：重建独立测试库（默认 health_diet_test，不会碰开发库 health_diet）
+..\database\rebuild_test_db.bat
+
+# 0.1) 后端必须连同一个测试库（另开终端）
+#      set DB_NAME=health_diet_test
+#      cd ..\backend && mvnw spring-boot:run
+#      后端默认仍连 health_diet；忘了设置时环境预检会直接中止并提示。
+
+# 跑全套（293 条收集数；通过 / 跳过 / xfail 以本次运行结果为准）
+# 注1：health 早先的 4 条"缺陷固化"用例已在后端修复后转正，现在是正式断言。
+# 注2：user 仍有 1 条 xfail 钉住已知缺陷 #9（PUT 后 update_time 不刷新），
+#      后端修好后会变 XPASS，届时摘掉 @pytest.mark.xfail。
+# 注3：AI 助手的 skip 分两类：数据集里"无观测点 / 样本不适用"的主动跳过，
+#      以及 known_defect 的 xfail —— 两者都不是回归失败（见 docs/AI助手模块-迭代记录.md）。
 .venv\Scripts\python.exe -m pytest test_cases -v
 
 # 只跑某一个模块（按目录跑，最常用）
@@ -235,12 +254,14 @@ cd D:\jiankang\healthy\automation_api_requests_pytest
 > 第一次用还缺两样东西：`pip install -r requirements.txt`（拿到 `allure-pytest`）
 > 和 Allure 命令行工具（解压到 `tools/allure-cli/`，见 `docs/Allure报告-使用说明.md` 第二节）。
 
-**前置条件**（后端没起会全红）：
+**前置条件**（三个依赖缺一个，环境预检会直接中止，不会跑用例）：
 ```bash
-# 1) 先确认 MySQL 在跑（3306 有监听即可）
+# 1) 先确认 MySQL 在跑（预检会执行 SELECT 1，并校验 health_diet_test 可读）
 netstat -ano | grep 3306
 
 # 2) 启动后端 —— 必须摘掉宿主注入的 SERVER__PORT，否则端口会被覆盖成 62924 而启动失败
+#    跑自动化时必须同时指定测试库，否则测试对账会打到你没在用的库
+export DB_NAME=health_diet_test
 cd D:\jiankang\healthy\backend
 env -u SERVER__PORT java -jar target/health-diet-backend-1.0-SNAPSHOT.jar > run.log 2>&1 &
 
@@ -253,6 +274,10 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/api/recipe/list
 > 然后和宿主自己占用的那个端口撞车 → `APPLICATION FAILED TO START ... Port xxxxx was already in use`。
 > 解决：启动前 `env -u SERVER__PORT`（或加 `--server.port=8080`）。
 > 判断是否中招：看 `run.log` 里 `Tomcat initialized with port(s): N`，N 不是 8080 就是中招了。
+
+> ⚠️ **测试库必须前后端一致**：测试默认连 `health_diet_test`，后端默认连 `health_diet`。
+> 启动后端时忘了 `set DB_NAME=health_diet_test`，环境预检会发现“测试库里没有后端登录返回的 userId/username”
+> 并中止，提示你补上这个变量 —— 不会再出现“用例全绿但实际改的是开发库”。
 
 > ⚠️ **在 AI 工具环境里跑测试还要摘代理**：工具环境注入了 `HTTP_PROXY/HTTPS_PROXY`，
 > `requests` 默认会走它，连 `127.0.0.1:8080` 会得到 **502**（看起来像后端挂了）。

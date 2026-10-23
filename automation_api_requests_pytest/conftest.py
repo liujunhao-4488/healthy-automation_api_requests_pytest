@@ -1,4 +1,4 @@
-﻿# conftest.py
+# conftest.py
 # pytest 的"公共工具间"：夹具（fixture）与全局日志钩子都放这里，pytest 会自动加载。
 
 import logging
@@ -6,35 +6,93 @@ import time
 import unicodedata
 from datetime import datetime
 
+import pymysql
 import pytest
+import requests
 
 from api import Api
+from api.base_api_client import set_unauthorized_handler
 from common import allure_helper, eval_record
+from common.accounts import (
+    AccountBootstrapError,
+    ensure_login_seed_account,
+    ensure_primary_account,
+)
 from common.logger import begin_run_log, log, pad
-from config.config import TEST_USER
+from config.config import (
+    BASE_URL,
+    DB,
+    KB_BASE_URL,
+    REQUIRE_DB,
+)
 
 
 # ==================== 夹具 ====================
 
-@pytest.fixture
+class _SessionAuth:
+    """整场只登录一次；token 失效时（401）重登一次并更新当前值。
+
+    为什么不直接把 token 做成 session 夹具：
+      token 是字符串，拿到手的用例改不了它；后端重启 / JWT 过期后，
+      旧字符串会一直用下去。这里把"登录状态"做成对象，auth_headers
+      每次按**当前** token 生成，重登后自然拿到新值。
+    """
+
+    def __init__(self, api):
+        self.api = api
+        self.token = None
+        self.login()
+
+    def login(self):
+        # 账号不存在时先自动注册（common/accounts.py）——空库换机器时，
+        # 失败原因会是一条明确的账号提示，而不是几十条登录 400。
+        data = ensure_primary_account(self.api)
+        assert data.get("token"), "登录成功必须返回 token"
+        self.token = data["token"]
+        return self.token
+
+    def refresh(self, used_authorization):
+        """给 401 钩子用：只重登"用当前 token 发出"的请求。
+
+        不带 token / 伪 token 的负向用例必须保持 401 —— 所以先对一下
+        这次请求实际用的 Authorization 是不是当前值，不是就别动。
+        """
+        if used_authorization != f"Bearer {self.token}":
+            return None
+        self.login()
+        return f"Bearer {self.token}"
+
+
+@pytest.fixture(scope="session")
 def api():
-    """接口总入口夹具：用例里 api.auth.login(...) 就能发请求。"""
+    """接口总入口夹具：用例里 api.auth.login(...) 就能发请求。
+
+    ⚠️ 从 function 级改成 session 级：session 级的登录状态不能依赖
+    function 级的夹具（pytest 会直接报 ScopeMismatch）。Api 本身无状态，
+    整场共用一个 requests.Session 是安全的（单进程串行）。
+    """
     return Api()
 
 
-@pytest.fixture
-def token(api):
-    """登录夹具：拿测试账号登录一次，把 token 交给需要鉴权的用例。"""
-    resp = api.auth.login(TEST_USER)
-    body = api.assert_ok(resp)
-    assert "token" in body["data"], "登录成功必须返回 token"
-    return body["data"]["token"]
+@pytest.fixture(scope="session")
+def _auth_state(api):
+    """会话级登录状态 + 401 重登钩子；token / auth_headers 都从这里取。"""
+    state = _SessionAuth(api)
+    set_unauthorized_handler(state.refresh)
+    yield state
+    set_unauthorized_handler(None)
 
 
 @pytest.fixture
-def auth_headers(token):
-    """把 token 包成请求头：{"Authorization": "Bearer xxx"}。"""
-    return {"Authorization": f"Bearer {token}"}
+def token(_auth_state):
+    """登录夹具：整场只登录一次，这里取当前 token（重登后自动变新值）。"""
+    return _auth_state.token
+
+
+@pytest.fixture
+def auth_headers(_auth_state):
+    """把**当前** token 包成请求头：{"Authorization": "Bearer xxx"}。"""
+    return {"Authorization": f"Bearer {_auth_state.token}"}
 
 
 # ==================== 控制台分块日志 ====================
@@ -195,6 +253,167 @@ def pytest_sessionstart(session):
     #    --collect-only 也走 sessionstart，但那种会话不该往报告里写半截数据。
     allure_helper.activate(
         _allure_dir is not None and not config.getoption("--collect-only", default=False))
+
+
+# ==================== 环境探活（session 级） ====================
+# 后端(8080) / MySQL(3306) / 算法服务 Flask(5000) 任何一个没起，
+# 用例都会以 ConnectionError 红一片，真正的原因被埋在各条 traceback 里。
+# 所以开跑前统一探一次：缺哪个报哪个，然后**中止整场**，一条用例都不跑。
+#
+# 为什么放在 pytest_collection_finish、而不是 session 级 autouse 夹具：
+#   夹具要等"第一条用例 setup"才执行，那时中止会把首条用例记成 setup ERROR；
+#   collection_finish 在收集完、一条用例还没跑时触发，退出最干净。
+#
+# 探活刻意**不复用** BaseApiClient：它会用业务超时(10s)、还会往 Allure/日志里
+# 记一条假请求；探活只是环境检查，不该在报告里留下业务痕迹。
+
+_PRECHECK_TIMEOUT = 5       # MySQL / 后端探活超时
+_KB_PRECHECK_TIMEOUT = 30   # Flask 首次访问要懒加载知识库索引，给足时间
+
+
+def _probe_mysql():
+    """连测试库并 SELECT 1；连不上时把 MySQL 错误码翻成可执行建议。"""
+    try:
+        conn = pymysql.connect(connect_timeout=_PRECHECK_TIMEOUT,
+                               read_timeout=_PRECHECK_TIMEOUT,
+                               write_timeout=_PRECHECK_TIMEOUT, **DB)
+    except pymysql.err.OperationalError as exc:
+        code = exc.args[0] if exc.args else None
+        if code == 1049:
+            raise RuntimeError(
+                f"数据库 {DB['database']} 不存在。先执行：..\\database\\rebuild_test_db.bat"
+            ) from exc
+        if code in (1044, 1045):
+            raise RuntimeError(
+                "账号无权限或密码错误。检查 AUTOTEST_DB_USER / AUTOTEST_DB_PASSWORD"
+            ) from exc
+        raise
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1")
+            cur.fetchone()
+    finally:
+        conn.close()
+    return f"连接正常（{DB['database']}）"
+
+
+def _probe_backend():
+    """登录一次 —— 同时验证 Web 层、MySQL、测试账号、以及“后端连的是不是测试库”。
+
+    · 账号不存在 → 自动注册（common/accounts.py）；
+    · 后端连的是开发库 → 用 userId + username 跟测试库对账，不一致就中止。
+      只对比 userId 不够：两个库里都可能恰好有 id=1，必须再比 username。
+    """
+    try:
+        data = ensure_primary_account()
+        ensure_login_seed_account()
+    except AccountBootstrapError as exc:
+        raise RuntimeError(str(exc)) from exc
+
+    if REQUIRE_DB:
+        from common import db as test_db
+
+        row = test_db.query(
+            "SELECT `username` FROM `user` WHERE `id` = %s",
+            (data["userId"],), one=True,
+        )
+        if row is None:
+            raise RuntimeError(
+                f"后端连的库不是测试库 {DB['database']}："
+                f"测试库里没有 userId={data['userId']}。\n"
+                f"  启动后端前先执行：set DB_NAME={DB['database']}"
+            )
+        if row["username"] != data.get("username"):
+            raise RuntimeError(
+                "后端连的库和测试库不是同一个。\n"
+                f"  测试库 {DB['database']} 中 userId={data['userId']} 是 {row['username']!r}，"
+                f"后端登录返回 {data.get('username')!r}。\n"
+                f"  启动后端前先执行：set DB_NAME={DB['database']}"
+            )
+
+    return "登录接口正常，测试账号已就绪"
+
+
+def _probe_algorithm():
+    """打 /api/kb/stats：既证明 Flask 在，也证明知识库索引装好了。
+
+    不用 /api/kb/search —— 探活不该触发一次真实检索；stats 会懒加载索引，
+    正好把"服务在但索引坏了"这种半启动状态也拦下来。
+    """
+    resp = requests.get(KB_BASE_URL + "/api/kb/stats",
+                        timeout=_KB_PRECHECK_TIMEOUT)
+    if resp.status_code != 200:
+        raise RuntimeError(f"HTTP {resp.status_code}（服务在，但 /api/kb/stats 异常）")
+    return "索引正常"
+
+
+def _env_probes():
+    """按依赖顺序返回探活项；AUTOTEST_REQUIRE_DB=0 时不要求本机 MySQL。"""
+    probes = []
+    if REQUIRE_DB:
+        probes.append(("MySQL", f"{DB['host']}:{DB['port']}/{DB['database']}", _probe_mysql))
+    probes.append(("后端", BASE_URL, _probe_backend))
+    probes.append(("算法服务", KB_BASE_URL, _probe_algorithm))
+    return probes
+
+
+def _apply_requires_db_skip(items):
+    """AUTOTEST_REQUIRE_DB=0：跳过直接访问本机 DB 的用例，纯接口仍可跑。
+
+    ⚠️ 必须由**唯一一个** pytest_collection_modifyitems 调用（见文件末尾）。
+    同名的 hook 在同一模块里写两次，后一个会把前一个覆盖掉——
+    覆盖后不报错、不警告，只是"一条都没跳过"，实测踩过。
+    """
+    if REQUIRE_DB:
+        return
+    skip = pytest.mark.skip(
+        reason="AUTOTEST_REQUIRE_DB=0：本条用例直接访问 MySQL，已跳过"
+    )
+    for item in items:
+        if "requires_db" in item.keywords:
+            item.add_marker(skip)
+
+
+def _probe_reason(exc):
+    """把底层异常翻成一句人话 —— requests 原生报错有 300 字符，刷屏且没重点。"""
+    if isinstance(exc, requests.exceptions.ConnectionError):
+        return "连不上（服务没启动）"
+    if isinstance(exc, requests.exceptions.Timeout):
+        return "探活超时（进程在，但没响应）"
+    if isinstance(exc, pymysql.err.OperationalError):
+        return "连接失败：" + (str(exc.args[1]) if len(exc.args) > 1 else str(exc))
+    text = str(exc).strip()
+    return text.splitlines()[0][:160] if text else type(exc).__name__
+
+
+def pytest_collection_finish(session):
+    """收集完、开跑前探活；缺一个依赖就中止整场。"""
+    # --collect-only 只是"看有哪些用例"，不跑用例，也不该要求服务全在
+    if session.config.getoption("collectonly", default=False):
+        return
+
+    lines, missing = [], []
+    for name, target, probe in _env_probes():
+        try:
+            lines.append(f"  ✔ {name}  {target}  {probe()}")
+        except Exception as exc:
+            lines.append(f"  ✘ {name}  {target}  {_probe_reason(exc)}")
+            missing.append(name)
+
+    if not missing:
+        return
+
+    order = ("MySQL(3306) → backend(8080) → algorithm/app.py(5000)"
+             if REQUIRE_DB else "backend(8080) → algorithm/app.py(5000)")
+    _term_write(
+        "\n✘ 环境未就绪，已中止（一条用例都没跑）：" + "、".join(missing) + "\n"
+        + "\n".join(lines) + "\n"
+        + f"  启动顺序：{order}\n",
+        red=True)
+    meta_log.error("环境探活未通过：%s", "；".join(lines))
+    pytest.exit("环境未就绪：" + "、".join(missing),
+                returncode=pytest.ExitCode.TESTS_FAILED)
 
 
 def _short_name(nodeid):
@@ -547,6 +766,11 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
       本钩子会被 `--no-summary` 整个跳过（PyCharm 默认就带这个参数），
       写在这里等于"IDE 里跑就没有总数"。
     """
+    # --collect-only：一条用例都没跑，交给 pytest 自己打印
+    # "N tests collected"；接管汇总行会把它替换成"未执行任何用例"，反而误导。
+    if config.getoption("collectonly", default=False):
+        return
+
     summary = _collect_summary(terminalreporter)
     if summary is None:
         return
@@ -591,8 +815,12 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                     reason = reason[:120] + "…"
                 if reason:
                     terminalreporter.write_line("     → " + reason)
-        else:
+        elif total_n:
             terminalreporter.write_line("没有失败用例 ✓", green=True)
+        else:
+            # 探活没通过 / 收集失败时会走到这里：一条用例都没跑，
+            # 再打"没有失败用例 ✓"会让人以为这轮是绿的。
+            terminalreporter.write_line("未执行任何用例（见上方原因）", red=True)
 
         if _eval_path:
             c = eval_record.counts()
@@ -625,8 +853,9 @@ def _has_allure_label(item, label_type):
                for mark in item.iter_markers(name="allure_label"))
 
 
+@pytest.hookimpl(trylast=True)
 def pytest_collection_modifyitems(items):
-    """收集完、开跑前，把层级标签挂到每条用例上。
+    """收集完、开跑前：打 Allure 层级标签 + 按 AUTOTEST_REQUIRE_DB 跳过 DB 用例。
 
     为什么可以在这里加、值又是什么时候被读走的：
       allure-pytest 是在 **pytest_runtest_teardown** 里读 `allure_label`
@@ -636,14 +865,17 @@ def pytest_collection_modifyitems(items):
     ⚠️ 不能在这里用 `allure.dynamic.feature(...)`：
       那套 API 要求"当前有正在执行的用例"，收集阶段一条都还没跑，调用无效。
       记录这一点，是因为它看起来更"正宗"，很容易踩。
-    """
-    if not allure_helper.available():
-        return
 
-    for item in items:
-        for label_type, value in allure_helper.derive_labels(item.nodeid):
-            if not _has_allure_label(item, label_type):
-                # 注意参数顺序：值是 args，类型是 kwargs["label_type"]。
-                # 写成 allure_label(label_type, value) 会静默不生效 —— 标记照挂，
-                # 但 allure 读不到 label_type，报告里那一栏永远是空的。
-                item.add_marker(pytest.mark.allure_label(value, label_type=label_type))
+    trylast：必须等 health/ai_assistant 的 conftest 先把 requires_db 标上，
+    这里才能按标记加 skip。否则顺序反过来会"一条都没跳过"。
+    """
+    if allure_helper.available():
+        for item in items:
+            for label_type, value in allure_helper.derive_labels(item.nodeid):
+                if not _has_allure_label(item, label_type):
+                    # 注意参数顺序：值是 args，类型是 kwargs["label_type"]。
+                    # 写成 allure_label(label_type, value) 会静默不生效 —— 标记照挂，
+                    # 但 allure 读不到 label_type，报告里那一栏永远是空的。
+                    item.add_marker(pytest.mark.allure_label(value, label_type=label_type))
+
+    _apply_requires_db_skip(items)
