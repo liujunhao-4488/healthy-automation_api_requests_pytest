@@ -122,3 +122,9 @@ logs/
 automation_api_requests_pytest/tools/eval_results.json
 /_*.py
 /_*.txt
+
+# ------------------------------------------------------------
+# 10. AI 工具生成的分享包产物
+#     Trae 的 HTML 分享包（每次分享生成一个约 1MB 的 zip），不入库
+# ------------------------------------------------------------
+.trae-html-share-packages/
