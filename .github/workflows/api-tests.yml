@@ -1,0 +1,259 @@
+# ============================================================
+#  接口自动化测试 · GitHub Actions CI
+#
+#  跑什么：
+#    在 GitHub 托管的 Ubuntu runner 上把被测系统三件套拉起来
+#      MySQL(3306) → 后端 Spring Boot(8080) → 算法服务 Flask(5000)
+#    再执行 automation_api_requests_pytest 的 pytest 用例。
+#
+#  为什么在 CI 里还要起整套服务：
+#    用例前置的环境预检要求这三项都活着，缺一个就中止整场；
+#    只跑 contract（纯离线断言层自测）不需要服务，但那不是主链路。
+#
+#  分层策略（标记由 conftest.py 自动挂，这里只管选）：
+#    pull_request   → smoke  （117 条，不调模型，目标 1 分钟内）
+#    push master    → p0     （148 条，阻断级，仍不调模型）
+#    schedule       → regression（345 条；没配模型密钥时自动排除 p1）
+#    手动触发        → 自选 smoke / p0 / p1 / regression
+#
+#  ⚠️ 仓库当前 remote 是 Gitee。GitHub Actions 只在 GitHub 仓库上运行，
+#     需要先把代码推到 GitHub（或做镜像），本文件才会被触发。
+#
+#  可选 Secret：
+#    DEEPSEEK_API_KEY —— p1（AI 助手行为用例）依赖真实模型，没配就跳过
+# ============================================================
+name: 接口自动化测试
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - "automation_api_requests_pytest/**"
+      - "backend/**"
+      - "algorithm/**"
+      - "database/**"
+      - ".github/workflows/api-tests.yml"
+  pull_request:
+    branches: [master, main]
+    paths:
+      - "automation_api_requests_pytest/**"
+      - "backend/**"
+      - "algorithm/**"
+      - "database/**"
+      - ".github/workflows/api-tests.yml"
+  schedule:
+    # UTC 18:00 = 北京时间次日 02:00，每天跑一次全量回归
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+    inputs:
+      layer:
+        description: "要跑的测试分层"
+        required: true
+        default: smoke
+        type: choice
+        options:
+          - smoke
+          - p0
+          - p1
+          - regression
+
+# 同一分支只留最新的一个运行，旧的自动取消（省额度）
+concurrency:
+  group: api-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # 后端（application.yml 读 DB_*）
+  DB_HOST: 127.0.0.1
+  DB_PORT: "3306"
+  DB_NAME: health_diet_test
+  DB_USER: root
+  DB_PASSWORD: "123456"
+
+  # 算法服务 kb_retriever.py 读的是 DB_USERNAME（不是 DB_USER），两边都要给
+  DB_USERNAME: root
+
+  # 自动化项目（config/config.py 读 AUTOTEST_*）
+  AUTOTEST_BASE_URL: http://127.0.0.1:8080/api
+  AUTOTEST_KB_BASE_URL: http://127.0.0.1:5000
+  AUTOTEST_DB_HOST: 127.0.0.1
+  AUTOTEST_DB_PORT: "3306"
+  AUTOTEST_DB_NAME: health_diet_test
+  AUTOTEST_DB_USER: root
+  AUTOTEST_DB_PASSWORD: "123456"
+  AUTOTEST_REQUIRE_DB: "1"
+
+jobs:
+  api-tests:
+    name: pytest (${{ github.event_name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      # p1 用例要走真实模型；仓库没配这个 Secret 时是空串，由下面的步骤判断
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+
+    services:
+      mysql:
+        # 与本地一致的 MySQL 8；健康检查通过后 GitHub 才会开始跑步骤
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: "123456"
+          # 允许 runner 从容器外以 root 连接（端口映射后源地址不是 localhost）
+          MYSQL_ROOT_HOST: "%"
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -p123456"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 30
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 决定本次测试分层
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MARKER="${{ inputs.layer }}"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            MARKER="smoke"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            MARKER="regression"
+          else
+            MARKER="p0"
+          fi
+
+          # p1 / 全量回归依赖真实模型；没有密钥时：
+          #   p1        → 降级为 smoke（不静默跑一堆必然失败的用例）
+          #   regression→ 排除 p1，其余照跑
+          if { [ "$MARKER" = "p1" ] || [ "$MARKER" = "regression" ]; } \
+             && [ -z "${DEEPSEEK_API_KEY:-}" ]; then
+            if [ "$MARKER" = "p1" ]; then
+              echo "::notice::未配置 DEEPSEEK_API_KEY，p1 依赖真实模型，本次改跑 smoke"
+              MARKER="smoke"
+            else
+              echo "::warning::未配置 DEEPSEEK_API_KEY，全量回归排除 p1（依赖模型）"
+              MARKER="regression and not p1"
+            fi
+          fi
+
+          echo "本次分层：$MARKER"
+          echo "MARKER=$MARKER" >> "$GITHUB_ENV"
+
+      - name: 安装 JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            automation_api_requests_pytest/requirements.txt
+            algorithm/requirements.txt
+
+      - name: 编译后端（跳过 Maven 单测）
+        working-directory: backend
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -DskipTests package
+
+      - name: 安装测试与算法服务依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r automation_api_requests_pytest/requirements.txt
+          pip install -r algorithm/requirements.txt
+          # MySQL 8 默认 caching_sha2_password，PyMySQL 完整认证需要 cryptography
+          pip install cryptography
+
+      - name: 重建测试库（schema + 种子数据）
+        run: python database/init_test_db.py
+
+      - name: 启动算法服务（Flask 5000）
+        run: |
+          mkdir -p logs
+          cd algorithm
+          nohup python app.py > ../logs/algorithm.log 2>&1 &
+          echo $! > ../logs/algorithm.pid
+
+      - name: 等待算法服务就绪
+        run: |
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" \
+              http://127.0.0.1:5000/api/kb/stats || true)
+            if [ "$code" = "200" ]; then
+              echo "算法服务已就绪（第 $i 次探测）"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::算法服务 120 秒内未就绪"
+          tail -n 100 logs/algorithm.log || true
+          exit 1
+
+      - name: 启动后端（Spring Boot 8080）
+        run: |
+          nohup java -jar backend/target/health-diet-backend-1.0-SNAPSHOT.jar \
+            --server.port=8080 > logs/backend.log 2>&1 &
+          echo $! > logs/backend.pid
+
+      - name: 等待后端就绪
+        run: |
+          # 未带 token 访问 /api/health/info 会返回 401 —— 能拿到任何 HTTP
+          # 状态码就说明端口已经起来，不需要业务成功
+          for i in $(seq 1 90); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" \
+              http://127.0.0.1:8080/api/health/info || true)
+            if [ -n "$code" ] && [ "$code" != "000" ]; then
+              echo "后端已就绪（HTTP $code，第 $i 次探测）"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::后端 180 秒内未就绪"
+          tail -n 200 logs/backend.log || true
+          exit 1
+
+      - name: 运行接口自动化测试
+        working-directory: automation_api_requests_pytest
+        run: python -m pytest -m "$MARKER" -p no:cacheprovider
+
+      - name: 失败时输出服务日志
+        if: failure()
+        run: |
+          echo "========== 后端 =========="
+          tail -n 200 logs/backend.log || true
+          echo "========== 算法服务 =========="
+          tail -n 100 logs/algorithm.log || true
+
+      - name: 上传测试产物
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-report-${{ github.run_number }}
+          path: |
+            automation_api_requests_pytest/reports/allure-results
+            automation_api_requests_pytest/logs
+            automation_api_requests_pytest/tools/eval_results.json
+            logs/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: 停止服务
+        if: always()
+        run: |
+          kill "$(cat logs/backend.pid)" 2>/dev/null || true
+          pkill -f "health-diet-backend-1.0-SNAPSHOT.jar" 2>/dev/null || true
+          # app.py 开了 debug 重载，父进程之外还有一个子进程，按命令行一起清
+          pkill -f "python app.py" 2>/dev/null || true
