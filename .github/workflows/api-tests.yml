@@ -227,7 +227,30 @@ jobs:
 
       - name: 运行接口自动化测试
         working-directory: automation_api_requests_pytest
-        run: python -m pytest -m "$MARKER" -p no:cacheprovider
+        shell: bash
+        run: |
+          # pipefail：让 pytest 的退出码穿过 tee，失败照样红
+          set -o pipefail
+          python -m pytest -m "$MARKER" -p no:cacheprovider 2>&1 | tee pytest-console.log
+
+      - name: 把失败摘要写到 Run 页面
+        if: failure()
+        shell: bash
+        run: |
+          # 完整 pytest 输出会被 GitHub 截断；把末尾的“测试结果 + 失败用例清单”
+          # 放进 Job Summary，打开 Run 页面第一眼就能看到
+          log=automation_api_requests_pytest/pytest-console.log
+          {
+            echo "## pytest 失败摘要"
+            echo ""
+            echo '```text'
+            if [ -f "$log" ]; then
+              tail -n 120 "$log"
+            else
+              echo "没有找到 pytest 控制台日志（可能失败发生在测试启动之前）"
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: 失败时输出服务日志
         if: failure()
@@ -246,6 +269,7 @@ jobs:
             automation_api_requests_pytest/reports/allure-results
             automation_api_requests_pytest/logs
             automation_api_requests_pytest/tools/eval_results.json
+            automation_api_requests_pytest/pytest-console.log
             logs/
           if-no-files-found: warn
           retention-days: 14
