@@ -8,8 +8,8 @@ pytest + requests 写的接口自动化测试，被测系统：健康饮食后�
 > ⚠️ **历史记录提示：§一 / §二 的表格是重构前的学习向记录**（合计 151 条，
 > `recipe/`、`toolbox/test_data_factory.py` 等文件已删除），**只作演进史参考，不要当当前清单用**。
 >
-> **当前真实状态（2026-10-26 `--collect-only` 实测）**：
-> - 用例 **345 条**：AI 助手 221 / health 44 / auth 19 / user 19 / assistant 契约 7 / 断言层自测 28 / toolbox 7
+> **当前真实状态（2026-10-27 `--collect-only` 实测）**：
+> - 用例 **346 条**：AI 助手 221 / health 45 / auth 19 / user 19 / assistant 契约 7 / 断言层自测 28 / toolbox 7
 > - 目录：`ai_assistant/` `assistant/` `auth/` `health/` `user/` `toolbox/` `contract/` + `api/` `common/` `config/` `data/` `tools/`
 > - 后端接口：控制器实测 **78 个**（方法级）；已覆盖 **15 个**（auth 2 / user 2 / health 5 / assistant 6，含 SSE）
 > - `api/` 层封装 18 个方法 = 15 个后端接口 + 3 个算法服务（KB）接口
@@ -129,7 +129,7 @@ automation_api_requests_pytest/
 │   └── Allure报告-使用说明.md ← 报告怎么看 / 怎么跑 / 为什么这么集成
 ├── pytest.ini           ← pytest 运行配置（pythonpath / 中文用例名显示 / SQL 日志）
 ├── requirements.txt     ← 依赖清单
-├── test_cases/          ← 测试用例，按业务模块分目录（合计 345 条，2026-10-26 收集数）
+├── test_cases/          ← 测试用例，按业务模块分目录（合计 346 条，2026-10-27 收集数）
 │   ├── ai_assistant/    ← AI 行为（模型问答 / RAG / 安全）             ★ 已覆盖（221 条）
 │   │   ├── test_assistant_结构鉴权.py            11
 │   │   ├── test_assistant_安全拦截.py            24
@@ -151,10 +151,10 @@ automation_api_requests_pytest/
 │   │   └── test_register.py                      9
 │   ├── contract/        ← 断言层自测（纯内存，不连服务）             28 条
 │   │   └── test_契约层_自测.py                   28
-│   ├── health/          ← /health/*                                ★ 已覆盖（44 条）
+│   ├── health/          ← /health/*                                ★ 已覆盖（45 条）
 │   │   ├── test_health_info.py                   21
 │   │   ├── test_health_goal.py                   14
-│   │   └── test_health_契约.py                   9
+│   │   └── test_health_契约.py                   10
 │   ├── user/            ← /user/*                                  ★ 已覆盖（19 条）
 │   │   ├── test_profile_契约.py                  4
 │   │   └── test_user_profile.py                  15
@@ -207,7 +207,7 @@ cd D:\jiankang\healthy\automation_api_requests_pytest
 #      后端默认仍连 health_diet；忘了设置时环境预检会直接中止并提示。
 
 # 网络类失败自动重试 2 次（断言失败不重试）；单条用例超时 180 秒
-# 跑全套（345 条收集数；通过 / 跳过 / xfail 以本次运行结果为准）
+# 跑全套（346 条收集数；通过 / 跳过 / xfail 以本次运行结果为准）
 # 注1：health 早先的 4 条"缺陷固化"用例已在后端修复后转正，现在是正式断言。
 # 注2：user 仍有 1 条 xfail 钉住已知缺陷 #9（PUT 后 update_time 不刷新），
 #      后端修好后会变 XPASS，届时摘掉 @pytest.mark.xfail。
@@ -222,10 +222,10 @@ cd D:\jiankang\healthy\automation_api_requests_pytest
 .venv\Scripts\python.exe -m pytest test_cases/auth/test_login.py -v
 
 # 分层跑（smoke / p0 / p1 / regression 由收集钩子自动挂，用例文件不用改）
-.venv\Scripts\python.exe -m pytest -m smoke -q        # 核心链路 117 条，不调模型
-.venv\Scripts\python.exe -m pytest -m p0 -q           # 阻断级 148 条
+.venv\Scripts\python.exe -m pytest -m smoke -q        # 核心链路 118 条，不调模型
+.venv\Scripts\python.exe -m pytest -m p0 -q           # 阻断级 149 条
 .venv\Scripts\python.exe -m pytest -m p1 -q           # 模型依赖 197 条
-.venv\Scripts\python.exe -m pytest -m regression -q   # 全量 345 条（等同默认）
+.venv\Scripts\python.exe -m pytest -m regression -q   # 全量 346 条（等同默认）
 
 # 并行（可选）：4 worker，同模块落在同一个 worker
 # ⚠️ AI 评测留痕只支持串行；并行时每个 worker 各自登录一次

@@ -222,6 +222,27 @@ HEALTH_INFO_SCHEMA = ok(
     analysis=ANALYSIS,        # 顶层的 analysis —— 不管建没建档都在
 )
 
+# ---- 未建档时的第二种形状 ----
+# 后端对“没建过档”和“建过档”返回的是**两套形状**（2026-10-27 用临时账号实测）：
+#   已建档 → data 是 16 字段对象，analysis 是 13 个字段
+#   未建档 → data 是 **null**（不是 {}），analysis 只有 4 个字段
+#
+# 为什么之前一直是绿的：本地主账号早就建过档，永远走不到这个分支。
+# CI 用干净库重建，账号只有 user 行没有 health_info 行，第一次跑就红 3 条。
+# 这不是后端缺陷，是**契约只写了一半**。
+ANALYSIS_EMPTY = {
+    "type": "object",
+    "required": ["summary", "overallLevel", "recommendations", "tags"],
+    "properties": {
+        "summary": {"type": "string"},
+        "overallLevel": {"type": "string"},
+        "recommendations": {"type": "array", "items": {"type": "string"}},
+        "tags": {"type": "array", "items": {"type": "string"}},
+    },
+}
+
+HEALTH_INFO_EMPTY_SCHEMA = ok({"type": "null"}, analysis=ANALYSIS_EMPTY)
+
 # /health/history：每次 POST /health/info 追加一条。
 # ⚠️ 历史为空时 data 是 []，schema 对空数组无话可说（没元素可验）。
 HEALTH_HISTORY_SCHEMA = ok({

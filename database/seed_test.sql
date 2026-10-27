@@ -10,12 +10,69 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- 两个测试账号，密码均为 123456（bcrypt 哈希，仅用于本地/CI 测试库）
 --   2311697186@qq.com  → conftest.py 的 TEST_USER（token 夹具）
 --   123456@qq.com      → 登录/注册数据驱动用例依赖的“已存在账号”
+--
+-- ⚠️ id=2 的 username / phone 是**用例的依赖数据**，不是随手起的名字：
+--     data/register_cases.yaml「用户名已存在」需要一个叫“张三”的账号（期望 400）
+--     data/user_profile_cases.yaml「手机号已被使用」需要 19330406783 已被占用
+--
+--   2026-10-27 之前这里写的是 autotest_login + phone=NULL，结果是：
+--   本地跑绿（后端连的是开发库 health_diet，那里恰好真有“张三”和这个手机号），
+--   CI 干净库跑 p0 直接红两条 —— 期望 400 却拿到 200。
+--   也就是说，那两条用例一直在偷偷依赖**开发库的历史数据**，CI 第一次跑才照出来。
 INSERT INTO `user` (`id`, `username`, `password`, `email`, `phone`, `avatar`, `role`, `status`) VALUES
-(1, 'autotest_primary', '$2a$10$rs0vAkSKgVKMWWWSYojuje4dho5mfroXlf9HhF.93/MFFPqXSGvt2', '2311697186@qq.com', NULL, NULL, 'user', 1),
-(2, 'autotest_login',   '$2a$10$rs0vAkSKgVKMWWWSYojuje4dho5mfroXlf9HhF.93/MFFPqXSGvt2', '123456@qq.com',      NULL, NULL, 'user', 1)
+(1, 'autotest_primary', '$2a$10$rs0vAkSKgVKMWWWSYojuje4dho5mfroXlf9HhF.93/MFFPqXSGvt2', '2311697186@qq.com', NULL,          NULL, 'user', 1),
+(2, '张三',             '$2a$10$rs0vAkSKgVKMWWWSYojuje4dho5mfroXlf9HhF.93/MFFPqXSGvt2', '123456@qq.com',      '19330406783', NULL, 'user', 1)
 ON DUPLICATE KEY UPDATE
+  `username` = VALUES(`username`),
   `password` = VALUES(`password`),
+  `phone`    = VALUES(`phone`),
   `status`   = VALUES(`status`);
+
+-- 主测试账号（id=1）的健康档案。
+-- 为什么必须有：GET /health/info 在未建档时返回 data=null（2026-10-27 实测），
+-- 那几条"已建档形状"的契约用例就只能踩空。给一条确定档案，
+-- 干净库一建好就是"有档"状态，用例不必再靠夹具兜底。
+-- bmi / bmr 是后端按 height / weight 算的，这里写的值要跟算式对得上。
+INSERT INTO `health_info`
+  (`id`, `user_id`, `age`, `gender`, `height`, `weight`, `bmi`, `bmr`,
+   `blood_pressure`, `blood_sugar`, `activity_level`, `exercise_duration`,
+   `exercise_type`, `chronic_diseases`)
+VALUES
+  (1, 1, 25, 'male', 175.5, 70.2, 22.792022792022795, 1729.1309,
+   NULL, NULL, '中度', 45, '跑步', NULL)
+ON DUPLICATE KEY UPDATE
+  `age`                 = VALUES(`age`),
+  `gender`              = VALUES(`gender`),
+  `height`              = VALUES(`height`),
+  `weight`              = VALUES(`weight`),
+  `activity_level`      = VALUES(`activity_level`),
+  `exercise_duration`   = VALUES(`exercise_duration`),
+  `exercise_type`       = VALUES(`exercise_type`);
+
+-- 主测试账号的健康档案：健康契约用例默认走“已建档”形状。
+-- 以前本地绿是因为开发库早就有一份；CI 用干净库重建后 health_info 为空，
+-- GET /health/info 返回 data=null，3 条契约用例集体红（2026-10-27 暴露）。
+-- 这里显式种一份最小档案，不依赖复制开发库。
+--
+-- 值取 age=25 / male / 175.5cm / 70.2kg，bmi / bmr 按后端公式算好：
+--   契约用例会“原样回写”这几个值，若 bmi/bmr 和公式不一致，
+--   POST 会改掉它们、还可能追加一条 history。
+INSERT INTO `health_info`
+  (`user_id`, `age`, `gender`, `height`, `weight`, `bmi`, `bmr`,
+   `blood_pressure`, `blood_sugar`, `activity_level`, `exercise_duration`,
+   `exercise_type`, `chronic_diseases`)
+SELECT 1, 25, 'male', 175.5, 70.2, 22.792022792022795, 1729.1309,
+       NULL, NULL, '中度', 45, '跑步', NULL
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `health_info` WHERE `user_id` = 1);
+
+-- 一条同值历史：让主账号 GET /health/history 有样本可验；
+-- 后端按 weight / bmi / 运动时长判重，契约用例“原样回写”时不会再多追加一条。
+INSERT INTO `health_info_history`
+  (`user_id`, `weight`, `bmi`, `exercise_duration`, `record_date`)
+SELECT 1, 70.2, 22.792022792022795, 45, CURRENT_DATE
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `health_info_history` WHERE `user_id` = 1);
 
 -- 食材表：AI 精确查表路由、推荐接口都依赖它。
 -- 下面由 mysqldump 从开发库导出，只取数据、不取表结构。

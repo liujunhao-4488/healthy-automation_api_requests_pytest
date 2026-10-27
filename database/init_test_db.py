@@ -125,6 +125,10 @@ def main():
             users = cur.fetchone()[0]
             cur.execute("SELECT COUNT(*) FROM `ingredient`")
             ingredients = cur.fetchone()[0]
+            cur.execute("SELECT COUNT(*) FROM `health_info` WHERE `user_id` = 1")
+            health_profiles = cur.fetchone()[0]
+            cur.execute("SELECT COUNT(*) FROM `health_info_history` WHERE `user_id` = 1")
+            health_history = cur.fetchone()[0]
             cur.execute(
                 "SELECT email FROM `user` WHERE email IN (%s, %s) ORDER BY id",
                 ("2311697186@qq.com", "123456@qq.com"),
@@ -133,10 +137,11 @@ def main():
     finally:
         conn.close()
 
-    print(f"\n[完成] {target}: user={users}, ingredient={ingredients}")
+    print(f"\n[完成] {target}: user={users}, ingredient={ingredients}, "
+          f"health_info={health_profiles}, health_history={health_history}")
     print(f"[账号] {', '.join(emails) if emails else '缺失（检查 seed_test.sql）'}")
-    if users < 2 or ingredients == 0:
-        sys.exit("种子数据不完整，请检查 seed_test.sql")
+    if users < 2 or ingredients == 0 or health_profiles == 0 or health_history == 0:
+        sys.exit("种子数据不完整（账号/食材/主账号健康档案/历史），请检查 seed_test.sql")
     print("\n下一步：")
     print(f"  set DB_NAME={target}")
     print("  cd backend && mvnw spring-boot:run")
