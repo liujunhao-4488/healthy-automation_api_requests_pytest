@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>健康档案 · 膳衡</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .form-grid .span-2 { grid-column: 1 / -1; }
+  .pref-groups { gap: 20px 24px; }
+  .risk-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+  .weight-chart { margin-top: 2px; }
+  .weight-chart svg { display: block; width: 100%; height: auto; }
+  .weight-chart text { font-family: var(--font-num); font-size: 9.5px; fill: var(--text-3); }
+  .weight-chart .c-grid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 5; }
+  .weight-chart .c-line { fill: none; stroke: var(--green-700); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .weight-chart .c-dot { fill: var(--surface); stroke: var(--green-700); stroke-width: 2; }
+  .weight-chart .c-dot.now { fill: var(--green-800); stroke: var(--surface); stroke-width: 2.5; }
+  .weight-chart .c-label { fill: var(--green-900); font-size: 10.5px; font-weight: 600; }
+  .weight-chart .area-top, .weight-chart .area-bot { stop-color: var(--green-700); }
+  @media (max-width: 720px) { .form-grid { grid-template-columns: minmax(0, 1fr); } .form-grid .span-2 { grid-column: auto; } }
+</style>
+</head>
+<body class="app" data-page="health">
+
+<header class="mobile-bar">
+  <span class="brand-mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+  </span>
+  <span class="brand-text"><strong>膳衡</strong><small>SHANHENG</small></span>
+  <button class="mobile-menu-btn" aria-label="打开菜单"><i class="ic" data-ic="menu"></i></button>
+</header>
+
+<aside class="app-nav">
+  <a class="brand" href="home.html">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+    </span>
+    <span class="brand-text"><strong>膳衡</strong><small>SHANHENG · 健康饮食</small></span>
+  </a>
+
+  <p class="nav-label">我的健康</p>
+  <a class="nav-item" data-nav="home" href="home.html"><i class="ic" data-ic="home"></i><span>首页</span></a>
+  <a class="nav-item" data-nav="health" href="health.html"><i class="ic" data-ic="heart-pulse"></i><span>健康档案</span></a>
+  <a class="nav-item" data-nav="goal" href="goal.html"><i class="ic" data-ic="target"></i><span>饮食目标</span></a>
+  <a class="nav-item" data-nav="record" href="record.html"><i class="ic" data-ic="notebook"></i><span>饮食记录</span></a>
+
+  <p class="nav-label">内容与工具</p>
+  <a class="nav-item" data-nav="recipes" href="recipes.html"><i class="ic" data-ic="book-open"></i><span>食谱库</span></a>
+  <a class="nav-item" data-nav="ingredients" href="ingredients.html"><i class="ic" data-ic="apple"></i><span>食材库</span></a>
+  <a class="nav-item" data-nav="knowledge" href="knowledge.html"><i class="ic" data-ic="news"></i><span>健康知识</span></a>
+  <a class="nav-item" data-nav="assistant" href="assistant.html"><i class="ic" data-ic="sparkles"></i><span>AI 助手</span></a>
+
+  <p class="nav-label">账户</p>
+  <a class="nav-item" data-nav="account" href="account.html"><i class="ic" data-ic="user"></i><span>个人中心</span><span class="nav-badge" id="navNotifBadge" style="display:none">0</span></a>
+  <a class="nav-item nav-admin" data-nav="admin" href="admin.html"><i class="ic" data-ic="settings"></i><span>管理后台</span></a>
+
+  <div class="nav-user">
+    <span class="nav-avatar" id="navAvatar">禾</span>
+    <span class="grow"><span class="nav-user-name" id="navUserName">林嘉禾</span><span class="nav-user-role" id="navUserRole">管理员 · 平台运营</span></span>
+    <button class="nav-logout" id="navLogout" title="退出登录"><i class="ic" data-ic="logout"></i></button>
+  </div>
+</aside>
+<div class="nav-scrim"></div>
+
+<main class="app-content">
+  <div class="page-shell">
+
+    <header class="page-head reveal">
+      <div>
+        <p class="eyebrow">Health Profile</p>
+        <h1 class="page-title">健康档案</h1>
+        <p class="page-sub" id="healthSub">最近更新 2026-10-20 09:12 · 档案数据用于生成推荐与营养目标</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" id="editProfile"><i class="ic" data-ic="edit"></i>更新档案</button>
+        <a class="btn btn-primary" href="goal.html"><i class="ic" data-ic="target"></i>饮食目标</a>
+      </div>
+    </header>
+
+    <section class="grid g4 reveal d1">
+      <article class="card card-pad kpi">
+        <div class="row-between" style="align-items:flex-start">
+          <span class="kpi-label">BMI · 身体质量指数</span>
+          <span class="badge amber" id="bmiBadge">偏高</span>
+        </div>
+        <span class="kpi-value" id="bmiValue">25.1</span>
+        <div class="bmi-scale">
+          <i></i><i></i><i></i><i></i>
+          <span class="bmi-marker" id="bmiMarker" style="left:58%"></span>
+        </div>
+        <p class="kpi-foot" id="bmiFoot">身高 165cm · 体重 68.4kg</p>
+      </article>
+
+      <article class="card card-pad kpi">
+        <div class="row-between" style="align-items:flex-start">
+          <span class="kpi-label">基础代谢 BMR</span>
+          <span class="badge" id="bmrBadge">正常范围</span>
+        </div>
+        <span class="kpi-value" id="bmrValue">1,396 <span class="small muted" style="font-family:var(--font-body)">kcal</span></span>
+        <p class="kpi-foot">Mifflin-St Jeor 公式估算 · 静息状态每日消耗</p>
+      </article>
+
+      <article class="card card-pad kpi">
+        <div class="row-between" style="align-items:flex-start">
+          <span class="kpi-label">血压</span>
+          <span class="badge amber" id="bpBadge">正常高值</span>
+        </div>
+        <span class="kpi-value" id="bpValue">128/82 <span class="small muted" style="font-family:var(--font-body)">mmHg</span></span>
+        <p class="kpi-foot">参考范围 &lt;120/80 mmHg · 建议每周固定时间测量</p>
+      </article>
+
+      <article class="card card-pad kpi">
+        <div class="row-between" style="align-items:flex-start">
+          <span class="kpi-label">空腹血糖</span>
+          <span class="badge" id="sugarBadge">正常</span>
+        </div>
+        <span class="kpi-value" id="sugarValue">5.4 <span class="small muted" style="font-family:var(--font-body)">mmol/L</span></span>
+        <p class="kpi-foot">参考 3.9–6.1 mmol/L · 空腹 8 小时以上测量</p>
+      </article>
+    </section>
+
+    <section class="mt-24 reveal d2">
+      <div class="alert-inline">
+        <i class="ic" data-ic="alert"></i>
+        <div class="grow">
+          <strong>风险提示 · 血脂偏高</strong>
+          <p class="small" style="margin-top:4px">档案记录「高血脂」，推荐引擎已按低饱和脂肪规则调整。优先执行以下两条饮食调整：</p>
+          <ul class="risk-list small">
+            <li>1. 每日烹调油控制在 25g 以内，用橄榄油或菜籽油替代动物油，少吃肥肉与奶油点心。</li>
+            <li>2. 每周安排 2 次深海鱼（如三文鱼 150g），主食一半换成燕麦、糙米或杂豆。</li>
+          </ul>
+          <a href="article-detail.html?id=2" style="color:inherit;font-weight:600;display:inline-flex;align-items:center;gap:4px;margin-top:6px">查看《高血脂人群的饮食清单》<i class="ic" data-ic="arrow-right" style="width:14px;height:14px"></i></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid split mt-24 reveal d2">
+      <article class="card" id="bodyCard">
+        <div class="card-hd">
+          <h3>身体数据</h3>
+          <span class="small muted">用于计算 BMI / BMR 与营养目标</span>
+        </div>
+        <div class="card-bd">
+          <div class="form-grid">
+            <div class="field" id="fGender">
+              <label>性别</label>
+              <div class="seg" id="genderSeg">
+                <button type="button" data-gender="女" class="on">女</button>
+                <button type="button" data-gender="男">男</button>
+              </div>
+            </div>
+            <div class="field" id="fAge">
+              <label for="ageInput">年龄（岁）</label>
+              <input class="input num" id="ageInput" type="number" min="18" max="90" step="1" value="29">
+              <p class="field-error">年龄需在 18–90 岁之间</p>
+            </div>
+            <div class="field" id="fHeight">
+              <label for="heightInput">身高（cm）</label>
+              <input class="input num" id="heightInput" type="number" min="120" max="220" step="0.1" value="165">
+              <p class="field-error">身高需在 120–220cm 之间</p>
+            </div>
+            <div class="field" id="fWeight">
+              <label for="weightInput">体重（kg）</label>
+              <input class="input num" id="weightInput" type="number" min="30" max="200" step="0.1" value="68.4">
+              <p class="field-error">体重需在 30–200kg 之间</p>
+            </div>
+            <div class="field" id="fWaist">
+              <label for="waistInput">腰围（cm）</label>
+              <input class="input num" id="waistInput" type="number" min="50" max="150" step="0.1" value="78">
+              <p class="field-error">腰围需在 50–150cm 之间</p>
+            </div>
+            <div class="field">
+              <label for="activitySelect">日常活动量</label>
+              <select class="select" id="activitySelect">
+                <option>久坐</option>
+                <option>轻度活动</option>
+                <option>中度活动</option>
+                <option>高强度</option>
+              </select>
+            </div>
+            <div class="field" id="fExercise">
+              <label for="exerciseInput">每日运动时长（分钟）</label>
+              <input class="input num" id="exerciseInput" type="number" min="0" max="300" step="5" value="30">
+              <p class="field-error">运动时长需在 0–300 分钟之间</p>
+            </div>
+            <div class="field">
+              <label for="exerciseType">主要运动形式</label>
+              <input class="input" id="exerciseType" type="text" value="快走 / 拉伸" placeholder="如：快走 / 拉伸">
+            </div>
+            <div class="field span-2">
+              <label>慢病与特殊情况</label>
+              <div class="row wrap" id="chronicChips"></div>
+              <p class="field-hint">可多选，将用于推荐护栏与营养提醒；不构成医疗诊断。</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-ft row-between">
+          <span class="small muted">身高 120–220cm · 体重 30–200kg</span>
+          <button class="btn btn-primary" id="saveHealth"><i class="ic" data-ic="check"></i>保存身体数据</button>
+        </div>
+      </article>
+
+      <aside class="col" style="gap:20px">
+        <article class="card">
+          <div class="card-hd">
+            <h3>体重趋势</h3>
+            <span class="badge gray">近 2 个月</span>
+          </div>
+          <div class="card-bd">
+            <div class="weight-chart" id="weightChart"><p class="small muted">正在加载体重趋势…</p></div>
+            <div class="alert-inline green mt-16">
+              <i class="ic" data-ic="info"></i>
+              <span id="targetNote">目标体重 62.0 kg · 按每周 0.5kg 估算。</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card card-pad">
+          <p class="eyebrow" style="margin:0">Metrics · 指标解读</p>
+          <div class="col mt-12" style="gap:10px">
+            <div class="row-between small"><span class="muted">BMI 参考区间</span><span class="num">18.5–23.9</span></div>
+            <div class="row-between small"><span class="muted">腰围参考（女性）</span><span class="num">&lt; 80 cm</span></div>
+            <div class="row-between small"><span class="muted">血压参考</span><span class="num">&lt; 120/80 mmHg</span></div>
+          </div>
+          <p class="small muted mt-12">BMI 与腰围仅作初筛，肌肉量较高人群可能出现 BMI 偏高但体脂正常的情况。</p>
+        </article>
+      </aside>
+    </section>
+
+    <section class="card mt-24 reveal d3">
+      <div class="card-hd">
+        <h3>饮食偏好</h3>
+        <span class="small muted">用于推荐过滤与食材替换</span>
+      </div>
+      <div class="card-bd">
+        <div class="grid g2 pref-groups">
+          <div class="field">
+            <label>饮食类型（可多选）</label>
+            <div class="row wrap" id="dietChips"></div>
+          </div>
+          <div class="field">
+            <label>过敏原（推荐中硬性排除）</label>
+            <div class="row wrap" id="allergenChips"></div>
+          </div>
+          <div class="field">
+            <label>不喜食材</label>
+            <div class="row wrap" id="dislikeChips"></div>
+          </div>
+          <div class="field">
+            <label>常吃食材</label>
+            <div class="row wrap" id="likeChips"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card-ft row-between">
+        <span class="small muted">偏好调整后，下次刷新推荐即可生效。</span>
+        <button class="btn btn-primary" id="savePref"><i class="ic" data-ic="check"></i>保存偏好</button>
+      </div>
+    </section>
+
+    <p class="small muted mt-32" style="text-align:center">
+      健康档案仅用于个性化饮食建议，不构成医疗诊断。慢病管理与用药调整请遵医嘱。
+    </p>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/mock.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  const UI = window.UI, API = window.API, Store = window.Store;
+  const $ = function (id) { return document.getElementById(id); };
+
+  const DIET = ['清淡', '低脂', '高蛋白', '低GI', '低碳水', '地中海', '素食'];
+  const ALLERGENS = ['花生', '海鲜', '乳糖', '麸质', '鸡蛋', '大豆'];
+  const DISLIKES = ['香菜', '动物内脏', '洋葱', '苦瓜', '芹菜', '肥肉'];
+  const LIKES = ['鸡胸肉', '三文鱼', '蓝莓', '燕麦', '西兰花', '北豆腐'];
+  const CHRONIC = ['高血脂', '高血压', '糖尿病', '高尿酸', '脂肪肝'];
+
+  let health = Store.health();
+  let prefs = Store.preferences();
+
+  /* ---------------- KPI ---------------- */
+  function bmiBadge(bmi) {
+    if (bmi < 18.5) return { text: '偏低', cls: 'badge gray' };
+    if (bmi < 24) return { text: '正常', cls: 'badge' };
+    return { text: '偏高', cls: 'badge amber' };
+  }
+  function bmiPos(bmi) {
+    const segs = [[15, 18.5, 0, 20], [18.5, 24, 20, 30], [24, 28, 50, 30], [28, 35, 80, 20]];
+    const b = Math.max(15, Math.min(35, bmi));
+    for (let i = 0; i < segs.length; i++) {
+      const s = segs[i];
+      if (b <= s[1] || i === segs.length - 1) {
+        const f = Math.max(0, Math.min(1, (b - s[0]) / (s[1] - s[0])));
+        return (s[2] + f * s[3]).toFixed(2);
+      }
+    }
+    return '0';
+  }
+  function bpBadge(bp) {
+    const parts = String(bp).split('/').map(Number);
+    const sys = parts[0] || 0, dia = parts[1] || 0;
+    if (sys < 120 && dia < 80) return { text: '正常', cls: 'badge' };
+    if (sys < 140 && dia < 90) return { text: '正常高值', cls: 'badge amber' };
+    return { text: '偏高', cls: 'badge clay' };
+  }
+  function sugarBadge(v) {
+    if (v < 3.9) return { text: '偏低', cls: 'badge clay' };
+    if (v <= 6.1) return { text: '正常', cls: 'badge' };
+    return { text: '偏高', cls: 'badge amber' };
+  }
+
+  function renderKpis(h) {
+    $('healthSub').textContent = '最近更新 ' + h.updatedAt + ' · 档案数据用于生成推荐与营养目标';
+    $('bmiValue').textContent = Number(h.bmi).toFixed(1);
+    $('bmiFoot').textContent = '身高 ' + h.height + 'cm · 体重 ' + h.weight + 'kg';
+    const bb = bmiBadge(h.bmi);
+    $('bmiBadge').textContent = bb.text;
+    $('bmiBadge').className = bb.cls;
+    $('bmiMarker').style.left = bmiPos(h.bmi) + '%';
+
+    $('bmrValue').innerHTML = UI.num(h.bmr) + ' <span class="small muted" style="font-family:var(--font-body)">kcal</span>';
+    const bmrOk = h.bmr >= 1000 && h.bmr <= 2000;
+    $('bmrBadge').textContent = bmrOk ? '正常范围' : '需关注';
+    $('bmrBadge').className = bmrOk ? 'badge' : 'badge amber';
+
+    $('bpValue').innerHTML = UI.esc(h.bloodPressure) + ' <span class="small muted" style="font-family:var(--font-body)">mmHg</span>';
+    const pb = bpBadge(h.bloodPressure);
+    $('bpBadge').textContent = pb.text;
+    $('bpBadge').className = pb.cls;
+
+    $('sugarValue').innerHTML = Number(h.bloodSugar).toFixed(1) + ' <span class="small muted" style="font-family:var(--font-body)">mmol/L</span>';
+    const sb = sugarBadge(h.bloodSugar);
+    $('sugarBadge').textContent = sb.text;
+    $('sugarBadge').className = sb.cls;
+  }
+
+  /* ---------------- 表单 ---------------- */
+  function fillForm(h) {
+    document.querySelectorAll('#genderSeg [data-gender]').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.gender === h.gender);
+    });
+    $('ageInput').value = h.age;
+    $('heightInput').value = h.height;
+    $('weightInput').value = h.weight;
+    $('waistInput').value = h.waist;
+    $('activitySelect').value = h.activity;
+    $('exerciseInput').value = h.exerciseMin;
+    $('exerciseType').value = h.exerciseType || '';
+    renderChronic(h.chronic || []);
+  }
+
+  function renderChronic(active) {
+    $('chronicChips').innerHTML = CHRONIC.map(function (v) {
+      return '<button type="button" class="chip' + (active.indexOf(v) > -1 ? ' on' : '') + '" data-val="' + UI.esc(v) + '">' + UI.esc(v) + '</button>';
+    }).join('');
+  }
+
+  $('genderSeg').addEventListener('click', function (e) {
+    const b = e.target.closest('[data-gender]');
+    if (!b) return;
+    document.querySelectorAll('#genderSeg [data-gender]').forEach(function (x) { x.classList.remove('on'); });
+    b.classList.add('on');
+  });
+
+  $('chronicChips').addEventListener('click', function (e) {
+    const c = e.target.closest('.chip');
+    if (c) c.classList.toggle('on');
+  });
+
+  function setErr(fieldId, on) {
+    const el = $(fieldId);
+    if (el) el.classList.toggle('has-error', !!on);
+  }
+
+  $('saveHealth').addEventListener('click', async function () {
+    const btn = this;
+    const age = +$('ageInput').value;
+    const height = +$('heightInput').value;
+    const weight = +$('weightInput').value;
+    const waist = +$('waistInput').value;
+    const exerciseMin = +$('exerciseInput').value;
+
+    const invalid = [];
+    if (!(height >= 120 && height <= 220)) { setErr('fHeight', true); invalid.push('身高'); } else setErr('fHeight', false);
+    if (!(weight >= 30 && weight <= 200)) { setErr('fWeight', true); invalid.push('体重'); } else setErr('fWeight', false);
+    if (!(age >= 18 && age <= 90)) { setErr('fAge', true); invalid.push('年龄'); } else setErr('fAge', false);
+    if (!(waist >= 50 && waist <= 150)) { setErr('fWaist', true); invalid.push('腰围'); } else setErr('fWaist', false);
+    if (!(exerciseMin >= 0 && exerciseMin <= 300)) { setErr('fExercise', true); invalid.push('运动时长'); } else setErr('fExercise', false);
+
+    if (invalid.length) {
+      UI.toast(invalid.join('、') + '填写有误，请检查标注字段', 'error');
+      return;
+    }
+
+    const genderBtn = document.querySelector('#genderSeg [data-gender].on');
+    const chronic = Array.from(document.querySelectorAll('#chronicChips .chip.on')).map(function (c) { return c.dataset.val; });
+
+    UI.loading(btn, true, '保存中');
+    const res = await API.health.save({
+      gender: genderBtn ? genderBtn.dataset.gender : health.gender,
+      age: age, height: height, weight: weight, waist: waist,
+      activity: $('activitySelect').value,
+      exerciseMin: exerciseMin,
+      exerciseType: $('exerciseType').value.trim(),
+      chronic: chronic
+    });
+    UI.loading(btn, false);
+
+    if (res.code !== 200) { UI.toast(res.message, 'error'); return; }
+    health = res.data;
+    $('heightInput').value = health.height;
+    $('weightInput').value = health.weight;
+    renderKpis(health);
+    UI.toast(res.message || '健康档案已保存');
+  });
+
+  $('editProfile').addEventListener('click', function () {
+    $('bodyCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(function () { $('ageInput').focus(); }, 380);
+  });
+
+  /* ---------------- 体重趋势 ---------------- */
+  async function loadHistory() {
+    const box = $('weightChart');
+    const res = await API.health.history();
+    if (res.code !== 200 || !res.data || !res.data.length) {
+      box.innerHTML = UI.empty('趋势加载失败', res.message || '请稍后重试', 'alert');
+      Icons.hydrate(box);
+      return;
+    }
+    renderChart(box, res.data);
+  }
+
+  function renderChart(box, points) {
+    const W = 340, H = 214, pl = 38, pr = 16, pt = 18, pb = 34;
+    const iw = W - pl - pr, ih = H - pt - pb;
+    const weights = points.map(function (p) { return p.weight; });
+    let min = Math.floor(Math.min.apply(null, weights) - 1);
+    let max = Math.ceil(Math.max.apply(null, weights) + 1);
+    if (max - min < 4) max = min + 4;
+    const x = function (i) { return pl + (points.length === 1 ? iw / 2 : i * iw / (points.length - 1)); };
+    const y = function (v) { return pt + (max - v) / (max - min) * ih; };
+
+    let grid = '';
+    for (let i = 0; i <= 4; i++) {
+      const val = min + (max - min) * i / 4;
+      const yy = y(val);
+      grid += '<line class="c-grid" x1="' + pl + '" y1="' + yy.toFixed(1) + '" x2="' + (W - pr) + '" y2="' + yy.toFixed(1) + '"/>';
+      grid += '<text x="' + (pl - 7) + '" y="' + (yy + 3).toFixed(1) + '" text-anchor="end">' + val.toFixed(1) + '</text>';
+    }
+
+    const coords = points.map(function (p, i) { return [x(i), y(p.weight)]; });
+    const line = 'M' + coords.map(function (c) { return c[0].toFixed(1) + ' ' + c[1].toFixed(1); }).join(' L');
+    const bottom = (pt + ih).toFixed(1);
+    const area = line + ' L' + coords[coords.length - 1][0].toFixed(1) + ' ' + bottom +
+      ' L' + coords[0][0].toFixed(1) + ' ' + bottom + ' Z';
+
+    let dots = '';
+    let labels = '';
+    points.forEach(function (p, i) {
+      const last = i === points.length - 1;
+      dots += '<circle class="c-dot' + (last ? ' now' : '') + '" cx="' + coords[i][0].toFixed(1) + '" cy="' + coords[i][1].toFixed(1) + '" r="' + (last ? 4 : 3) + '"><title>' + UI.esc(p.date) + ' · ' + p.weight + 'kg</title></circle>';
+      labels += '<text x="' + coords[i][0].toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle">' + UI.esc(p.date) + '</text>';
+    });
+    const lastC = coords[coords.length - 1];
+    const valueLabel = '<text class="c-label" x="' + (lastC[0] - 8).toFixed(1) + '" y="' + (lastC[1] - 10).toFixed(1) + '" text-anchor="end">' + points[points.length - 1].weight.toFixed(1) + ' kg</text>';
+
+    box.innerHTML =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="体重趋势折线图">' +
+        '<defs><linearGradient id="weightArea" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop class="area-top" offset="0%" stop-opacity="0.22"/>' +
+          '<stop class="area-bot" offset="100%" stop-opacity="0"/>' +
+        '</linearGradient></defs>' +
+        grid +
+        '<path d="' + area + '" fill="url(#weightArea)"/>' +
+        '<path class="c-line" d="' + line + '"/>' +
+        dots + labels + valueLabel +
+      '</svg>';
+  }
+
+  function renderTargetNote() {
+    const g = Store.goal();
+    const diff = +(g.currentWeight - g.targetWeight).toFixed(1);
+    if (diff <= 0) {
+      $('targetNote').textContent = '目标体重 ' + g.targetWeight.toFixed(1) + ' kg · 当前已达到目标，注意保持即可。';
+    } else {
+      const weeks = Math.ceil(diff / 0.5);
+      $('targetNote').textContent = '目标体重 ' + g.targetWeight.toFixed(1) + ' kg · 距当前还需减 ' + diff + ' kg，按每周 0.5kg 估算约 ' + weeks + ' 周。';
+    }
+  }
+
+  /* ---------------- 饮食偏好 ---------------- */
+  function buildPrefChips(el, list, active) {
+    el.innerHTML = list.map(function (v) {
+      return '<button type="button" class="chip' + (active.indexOf(v) > -1 ? ' on' : '') + '" data-val="' + UI.esc(v) + '">' + UI.esc(v) + '</button>';
+    }).join('');
+  }
+  function bindToggle(el) {
+    el.addEventListener('click', function (e) {
+      const c = e.target.closest('.chip');
+      if (c) c.classList.toggle('on');
+    });
+  }
+  function selected(el) {
+    return Array.from(el.querySelectorAll('.chip.on')).map(function (c) { return c.dataset.val; });
+  }
+  function fillPrefs(p) {
+    buildPrefChips($('dietChips'), DIET, p.dietType || []);
+    buildPrefChips($('allergenChips'), ALLERGENS, p.allergens || []);
+    buildPrefChips($('dislikeChips'), DISLIKES, p.dislikes || []);
+    buildPrefChips($('likeChips'), LIKES, p.likes || []);
+  }
+  ['dietChips', 'allergenChips', 'dislikeChips', 'likeChips'].forEach(function (id) { bindToggle($(id)); });
+
+  $('savePref').addEventListener('click', function () {
+    const btn = this;
+    prefs = Store.savePreferences({
+      dietType: selected($('dietChips')),
+      allergens: selected($('allergenChips')),
+      dislikes: selected($('dislikeChips')),
+      likes: selected($('likeChips'))
+    });
+    UI.loading(btn, true, '保存中');
+    setTimeout(function () {
+      UI.loading(btn, false);
+      UI.toast('饮食偏好已保存，下次推荐将按新偏好过滤');
+    }, 480);
+  });
+
+  /* ---------------- 初始化 ---------------- */
+  renderKpis(health);
+  fillForm(health);
+  fillPrefs(prefs);
+  renderTargetNote();
+  loadHistory();
+})();
+</script>
+</body>
+</html>

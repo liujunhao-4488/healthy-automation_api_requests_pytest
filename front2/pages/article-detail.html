@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文章详情 · 膳衡</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+.ad-head{max-width:780px}
+.ad-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-3);margin-top:16px}
+.ad-meta span{display:inline-flex;align-items:center;gap:5px}
+.ad-meta .ic{width:14px;height:14px}
+.ad-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:20px}
+.ad-comment-form{display:flex;flex-direction:column;gap:10px}
+.ad-toc{display:flex;flex-direction:column;gap:2px;margin-top:12px}
+.ad-toc a{display:block;padding:7px 10px;border-left:2px solid var(--border);font-size:12px;color:var(--text-2);text-decoration:none;line-height:1.55;transition:.15s}
+.ad-toc a:hover{color:var(--green-800);background:var(--green-050)}
+.ad-toc a.on{border-left-color:var(--green-700);color:var(--green-800);background:var(--green-050);font-weight:600}
+.ad-rel{display:flex;gap:10px;align-items:center;text-decoration:none;padding:10px 0;border-bottom:1px dashed var(--border)}
+.ad-rel:last-child{border-bottom:0}
+.ad-rel img{width:56px;height:56px;border-radius:9px;object-fit:cover;flex:none}
+.ad-rel strong{display:block;font-size:12.5px;line-height:1.5;color:var(--text)}
+.ad-rel span{font-size:10.5px;color:var(--text-3)}
+.ad-rel:hover strong{color:var(--green-800)}
+#articleBody [id]{scroll-margin-top:24px}
+@media (max-width:720px){.ad-meta{gap:10px}}
+</style>
+</head>
+<body class="app" data-page="knowledge">
+
+<header class="mobile-bar">
+  <span class="brand-mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+  </span>
+  <span class="brand-text"><strong>膳衡</strong><small>SHANHENG</small></span>
+  <button class="mobile-menu-btn" aria-label="打开菜单"><i class="ic" data-ic="menu"></i></button>
+</header>
+
+<aside class="app-nav">
+  <a class="brand" href="home.html">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+    </span>
+    <span class="brand-text"><strong>膳衡</strong><small>SHANHENG · 健康饮食</small></span>
+  </a>
+
+  <p class="nav-label">我的健康</p>
+  <a class="nav-item" data-nav="home" href="home.html"><i class="ic" data-ic="home"></i><span>首页</span></a>
+  <a class="nav-item" data-nav="health" href="health.html"><i class="ic" data-ic="heart-pulse"></i><span>健康档案</span></a>
+  <a class="nav-item" data-nav="goal" href="goal.html"><i class="ic" data-ic="target"></i><span>饮食目标</span></a>
+  <a class="nav-item" data-nav="record" href="record.html"><i class="ic" data-ic="notebook"></i><span>饮食记录</span></a>
+
+  <p class="nav-label">内容与工具</p>
+  <a class="nav-item" data-nav="recipes" href="recipes.html"><i class="ic" data-ic="book-open"></i><span>食谱库</span></a>
+  <a class="nav-item" data-nav="ingredients" href="ingredients.html"><i class="ic" data-ic="apple"></i><span>食材库</span></a>
+  <a class="nav-item" data-nav="knowledge" href="knowledge.html"><i class="ic" data-ic="news"></i><span>健康知识</span></a>
+  <a class="nav-item" data-nav="assistant" href="assistant.html"><i class="ic" data-ic="sparkles"></i><span>AI 助手</span></a>
+
+  <p class="nav-label">账户</p>
+  <a class="nav-item" data-nav="account" href="account.html"><i class="ic" data-ic="user"></i><span>个人中心</span><span class="nav-badge" id="navNotifBadge" style="display:none">0</span></a>
+  <a class="nav-item nav-admin" data-nav="admin" href="admin.html"><i class="ic" data-ic="settings"></i><span>管理后台</span></a>
+
+  <div class="nav-user">
+    <span class="nav-avatar" id="navAvatar">禾</span>
+    <span class="grow"><span class="nav-user-name" id="navUserName">林嘉禾</span><span class="nav-user-role" id="navUserRole">管理员 · 平台运营</span></span>
+    <button class="nav-logout" id="navLogout" title="退出登录"><i class="ic" data-ic="logout"></i></button>
+  </div>
+</aside>
+<div class="nav-scrim"></div>
+
+<main class="app-content">
+  <div class="page-shell">
+    <div id="articleRoot">
+      <div class="sk" style="height:22px;width:140px"></div>
+      <div class="sk" style="height:38px;width:72%;margin-top:18px"></div>
+      <div class="sk" style="height:14px;width:56%;margin-top:14px"></div>
+      <div class="sk" style="height:14px;width:300px;margin-top:14px"></div>
+      <div class="grid split mt-24">
+        <div class="sk" style="height:520px;border-radius:18px"></div>
+        <div class="sk" style="height:300px;border-radius:18px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/mock.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  const UI = window.UI, API = window.API, Store = window.Store, DB = window.DB;
+  const root = document.getElementById('articleRoot');
+  const params = new URLSearchParams(location.search);
+  const id = +(params.get('id') || 1);
+
+  function pickAuthor(full) {
+    const name = String(full || '').split('·').pop().trim();
+    if (full.indexOf('周昀') > -1) {
+      return { name: name, avatar: '周', role: '注册营养师 · 慢病营养', bio: '专注血脂管理与体重管理 8 年，负责平台食养指南的通俗化解读与内容审校。' };
+    }
+    if (full.indexOf('陈牧') > -1) {
+      return { name: name, avatar: '陈', role: '体能教练 · 增肌方向', bio: 'NSCA-CPT，负责训练日营养与增肌期膳食方案，长期跟踪力量训练人群的饮食执行。' };
+    }
+    return { name: name, avatar: '编', role: '平台内容编辑部', bio: '由平台营养师团队审校，内容参考《中国居民膳食指南》与成人慢病食养指南。' };
+  }
+
+  const SEEDS = [
+    {
+      name: '陈嘉宁', avatar: '陈', time: '2 小时前', likes: 24,
+      text: '把晚餐的一半白米换成杂粮饭，坚持三周后餐后犯困明显少了。文里「份量比种类更关键」这句很受用，容易执行。'
+    },
+    {
+      name: '许知遥', avatar: '许', time: '昨天', likes: 11,
+      text: '想问下燕麦奶能不能替代牛奶？乳糖不耐，但不太喜欢豆奶的味道。',
+      reply: { name: '周昀', text: '可以，但要留意燕麦奶的碳水与添加糖，选择配料表干净的无糖款，并相应计入全天主食量。' }
+    },
+    {
+      name: '赵思齐', avatar: '赵', time: '2 天前', likes: 8,
+      text: '希望后续能出一篇外食场景的实操，尤其是火锅和烧烤怎么点，光看原则还是不太会落地。'
+    }
+  ];
+
+  function commentHtml(c) {
+    return '<div class="comment">' +
+      '<span class="avatar sm">' + UI.esc(c.avatar) + '</span>' +
+      '<div class="comment-bd">' +
+        '<div class="who"><strong>' + UI.esc(c.name) + '</strong>' +
+          (c.self ? '<span class="badge gray">我</span>' : '') +
+          '<time>' + UI.esc(c.time) + '</time></div>' +
+        '<p>' + UI.esc(c.text) + '</p>' +
+        '<div class="actions">' +
+          '<button class="link-btn" type="button" data-clike data-likes="' + c.likes + '" data-liked="0">' +
+            '<i class="ic" data-ic="thumbs-up"></i>点赞 <span class="num">' + c.likes + '</span></button>' +
+          '<button class="link-btn" type="button" data-creply="' + UI.esc(c.name) + '">' +
+            '<i class="ic" data-ic="reply"></i>回复</button>' +
+        '</div>' +
+        (c.reply ? '<div class="reply"><strong>' + UI.esc(c.reply.name) + ' 回复：</strong>' + UI.esc(c.reply.text) + '</div>' : '') +
+      '</div></div>';
+  }
+
+  function renderBody(a) {
+    let html = '';
+    let h2n = 0;
+    const toc = [];
+    a.body.forEach(function (node) {
+      if (node.t === 'h2') {
+        h2n++;
+        const sid = 'sec-' + h2n;
+        toc.push({ id: sid, text: node.text });
+        html += '<h2 id="' + sid + '">' + UI.esc(node.text) + '</h2>';
+      } else if (node.t === 'h3') {
+        html += '<h3>' + UI.esc(node.text) + '</h3>';
+      } else if (node.t === 'ul') {
+        html += '<ul>' + node.items.map(function (x) { return '<li>' + UI.esc(x) + '</li>'; }).join('') + '</ul>';
+      } else if (node.t === 'quote') {
+        html += '<blockquote>' + UI.esc(node.text) + '</blockquote>';
+      } else {
+        html += '<p>' + UI.esc(node.text) + '</p>';
+      }
+    });
+    return { html: html, toc: toc };
+  }
+
+  function wordCount(a) {
+    let n = 0;
+    a.body.forEach(function (node) {
+      if (node.text) n += node.text.replace(/\s/g, '').length;
+      if (node.items) node.items.forEach(function (x) { n += x.replace(/\s/g, '').length; });
+    });
+    return n;
+  }
+
+  function renderError(message) {
+    root.innerHTML = '<div class="card">' + UI.empty('文章不存在或已下线', message || '换一篇继续浏览吧。', 'file-text') + '</div>' +
+      '<div class="row mt-16" style="justify-content:center"><a class="btn btn-primary" href="knowledge.html">' +
+      '<i class="ic" data-ic="chevron-left"></i>返回知识库</a></div>';
+    Icons.hydrate(root);
+  }
+
+  API.articles.get(id).then(function (res) {
+    if (res.code !== 200) { renderError(res.message); return; }
+    const a = res.data;
+    Store.markArticleRead(a.id);
+
+    const author = pickAuthor(a.author);
+    const body = renderBody(a);
+    const words = wordCount(a);
+    const rel = DB.articles.filter(function (x) { return x.id !== a.id; })
+      .map(function (x) {
+        const score = (x.cat === a.cat ? 2 : 0) + x.tags.filter(function (t) { return a.tags.indexOf(t) > -1; }).length;
+        return { x: x, score: score };
+      })
+      .sort(function (p, q) { return q.score - p.score || q.x.views - p.x.views; })
+      .slice(0, 3).map(function (p) { return p.x; });
+
+    root.innerHTML =
+      '<header class="page-head reveal" style="align-items:flex-start">' +
+        '<div class="ad-head">' +
+          '<p class="eyebrow">Knowledge · Article</p>' +
+          '<div class="row wrap" style="gap:10px;margin-bottom:10px">' +
+            '<span class="badge gray">' + UI.esc(a.cat) + '</span>' +
+            '<a class="small" href="knowledge.html" style="color:var(--green-700);text-decoration:none;display:inline-flex;align-items:center;gap:4px">' +
+              '<i class="ic" data-ic="chevron-left"></i>返回知识库</a>' +
+          '</div>' +
+          '<h1 class="page-title" style="font-size:32px;line-height:1.3">' + UI.esc(a.title) + '</h1>' +
+          '<p class="page-sub" style="max-width:700px;line-height:1.8">' + UI.esc(a.summary) + '</p>' +
+          '<div class="ad-meta">' +
+            '<span><i class="ic" data-ic="user"></i>' + UI.esc(a.author) + '</span>' +
+            '<span><i class="ic" data-ic="calendar"></i>' + Store.dateLabel(a.date) + '</span>' +
+            '<span><i class="ic" data-ic="eye"></i>' + UI.num(a.views) + ' 阅读</span>' +
+            '<span><i class="ic" data-ic="file-text"></i>约 ' + UI.num(words) + ' 字</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="page-actions">' +
+          '<button class="btn btn-outline" id="collectBtn" type="button"></button>' +
+          '<button class="btn btn-outline" id="likeBtn" type="button"></button>' +
+        '</div>' +
+      '</header>' +
+
+      '<section class="grid split mt-24 reveal d1">' +
+        '<div class="col" style="gap:20px">' +
+          '<article class="card">' +
+            '<div class="card-bd">' +
+              '<div class="article-body" id="articleBody">' + body.html + '</div>' +
+              '<div class="ad-tags">' + a.tags.map(function (t) { return '<span class="tag">' + UI.esc(t) + '</span>'; }).join('') + '</div>' +
+              '<div class="alert-inline mt-24"><i class="ic" data-ic="alert"></i>' +
+                '<span>本文为通用营养科普，不构成医疗诊断。若正在用药或患有慢性疾病，请先咨询医生或临床营养师。</span></div>' +
+            '</div>' +
+          '</article>' +
+
+          '<article class="card">' +
+            '<div class="card-hd"><h3>评论 <span class="small muted num" id="commentCount">' + SEEDS.length + '</span></h3>' +
+              '<span class="small muted">友善交流，不构成医疗建议</span></div>' +
+            '<div class="card-bd">' +
+              '<div class="ad-comment-form">' +
+                '<textarea class="textarea" id="commentInput" placeholder="说说你的看法或想了解的问题…"></textarea>' +
+                '<div class="row-between">' +
+                  '<span class="small muted">以「' + UI.esc(App.userName()) + '」的身份发布</span>' +
+                  '<button class="btn btn-primary btn-sm" id="commentBtn" type="button"><i class="ic" data-ic="send"></i>发布评论</button>' +
+                '</div>' +
+              '</div>' +
+              '<div class="mt-24" id="commentList">' + SEEDS.map(commentHtml).join('') + '</div>' +
+            '</div>' +
+          '</article>' +
+        '</div>' +
+
+        '<aside class="col" style="gap:20px">' +
+          '<article class="card card-pad">' +
+            '<p class="eyebrow" style="margin:0">Author · 作者</p>' +
+            '<div class="row mt-12" style="gap:12px">' +
+              '<span class="avatar lg">' + UI.esc(author.avatar) + '</span>' +
+              '<div class="grow"><strong style="font-size:14px">' + UI.esc(author.name) + '</strong>' +
+                '<div class="small muted">' + UI.esc(author.role) + '</div></div>' +
+            '</div>' +
+            '<p class="small muted mt-12" style="line-height:1.8">' + UI.esc(author.bio) + '</p>' +
+            '<a class="btn btn-outline btn-sm btn-block mt-16" href="knowledge.html"><i class="ic" data-ic="news"></i>浏览全部文章</a>' +
+          '</article>' +
+
+          '<article class="card card-pad">' +
+            '<p class="eyebrow" style="margin:0">Related · 相关阅读</p>' +
+            '<div class="mt-8">' + rel.map(function (x) {
+              return '<a class="ad-rel" href="article-detail.html?id=' + x.id + '">' +
+                '<img src="' + x.cover + '" alt="' + UI.esc(x.title) + '">' +
+                '<div class="grow"><strong>' + UI.esc(x.title) + '</strong>' +
+                '<span>' + UI.esc(x.cat) + ' · ' + UI.num(x.views) + ' 阅读</span></div></a>';
+            }).join('') + '</div>' +
+          '</article>' +
+
+          (body.toc.length ?
+            '<article class="card card-pad">' +
+              '<p class="eyebrow" style="margin:0">Contents · 目录</p>' +
+              '<div class="ad-toc" id="tocList">' + body.toc.map(function (t, i) {
+                return '<a href="#' + t.id + '" data-anchor="' + t.id + '">' + (i + 1) + '. ' + UI.esc(t.text) + '</a>';
+              }).join('') + '</div>' +
+            '</article>' : '') +
+        '</aside>' +
+      '</section>';
+
+    Icons.hydrate(root);
+
+    /* ---------- 收藏 / 点赞 ---------- */
+    const collectBtn = document.getElementById('collectBtn');
+    const likeBtn = document.getElementById('likeBtn');
+
+    function syncActions() {
+      const collected = Store.isArticleCollected(a.id);
+      const liked = Store.isArticleLiked(a.id);
+      collectBtn.className = 'btn ' + (collected ? 'btn-soft' : 'btn-outline');
+      collectBtn.innerHTML = '<i class="ic" data-ic="bookmark"></i>' + (collected ? '已收藏' : '收藏');
+      likeBtn.className = 'btn ' + (liked ? 'btn-soft' : 'btn-outline');
+      likeBtn.innerHTML = '<i class="ic" data-ic="thumbs-up"></i>' + (liked ? '已点赞 ' : '点赞 ') + UI.num(a.likes + (liked ? 1 : 0));
+      Icons.hydrate(collectBtn);
+      Icons.hydrate(likeBtn);
+    }
+
+    collectBtn.addEventListener('click', function () {
+      const on = Store.toggleArticleCollect(a.id);
+      syncActions();
+      UI.toast(on ? '已收藏这篇文章' : '已取消收藏');
+    });
+    likeBtn.addEventListener('click', function () {
+      const on = Store.toggleArticleLike(a.id);
+      syncActions();
+      UI.toast(on ? '感谢点赞' : '已取消点赞');
+    });
+    syncActions();
+
+    /* ---------- 目录滚动 ---------- */
+    const tocLinks = Array.prototype.slice.call(root.querySelectorAll('[data-anchor]'));
+    if (tocLinks.length) {
+      tocLinks.forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.getElementById(link.dataset.anchor);
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+      const heads = Array.prototype.slice.call(root.querySelectorAll('#articleBody h2[id]'));
+      let ticking = false;
+      function spy() {
+        let cur = heads[0];
+        heads.forEach(function (h) {
+          if (h.getBoundingClientRect().top <= 130) cur = h;
+        });
+        tocLinks.forEach(function (l) { l.classList.toggle('on', cur && l.dataset.anchor === cur.id); });
+        ticking = false;
+      }
+      window.addEventListener('scroll', function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(spy);
+      }, { passive: true });
+      spy();
+    }
+
+    /* ---------- 评论 ---------- */
+    const commentList = document.getElementById('commentList');
+    const commentInput = document.getElementById('commentInput');
+    const commentBtn = document.getElementById('commentBtn');
+    const commentCount = document.getElementById('commentCount');
+    let total = SEEDS.length;
+
+    commentList.addEventListener('click', function (e) {
+      const like = e.target.closest('[data-clike]');
+      if (like) {
+        const liked = like.dataset.liked === '1';
+        const next = (+like.dataset.likes || 0) + (liked ? -1 : 1);
+        like.dataset.liked = liked ? '0' : '1';
+        like.dataset.likes = next;
+        like.innerHTML = '<i class="ic" data-ic="thumbs-up"></i>' + (liked ? '点赞 ' : '已赞 ') + '<span class="num">' + next + '</span>';
+        Icons.hydrate(like);
+        return;
+      }
+      const reply = e.target.closest('[data-creply]');
+      if (reply) {
+        commentInput.value = '@' + reply.dataset.creply + ' ';
+        commentInput.focus();
+        commentInput.setSelectionRange(commentInput.value.length, commentInput.value.length);
+      }
+    });
+
+    commentBtn.addEventListener('click', async function () {
+      const content = commentInput.value.trim();
+      if (content.length < 2) { UI.toast('评论内容至少 2 个字', 'error'); commentInput.focus(); return; }
+      UI.loading(commentBtn, true, '发布中');
+      const r = await API.articles.comment({ articleId: a.id, content: content });
+      UI.loading(commentBtn, false);
+      if (r.code !== 200) { UI.toast(r.message, 'error'); return; }
+      const who = App.userName();
+      total++;
+      commentCount.textContent = total;
+      commentList.insertAdjacentHTML('afterbegin', commentHtml({
+        name: who, avatar: who.charAt(0), text: content, time: '刚刚', likes: 0, self: true
+      }));
+      Icons.hydrate(commentList);
+      commentInput.value = '';
+      UI.toast('评论已发布');
+    });
+  });
+})();
+</script>
+</body>
+</html>

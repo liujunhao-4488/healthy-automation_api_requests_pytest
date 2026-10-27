@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>食材库 · 膳衡</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .sub-tool { background: linear-gradient(155deg, var(--surface) 0%, var(--green-050) 100%); }
+  .ing-card h3 { line-height: 1.35; }
+  .ing-card .tag { white-space: nowrap; }
+</style>
+</head>
+<body class="app" data-page="ingredients">
+
+<header class="mobile-bar">
+  <span class="brand-mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+  </span>
+  <span class="brand-text"><strong>膳衡</strong><small>SHANHENG</small></span>
+  <button class="mobile-menu-btn" aria-label="打开菜单"><i class="ic" data-ic="menu"></i></button>
+</header>
+
+<aside class="app-nav">
+  <a class="brand" href="home.html">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+    </span>
+    <span class="brand-text"><strong>膳衡</strong><small>SHANHENG · 健康饮食</small></span>
+  </a>
+
+  <p class="nav-label">我的健康</p>
+  <a class="nav-item" data-nav="home" href="home.html"><i class="ic" data-ic="home"></i><span>首页</span></a>
+  <a class="nav-item" data-nav="health" href="health.html"><i class="ic" data-ic="heart-pulse"></i><span>健康档案</span></a>
+  <a class="nav-item" data-nav="goal" href="goal.html"><i class="ic" data-ic="target"></i><span>饮食目标</span></a>
+  <a class="nav-item" data-nav="record" href="record.html"><i class="ic" data-ic="notebook"></i><span>饮食记录</span></a>
+
+  <p class="nav-label">内容与工具</p>
+  <a class="nav-item" data-nav="recipes" href="recipes.html"><i class="ic" data-ic="book-open"></i><span>食谱库</span></a>
+  <a class="nav-item" data-nav="ingredients" href="ingredients.html"><i class="ic" data-ic="apple"></i><span>食材库</span></a>
+  <a class="nav-item" data-nav="knowledge" href="knowledge.html"><i class="ic" data-ic="news"></i><span>健康知识</span></a>
+  <a class="nav-item" data-nav="assistant" href="assistant.html"><i class="ic" data-ic="sparkles"></i><span>AI 助手</span></a>
+
+  <p class="nav-label">账户</p>
+  <a class="nav-item" data-nav="account" href="account.html"><i class="ic" data-ic="user"></i><span>个人中心</span><span class="nav-badge" id="navNotifBadge" style="display:none">0</span></a>
+  <a class="nav-item nav-admin" data-nav="admin" href="admin.html"><i class="ic" data-ic="settings"></i><span>管理后台</span></a>
+
+  <div class="nav-user">
+    <span class="nav-avatar" id="navAvatar">禾</span>
+    <span class="grow"><span class="nav-user-name" id="navUserName">林嘉禾</span><span class="nav-user-role" id="navUserRole">管理员 · 平台运营</span></span>
+    <button class="nav-logout" id="navLogout" title="退出登录"><i class="ic" data-ic="logout"></i></button>
+  </div>
+</aside>
+<div class="nav-scrim"></div>
+
+<main class="app-content">
+  <div class="page-shell">
+
+    <header class="page-head reveal">
+      <div>
+        <p class="eyebrow">Ingredient Lab</p>
+        <h1 class="page-title">食材库</h1>
+        <p class="page-sub">22 种常见食材，每 100g 营养口径</p>
+      </div>
+      <div class="page-actions">
+        <div class="search-box" style="min-width:260px">
+          <i class="ic" data-ic="search"></i>
+          <input class="input" id="ingSearch" type="search" placeholder="搜索食材名称，如 鸡胸肉" aria-label="搜索食材">
+        </div>
+      </div>
+    </header>
+
+    <article class="card card-pad sub-tool reveal d1">
+      <div class="row-between" style="align-items:flex-start">
+        <div>
+          <p class="eyebrow" style="margin:0">Substitution Lab</p>
+          <h2 class="display" style="font-size:21px;color:var(--green-950);margin-top:6px">替代工具</h2>
+        </div>
+        <span class="badge"><i class="ic" data-ic="refresh"></i>按营养等价</span>
+      </div>
+
+      <div class="grid g2 mt-16" style="gap:14px">
+        <label class="field">
+          <span class="field-label">原食材</span>
+          <select class="select" id="subName">
+            <option value="鸡胸肉">鸡胸肉</option>
+            <option value="白米饭">白米饭</option>
+            <option value="牛奶">牛奶</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-label">目标说明</span>
+          <input class="input" id="subPrompt" type="text" value="低脂、低 GI" placeholder="例如：低脂、低 GI、乳糖不耐">
+        </label>
+      </div>
+
+      <div class="row-between mt-16" style="flex-wrap:wrap;gap:12px">
+        <p class="small muted" style="line-height:1.7">按每 100g 营养口径做等价替换，生成后请同步调整用量，保持这一餐的蛋白质总量不变。</p>
+        <button class="btn btn-primary" id="subBtn"><i class="ic" data-ic="refresh"></i>生成替代方案</button>
+      </div>
+
+      <p class="small mt-16" id="subHint" style="color:var(--green-800)">正在准备替代工具…</p>
+      <div class="grid g3 mt-12" id="subResults">
+        <div class="card card-pad-sm"><div class="sk" style="height:14px;width:50%"></div><div class="sk mt-12" style="height:26px;width:40%"></div><div class="sk mt-12" style="height:11px"></div><div class="sk mt-8" style="height:11px;width:80%"></div></div>
+        <div class="card card-pad-sm"><div class="sk" style="height:14px;width:50%"></div><div class="sk mt-12" style="height:26px;width:40%"></div><div class="sk mt-12" style="height:11px"></div><div class="sk mt-8" style="height:11px;width:80%"></div></div>
+        <div class="card card-pad-sm"><div class="sk" style="height:14px;width:50%"></div><div class="sk mt-12" style="height:26px;width:40%"></div><div class="sk mt-12" style="height:11px"></div><div class="sk mt-8" style="height:11px;width:80%"></div></div>
+      </div>
+    </article>
+
+    <section class="mt-32 reveal d2">
+      <div class="section-title">
+        <h2>食材库</h2>
+        <span class="small muted" id="ingCount">加载中</span>
+      </div>
+      <div class="row wrap" style="gap:8px;margin-bottom:18px" id="catChips">
+        <button class="chip on" data-cat="全部">全部</button>
+        <button class="chip" data-cat="主食">主食</button>
+        <button class="chip" data-cat="蔬菜">蔬菜</button>
+        <button class="chip" data-cat="肉类">肉类</button>
+        <button class="chip" data-cat="蛋类">蛋类</button>
+        <button class="chip" data-cat="乳制品">乳制品</button>
+        <button class="chip" data-cat="水果">水果</button>
+        <button class="chip" data-cat="坚果">坚果</button>
+        <button class="chip" data-cat="豆制品">豆制品</button>
+      </div>
+      <div class="grid g3" id="ingGrid"></div>
+    </section>
+
+    <div class="alert-inline mt-32 reveal d3">
+      <i class="ic" data-ic="info"></i>
+      <span><b>GI 小知识</b>：GI ≤ 55 为低 GI，56–69 为中 GI，≥ 70 为高 GI。GI 只描述升糖速度，不反映实际摄入量；控糖时还要结合 GL（血糖负荷）与总碳水摄入一起看，并优先保证蛋白质与膳食纤维。</span>
+    </div>
+
+    <p class="small muted mt-24" style="text-align:center">
+      营养数据为每 100g 可食部均值，来源为平台食材库标准口径，实际会因品种与烹调方式浮动。健康建议不构成医疗诊断，慢病管理请遵医嘱。
+    </p>
+  </div>
+</main>
+
+<div class="overlay" id="ingModal">
+  <div class="modal">
+    <div class="modal-hd">
+      <div>
+        <h3 id="ingModalTitle">食材详情</h3>
+        <p id="ingModalSub">每 100g 营养</p>
+      </div>
+      <button class="modal-close" data-close-modal aria-label="关闭"><i class="ic" data-ic="x"></i></button>
+    </div>
+    <div class="modal-bd">
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>营养指标</th><th>每 100g</th></tr></thead>
+          <tbody id="ingTable"></tbody>
+        </table>
+      </div>
+      <p class="small" id="ingDesc" style="color:var(--text-2);line-height:1.8;margin-top:16px"></p>
+    </div>
+    <div class="modal-ft">
+      <a class="btn btn-outline btn-sm" href="recipes.html"><i class="ic" data-ic="book-open"></i>用这个食材找食谱</a>
+      <button class="btn btn-primary btn-sm" id="ingUse"><i class="ic" data-ic="refresh"></i>作为替代方案</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/icons.js"></script>
+<script src="../js/mock.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  const UI = window.UI, API = window.API;
+  const state = { cat: '全部', keyword: '' };
+  let seq = 0;
+  let currentIng = null;
+
+  const grid = document.getElementById('ingGrid');
+  const count = document.getElementById('ingCount');
+  const ingSearch = document.getElementById('ingSearch');
+  const subName = document.getElementById('subName');
+  const subPrompt = document.getElementById('subPrompt');
+  const subBtn = document.getElementById('subBtn');
+  const subResults = document.getElementById('subResults');
+  const subHint = document.getElementById('subHint');
+
+  /* ---------------- 食材列表 ---------------- */
+  function skeletonCards(n) {
+    let html = '';
+    for (let i = 0; i < n; i++) {
+      html += '<article class="card ing-card">' +
+        '<div class="row-between"><div class="sk" style="height:15px;width:45%"></div><div class="sk" style="height:20px;width:42px"></div></div>' +
+        '<div class="sk mt-12" style="height:26px;width:38%"></div>' +
+        '<div class="sk mt-12" style="height:11px;width:92%"></div>' +
+        '<div class="sk mt-12" style="height:11px;width:70%"></div>' +
+        '</article>';
+    }
+    return html;
+  }
+
+  function renderEmpty() {
+    grid.innerHTML = '<div style="grid-column:1 / -1">' +
+      UI.empty('没有匹配的食材', '换个关键词，或清空分类后再试。', 'apple') +
+      '<div style="text-align:center;padding-bottom:26px"><button class="btn btn-outline btn-sm" id="clearIng"><i class="ic" data-ic="refresh"></i>清空筛选</button></div>' +
+      '</div>';
+    Icons.hydrate(grid);
+    count.textContent = '共 0 种';
+  }
+
+  function renderCards(list, total) {
+    if (!list.length) { renderEmpty(); return; }
+    grid.innerHTML = list.map(function (ing, i) {
+      return '<article class="card ing-card reveal d' + ((i % 3) + 1) + '" data-id="' + ing.id + '" role="button" tabindex="0" aria-label="查看' + UI.esc(ing.name) + '营养详情">' +
+        '<div class="row-between" style="align-items:flex-start">' +
+          '<h3>' + UI.esc(ing.name) + '</h3>' +
+          '<span class="tag">' + UI.esc(ing.cat) + '</span>' +
+        '</div>' +
+        '<div class="ing-kcal mt-8">' + ing.kcal + '<small> kcal / 100g</small></div>' +
+        '<div class="ing-macros" style="flex-wrap:wrap">' +
+          '<span>蛋白 <b>' + ing.p + '</b></span>' +
+          '<span>碳水 <b>' + ing.c + '</b></span>' +
+          '<span>脂肪 <b>' + ing.f + '</b></span>' +
+          '<span>纤维 <b>' + ing.fiber + '</b></span>' +
+        '</div>' +
+        '<div class="row wrap mt-12" style="gap:6px">' +
+          ing.tags.map(function (t) { return '<span class="tag">' + UI.esc(t) + '</span>'; }).join('') +
+        '</div>' +
+      '</article>';
+    }).join('');
+    Icons.hydrate(grid);
+    count.textContent = '共 ' + total + ' 种食材';
+  }
+
+  async function loadIngredients() {
+    const my = ++seq;
+    grid.innerHTML = skeletonCards(6);
+    count.textContent = '正在检索…';
+    const res = await API.ingredients.list({ cat: state.cat, keyword: state.keyword });
+    if (my !== seq) return;
+    if (res.code !== 200) {
+      UI.toast(res.message, 'error');
+      renderEmpty();
+      return;
+    }
+    renderCards(res.data.list, res.data.total);
+  }
+
+  document.querySelectorAll('#catChips .chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      state.cat = chip.dataset.cat;
+      document.querySelectorAll('#catChips .chip').forEach(function (c) {
+        c.classList.toggle('on', c === chip);
+      });
+      loadIngredients();
+    });
+  });
+
+  let timer = null;
+  ingSearch.addEventListener('input', function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      state.keyword = ingSearch.value.trim();
+      loadIngredients();
+    }, 300);
+  });
+
+  grid.addEventListener('click', function (e) {
+    const clear = e.target.closest('#clearIng');
+    if (clear) {
+      state.cat = '全部';
+      state.keyword = '';
+      ingSearch.value = '';
+      document.querySelectorAll('#catChips .chip').forEach(function (c) {
+        c.classList.toggle('on', c.dataset.cat === '全部');
+      });
+      loadIngredients();
+      return;
+    }
+    const card = e.target.closest('.ing-card');
+    if (card && card.dataset.id) openIng(+card.dataset.id);
+  });
+  grid.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const card = e.target.closest('.ing-card');
+    if (!card || !card.dataset.id) return;
+    e.preventDefault();
+    openIng(+card.dataset.id);
+  });
+
+  /* ---------------- 食材详情弹窗 ---------------- */
+  function openIng(id) {
+    const ing = DB.ingredients.find(function (x) { return x.id === id; });
+    if (!ing) return;
+    currentIng = ing;
+
+    document.getElementById('ingModalTitle').textContent = ing.name;
+    document.getElementById('ingModalSub').textContent = ing.cat + ' · 每 100g 可食部';
+    document.getElementById('ingDesc').textContent = ing.desc + '。';
+
+    const rows = [
+      ['热量', ing.kcal + ' kcal'],
+      ['蛋白质', ing.p + ' g'],
+      ['碳水化合物', ing.c + ' g'],
+      ['脂肪', ing.f + ' g'],
+      ['膳食纤维', ing.fiber + ' g'],
+      ['糖', ing.sugar + ' g'],
+      ['钠', ing.sodium + ' mg'],
+      ['升糖指数 GI', ing.gi ? String(ing.gi) : '—'],
+      ['胆固醇', ing.chol ? ing.chol + ' mg' : '—']
+    ];
+    document.getElementById('ingTable').innerHTML = rows.map(function (row) {
+      return '<tr><td class="strong">' + row[0] + '</td><td class="num">' + row[1] + '</td></tr>';
+    }).join('');
+
+    UI.openModal('ingModal');
+    Icons.hydrate(document.getElementById('ingModal'));
+  }
+
+  document.getElementById('ingUse').addEventListener('click', function () {
+    if (!currentIng) return;
+    const exists = Array.prototype.some.call(subName.options, function (o) { return o.value === currentIng.name; });
+    if (!exists) {
+      const opt = document.createElement('option');
+      opt.value = currentIng.name;
+      opt.textContent = currentIng.name;
+      subName.appendChild(opt);
+    }
+    subName.value = currentIng.name;
+    UI.closeModal('ingModal');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    UI.toast('已填入替代工具：' + currentIng.name);
+    subName.focus();
+  });
+
+  /* ---------------- 替代工具 ---------------- */
+  function renderSub(data) {
+    subHint.textContent = '已为「' + data.source + '」生成 ' + data.list.length + ' 个方案' +
+      (data.prompt ? ' · 目标：' + data.prompt : '') + '。替换后请同步调整用量。';
+    subResults.innerHTML = data.list.map(function (s) {
+      const ing = DB.ingredients.find(function (x) { return x.name === s.name; });
+      return '<article class="card card-pad-sm">' +
+        '<div class="row-between">' +
+          '<strong style="font-size:14.5px;color:var(--green-950)">' + UI.esc(s.name) + '</strong>' +
+          '<span class="badge">' + UI.esc(s.tag) + '</span>' +
+        '</div>' +
+        '<div class="row mt-8" style="align-items:baseline;gap:6px">' +
+          '<span class="num" style="font-size:26px;color:var(--green-900)">' + s.kcal + '</span>' +
+          '<span class="small muted">kcal / 100g</span>' +
+        '</div>' +
+        '<div class="ing-macros"><span>蛋白 <b>' + s.p + '</b>g</span><span>脂肪 <b>' + s.f + '</b>g</span></div>' +
+        '<p class="small muted mt-8" style="line-height:1.7">' + UI.esc(s.reason) + '</p>' +
+        '<div class="row-between mt-12">' +
+          '<span class="small muted">等价替换</span>' +
+          (ing ? '<button class="link-btn" data-view-ing="' + ing.id + '">营养详情<i class="ic" data-ic="chevron-right"></i></button>' : '<span class="small muted">—</span>') +
+        '</div>' +
+      '</article>';
+    }).join('');
+    Icons.hydrate(subResults);
+    subResults.querySelectorAll('[data-view-ing]').forEach(function (b) {
+      b.addEventListener('click', function () { openIng(+b.dataset.viewIng); });
+    });
+  }
+
+  async function runSubstitute() {
+    const name = subName.value;
+    const prompt = subPrompt.value.trim();
+    UI.loading(subBtn, true, '生成中');
+    subHint.textContent = '正在按「' + (prompt || '营养等价') + '」检索替代方案…';
+    subResults.innerHTML = '<div class="card card-pad-sm"><div class="sk" style="height:14px;width:50%"></div><div class="sk mt-12" style="height:26px;width:40%"></div><div class="sk mt-12" style="height:11px"></div></div>' +
+      '<div class="card card-pad-sm"><div class="sk" style="height:14px;width:50%"></div><div class="sk mt-12" style="height:26px;width:40%"></div><div class="sk mt-12" style="height:11px"></div></div>' +
+      '<div class="card card-pad-sm"><div class="sk" style="height:14px;width:50%"></div><div class="sk mt-12" style="height:26px;width:40%"></div><div class="sk mt-12" style="height:11px"></div></div>';
+    const res = await API.ingredients.substitute({ name: name, prompt: prompt });
+    UI.loading(subBtn, false);
+    Icons.hydrate(subBtn);
+    if (res.code !== 200) {
+      subHint.textContent = '';
+      subResults.innerHTML = '';
+      UI.toast(res.message, 'error');
+      return;
+    }
+    renderSub(res.data);
+  }
+
+  subBtn.addEventListener('click', runSubstitute);
+  subPrompt.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') runSubstitute();
+  });
+
+  loadIngredients();
+  runSubstitute();
+})();
+</script>
+</body>
+</html>

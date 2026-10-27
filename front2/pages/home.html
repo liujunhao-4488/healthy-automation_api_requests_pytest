@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>首页 · 膳衡</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body class="app" data-page="home">
+
+<header class="mobile-bar">
+  <span class="brand-mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+  </span>
+  <span class="brand-text"><strong>膳衡</strong><small>SHANHENG</small></span>
+  <button class="mobile-menu-btn" aria-label="打开菜单"><i class="ic" data-ic="menu"></i></button>
+</header>
+
+<aside class="app-nav">
+  <a class="brand" href="home.html">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+    </span>
+    <span class="brand-text"><strong>膳衡</strong><small>SHANHENG · 健康饮食</small></span>
+  </a>
+
+  <p class="nav-label">我的健康</p>
+  <a class="nav-item" data-nav="home" href="home.html"><i class="ic" data-ic="home"></i><span>首页</span></a>
+  <a class="nav-item" data-nav="health" href="health.html"><i class="ic" data-ic="heart-pulse"></i><span>健康档案</span></a>
+  <a class="nav-item" data-nav="goal" href="goal.html"><i class="ic" data-ic="target"></i><span>饮食目标</span></a>
+  <a class="nav-item" data-nav="record" href="record.html"><i class="ic" data-ic="notebook"></i><span>饮食记录</span></a>
+
+  <p class="nav-label">内容与工具</p>
+  <a class="nav-item" data-nav="recipes" href="recipes.html"><i class="ic" data-ic="book-open"></i><span>食谱库</span></a>
+  <a class="nav-item" data-nav="ingredients" href="ingredients.html"><i class="ic" data-ic="apple"></i><span>食材库</span></a>
+  <a class="nav-item" data-nav="knowledge" href="knowledge.html"><i class="ic" data-ic="news"></i><span>健康知识</span></a>
+  <a class="nav-item" data-nav="assistant" href="assistant.html"><i class="ic" data-ic="sparkles"></i><span>AI 助手</span></a>
+
+  <p class="nav-label">账户</p>
+  <a class="nav-item" data-nav="account" href="account.html"><i class="ic" data-ic="user"></i><span>个人中心</span><span class="nav-badge" id="navNotifBadge" style="display:none">0</span></a>
+  <a class="nav-item nav-admin" data-nav="admin" href="admin.html"><i class="ic" data-ic="settings"></i><span>管理后台</span></a>
+
+  <div class="nav-user">
+    <span class="nav-avatar" id="navAvatar">禾</span>
+    <span class="grow"><span class="nav-user-name" id="navUserName">林嘉禾</span><span class="nav-user-role" id="navUserRole">管理员 · 平台运营</span></span>
+    <button class="nav-logout" id="navLogout" title="退出登录"><i class="ic" data-ic="logout"></i></button>
+  </div>
+</aside>
+<div class="nav-scrim"></div>
+
+<main class="app-content">
+  <div class="page-shell">
+
+    <header class="page-head reveal">
+      <div>
+        <p class="eyebrow">My Health · Today</p>
+        <h1 class="page-title" id="homeTitle">早上好，林嘉禾</h1>
+        <p class="page-sub" id="homeSub">10月23日 · 已记录 2 餐，今天还可以慢慢吃</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" id="refreshReco"><i class="ic" data-ic="refresh"></i>换一批推荐</button>
+        <a class="btn btn-primary" href="record.html"><i class="ic" data-ic="plus"></i>记录一餐</a>
+      </div>
+    </header>
+
+    <!-- 今日能量 + 目标 -->
+    <section class="grid split">
+      <article class="card energy-card reveal d1">
+        <div class="row-between" style="align-items:flex-start">
+          <div>
+            <p class="eyebrow">Energy · 今日能量</p>
+            <h2 class="display" style="font-size:22px;color:var(--green-950)">摄入与目标</h2>
+          </div>
+          <span class="badge" id="engineBadge"><i class="ic" data-ic="sparkles"></i>V2 混合引擎</span>
+        </div>
+
+        <div class="row mt-24" style="gap:28px;align-items:center;flex-wrap:wrap">
+          <div class="ring-wrap">
+            <svg width="168" height="168" viewBox="0 0 168 168">
+              <circle cx="84" cy="84" r="70" fill="none" stroke="#ece8de" stroke-width="12"></circle>
+              <circle id="kcalRing" cx="84" cy="84" r="70" fill="none" stroke="#1e6b52" stroke-width="12" stroke-linecap="round" stroke-dasharray="439.8" stroke-dashoffset="439.8" style="transition:stroke-dashoffset 1s var(--ease)"></circle>
+            </svg>
+            <div class="ring-center">
+              <span class="big num" id="kcalNow">0</span>
+              <span class="small">已摄入 kcal</span>
+            </div>
+          </div>
+
+          <div class="grow" style="min-width:240px">
+            <div class="macro-row" id="macroRows">
+              <div class="macro-item">
+                <span class="name">蛋白质</span>
+                <span class="bar"><i style="width:0%"></i></span>
+                <span class="val">0 / 0g</span>
+              </div>
+              <div class="macro-item">
+                <span class="name">碳水</span>
+                <span class="bar amber"><i style="width:0%"></i></span>
+                <span class="val">0 / 0g</span>
+              </div>
+              <div class="macro-item">
+                <span class="name">脂肪</span>
+                <span class="bar clay"><i style="width:0%"></i></span>
+                <span class="val">0 / 0g</span>
+              </div>
+            </div>
+            <div class="row-between mt-24" style="padding-top:16px;border-top:1px dashed var(--border)">
+              <div class="kpi">
+                <span class="kpi-label">还可摄入</span>
+                <span class="kpi-value num" id="kcalLeft">— kcal</span>
+              </div>
+              <div class="kpi" style="text-align:right">
+                <span class="kpi-label">今日目标</span>
+                <span class="kpi-value num" id="kcalTarget">— kcal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="col" style="gap:20px">
+        <article class="card card-pad reveal d2">
+          <div class="row-between">
+            <p class="eyebrow" style="margin:0">Goal · 目标进度</p>
+            <a class="link small" href="goal.html" style="color:var(--green-700);text-decoration:none">调整目标</a>
+          </div>
+          <div class="row mt-12" style="align-items:baseline;gap:8px">
+            <span class="num" style="font-size:34px;color:var(--green-950)" id="currentWeight">68.4</span>
+            <span class="small muted">kg / 目标 <b id="targetWeight">62.0</b> kg</span>
+          </div>
+          <div class="bar mt-12"><i id="weightBar" style="width:0%"></i></div>
+          <div class="row-between small muted mt-8">
+            <span>已减 <b class="num" id="lostWeight">0</b> kg</span>
+            <span id="goalPct">0%</span>
+          </div>
+          <div class="mt-16">
+            <span class="small muted">连续记录</span>
+            <div class="streak" id="streakDays"></div>
+          </div>
+        </article>
+
+        <article class="card card-pad reveal d3">
+          <div class="row-between">
+            <p class="eyebrow" style="margin:0">Water · 今日饮水</p>
+            <span class="small num" id="waterText">1000 / 2000 ml</span>
+          </div>
+          <div class="water-track" id="waterTrack"></div>
+          <p class="small muted mt-8">每格 250ml，点击记录一杯。</p>
+        </article>
+      </aside>
+    </section>
+
+    <!-- 今日推荐 -->
+    <section class="mt-40 reveal d3">
+      <div class="section-title">
+        <h2>今天吃什么</h2>
+        <a class="link" href="recipes.html">全部食谱 <i class="ic" data-ic="chevron-right"></i></a>
+      </div>
+      <div class="grid g3" id="mealRecos">
+        <div class="card meal-card"><div class="sk" style="aspect-ratio:4/3"></div><div class="body"><div class="sk" style="height:14px;width:70%"></div><div class="sk" style="height:11px;width:90%"></div></div></div>
+        <div class="card meal-card"><div class="sk" style="aspect-ratio:4/3"></div><div class="body"><div class="sk" style="height:14px;width:70%"></div><div class="sk" style="height:11px;width:90%"></div></div></div>
+        <div class="card meal-card"><div class="sk" style="aspect-ratio:4/3"></div><div class="body"><div class="sk" style="height:14px;width:70%"></div><div class="sk" style="height:11px;width:90%"></div></div></div>
+      </div>
+    </section>
+
+    <!-- 记录 + 建议 -->
+    <section class="grid split mt-40 reveal d4">
+      <article class="card">
+        <div class="card-hd">
+          <h3>今日饮食记录</h3>
+          <a class="link-btn" href="record.html">查看全部 <i class="ic" data-ic="chevron-right"></i></a>
+        </div>
+        <div class="card-bd">
+          <div class="timeline" id="todayTimeline"></div>
+        </div>
+      </article>
+
+      <aside class="col" style="gap:20px">
+        <article class="card card-pad">
+          <p class="eyebrow" style="margin:0">Advice · 今日建议</p>
+          <ul id="adviceList" style="display:flex;flex-direction:column;gap:12px;margin-top:14px"></ul>
+          <a class="btn btn-soft btn-sm btn-block mt-16" href="assistant.html"><i class="ic" data-ic="sparkles"></i>继续问 AI 助手</a>
+        </article>
+
+        <div class="quick-grid">
+          <a class="quick" href="record.html"><span class="q-ico"><i class="ic" data-ic="notebook"></i></span><strong>记录一餐</strong><span>早餐 / 午餐 / 晚餐</span></a>
+          <a class="quick" href="ingredients.html"><span class="q-ico"><i class="ic" data-ic="refresh"></i></span><strong>食材替代</strong><span>按营养等价替换</span></a>
+          <a class="quick" href="goal.html"><span class="q-ico"><i class="ic" data-ic="target"></i></span><strong>更新目标</strong><span>热量与配比</span></a>
+          <a class="quick" href="article-detail.html?id=1"><span class="q-ico"><i class="ic" data-ic="news"></i></span><strong>今日科普</strong><span>低 GI 主食怎么选</span></a>
+        </div>
+      </aside>
+    </section>
+
+    <p class="small muted mt-32" style="text-align:center">
+      推荐结果基于健康档案与饮食目标生成（V2：SVD + GBDT + 规则护栏）。健康建议不构成医疗诊断，慢病管理请遵医嘱。
+    </p>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/mock.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  const UI = window.UI, API = window.API, Store = window.Store;
+  const goal = Store.goal();
+  const total = Store.totals();
+  const pct = Math.min(100, Math.round(total.kcal / goal.kcal * 100));
+
+  document.getElementById('homeTitle').textContent = App.greeting() + '，' + App.userName();
+  document.getElementById('homeSub').textContent = Store.dateLabel(Store.TODAY) + ' · 已记录 ' + Store.recordsByDate(Store.TODAY).length + ' 餐，按目标稳步推进';
+
+  // 能量环
+  document.getElementById('kcalNow').textContent = UI.num(total.kcal);
+  document.getElementById('kcalLeft').textContent = UI.num(Math.max(0, goal.kcal - total.kcal)) + ' kcal';
+  document.getElementById('kcalTarget').textContent = UI.num(goal.kcal) + ' kcal';
+  const C = 2 * Math.PI * 70;
+  const ring = document.getElementById('kcalRing');
+  ring.setAttribute('stroke-dasharray', C);
+  setTimeout(function () { ring.setAttribute('stroke-dashoffset', C * (1 - pct / 100)); }, 120);
+
+  // 三大营养素
+  const macros = [
+    { name: '蛋白质', val: total.p, target: Math.round(goal.kcal * goal.proteinPct / 100 / 4) },
+    { name: '碳水', val: total.c, target: Math.round(goal.kcal * goal.carbPct / 100 / 4) },
+    { name: '脂肪', val: total.f, target: Math.round(goal.kcal * goal.fatPct / 100 / 9) }
+  ];
+  const barClass = ['', ' amber', ' clay'][0];
+  document.getElementById('macroRows').innerHTML = macros.map(function (m, i) {
+    const p = Math.min(100, Math.round(m.val / m.target * 100));
+    const cls = i === 0 ? '' : (i === 1 ? ' amber' : ' clay');
+    return '<div class="macro-item"><span class="name">' + m.name + '</span>' +
+      '<span class="bar' + cls + '"><i style="width:' + p + '%"></i></span>' +
+      '<span class="val">' + m.val + ' / ' + m.target + 'g</span></div>';
+  }).join('');
+
+  // 目标进度
+  const lost = +(goal.startWeight - goal.currentWeight).toFixed(1);
+  const need = +(goal.startWeight - goal.targetWeight).toFixed(1);
+  const goalPct = Math.min(100, Math.round(lost / need * 100));
+  document.getElementById('currentWeight').textContent = goal.currentWeight.toFixed(1);
+  document.getElementById('targetWeight').textContent = goal.targetWeight.toFixed(1);
+  document.getElementById('lostWeight').textContent = lost;
+  document.getElementById('goalPct').textContent = goalPct + '%';
+  setTimeout(function () { document.getElementById('weightBar').style.width = goalPct + '%'; }, 200);
+
+  const days = ['一', '二', '三', '四', '五', '六', '日'];
+  document.getElementById('streakDays').innerHTML = days.map(function (d, i) {
+    return '<i class="' + (i < 5 ? 'on' : '') + '">' + d + '</i>';
+  }).join('');
+
+  // 饮水
+  function renderWater() {
+    const n = Store.water();
+    document.getElementById('waterText').textContent = (n * 250) + ' / ' + goal.water + ' ml';
+    const track = document.getElementById('waterTrack');
+    track.innerHTML = '';
+    for (let i = 0; i < 8; i++) {
+      const cup = document.createElement('i');
+      cup.className = i < n ? 'on' : '';
+      cup.textContent = (i + 1) * 250;
+      cup.title = '记录第 ' + (i + 1) + ' 杯（250ml）';
+      cup.style.cursor = 'pointer';
+      cup.addEventListener('click', function () {
+        Store.addWater(i + 1 === Store.water() ? i : i + 1);
+        renderWater();
+        UI.toast('已记录饮水');
+      });
+      track.appendChild(cup);
+    }
+  }
+  renderWater();
+
+  // 今日记录
+  const records = Store.recordsByDate(Store.TODAY);
+  const timeline = document.getElementById('todayTimeline');
+  if (!records.length) {
+    timeline.innerHTML = UI.empty('今天还没有记录', '记录第一餐后，这里会显示热量与营养汇总。', 'notebook');
+    Icons.hydrate(timeline);
+  } else {
+    timeline.innerHTML = records.map(function (r) {
+      const kcal = (r.items || []).reduce(function (s, i) { return s + (+i.kcal || 0); }, 0);
+      const names = (r.items || []).map(function (i) { return i.name; }).join(' · ');
+      return '<div class="tl-item"><span class="tl-time">' + r.time + '</span>' +
+        '<div class="tl-body"><strong>' + r.mealType + '</strong><p>' + UI.esc(names) + '</p></div>' +
+        '<span class="tl-kcal num">' + kcal + ' kcal</span></div>';
+    }).join('');
+  }
+
+  // 推荐
+  async function loadReco(btn) {
+    if (btn) UI.loading(btn, true, '生成中');
+    const res = await API.recommend.today();
+    if (btn) UI.loading(btn, false);
+    if (res.code !== 200) { UI.toast(res.message, 'error'); return; }
+    const box = document.getElementById('mealRecos');
+    box.innerHTML = res.data.list.map(function (r, i) {
+      return '<article class="card meal-card reveal d' + (i + 1) + '">' +
+        '<div class="thumb"><img src="' + r.img + '" alt="' + UI.esc(r.name) + '">' +
+        '<span class="meal-tag">' + r.mealType + '</span></div>' +
+        '<div class="body">' +
+          '<h3><a href="recipe-detail.html?id=' + r.id + '" style="text-decoration:none;color:inherit">' + UI.esc(r.name) + '</a></h3>' +
+          '<div class="meal-meta"><span><i class="ic" data-ic="flame"></i> ' + r.kcal + ' kcal</span>' +
+          '<span>蛋白 ' + r.p + 'g</span><span>匹配分 ' + r.score + '</span></div>' +
+          '<div class="meal-foot"><span class="badge">' + r.fit.join(' / ') + '</span>' +
+          '<button class="btn btn-sm btn-soft" data-add="' + r.id + '"><i class="ic" data-ic="plus"></i>记入' + r.mealType + '</button></div>' +
+        '</div></article>';
+    }).join('');
+    Icons.hydrate(box);
+
+    box.querySelectorAll('[data-add]').forEach(function (b) {
+      b.addEventListener('click', async function () {
+        const recipe = DB.recipes.find(x => x.id === +b.dataset.add);
+        UI.loading(b, true, '添加');
+        const r = await API.records.submit({
+          mealType: recipe.mealType, time: Store.nowTime(), note: '来自推荐',
+          items: [{ name: recipe.name, amount: 1, unit: '份', kcal: recipe.kcal, p: recipe.p, c: recipe.c, f: recipe.f }]
+        });
+        UI.loading(b, false);
+        if (r.code !== 200) { UI.toast(r.message, 'error'); return; }
+        UI.toast('已记入今日' + recipe.mealType);
+        setTimeout(function () { location.reload(); }, 600);
+      });
+    });
+  }
+  loadReco();
+  document.getElementById('refreshReco').addEventListener('click', function () { loadReco(this); });
+
+  // 建议
+  API.records.suggestions().then(function (res) {
+    if (res.code !== 200) return;
+    document.getElementById('adviceList').innerHTML = res.data.map(function (t) {
+      return '<li class="row" style="align-items:flex-start;gap:10px;font-size:12.5px;color:var(--text-2);line-height:1.75">' +
+        '<i class="ic" data-ic="check-circle" style="color:var(--green-700);margin-top:3px"></i><span>' + UI.esc(t) + '</span></li>';
+    }).join('');
+    Icons.hydrate(document.getElementById('adviceList'));
+  });
+})();
+</script>
+</body>
+</html>

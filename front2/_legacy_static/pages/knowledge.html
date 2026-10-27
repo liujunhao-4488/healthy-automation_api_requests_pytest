@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>健康知识 · 膳衡</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+.k-feature-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--green-100)}
+.k-feature-meta span{display:inline-flex;align-items:center;gap:5px}
+.k-feature-meta .ic{width:13px;height:13px}
+.k-filters{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 20px}
+.k-list{display:flex;flex-direction:column;gap:16px}
+.a-meta-item{display:inline-flex;align-items:center;gap:5px}
+.k-pager{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:20px}
+.k-tagcloud{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.k-note{font-size:11.5px;line-height:1.75;color:var(--text-3);margin-top:10px}
+.k-skeleton{display:flex;gap:20px;padding:16px}
+.k-skeleton .sk-thumb{width:190px;flex:none;aspect-ratio:4/3;border-radius:12px}
+.k-skeleton .sk-body{flex:1;display:flex;flex-direction:column;gap:9px;padding-top:4px}
+@media (max-width:720px){.k-skeleton .sk-thumb{width:96px}}
+</style>
+</head>
+<body class="app" data-page="knowledge">
+
+<header class="mobile-bar">
+  <span class="brand-mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+  </span>
+  <span class="brand-text"><strong>膳衡</strong><small>SHANHENG</small></span>
+  <button class="mobile-menu-btn" aria-label="打开菜单"><i class="ic" data-ic="menu"></i></button>
+</header>
+
+<aside class="app-nav">
+  <a class="brand" href="home.html">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+    </span>
+    <span class="brand-text"><strong>膳衡</strong><small>SHANHENG · 健康饮食</small></span>
+  </a>
+
+  <p class="nav-label">我的健康</p>
+  <a class="nav-item" data-nav="home" href="home.html"><i class="ic" data-ic="home"></i><span>首页</span></a>
+  <a class="nav-item" data-nav="health" href="health.html"><i class="ic" data-ic="heart-pulse"></i><span>健康档案</span></a>
+  <a class="nav-item" data-nav="goal" href="goal.html"><i class="ic" data-ic="target"></i><span>饮食目标</span></a>
+  <a class="nav-item" data-nav="record" href="record.html"><i class="ic" data-ic="notebook"></i><span>饮食记录</span></a>
+
+  <p class="nav-label">内容与工具</p>
+  <a class="nav-item" data-nav="recipes" href="recipes.html"><i class="ic" data-ic="book-open"></i><span>食谱库</span></a>
+  <a class="nav-item" data-nav="ingredients" href="ingredients.html"><i class="ic" data-ic="apple"></i><span>食材库</span></a>
+  <a class="nav-item" data-nav="knowledge" href="knowledge.html"><i class="ic" data-ic="news"></i><span>健康知识</span></a>
+  <a class="nav-item" data-nav="assistant" href="assistant.html"><i class="ic" data-ic="sparkles"></i><span>AI 助手</span></a>
+
+  <p class="nav-label">账户</p>
+  <a class="nav-item" data-nav="account" href="account.html"><i class="ic" data-ic="user"></i><span>个人中心</span><span class="nav-badge" id="navNotifBadge" style="display:none">0</span></a>
+  <a class="nav-item nav-admin" data-nav="admin" href="admin.html"><i class="ic" data-ic="settings"></i><span>管理后台</span></a>
+
+  <div class="nav-user">
+    <span class="nav-avatar" id="navAvatar">禾</span>
+    <span class="grow"><span class="nav-user-name" id="navUserName">林嘉禾</span><span class="nav-user-role" id="navUserRole">管理员 · 平台运营</span></span>
+    <button class="nav-logout" id="navLogout" title="退出登录"><i class="ic" data-ic="logout"></i></button>
+  </div>
+</aside>
+<div class="nav-scrim"></div>
+
+<main class="app-content">
+  <div class="page-shell">
+
+    <header class="page-head reveal">
+      <div>
+        <p class="eyebrow">Knowledge Base</p>
+        <h1 class="page-title">健康知识</h1>
+        <p class="page-sub">基于权威食养指南与平台营养师内容</p>
+      </div>
+      <div class="page-actions">
+        <div class="search-box" style="width:280px">
+          <i class="ic" data-ic="search"></i>
+          <input class="input" id="keywordInput" type="search" placeholder="搜索标题或摘要" aria-label="搜索文章">
+        </div>
+      </div>
+    </header>
+
+    <section class="reveal d1">
+      <div class="section-title">
+        <h2>精选文章</h2>
+        <span class="small muted">编辑推荐 · 每周更新</span>
+      </div>
+      <div id="featureWrap"></div>
+    </section>
+
+    <section class="reveal d2">
+      <div class="k-filters" id="catChips">
+        <button class="chip on" type="button" data-cat="全部">全部</button>
+        <button class="chip" type="button" data-cat="饮食指南">饮食指南</button>
+        <button class="chip" type="button" data-cat="营养知识">营养知识</button>
+        <button class="chip" type="button" data-cat="减肥指南">减肥指南</button>
+        <button class="chip" type="button" data-cat="增肌指南">增肌指南</button>
+        <button class="chip" type="button" data-cat="饮食误区">饮食误区</button>
+      </div>
+    </section>
+
+    <section class="grid split reveal d3">
+      <div>
+        <div class="k-list" id="articleList"></div>
+        <div class="k-pager" id="pager" hidden></div>
+      </div>
+
+      <aside class="col" style="gap:20px">
+        <article class="card card-pad">
+          <div class="row-between">
+            <p class="eyebrow" style="margin:0">Trending · 热门</p>
+            <span class="small muted">按阅读量</span>
+          </div>
+          <div class="mt-12" id="hotList"></div>
+        </article>
+
+        <article class="card card-pad">
+          <p class="eyebrow" style="margin:0">Tags · 标签云</p>
+          <div class="k-tagcloud" id="tagCloud"></div>
+          <p class="k-note">点击标签会填入搜索框并筛选相关文章。</p>
+        </article>
+
+        <article class="card card-pad">
+          <div class="alert-inline">
+            <i class="ic" data-ic="info"></i>
+            <div>
+              <strong style="display:block;margin-bottom:3px">内容不替代医疗诊断</strong>
+              文章为通用营养科普，慢病管理与用药请遵医嘱，必要时咨询临床营养师。
+            </div>
+          </div>
+        </article>
+      </aside>
+    </section>
+
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/mock.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  const UI = window.UI, API = window.API, Store = window.Store, DB = window.DB;
+  const listEl = document.getElementById('articleList');
+  const pagerEl = document.getElementById('pager');
+  const kwInput = document.getElementById('keywordInput');
+  const catChips = document.getElementById('catChips');
+  const state = { cat: '全部', keyword: '', tag: '', page: 1 };
+  let seq = 0, timer = null;
+
+  /* ---------- 精选 ---------- */
+  const feat = DB.articles.find(function (a) { return a.id === 2; }) || DB.articles[0];
+  const featureWrap = document.getElementById('featureWrap');
+  featureWrap.innerHTML =
+    '<div class="feature-article">' +
+      '<img src="' + feat.cover + '" alt="' + UI.esc(feat.title) + '">' +
+      '<div class="inner">' +
+        '<span class="badge">' + UI.esc(feat.cat) + '</span>' +
+        '<h2 class="mt-12"><a href="article-detail.html?id=' + feat.id + '" style="color:inherit;text-decoration:none">' + UI.esc(feat.title) + '</a></h2>' +
+        '<p class="small" style="color:var(--green-100);margin-top:10px;max-width:560px;line-height:1.8">' + UI.esc(feat.summary) + '</p>' +
+        '<div class="k-feature-meta">' +
+          '<span><i class="ic" data-ic="user"></i>' + UI.esc(feat.author) + '</span>' +
+          '<span><i class="ic" data-ic="calendar"></i>' + Store.dateLabel(feat.date) + '</span>' +
+          '<span><i class="ic" data-ic="eye"></i>' + UI.num(feat.views) + ' 阅读</span>' +
+        '</div>' +
+        '<a class="btn btn-outline btn-sm mt-16" href="article-detail.html?id=' + feat.id + '">阅读全文 <i class="ic" data-ic="arrow-right"></i></a>' +
+      '</div>' +
+    '</div>';
+  Icons.hydrate(featureWrap);
+
+  /* ---------- 热门 / 标签 ---------- */
+  const hot = DB.articles.slice().sort(function (a, b) { return b.views - a.views; }).slice(0, 5);
+  document.getElementById('hotList').innerHTML = hot.map(function (a, i) {
+    return '<a class="rank-row" href="article-detail.html?id=' + a.id + '" style="text-decoration:none">' +
+      '<span class="rank">' + (i + 1) + '</span>' +
+      '<span class="rank-name">' + UI.esc(a.title) + '</span>' +
+      '<span class="rank-val">' + UI.num(a.views) + '</span></a>';
+  }).join('');
+  Icons.hydrate(document.getElementById('hotList'));
+
+  const tagCount = {};
+  DB.articles.forEach(function (a) {
+    a.tags.forEach(function (t) { tagCount[t] = (tagCount[t] || 0) + 1; });
+  });
+  const tags = Object.keys(tagCount).sort(function (a, b) {
+    return tagCount[b] - tagCount[a] || a.localeCompare(b, 'zh');
+  }).slice(0, 12);
+  const tagCloud = document.getElementById('tagCloud');
+  tagCloud.innerHTML = tags.map(function (t) {
+    return '<button class="chip" type="button" data-tag="' + UI.esc(t) + '" style="height:28px;padding:0 11px;font-size:11.5px">' +
+      UI.esc(t) + ' <span class="num" style="color:var(--text-3);font-size:10px">' + tagCount[t] + '</span></button>';
+  }).join('');
+  Icons.hydrate(tagCloud);
+
+  tagCloud.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-tag]');
+    if (!btn) return;
+    state.tag = btn.dataset.tag;
+    state.keyword = '';
+    state.cat = '全部';
+    state.page = 1;
+    kwInput.value = state.tag;
+    setChips();
+    load();
+  });
+
+  /* ---------- 分类 ---------- */
+  function setChips() {
+    catChips.querySelectorAll('[data-cat]').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.cat === state.cat);
+    });
+  }
+  catChips.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-cat]');
+    if (!btn) return;
+    state.cat = btn.dataset.cat;
+    state.page = 1;
+    setChips();
+    load();
+  });
+
+  /* ---------- 搜索（300ms 防抖） ---------- */
+  kwInput.addEventListener('input', function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      state.keyword = kwInput.value.trim();
+      state.tag = '';
+      state.page = 1;
+      load();
+    }, 300);
+  });
+
+  pagerEl.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-go]');
+    if (!btn || btn.disabled) return;
+    state.page += btn.dataset.go === 'next' ? 1 : -1;
+    load();
+    window.scrollTo({ top: Math.max(0, listEl.getBoundingClientRect().top + window.pageYOffset - 90), behavior: 'smooth' });
+  });
+
+  listEl.addEventListener('click', function (e) {
+    const card = e.target.closest('.article-card');
+    if (!card || e.target.closest('a')) return;
+    location.href = card.dataset.href;
+  });
+
+  /* ---------- 列表 ---------- */
+  function skeleton() {
+    let html = '';
+    for (let i = 0; i < 3; i++) {
+      html += '<div class="card k-skeleton">' +
+        '<div class="sk sk-thumb"></div>' +
+        '<div class="sk-body"><div class="sk" style="height:18px;width:62%"></div>' +
+        '<div class="sk" style="height:12px;width:96%"></div>' +
+        '<div class="sk" style="height:12px;width:86%"></div>' +
+        '<div class="sk" style="height:12px;width:44%;margin-top:6px"></div></div></div>';
+    }
+    return html;
+  }
+
+  function cardHtml(a) {
+    return '<article class="card article-card" data-href="article-detail.html?id=' + a.id + '" style="cursor:pointer">' +
+      '<a class="thumb" href="article-detail.html?id=' + a.id + '" style="display:block">' +
+        '<img src="' + a.cover + '" alt="' + UI.esc(a.title) + '">' +
+      '</a>' +
+      '<div class="body">' +
+        '<div class="row wrap" style="gap:8px">' +
+          '<span class="badge gray">' + UI.esc(a.cat) + '</span>' +
+          a.tags.slice(0, 2).map(function (t) { return '<span class="tag">' + UI.esc(t) + '</span>'; }).join('') +
+        '</div>' +
+        '<h3><a href="article-detail.html?id=' + a.id + '" style="text-decoration:none;color:inherit">' + UI.esc(a.title) + '</a></h3>' +
+        '<p class="excerpt">' + UI.esc(a.summary) + '</p>' +
+        '<div class="article-meta">' +
+          '<span class="a-meta-item"><i class="ic" data-ic="user"></i>' + UI.esc(a.author) + '</span>' +
+          '<span class="a-meta-item"><i class="ic" data-ic="calendar"></i>' + Store.dateLabel(a.date) + '</span>' +
+          '<span class="a-meta-item"><i class="ic" data-ic="eye"></i>' + UI.num(a.views) + '</span>' +
+          '<span class="a-meta-item"><i class="ic" data-ic="thumbs-up"></i>' + UI.num(a.likes) + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  async function load() {
+    const mine = ++seq;
+    pagerEl.hidden = true;
+    listEl.innerHTML = skeleton();
+    const res = await API.articles.list({
+      cat: state.cat, keyword: state.keyword, tag: state.tag,
+      page: state.page, pageSize: 5
+    });
+    if (mine !== seq) return;
+
+    if (res.code !== 200) {
+      listEl.innerHTML = '<div class="card">' + UI.empty('加载失败', res.message, 'alert') + '</div>';
+      Icons.hydrate(listEl);
+      return;
+    }
+
+    const d = res.data;
+    if (!d.list.length) {
+      listEl.innerHTML = '<div class="card">' + UI.empty('没有找到相关文章', '试试更换分类、清空搜索词，或点击标签云里的其他标签。', 'news') + '</div>';
+      Icons.hydrate(listEl);
+      return;
+    }
+
+    listEl.innerHTML = d.list.map(cardHtml).join('');
+    Icons.hydrate(listEl);
+
+    const pages = Math.max(1, Math.ceil(d.total / d.pageSize));
+    pagerEl.hidden = false;
+    pagerEl.innerHTML =
+      '<button class="btn btn-outline btn-sm" data-go="prev"' + (state.page <= 1 ? ' disabled' : '') + '>上一页</button>' +
+      '<span class="small muted">第 ' + d.page + ' / ' + pages + ' 页 · 共 ' + d.total + ' 篇</span>' +
+      '<button class="btn btn-outline btn-sm" data-go="next"' + (state.page >= pages ? ' disabled' : '') + '>下一页</button>';
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

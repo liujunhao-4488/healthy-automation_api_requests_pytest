@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>饮食目标 · 膳衡</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .g-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .slider-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) 112px; gap: 12px; align-items: center; }
+  .slider-row .name { font-size: 12.5px; color: var(--text-2); }
+  .slider-row .val { font-size: 11.5px; color: var(--text-3); text-align: right; }
+  .goal-ring { position: relative; width: 120px; height: 120px; flex: none; }
+  .goal-ring svg { transform: rotate(-90deg); }
+  .goal-ring .ring-track { stroke: var(--border); }
+  .goal-ring .ring-val { stroke: var(--green-800); }
+  .goal-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+  .goal-ring-center b { font-family: var(--font-num); font-size: 24px; color: var(--green-950); }
+  .goal-ring-center span { font-size: 10.5px; color: var(--text-3); }
+  .tip-list { display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; color: var(--text-2); line-height: 1.7; }
+  .tip-list li { padding-left: 14px; position: relative; }
+  .tip-list li::before { content: ""; position: absolute; left: 0; top: 8px; width: 5px; height: 5px; border-radius: 50%; background: var(--green-600); }
+  @media (max-width: 720px) {
+    .g-grid { grid-template-columns: minmax(0, 1fr); }
+    .slider-row { grid-template-columns: 56px minmax(0, 1fr); row-gap: 4px; }
+    .slider-row .val { grid-column: 2; text-align: left; }
+  }
+</style>
+</head>
+<body class="app" data-page="goal">
+
+<header class="mobile-bar">
+  <span class="brand-mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+  </span>
+  <span class="brand-text"><strong>膳衡</strong><small>SHANHENG</small></span>
+  <button class="mobile-menu-btn" aria-label="打开菜单"><i class="ic" data-ic="menu"></i></button>
+</header>
+
+<aside class="app-nav">
+  <a class="brand" href="home.html">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+    </span>
+    <span class="brand-text"><strong>膳衡</strong><small>SHANHENG · 健康饮食</small></span>
+  </a>
+
+  <p class="nav-label">我的健康</p>
+  <a class="nav-item" data-nav="home" href="home.html"><i class="ic" data-ic="home"></i><span>首页</span></a>
+  <a class="nav-item" data-nav="health" href="health.html"><i class="ic" data-ic="heart-pulse"></i><span>健康档案</span></a>
+  <a class="nav-item" data-nav="goal" href="goal.html"><i class="ic" data-ic="target"></i><span>饮食目标</span></a>
+  <a class="nav-item" data-nav="record" href="record.html"><i class="ic" data-ic="notebook"></i><span>饮食记录</span></a>
+
+  <p class="nav-label">内容与工具</p>
+  <a class="nav-item" data-nav="recipes" href="recipes.html"><i class="ic" data-ic="book-open"></i><span>食谱库</span></a>
+  <a class="nav-item" data-nav="ingredients" href="ingredients.html"><i class="ic" data-ic="apple"></i><span>食材库</span></a>
+  <a class="nav-item" data-nav="knowledge" href="knowledge.html"><i class="ic" data-ic="news"></i><span>健康知识</span></a>
+  <a class="nav-item" data-nav="assistant" href="assistant.html"><i class="ic" data-ic="sparkles"></i><span>AI 助手</span></a>
+
+  <p class="nav-label">账户</p>
+  <a class="nav-item" data-nav="account" href="account.html"><i class="ic" data-ic="user"></i><span>个人中心</span><span class="nav-badge" id="navNotifBadge" style="display:none">0</span></a>
+  <a class="nav-item nav-admin" data-nav="admin" href="admin.html"><i class="ic" data-ic="settings"></i><span>管理后台</span></a>
+
+  <div class="nav-user">
+    <span class="nav-avatar" id="navAvatar">禾</span>
+    <span class="grow"><span class="nav-user-name" id="navUserName">林嘉禾</span><span class="nav-user-role" id="navUserRole">管理员 · 平台运营</span></span>
+    <button class="nav-logout" id="navLogout" title="退出登录"><i class="ic" data-ic="logout"></i></button>
+  </div>
+</aside>
+<div class="nav-scrim"></div>
+
+<main class="app-content">
+  <div class="page-shell">
+
+    <header class="page-head reveal">
+      <div>
+        <p class="eyebrow">Goal Setting</p>
+        <h1 class="page-title">饮食目标</h1>
+        <p class="page-sub">目标决定推荐结果，建议每 4 周复盘一次</p>
+      </div>
+      <div class="page-actions">
+        <a class="btn btn-outline" href="health.html"><i class="ic" data-ic="heart-pulse"></i>健康档案</a>
+        <button class="btn btn-primary" id="saveGoal"><i class="ic" data-ic="check"></i>保存目标</button>
+      </div>
+    </header>
+
+    <section class="grid split">
+      <div class="col" style="gap:20px">
+
+        <article class="card card-pad reveal d1">
+          <div class="row-between" style="align-items:flex-start">
+            <div>
+              <p class="eyebrow" style="margin:0">Goal Type</p>
+              <h3 style="font-family:var(--font-display);font-size:19px;margin-top:6px">目标类型</h3>
+            </div>
+            <span class="badge" id="goalBadge">减脂</span>
+          </div>
+          <div class="seg mt-16" id="goalTypeSeg">
+            <button type="button" data-type="减脂" class="on">减脂</button>
+            <button type="button" data-type="增肌">增肌</button>
+            <button type="button" data-type="控糖">控糖</button>
+            <button type="button" data-type="维持">维持</button>
+          </div>
+          <p class="small muted mt-12" id="typeHint">建议每日 1,500 kcal（区间 1,400–1,600）· 在维持热量基础上减少约 300 kcal</p>
+        </article>
+
+        <article class="card reveal d2">
+          <div class="card-hd">
+            <h3>体重目标</h3>
+            <span class="small muted">起始体重来自首次建档，不可修改</span>
+          </div>
+          <div class="card-bd">
+            <div class="g-grid">
+              <div class="field">
+                <label for="startWeight">起始体重（kg）</label>
+                <input class="input num" id="startWeight" type="number" value="71.2" disabled>
+              </div>
+              <div class="field">
+                <label for="curWeight">当前体重（kg）</label>
+                <input class="input num" id="curWeight" type="number" min="30" max="200" step="0.1" value="68.4">
+              </div>
+              <div class="field">
+                <label for="targetWeight">目标体重（kg）</label>
+                <input class="input num" id="targetWeight" type="number" min="30" max="200" step="0.1" value="62.0">
+              </div>
+            </div>
+            <div class="bar mt-16"><i id="weightBar" style="width:0%"></i></div>
+            <div class="row-between small muted mt-8">
+              <span><span id="lostLabel">已减</span> <b class="num" id="lostKg">2.8</b> kg</span>
+              <span><span id="leftLabel">待减</span> <b class="num" id="leftKg">6.4</b> kg</span>
+              <span class="num" id="weightPct">30%</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card card-pad reveal d3">
+          <p class="eyebrow" style="margin:0">Calorie Target</p>
+          <div class="row-between mt-12" style="align-items:flex-end;gap:16px;flex-wrap:wrap">
+            <div class="field" style="max-width:210px;flex:1;min-width:160px">
+              <label for="kcalInput">每日热量目标</label>
+              <div class="input-affix">
+                <input class="input num" id="kcalInput" type="number" min="1000" max="4000" step="50" value="1800">
+                <span>kcal</span>
+              </div>
+            </div>
+            <div class="grow" style="min-width:230px">
+              <p class="small muted">Mifflin-St Jeor 估算基础代谢 <b class="num" id="bmrText">1,396</b> kcal/日</p>
+              <p class="small" style="color:var(--green-700);margin-top:4px">建议区间 <b class="num" id="suggestRange">1,400–1,600</b> kcal</p>
+              <p class="small muted" id="suggestNote" style="margin-top:2px">减脂期建议每日热量缺口约 300 kcal</p>
+            </div>
+            <button class="btn btn-soft btn-sm" id="useSuggest"><i class="ic" data-ic="refresh"></i>采用建议值</button>
+          </div>
+        </article>
+
+        <article class="card card-pad reveal d4">
+          <div class="row-between">
+            <p class="eyebrow" style="margin:0">Macros · 三大营养素</p>
+            <span class="small muted" id="macroSum">合计 100%</span>
+          </div>
+          <div class="col mt-16" style="gap:16px">
+            <div class="slider-row">
+              <span class="name">蛋白质</span>
+              <input type="range" id="pRange" min="5" max="60" step="1" value="30" aria-label="蛋白质占比">
+              <span class="val num" id="pVal">30% · 135g</span>
+            </div>
+            <div class="slider-row">
+              <span class="name">碳水化合物</span>
+              <input type="range" id="carbRange" min="5" max="60" step="1" value="45" aria-label="碳水化合物占比">
+              <span class="val num" id="carbVal">45% · 203g</span>
+            </div>
+            <div class="slider-row">
+              <span class="name">脂肪</span>
+              <input type="range" id="fatRange" min="5" max="60" step="1" value="25" aria-label="脂肪占比">
+              <span class="val num" id="fatVal">25% · 50g</span>
+            </div>
+          </div>
+          <p class="small muted mt-12">拖动任一项时，其余两项按原比例自动修正，确保总和恒为 100%。</p>
+        </article>
+
+        <article class="card card-pad reveal d5">
+          <p class="eyebrow" style="margin:0">Habits · 饮食节奏</p>
+          <div class="g-grid mt-12">
+            <div class="field">
+              <label for="waterInput">饮水目标</label>
+              <div class="input-affix">
+                <input class="input num" id="waterInput" type="number" min="800" max="5000" step="100" value="2000">
+                <span>ml</span>
+              </div>
+              <p class="field-hint">按体重 ×30ml 估算约 <span class="num" id="waterHint">2,052</span> ml</p>
+            </div>
+            <div class="field">
+              <label for="reminderTime">提醒时间</label>
+              <input class="input" id="reminderTime" type="time" value="07:30">
+              <p class="field-hint" id="reminderHint">提醒开启后，将在此时间推送用餐提醒</p>
+            </div>
+          </div>
+          <div class="row-between mt-16 wrap" style="gap:20px">
+            <div>
+              <p class="field-label">每日餐次</p>
+              <div class="seg" id="mealSeg">
+                <button type="button" data-meals="2">2 餐</button>
+                <button type="button" data-meals="3" class="on">3 餐</button>
+                <button type="button" data-meals="4">4 餐</button>
+                <button type="button" data-meals="5">5 餐</button>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="snackSwitch" checked>
+              <span class="track"></span>
+              <span class="switch-text">安排加餐</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="reminderSwitch" checked>
+              <span class="track"></span>
+              <span class="switch-text">用餐提醒</span>
+            </label>
+          </div>
+          <p class="small muted mt-12" id="mealHint">每日 3 餐，另加 1 次加餐 · 正餐每餐约 600 kcal</p>
+        </article>
+      </div>
+
+      <aside class="col" style="gap:20px">
+        <article class="card card-pad reveal d3">
+          <p class="eyebrow" style="margin:0">Summary · 目标摘要</p>
+          <div class="row mt-16" style="gap:18px">
+            <div class="goal-ring">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle class="ring-track" cx="60" cy="60" r="50" fill="none" stroke-width="10"></circle>
+                <circle class="ring-val" id="goalRing" cx="60" cy="60" r="50" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="314.2" stroke-dashoffset="314.2" style="transition:stroke-dashoffset .9s var(--ease)"></circle>
+              </svg>
+              <div class="goal-ring-center">
+                <b class="num" id="ringPct">30%</b>
+                <span>目标进度</span>
+              </div>
+            </div>
+            <div class="grow">
+              <div class="metric">
+                <span class="v num" id="kcalBig">1,800</span>
+                <span class="u">kcal / 日</span>
+              </div>
+              <p class="small muted mt-8" id="summaryLine">减脂 · 目标 62.0 kg</p>
+              <span class="badge mt-8" id="summaryBadge">剩余 13 周</span>
+            </div>
+          </div>
+          <div class="mt-16">
+            <div class="row-between small muted">
+              <span>当前进度</span>
+              <span class="num" id="progressText">30%</span>
+            </div>
+            <div class="bar mt-8"><i id="summaryBar" style="width:30%"></i></div>
+          </div>
+          <div class="row-between mt-16" style="padding-top:14px;border-top:1px dashed var(--border)">
+            <div class="kpi">
+              <span class="kpi-label">预计达成日期</span>
+              <span class="kpi-value" style="font-size:18px" id="expectDate">—</span>
+            </div>
+            <span class="small muted" id="expectWeeks">—</span>
+          </div>
+        </article>
+
+        <article class="card card-pad reveal d4">
+          <p class="eyebrow" style="margin:0">Tips · 小贴士</p>
+          <ul class="tip-list mt-12">
+            <li>每 4 周复盘一次：体重连续两周不变时，先检查记录完整度，再考虑增加运动量。</li>
+            <li>蛋白质建议按体重 1.2–1.6g/kg 分配，减脂期不宜低于 1.2g/kg，可分到每餐。</li>
+            <li>饮水按体重 ×30ml 估算，运动日或天气炎热时可额外补充 300–500ml。</li>
+          </ul>
+          <a class="btn btn-soft btn-sm btn-block mt-16" href="article-detail.html?id=3"><i class="ic" data-ic="book-open"></i>蛋白质该吃多少</a>
+        </article>
+
+        <div class="alert-inline green reveal d5">
+          <i class="ic" data-ic="info"></i>
+          <span>目标调整会同步影响首页推荐与每日营养配比，保存后立即生效。</span>
+        </div>
+      </aside>
+    </section>
+
+    <p class="small muted mt-32" style="text-align:center">
+      热量建议基于 Mifflin-St Jeor 公式与通用营养原则，慢病人群请结合医生或临床营养师意见调整。
+    </p>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/mock.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  const UI = window.UI, API = window.API, Store = window.Store;
+  const $ = function (id) { return document.getElementById(id); };
+
+  const health = Store.health();
+  const saved = Store.goal();
+  const bmr = health.bmr;
+
+  const TYPE_CFG = {
+    '减脂': { factor: 1.3, delta: -300, note: '减脂期建议每日热量缺口约 300 kcal，配合每周 150 分钟中等强度运动' },
+    '增肌': { factor: 1.3, delta: 300, note: '增肌期建议温和热量盈余，配合规律力量训练，每周增重 0.25–0.5kg' },
+    '控糖': { factor: 1.2, delta: 0, note: '控糖期控制总热量与餐后血糖波动，主食优先选择低 GI 食材' },
+    '维持': { factor: 1.3, delta: 0, note: '维持期热量接近日常消耗，重点是结构均衡与长期坚持' }
+  };
+
+  let goalType = saved.goalType || '减脂';
+  let meals = +saved.meals || 3;
+  let macros = {
+    p: +saved.proteinPct || 30,
+    c: +saved.carbPct || 45,
+    f: +saved.fatPct || 25
+  };
+  let macroAdjusted = false;
+
+  const RING_C = 2 * Math.PI * 50;
+
+  /* ---------------- 建议热量 ---------------- */
+  function currentKcal() {
+    const v = +$('kcalInput').value;
+    return v >= 1000 && v <= 4000 ? v : saved.kcal;
+  }
+  function suggest() {
+    const cfg = TYPE_CFG[goalType] || TYPE_CFG['维持'];
+    return Math.round((bmr * cfg.factor + cfg.delta) / 50) * 50;
+  }
+  function updateSuggest() {
+    const cfg = TYPE_CFG[goalType] || TYPE_CFG['维持'];
+    const v = suggest();
+    $('suggestRange').textContent = UI.num(v - 100) + '–' + UI.num(v + 100);
+    $('suggestNote').textContent = cfg.note;
+    $('typeHint').textContent = '建议每日 ' + UI.num(v) + ' kcal（区间 ' + UI.num(v - 100) + '–' +
+      UI.num(v + 100) + '）· ' + cfg.note;
+  }
+
+  /* ---------------- 体重进度 ---------------- */
+  function weightState() {
+    const start = +$('startWeight').value || 0;
+    const cur = +$('curWeight').value || 0;
+    const target = +$('targetWeight').value || 0;
+    const losing = target <= start;
+    const done = losing ? Math.max(0, start - cur) : Math.max(0, cur - start);
+    const total = Math.abs(start - target) || 1;
+    const left = Math.abs(cur - target);
+    return {
+      start: start, cur: cur, target: target, losing: losing,
+      done: +done.toFixed(1), left: +left.toFixed(1),
+      pct: Math.min(100, Math.max(0, Math.round(done / total * 100)))
+    };
+  }
+
+  function renderWeight() {
+    const s = weightState();
+    $('lostLabel').textContent = s.losing ? '已减' : '已增';
+    $('leftLabel').textContent = s.losing ? '待减' : '待增';
+    $('lostKg').textContent = s.done.toFixed(1);
+    $('leftKg').textContent = s.left.toFixed(1);
+    $('weightPct').textContent = s.pct + '%';
+    $('weightBar').style.width = s.pct + '%';
+  }
+
+  function fmtDate(d) {
+    const p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+
+  function renderSummary() {
+    const s = weightState();
+    const kcal = currentKcal();
+    $('kcalBig').textContent = UI.num(kcal);
+    $('summaryLine').textContent = goalType + ' · 目标 ' + s.target.toFixed(1) + ' kg · ' +
+      (s.losing ? '已减 ' : '已增 ') + s.done.toFixed(1) + ' kg';
+    $('progressText').textContent = s.pct + '%';
+    $('summaryBar').style.width = s.pct + '%';
+    $('ringPct').textContent = s.pct + '%';
+    const ring = $('goalRing');
+    ring.setAttribute('stroke-dasharray', RING_C);
+    setTimeout(function () { ring.setAttribute('stroke-dashoffset', RING_C * (1 - s.pct / 100)); }, 80);
+
+    const reached = s.losing ? s.cur <= s.target : s.cur >= s.target;
+    if (reached) {
+      $('summaryBadge').textContent = '已达成目标';
+      $('summaryBadge').className = 'badge';
+      $('expectDate').textContent = '已达成';
+      $('expectWeeks').textContent = '保持当前饮食与运动节奏';
+    } else {
+      const weeks = Math.ceil(s.left / 0.5);
+      const d = new Date(Store.TODAY + 'T00:00:00');
+      d.setDate(d.getDate() + weeks * 7);
+      $('summaryBadge').textContent = '剩余 ' + weeks + ' 周';
+      $('summaryBadge').className = 'badge amber';
+      $('expectDate').textContent = fmtDate(d);
+      $('expectWeeks').textContent = '约 ' + weeks + ' 周 · 每周 0.5kg';
+    }
+
+    $('macroSum').textContent = '合计 ' + (macros.p + macros.c + macros.f) + '%';
+    updateMealHint();
+  }
+
+  /* ---------------- 三大营养素 ---------------- */
+  function updateMacroLabels() {
+    const kcal = currentKcal();
+    const pG = Math.round(kcal * macros.p / 100 / 4);
+    const cG = Math.round(kcal * macros.c / 100 / 4);
+    const fG = Math.round(kcal * macros.f / 100 / 9);
+    $('pVal').textContent = macros.p + '% · ' + pG + 'g';
+    $('carbVal').textContent = macros.c + '% · ' + cG + 'g';
+    $('fatVal').textContent = macros.f + '% · ' + fG + 'g';
+    $('macroSum').textContent = '合计 ' + (macros.p + macros.c + macros.f) + '%';
+  }
+
+  function redistribute(key) {
+    const range = { p: $('pRange'), c: $('carbRange'), f: $('fatRange') };
+    const val = { p: +range.p.value, c: +range.c.value, f: +range.f.value };
+    const rest = 100 - val[key];
+    const others = ['p', 'c', 'f'].filter(function (k) { return k !== key; });
+    const aOld = val[others[0]], bOld = val[others[1]];
+    const total = aOld + bOld;
+    let a = total > 0 ? rest * aOld / total : rest / 2;
+    let av = Math.max(5, Math.min(rest - 5, Math.round(a)));
+    let bv = rest - av;
+    val[others[0]] = av;
+    val[others[1]] = bv;
+    range.p.value = val.p;
+    range.c.value = val.c;
+    range.f.value = val.f;
+    macros = { p: val.p, c: val.c, f: val.f };
+    updateMacroLabels();
+    macroAdjusted = true;
+  }
+
+  [['p', 'pRange'], ['c', 'carbRange'], ['f', 'fatRange']].forEach(function (pair) {
+    const el = $(pair[1]);
+    el.addEventListener('input', function () { redistribute(pair[0]); });
+    el.addEventListener('change', function () {
+      if (macroAdjusted) {
+        UI.toast('已按比例修正其余两项，三大营养素合计保持 100%');
+        macroAdjusted = false;
+      }
+    });
+  });
+
+  /* ---------------- 餐次与提醒 ---------------- */
+  function updateMealHint() {
+    const kcal = currentKcal();
+    const snack = $('snackSwitch').checked;
+    const per = Math.round(kcal / meals);
+    $('mealHint').textContent = '每日 ' + meals + ' 餐' + (snack ? '，另加 1 次加餐' : '') +
+      ' · 正餐每餐约 ' + UI.num(per) + ' kcal';
+  }
+
+  function syncReminder() {
+    const on = $('reminderSwitch').checked;
+    $('reminderTime').disabled = !on;
+    $('reminderHint').textContent = on ? '提醒开启后，将在此时间推送用餐提醒' : '提醒已关闭，不会推送通知';
+  }
+
+  $('reminderSwitch').addEventListener('change', syncReminder);
+  $('snackSwitch').addEventListener('change', updateMealHint);
+
+  $('mealSeg').addEventListener('click', function (e) {
+    const b = e.target.closest('[data-meals]');
+    if (!b) return;
+    meals = +b.dataset.meals;
+    document.querySelectorAll('#mealSeg [data-meals]').forEach(function (x) { x.classList.toggle('on', x === b); });
+    updateMealHint();
+  });
+
+  $('goalTypeSeg').addEventListener('click', function (e) {
+    const b = e.target.closest('[data-type]');
+    if (!b || b.dataset.type === goalType) return;
+    goalType = b.dataset.type;
+    document.querySelectorAll('#goalTypeSeg [data-type]').forEach(function (x) { x.classList.toggle('on', x === b); });
+    $('goalBadge').textContent = goalType;
+    updateSuggest();
+    renderSummary();
+    UI.toast('已切换为「' + goalType + '」，建议热量区间已更新');
+  });
+
+  /* ---------------- 联动 ---------------- */
+  $('useSuggest').addEventListener('click', function () {
+    const v = suggest();
+    $('kcalInput').value = v;
+    updateMacroLabels();
+    renderSummary();
+    UI.toast('已采用建议热量值 ' + UI.num(v) + ' kcal');
+  });
+
+  $('kcalInput').addEventListener('input', function () {
+    updateMacroLabels();
+    renderSummary();
+  });
+
+  ['curWeight', 'targetWeight'].forEach(function (id) {
+    $(id).addEventListener('input', function () {
+      renderWeight();
+      renderSummary();
+    });
+  });
+
+  function renderWaterHint() {
+    const w = +$('curWeight').value || health.weight;
+    $('waterHint').textContent = UI.num(Math.round(w * 30));
+  }
+  $('curWeight').addEventListener('input', renderWaterHint);
+
+  /* ---------------- 保存 ---------------- */
+  $('saveGoal').addEventListener('click', async function () {
+    const btn = this;
+    const cur = +$('curWeight').value;
+    const target = +$('targetWeight').value;
+    const kcal = +$('kcalInput').value;
+    const water = +$('waterInput').value;
+    const reminderOn = $('reminderSwitch').checked;
+
+    if (!(cur >= 30 && cur <= 200) || !(target >= 30 && target <= 200)) {
+      UI.toast('体重需在 30–200kg 之间', 'error');
+      return;
+    }
+    if (!(kcal >= 1000 && kcal <= 4000)) {
+      UI.toast('每日热量目标需在 1000–4000 kcal 之间', 'error');
+      $('kcalInput').focus();
+      return;
+    }
+    if (!(water >= 800 && water <= 5000)) {
+      UI.toast('饮水目标需在 800–5000ml 之间', 'error');
+      $('waterInput').focus();
+      return;
+    }
+    if (reminderOn && !$('reminderTime').value) {
+      UI.toast('请设置提醒时间', 'error');
+      $('reminderTime').focus();
+      return;
+    }
+    if (macros.p + macros.c + macros.f !== 100) {
+      UI.toast('三大营养素占比之和需为 100%', 'error');
+      return;
+    }
+
+    UI.loading(btn, true, '保存中');
+    const res = await API.goal.save({
+      goalType: goalType,
+      currentWeight: cur,
+      targetWeight: target,
+      kcal: kcal,
+      proteinPct: macros.p,
+      carbPct: macros.c,
+      fatPct: macros.f,
+      water: water,
+      meals: meals,
+      snack: $('snackSwitch').checked,
+      reminderEnabled: reminderOn,
+      reminderTime: $('reminderTime').value || saved.reminderTime
+    });
+    UI.loading(btn, false);
+
+    if (res.code !== 200) { UI.toast(res.message, 'error'); return; }
+    renderWeight();
+    renderSummary();
+    UI.toast(res.message || '目标已更新');
+  });
+
+  /* ---------------- 初始化 ---------------- */
+  $('startWeight').value = Number(saved.startWeight).toFixed(1);
+  $('curWeight').value = Number(saved.currentWeight).toFixed(1);
+  $('targetWeight').value = Number(saved.targetWeight).toFixed(1);
+  $('kcalInput').value = saved.kcal;
+  $('waterInput').value = saved.water;
+  $('reminderTime').value = saved.reminderTime || '07:30';
+  $('snackSwitch').checked = !!saved.snack;
+  $('reminderSwitch').checked = !!saved.reminderEnabled;
+  $('bmrText').textContent = UI.num(bmr);
+  $('goalBadge').textContent = goalType;
+
+  document.querySelectorAll('#goalTypeSeg [data-type]').forEach(function (b) {
+    b.classList.toggle('on', b.dataset.type === goalType);
+  });
+  document.querySelectorAll('#mealSeg [data-meals]').forEach(function (b) {
+    b.classList.toggle('on', +b.dataset.meals === meals);
+  });
+
+  $('pRange').value = macros.p;
+  $('carbRange').value = macros.c;
+  $('fatRange').value = macros.f;
+
+  syncReminder();
+  renderWaterHint();
+  updateSuggest();
+  updateMacroLabels();
+  renderWeight();
+  renderSummary();
+})();
+</script>
+</body>
+</html>

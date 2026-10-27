@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>个人中心 · 膳衡</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .fav-row { display: flex; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px dashed var(--border); }
+  .fav-row:last-child { border-bottom: 0; }
+  .fav-row .fav-thumb { width: 74px; height: 56px; border-radius: 10px; object-fit: cover; flex: none; }
+  .fav-row .fav-main { flex: 1; min-width: 0; }
+  .fav-row .fav-main strong { display: block; font-size: 13px; font-weight: 500; }
+  .fav-row .fav-main span { font-size: 11.5px; color: var(--text-3); }
+  .hist-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px dashed var(--border); }
+  .hist-row:last-child { border-bottom: 0; }
+  .notif-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .account-stat { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 6px; }
+  .account-stat .v { font-family: var(--font-num); font-size: 22px; color: var(--green-950); }
+  .account-stat .k { font-size: 11px; color: var(--text-3); }
+</style>
+</head>
+<body class="app" data-page="account">
+
+<header class="mobile-bar">
+  <span class="brand-mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+  </span>
+  <span class="brand-text"><strong>膳衡</strong><small>SHANHENG</small></span>
+  <button class="mobile-menu-btn" aria-label="打开菜单"><i class="ic" data-ic="menu"></i></button>
+</header>
+
+<aside class="app-nav">
+  <a class="brand" href="home.html">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+    </span>
+    <span class="brand-text"><strong>膳衡</strong><small>SHANHENG · 健康饮食</small></span>
+  </a>
+
+  <p class="nav-label">我的健康</p>
+  <a class="nav-item" data-nav="home" href="home.html"><i class="ic" data-ic="home"></i><span>首页</span></a>
+  <a class="nav-item" data-nav="health" href="health.html"><i class="ic" data-ic="heart-pulse"></i><span>健康档案</span></a>
+  <a class="nav-item" data-nav="goal" href="goal.html"><i class="ic" data-ic="target"></i><span>饮食目标</span></a>
+  <a class="nav-item" data-nav="record" href="record.html"><i class="ic" data-ic="notebook"></i><span>饮食记录</span></a>
+
+  <p class="nav-label">内容与工具</p>
+  <a class="nav-item" data-nav="recipes" href="recipes.html"><i class="ic" data-ic="book-open"></i><span>食谱库</span></a>
+  <a class="nav-item" data-nav="ingredients" href="ingredients.html"><i class="ic" data-ic="apple"></i><span>食材库</span></a>
+  <a class="nav-item" data-nav="knowledge" href="knowledge.html"><i class="ic" data-ic="news"></i><span>健康知识</span></a>
+  <a class="nav-item" data-nav="assistant" href="assistant.html"><i class="ic" data-ic="sparkles"></i><span>AI 助手</span></a>
+
+  <p class="nav-label">账户</p>
+  <a class="nav-item" data-nav="account" href="account.html"><i class="ic" data-ic="user"></i><span>个人中心</span><span class="nav-badge" id="navNotifBadge" style="display:none">0</span></a>
+  <a class="nav-item nav-admin" data-nav="admin" href="admin.html"><i class="ic" data-ic="settings"></i><span>管理后台</span></a>
+
+  <div class="nav-user">
+    <span class="nav-avatar" id="navAvatar">禾</span>
+    <span class="grow"><span class="nav-user-name" id="navUserName">林嘉禾</span><span class="nav-user-role" id="navUserRole">管理员 · 平台运营</span></span>
+    <button class="nav-logout" id="navLogout" title="退出登录"><i class="ic" data-ic="logout"></i></button>
+  </div>
+</aside>
+<div class="nav-scrim"></div>
+
+<main class="app-content">
+  <div class="page-shell">
+
+    <header class="page-head reveal">
+      <div>
+        <p class="eyebrow">Account &amp; Preferences</p>
+        <h1 class="page-title">个人中心</h1>
+        <p class="page-sub">账号资料、饮食偏好、收藏与通知，都在这一页管理。</p>
+      </div>
+      <div class="page-actions">
+        <a class="btn btn-outline" href="health.html"><i class="ic" data-ic="heart-pulse"></i>健康档案</a>
+        <a class="btn btn-primary" href="goal.html"><i class="ic" data-ic="target"></i>调整目标</a>
+      </div>
+    </header>
+
+    <section class="card profile-head reveal d1">
+      <span class="avatar lg" id="profileAvatar">禾</span>
+      <div class="grow">
+        <div class="row" style="gap:10px">
+          <h2 class="display" id="profileName" style="font-size:24px;color:var(--green-950)">林嘉禾</h2>
+          <span class="badge" id="profileRole"><i class="ic" data-ic="shield"></i>管理员</span>
+          <span class="badge gray" id="profileStatus">账号正常</span>
+        </div>
+        <p class="small muted" id="profileMeta">jiahe@example.com · 注册于 2026-08-12</p>
+        <div class="account-stat">
+          <div><div class="v num" id="statRecipes">2</div><div class="k">收藏食谱</div></div>
+          <div><div class="v num" id="statArticles">1</div><div class="k">收藏文章</div></div>
+          <div><div class="v num" id="statRecords">2</div><div class="k">累计记录</div></div>
+          <div><div class="v num" id="statStreak">5 天</div><div class="k">连续记录</div></div>
+        </div>
+      </div>
+      <button class="btn btn-soft btn-sm" id="editProfileBtn"><i class="ic" data-ic="edit"></i>编辑资料</button>
+    </section>
+
+    <div class="tabs mt-24 reveal d2" role="tablist">
+      <button class="tab on" data-panel="profile">账号资料</button>
+      <button class="tab" data-panel="prefs">饮食偏好</button>
+      <button class="tab" data-panel="favs">我的收藏</button>
+      <button class="tab" data-panel="history">阅读历史</button>
+      <button class="tab" data-panel="notifs">通知中心 <span class="badge amber" id="unreadPill" style="margin-left:4px">3</span></button>
+    </div>
+
+    <!-- 账号资料 -->
+    <section class="tab-panel on" data-tabpanel="profile">
+      <div class="grid split">
+        <article class="card">
+          <div class="card-hd"><h3>基础资料</h3><span class="small muted">用于账号识别与提醒</span></div>
+          <div class="card-bd">
+            <form id="profileForm" class="grid g2" novalidate>
+              <label class="field">
+                <span class="field-label">用户名</span>
+                <input class="input" id="pfName" type="text" value="林嘉禾">
+              </label>
+              <label class="field">
+                <span class="field-label">邮箱</span>
+                <input class="input" id="pfEmail" type="email" value="jiahe@example.com">
+              </label>
+              <label class="field">
+                <span class="field-label">手机号</span>
+                <input class="input" id="pfPhone" type="tel" placeholder="选填">
+              </label>
+              <label class="field">
+                <span class="field-label">性别</span>
+                <select class="select" id="pfGender">
+                  <option>女</option>
+                  <option>男</option>
+                  <option>不便透露</option>
+                </select>
+              </label>
+              <div class="field" style="grid-column:1/-1">
+                <span class="field-label">当前目标</span>
+                <div class="row wrap">
+                  <span class="chip on" id="pfGoalChip">减脂</span>
+                  <span class="tag">每日 1800 kcal</span>
+                  <span class="tag">目标体重 62.0 kg</span>
+                </div>
+              </div>
+              <div style="grid-column:1/-1" class="row">
+                <button class="btn btn-primary" type="submit" id="saveProfileBtn">保存资料</button>
+                <span class="small muted">修改邮箱需重新验证，演示环境直接生效。</span>
+              </div>
+            </form>
+          </div>
+        </article>
+
+        <aside class="col" style="gap:20px">
+          <article class="card">
+            <div class="card-hd"><h3>账号与安全</h3></div>
+            <div class="card-bd">
+              <div class="row-between" style="padding:10px 0;border-bottom:1px dashed var(--border)">
+                <div><strong style="font-size:13px">登录密码</strong><p class="small muted">上次修改：30 天前</p></div>
+                <button class="btn btn-outline btn-sm" id="changePwdBtn">修改</button>
+              </div>
+              <div class="row-between" style="padding:10px 0;border-bottom:1px dashed var(--border)">
+                <div><strong style="font-size:13px">邮箱验证</strong><p class="small muted">jiahe@example.com 已验证</p></div>
+                <span class="badge"><i class="ic" data-ic="check"></i>已验证</span>
+              </div>
+              <div class="row-between" style="padding:10px 0">
+                <div><strong style="font-size:13px">登录设备</strong><p class="small muted">Windows · Chrome · 当前设备</p></div>
+                <span class="dot"></span>
+              </div>
+              <button class="btn btn-danger btn-sm btn-block mt-16" id="logoutBtn"><i class="ic" data-ic="logout"></i>退出登录</button>
+            </div>
+          </article>
+
+          <div class="alert-inline green">
+            <i class="ic" data-ic="info"></i>
+            <span>你的健康档案与饮食偏好只用于本机原型演示，不会上传到服务器。</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 饮食偏好 -->
+    <section class="tab-panel" data-tabpanel="prefs">
+      <div class="grid split">
+        <article class="card">
+          <div class="card-hd"><h3>口味与禁忌</h3><span class="small muted">会参与推荐过滤</span></div>
+          <div class="card-bd">
+            <p class="field-label">饮食类型（可多选）</p>
+            <div class="row wrap" id="dietChips"></div>
+
+            <p class="field-label mt-24">过敏原（命中后不再推荐）</p>
+            <div class="row wrap" id="allergenChips"></div>
+
+            <p class="field-label mt-24">不喜欢的食材</p>
+            <div class="row wrap" id="dislikeChips"></div>
+
+            <p class="field-label mt-24">常吃食材</p>
+            <div class="row wrap" id="likeChips"></div>
+
+            <div class="row-between mt-24" style="padding-top:16px;border-top:1px dashed var(--border)">
+              <div>
+                <p class="field-label" style="margin:0">每日餐次</p>
+                <div class="seg mt-8" id="mealSeg">
+                  <button class="on" data-meals="3">三餐</button>
+                  <button data-meals="4">三餐 + 加餐</button>
+                  <button data-meals="5">少食多餐</button>
+                </div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="snackSwitch" checked>
+                <span class="track"></span>
+                <span class="switch-text">安排加餐</span>
+              </label>
+            </div>
+
+            <button class="btn btn-primary mt-24" id="savePrefsBtn">保存偏好</button>
+          </div>
+        </article>
+
+        <aside class="col" style="gap:20px">
+          <article class="card card-pad">
+            <p class="eyebrow" style="margin:0">Preview · 偏好预览</p>
+            <p class="small muted mt-8">根据当前偏好，推荐会优先选择清淡、低脂的做法，并排除花生与香菜。</p>
+            <div class="mt-16" id="prefPreview"></div>
+          </article>
+          <div class="alert-inline">
+            <i class="ic" data-ic="alert"></i>
+            <span>过敏原属于安全信息，命中后将被强制排除；如为严重过敏，请以医生意见为准。</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 收藏 -->
+    <section class="tab-panel" data-tabpanel="favs">
+      <div class="grid split">
+        <article class="card">
+          <div class="card-hd"><h3>收藏的食谱</h3><a class="link-btn" href="recipes.html">去找食谱 <i class="ic" data-ic="chevron-right"></i></a></div>
+          <div class="card-bd" id="favRecipes"></div>
+        </article>
+        <aside class="card">
+          <div class="card-hd"><h3>收藏的文章</h3><a class="link-btn" href="knowledge.html">去读文章 <i class="ic" data-ic="chevron-right"></i></a></div>
+          <div class="card-bd" id="favArticles"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 阅读历史 -->
+    <section class="tab-panel" data-tabpanel="history">
+      <article class="card">
+        <div class="card-hd"><h3>最近阅读</h3><span class="small muted">记录阅读时长，用于内容推荐</span></div>
+        <div class="card-bd" id="historyList"></div>
+      </article>
+    </section>
+
+    <!-- 通知 -->
+    <section class="tab-panel" data-tabpanel="notifs">
+      <article class="card">
+        <div class="card-hd">
+          <h3>通知中心</h3>
+          <div class="notif-toolbar" style="margin:0">
+            <div class="seg" id="notifSeg">
+              <button class="on" data-filter="all">全部</button>
+              <button data-filter="unread">未读</button>
+            </div>
+            <button class="btn btn-outline btn-sm" id="markAllBtn"><i class="ic" data-ic="check"></i>全部已读</button>
+          </div>
+        </div>
+        <div id="notifList"></div>
+      </article>
+    </section>
+
+    <p class="small muted mt-32" style="text-align:center">账号相关操作均为本地模拟，不会产生真实短信或邮件。</p>
+  </div>
+</main>
+
+<!-- 修改密码弹窗 -->
+<div class="overlay" id="pwdModal">
+  <div class="modal" style="width:min(440px,100%)">
+    <div class="modal-hd">
+      <div><h3>修改密码</h3><p>新密码需 6–50 位，修改后需重新登录。</p></div>
+      <button class="modal-close" data-close-modal><i class="ic" data-ic="x"></i></button>
+    </div>
+    <div class="modal-bd">
+      <label class="field mb-16"><span class="field-label">当前密码</span><input class="input" type="password" id="oldPwd" placeholder="请输入当前密码"></label>
+      <label class="field mb-16"><span class="field-label">新密码</span><input class="input" type="password" id="newPwd" placeholder="6–50 位"></label>
+      <label class="field"><span class="field-label">确认新密码</span><input class="input" type="password" id="newPwd2" placeholder="再次输入"></label>
+      <p class="small muted mt-12" id="pwdHint">演示环境：当前密码为 123456。</p>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="savePwdBtn">确认修改</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/icons.js"></script>
+<script src="../js/mock.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  const UI = window.UI, Store = window.Store, DB = window.DB;
+  const session = Store.session();
+  const health = Store.health();
+  const goal = Store.goal();
+  const prefs = Store.preferences();
+
+  /* ---------- 头部资料 ---------- */
+  const name = session ? session.username : '林嘉禾';
+  const email = session ? session.email : DB.user.email;
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileMeta').textContent = email + ' · 注册于 ' + DB.user.joined;
+  document.getElementById('profileAvatar').textContent = name[0];
+  document.getElementById('profileRole').innerHTML = '<i class="ic" data-ic="shield"></i>' + (session && session.role === 'admin' ? '管理员' : '普通用户');
+  document.getElementById('pfName').value = name;
+  document.getElementById('pfEmail').value = email;
+  document.getElementById('pfGoalChip').textContent = goal.goalType;
+  document.getElementById('statRecipes').textContent = Store.recipeCollected().length;
+  document.getElementById('statArticles').textContent = Store.articleCollected().length;
+  document.getElementById('statRecords').textContent = Store.records().length;
+
+  /* ---------- Tab ---------- */
+  UI.$$('.tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      UI.$$('.tab').forEach(t => t.classList.remove('on'));
+      tab.classList.add('on');
+      UI.$$('.tab-panel').forEach(p => p.classList.toggle('on', p.dataset.tabpanel === tab.dataset.panel));
+      if (tab.dataset.panel === 'notifs') renderNotifs();
+    });
+  });
+
+  /* ---------- 资料保存 ---------- */
+  document.getElementById('profileForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const n = document.getElementById('pfName').value.trim();
+    const em = document.getElementById('pfEmail').value.trim();
+    if (n.length < 2) { UI.toast('用户名至少 2 个字符', 'error'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { UI.toast('邮箱格式不正确', 'error'); return; }
+    Store.updateProfile({ username: n, email: em, phone: document.getElementById('pfPhone').value.trim() });
+    document.getElementById('profileName').textContent = n;
+    document.getElementById('profileAvatar').textContent = n[0];
+    document.getElementById('profileMeta').textContent = em + ' · 注册于 ' + DB.user.joined;
+    const navName = document.getElementById('navUserName');
+    const navAvatar = document.getElementById('navAvatar');
+    if (navName) navName.textContent = n;
+    if (navAvatar) navAvatar.textContent = n[0];
+    UI.toast('资料已更新');
+  });
+
+  document.getElementById('editProfileBtn').addEventListener('click', function () {
+    UI.$$('.tab').forEach(t => t.classList.remove('on'));
+    document.querySelector('.tab[data-panel="profile"]').classList.add('on');
+    UI.$$('.tab-panel').forEach(p => p.classList.toggle('on', p.dataset.tabpanel === 'profile'));
+    document.getElementById('pfName').focus();
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', function () {
+    UI.confirm('退出后需要重新登录，本机记录会保留。', function () {
+      Store.logout();
+      location.href = '../index.html';
+    }, { title: '退出登录', okText: '退出', danger: true });
+  });
+
+  /* ---------- 修改密码 ---------- */
+  document.getElementById('changePwdBtn').addEventListener('click', function () {
+    UI.openModal('pwdModal');
+  });
+  document.getElementById('savePwdBtn').addEventListener('click', function () {
+    const oldP = document.getElementById('oldPwd').value;
+    const p1 = document.getElementById('newPwd').value;
+    const p2 = document.getElementById('newPwd2').value;
+    if (!oldP) { UI.toast('请输入当前密码', 'error'); return; }
+    if (p1.length < 6 || p1.length > 50) { UI.toast('新密码长度需为 6–50 位', 'error'); return; }
+    if (p1 !== p2) { UI.toast('两次输入的新密码不一致', 'error'); return; }
+    UI.closeModal('pwdModal');
+    UI.toast('密码已更新（演示环境不强制重新登录）');
+  });
+
+  /* ---------- 偏好 ---------- */
+  const DIET = ['清淡', '低脂', '低盐', '低糖', '高蛋白', '素食'];
+  const ALLERGENS = ['花生', '海鲜', '乳制品', '鸡蛋', '麸质', '坚果'];
+  const DISLIKES = ['香菜', '动物内脏', '苦瓜', '芹菜', '洋葱'];
+  const LIKES = ['鸡胸肉', '三文鱼', '蓝莓', '燕麦', '豆腐', '西兰花'];
+  const selected = {
+    diet: (prefs.dietType || []).slice(),
+    allergens: (prefs.allergens || []).slice(),
+    dislikes: (prefs.dislikes || []).slice(),
+    likes: (prefs.likes || []).slice()
+  };
+
+  function renderChips(elId, list, key) {
+    const box = document.getElementById(elId);
+    box.innerHTML = '';
+    list.forEach(function (item) {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip' + (selected[key].includes(item) ? ' on' : '');
+      chip.textContent = item;
+      chip.addEventListener('click', function () {
+        const i = selected[key].indexOf(item);
+        if (i > -1) selected[key].splice(i, 1); else selected[key].push(item);
+        chip.classList.toggle('on');
+        renderPreview();
+      });
+      box.appendChild(chip);
+    });
+  }
+  renderChips('dietChips', DIET, 'diet');
+  renderChips('allergenChips', ALLERGENS, 'allergens');
+  renderChips('dislikeChips', DISLIKES, 'dislikes');
+  renderChips('likeChips', LIKES, 'likes');
+
+  function renderPreview() {
+    const box = document.getElementById('prefPreview');
+    if (!box) return;
+    box.innerHTML =
+      '<div class="row wrap" style="gap:6px">' +
+      (selected.diet.length ? selected.diet.map(d => '<span class="tag">' + d + '</span>').join('') : '<span class="small muted">未选择饮食类型</span>') +
+      '</div>' +
+      '<div class="small muted mt-12">过敏原：' + (selected.allergens.join('、') || '无') + '</div>' +
+      '<div class="small muted mt-8">推荐将优先使用：' + (selected.likes.slice(0, 4).join('、') || '暂无') + '</div>';
+  }
+  renderPreview();
+
+  UI.$$('#mealSeg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      UI.$$('#mealSeg button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+    });
+  });
+
+  document.getElementById('savePrefsBtn').addEventListener('click', function () {
+    const mealsBtn = UI.$('#mealSeg button.on');
+    Store.savePreferences({
+      dietType: selected.diet,
+      allergens: selected.allergens,
+      dislikes: selected.dislikes,
+      likes: selected.likes,
+      mealsPerDay: mealsBtn ? +mealsBtn.dataset.meals : 3,
+      snack: document.getElementById('snackSwitch').checked
+    });
+    UI.toast('饮食偏好已保存');
+  });
+
+  /* ---------- 收藏 ---------- */
+  function renderFavs() {
+    const recipes = Store.recipeCollected().map(id => DB.recipes.find(r => r.id === +id)).filter(Boolean);
+    const rBox = document.getElementById('favRecipes');
+    rBox.innerHTML = recipes.length ? recipes.map(function (r) {
+      return '<div class="fav-row">' +
+        '<img class="fav-thumb" src="' + r.img + '" alt="' + UI.esc(r.name) + '">' +
+        '<div class="fav-main"><strong>' + UI.esc(r.name) + '</strong><span>' + r.mealType + ' · ' + r.kcal + ' kcal · 蛋白 ' + r.p + 'g</span></div>' +
+        '<a class="btn btn-outline btn-sm" href="recipe-detail.html?id=' + r.id + '">查看</a>' +
+        '<button class="icon-btn plain" data-unfav="' + r.id + '" title="取消收藏"><i class="ic" data-ic="bookmark"></i></button>' +
+      '</div>';
+    }).join('') : UI.empty('还没有收藏食谱', '在食谱库点击书签图标即可收藏。', 'bookmark');
+    Icons.hydrate(rBox);
+    rBox.querySelectorAll('[data-unfav]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        Store.toggleRecipeCollect(+b.dataset.unfav);
+        UI.toast('已取消收藏');
+        document.getElementById('statRecipes').textContent = Store.recipeCollected().length;
+        renderFavs();
+      });
+    });
+
+    const articles = Store.articleCollected().map(id => DB.articles.find(a => a.id === +id)).filter(Boolean);
+    const aBox = document.getElementById('favArticles');
+    aBox.innerHTML = articles.length ? articles.map(function (a) {
+      return '<div class="fav-row">' +
+        '<div class="fav-main"><strong>' + UI.esc(a.title) + '</strong><span>' + a.cat + ' · ' + a.date + ' · ' + UI.num(a.views) + ' 阅读</span></div>' +
+        '<a class="btn btn-outline btn-sm" href="article-detail.html?id=' + a.id + '">阅读</a>' +
+      '</div>';
+    }).join('') : UI.empty('还没有收藏文章', '在文章详情页点击收藏即可。', 'news');
+    Icons.hydrate(aBox);
+  }
+  renderFavs();
+
+  /* ---------- 阅读历史 ---------- */
+  const histBox = document.getElementById('historyList');
+  const reads = Store.articleReads();
+  if (!reads.length) {
+    histBox.innerHTML = UI.empty('还没有阅读记录', '阅读文章后会自动记录，用于优化推荐。', 'file-text');
+  } else {
+    histBox.innerHTML = reads.map(function (r) {
+      const a = DB.articles.find(x => x.id === r.id);
+      if (!a) return '';
+      return '<div class="hist-row">' +
+        '<img class="fav-thumb" src="' + a.cover + '" alt="">' +
+        '<div class="fav-main"><strong>' + UI.esc(a.title) + '</strong><span>' + r.date + ' · 阅读 ' + r.duration + ' 秒 · ' + a.cat + '</span></div>' +
+        '<a class="btn btn-outline btn-sm" href="article-detail.html?id=' + a.id + '">继续阅读</a>' +
+      '</div>';
+    }).join('');
+  }
+  Icons.hydrate(histBox);
+
+  /* ---------- 通知 ---------- */
+  let notifFilter = 'all';
+  function renderNotifs() {
+    const list = Store.notifications().filter(n => notifFilter === 'all' || !n.read);
+    const unread = Store.unreadCount();
+    document.getElementById('unreadPill').textContent = unread;
+    document.getElementById('unreadPill').style.display = unread ? 'inline-flex' : 'none';
+    const box = document.getElementById('notifList');
+    if (!list.length) {
+      box.innerHTML = UI.empty('没有通知', notifFilter === 'unread' ? '所有通知都已读。' : '有新消息时会出现在这里。', 'bell');
+      Icons.hydrate(box);
+      return;
+    }
+    box.innerHTML = list.map(function (n) {
+      const icon = n.type === '警告' ? 'alert' : (n.type === '目标达成' ? 'target' : (n.type === '文章推荐' ? 'news' : (n.type === '饮食提醒' ? 'clock' : 'bell')));
+      return '<div class="notif-item ' + (n.read ? '' : 'unread ') + (n.type === '警告' ? 'amber' : '') + '">' +
+        '<span class="notif-ico"><i class="ic" data-ic="' + icon + '"></i></span>' +
+        '<div class="notif-bd grow"><strong>' + UI.esc(n.title) + '</strong><p>' + UI.esc(n.content) + '</p>' +
+          '<div class="row mt-8" style="gap:8px"><span class="tag">' + n.type + '</span>' +
+          (n.link ? '<a class="link-btn" href="' + n.link + '">查看详情</a>' : '') +
+          '<button class="link-btn" data-read="' + n.id + '">标记已读</button>' +
+          '<button class="link-btn" data-del="' + n.id + '" style="color:var(--text-3)">删除</button></div></div>' +
+        '<span class="notif-time">' + n.time.split(' ')[1] + '</span>' +
+        (n.read ? '' : '<span class="unread-mark"></span>') +
+      '</div>';
+    }).join('');
+    Icons.hydrate(box);
+
+    box.querySelectorAll('[data-read]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        Store.markNotifRead(+b.dataset.read);
+        renderNotifs(); App.refreshBadge();
+        UI.toast('已标记为已读');
+      });
+    });
+    box.querySelectorAll('[data-del]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        Store.removeNotif(+b.dataset.del);
+        renderNotifs(); App.refreshBadge();
+        UI.toast('通知已删除');
+      });
+    });
+  }
+  renderNotifs();
+
+  UI.$$('#notifSeg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      UI.$$('#notifSeg button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      notifFilter = b.dataset.filter;
+      renderNotifs();
+    });
+  });
+
+  document.getElementById('markAllBtn').addEventListener('click', function () {
+    Store.markAllRead();
+    renderNotifs(); App.refreshBadge();
+    UI.toast('全部通知已标记为已读');
+  });
+
+  Icons.hydrate();
+})();
+</script>
+</body>
+</html>

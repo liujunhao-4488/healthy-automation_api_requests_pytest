@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>食谱详情 · 膳衡</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .detail-link { display: inline-flex; align-items: center; gap: 6px; color: var(--green-700); text-decoration: none; font-size: 12.5px; }
+  .detail-link .ic { width: 15px; height: 15px; }
+  .hero-detail { aspect-ratio: 16 / 8; }
+  .hero-fav { position: absolute; right: 32px; bottom: 30px; z-index: 2; width: 46px; height: 46px; border-radius: 50%; border: 0; background: var(--surface); color: var(--green-900); display: grid; place-items: center; cursor: pointer; transition: 0.16s var(--ease); box-shadow: var(--shadow-sm); }
+  .hero-fav:hover { color: var(--clay-600); }
+  .hero-fav.on { color: var(--clay-600); }
+  .hero-fav .ic { width: 20px; height: 20px; }
+  @media (max-width: 720px) {
+    .hero-detail { aspect-ratio: 5 / 4; }
+    .hero-detail .overlay-text { padding: 20px 66px 20px 20px; }
+    .hero-detail .overlay-text h1 { font-size: 23px; line-height: 1.32; }
+    .hero-fav { right: 14px; bottom: 14px; width: 40px; height: 40px; }
+  }
+</style>
+</head>
+<body class="app" data-page="recipes">
+
+<header class="mobile-bar">
+  <span class="brand-mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+  </span>
+  <span class="brand-text"><strong>膳衡</strong><small>SHANHENG</small></span>
+  <button class="mobile-menu-btn" aria-label="打开菜单"><i class="ic" data-ic="menu"></i></button>
+</header>
+
+<aside class="app-nav">
+  <a class="brand" href="home.html">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+    </span>
+    <span class="brand-text"><strong>膳衡</strong><small>SHANHENG · 健康饮食</small></span>
+  </a>
+
+  <p class="nav-label">我的健康</p>
+  <a class="nav-item" data-nav="home" href="home.html"><i class="ic" data-ic="home"></i><span>首页</span></a>
+  <a class="nav-item" data-nav="health" href="health.html"><i class="ic" data-ic="heart-pulse"></i><span>健康档案</span></a>
+  <a class="nav-item" data-nav="goal" href="goal.html"><i class="ic" data-ic="target"></i><span>饮食目标</span></a>
+  <a class="nav-item" data-nav="record" href="record.html"><i class="ic" data-ic="notebook"></i><span>饮食记录</span></a>
+
+  <p class="nav-label">内容与工具</p>
+  <a class="nav-item" data-nav="recipes" href="recipes.html"><i class="ic" data-ic="book-open"></i><span>食谱库</span></a>
+  <a class="nav-item" data-nav="ingredients" href="ingredients.html"><i class="ic" data-ic="apple"></i><span>食材库</span></a>
+  <a class="nav-item" data-nav="knowledge" href="knowledge.html"><i class="ic" data-ic="news"></i><span>健康知识</span></a>
+  <a class="nav-item" data-nav="assistant" href="assistant.html"><i class="ic" data-ic="sparkles"></i><span>AI 助手</span></a>
+
+  <p class="nav-label">账户</p>
+  <a class="nav-item" data-nav="account" href="account.html"><i class="ic" data-ic="user"></i><span>个人中心</span><span class="nav-badge" id="navNotifBadge" style="display:none">0</span></a>
+  <a class="nav-item nav-admin" data-nav="admin" href="admin.html"><i class="ic" data-ic="settings"></i><span>管理后台</span></a>
+
+  <div class="nav-user">
+    <span class="nav-avatar" id="navAvatar">禾</span>
+    <span class="grow"><span class="nav-user-name" id="navUserName">林嘉禾</span><span class="nav-user-role" id="navUserRole">管理员 · 平台运营</span></span>
+    <button class="nav-logout" id="navLogout" title="退出登录"><i class="ic" data-ic="logout"></i></button>
+  </div>
+</aside>
+<div class="nav-scrim"></div>
+
+<main class="app-content">
+  <div class="page-shell">
+
+    <div class="row-between mb-16">
+      <a class="detail-link" href="recipes.html"><i class="ic" data-ic="arrow-left"></i>返回食谱库</a>
+      <span class="small muted">营养口径：每份 · 数据更新于 2026-10-18</span>
+    </div>
+
+    <div id="detailRoot">
+      <div class="sk" style="aspect-ratio:16/8;border-radius:var(--r-xl)"></div>
+      <section class="grid split mt-24">
+        <div class="col" style="gap:20px">
+          <div class="card card-pad">
+            <div class="sk" style="height:16px;width:32%"></div>
+            <div class="grid g4 mt-16" style="gap:12px">
+              <div class="sk" style="height:58px"></div>
+              <div class="sk" style="height:58px"></div>
+              <div class="sk" style="height:58px"></div>
+              <div class="sk" style="height:58px"></div>
+            </div>
+          </div>
+          <div class="card card-pad">
+            <div class="sk" style="height:16px;width:28%"></div>
+            <div class="sk mt-16" style="height:12px;width:92%"></div>
+            <div class="sk mt-8" style="height:12px;width:86%"></div>
+            <div class="sk mt-8" style="height:12px;width:90%"></div>
+            <div class="sk mt-8" style="height:12px;width:78%"></div>
+          </div>
+        </div>
+        <aside class="col" style="gap:20px">
+          <div class="card card-pad"><div class="sk" style="height:16px;width:40%"></div><div class="sk mt-16" style="height:40px;width:52%"></div></div>
+          <div class="card card-pad"><div class="sk" style="height:16px;width:40%"></div><div class="sk mt-16" style="height:12px"></div><div class="sk mt-12" style="height:12px"></div><div class="sk mt-12" style="height:12px"></div></div>
+          <div class="card card-pad"><div class="sk" style="height:16px;width:40%"></div><div class="sk mt-16" style="height:42px"></div></div>
+        </aside>
+      </section>
+    </div>
+
+    <p class="small muted mt-32" style="text-align:center">
+      营养数据来自平台食材库的标准口径，实际烹饪会因用油与火候产生差异。本文不构成医疗诊断，慢病管理请遵医嘱。
+    </p>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/mock.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  const UI = window.UI, API = window.API, Store = window.Store;
+  const root = document.getElementById('detailRoot');
+  const params = new URLSearchParams(location.search);
+  const recipeId = +params.get('id') || 1;
+
+  function renderError(message) {
+    root.innerHTML = '<div class="card card-pad mt-24">' +
+      UI.empty('食谱不存在或已下架', message || '该食谱可能已被移除，返回食谱库看看其他选择。', 'bowl') +
+      '<div style="text-align:center;padding-bottom:26px"><a class="btn btn-primary btn-sm" href="recipes.html"><i class="ic" data-ic="arrow-left"></i>返回食谱库</a></div>' +
+      '</div>';
+    Icons.hydrate(root);
+  }
+
+  function barRow(name, val, target, unit, cls, pct) {
+    return '<div>' +
+      '<div class="row-between small" style="margin-bottom:6px">' +
+        '<span style="color:var(--text-2)">' + name + '</span>' +
+        '<span class="num" style="color:var(--text-3)">' + val + ' / ' + target + ' ' + unit + ' · ' + pct + '%</span>' +
+      '</div>' +
+      '<div class="bar' + cls + '"><i style="width:' + Math.min(100, pct) + '%"></i></div>' +
+    '</div>';
+  }
+
+  function render(r) {
+    document.title = r.name + ' · 膳衡';
+    const goal = Store.goal();
+    const pTarget = Math.round(goal.kcal * goal.proteinPct / 100 / 4);
+    const fTarget = Math.round(goal.kcal * goal.fatPct / 100 / 9);
+    const kcalPct = Math.round(r.kcal / goal.kcal * 100);
+    const pPct = Math.round(r.p / pTarget * 100);
+    const fPct = Math.round(r.f / fTarget * 100);
+    const pShare = Math.round(r.p * 4 / r.kcal * 100);
+    const fShare = Math.round(r.f * 9 / r.kcal * 100);
+
+    const sameMeal = DB.recipes.filter(function (x) { return x.id !== r.id && x.mealType === r.mealType; });
+    const others = DB.recipes.filter(function (x) { return x.id !== r.id && x.mealType !== r.mealType; })
+      .sort(function (a, b) {
+        const sa = a.fit.filter(function (f) { return r.fit.includes(f); }).length + (a.cuisine === r.cuisine ? 1 : 0);
+        const sb = b.fit.filter(function (f) { return r.fit.includes(f); }).length + (b.cuisine === r.cuisine ? 1 : 0);
+        return sb - sa;
+      });
+    const similar = sameMeal.concat(others).slice(0, 3);
+
+    const favOn = Store.isRecipeCollected(r.id) ? ' on' : '';
+
+    root.innerHTML =
+      '<div class="recipe-hero hero-detail reveal">' +
+        '<img src="' + r.img + '" alt="' + UI.esc(r.name) + '">' +
+        '<div class="overlay-text">' +
+          '<div class="row wrap" style="gap:8px;margin-bottom:10px">' +
+            '<span class="badge" style="background:var(--green-100);color:var(--green-900)">' + UI.esc(r.mealType) + '</span>' +
+            '<span class="badge" style="background:var(--surface);color:var(--green-900)">' + UI.esc(r.cuisine) + '</span>' +
+            '<span class="badge" style="background:var(--surface);color:var(--green-900)">' + UI.esc(r.level) + '</span>' +
+          '</div>' +
+          '<h1>' + UI.esc(r.name) + '</h1>' +
+          '<div class="meta">' +
+            '<span><i class="ic" data-ic="clock"></i> ' + r.time + ' 分钟</span>' +
+            '<span><i class="ic" data-ic="utensils"></i> ' + r.servings + ' 人份</span>' +
+            '<span><i class="ic" data-ic="star"></i> ' + r.rating.toFixed(1) + ' 分</span>' +
+            '<span><i class="ic" data-ic="eye"></i> ' + UI.num(r.views) + ' 次浏览</span>' +
+            '<span><i class="ic" data-ic="bookmark"></i> ' + UI.num(r.collects) + ' 收藏</span>' +
+          '</div>' +
+        '</div>' +
+        '<button class="hero-fav' + favOn + '" id="heroFav" aria-label="收藏本食谱"><i class="ic" data-ic="bookmark"></i></button>' +
+      '</div>' +
+
+      '<p class="page-sub mt-16" style="max-width:760px">' + UI.esc(r.desc) + '</p>' +
+
+      '<section class="grid split mt-24 reveal d1">' +
+        '<div class="col" style="gap:20px">' +
+          '<article class="card card-pad">' +
+            '<div class="row-between">' +
+              '<p class="eyebrow" style="margin:0">Nutrition · 营养概览</p>' +
+              '<span class="tag">整份 / ' + r.servings + ' 人份</span>' +
+            '</div>' +
+            '<div class="grid g4 mt-16" style="gap:12px">' +
+              '<div class="kpi"><span class="kpi-label">热量</span><span class="kpi-value">' + r.kcal + '</span><span class="kpi-foot">kcal</span></div>' +
+              '<div class="kpi"><span class="kpi-label">蛋白质</span><span class="kpi-value">' + r.p + '</span><span class="kpi-foot">g</span></div>' +
+              '<div class="kpi"><span class="kpi-label">碳水</span><span class="kpi-value">' + r.c + '</span><span class="kpi-foot">g</span></div>' +
+              '<div class="kpi"><span class="kpi-label">脂肪</span><span class="kpi-value">' + r.f + '</span><span class="kpi-foot">g</span></div>' +
+            '</div>' +
+            '<div class="row wrap mt-16" style="gap:8px">' +
+              '<span class="tag">膳食纤维 ' + r.fiber + ' g</span>' +
+              '<span class="tag">蛋白质供能 ' + pShare + '%</span>' +
+              '<span class="tag">脂肪供能 ' + fShare + '%</span>' +
+            '</div>' +
+          '</article>' +
+
+          '<article class="card">' +
+            '<div class="card-hd"><h3>食材清单</h3><span class="badge">' + r.ingredients.length + ' 种食材</span></div>' +
+            '<div class="card-bd"><div class="ing-list">' +
+              r.ingredients.map(function (it) {
+                return '<div class="ing-row"><span>' + UI.esc(it.name) + '</span><span class="amt">' + UI.esc(it.amount) + (it.unit ? ' ' + UI.esc(it.unit) : '') + '</span></div>';
+              }).join('') +
+            '</div></div>' +
+          '</article>' +
+
+          '<article class="card">' +
+            '<div class="card-hd"><h3>制作步骤</h3><span class="small muted">约 ' + r.time + ' 分钟</span></div>' +
+            '<div class="card-bd"><ol class="step-list">' +
+              r.steps.map(function (s) { return '<li>' + UI.esc(s) + '</li>'; }).join('') +
+            '</ol></div>' +
+          '</article>' +
+
+          '<div class="alert-inline green">' +
+            '<i class="ic" data-ic="sparkles"></i>' +
+            '<span><b>小贴士</b>：' + UI.esc(r.tips) + '</span>' +
+          '</div>' +
+        '</div>' +
+
+        '<aside class="col" style="gap:20px">' +
+          '<article class="card card-pad">' +
+            '<p class="eyebrow" style="margin:0">Serving · 份量说明</p>' +
+            '<div class="row mt-12" style="align-items:baseline;gap:8px">' +
+              '<span class="num" style="font-size:34px;color:var(--green-950)">' + r.servings + '</span>' +
+              '<span class="small muted">人份 / 整份</span>' +
+            '</div>' +
+            '<p class="small muted mt-8" style="line-height:1.8">营养数据按整份统计。若分成 2 次食用，请将热量与三大营养素各自减半；食材用量与步骤仍以整份为准。</p>' +
+            '<div class="row-between mt-12"><span class="small muted">备餐时间</span><span class="small num">' + r.time + ' 分钟</span></div>' +
+            '<div class="row-between mt-8"><span class="small muted">难度</span><span class="small">' + UI.esc(r.level) + '</span></div>' +
+          '</article>' +
+
+          '<article class="card card-pad">' +
+            '<div class="row-between">' +
+              '<p class="eyebrow" style="margin:0">Goal Match · 目标匹配</p>' +
+              '<a class="link-btn" href="goal.html">调整目标<i class="ic" data-ic="chevron-right"></i></a>' +
+            '</div>' +
+            '<p class="small muted mt-8">当前目标：' + UI.esc(goal.goalType) + ' · 每日 ' + UI.num(goal.kcal) + ' kcal</p>' +
+            '<div class="col mt-16" style="gap:14px">' +
+              barRow('热量', r.kcal, goal.kcal, 'kcal', ' amber', kcalPct) +
+              barRow('蛋白质', r.p, pTarget, 'g', '', pPct) +
+              barRow('脂肪', r.f, fTarget, 'g', ' clay', fPct) +
+            '</div>' +
+            '<p class="small muted mt-12" style="line-height:1.7">占比为本餐相对每日目标；三餐可按 30% / 40% / 30% 微调，剩余额度留给加餐。</p>' +
+          '</article>' +
+
+          '<article class="card card-pad">' +
+            '<p class="eyebrow" style="margin:0">Action · 记录</p>' +
+            '<h3 class="display" style="font-size:19px;color:var(--green-950);margin-top:8px">把这一份记进今天</h3>' +
+            '<p class="small muted mt-8" id="addHint" style="line-height:1.7"></p>' +
+            '<button class="btn btn-primary btn-block mt-16" id="addRecordBtn"><i class="ic" data-ic="plus"></i>记入今日饮食记录</button>' +
+            '<a class="btn btn-soft btn-block mt-8" href="assistant.html"><i class="ic" data-ic="sparkles"></i>继续问 AI</a>' +
+            '<a class="link-btn mt-12" href="record.html" style="display:flex;justify-content:center">查看今日饮食记录<i class="ic" data-ic="chevron-right"></i></a>' +
+          '</article>' +
+        '</aside>' +
+      '</section>' +
+
+      '<section class="mt-40 reveal d2">' +
+        '<div class="section-title"><h2>相似食谱</h2><a class="link" href="recipes.html">浏览全部<i class="ic" data-ic="chevron-right"></i></a></div>' +
+        '<div class="grid g3">' +
+          similar.map(function (s) {
+            return '<article class="card recipe-card">' +
+              '<div class="cover">' +
+                '<a href="recipe-detail.html?id=' + s.id + '"><img src="' + s.img + '" alt="' + UI.esc(s.name) + '"></a>' +
+                '<span class="fit">' + UI.esc(s.fit.join(' / ')) + '</span>' +
+              '</div>' +
+              '<div class="body">' +
+                '<h3><a href="recipe-detail.html?id=' + s.id + '" style="text-decoration:none;color:inherit">' + UI.esc(s.name) + '</a></h3>' +
+                '<div class="meal-meta"><span><i class="ic" data-ic="flame"></i> ' + s.kcal + ' kcal</span><span>蛋白 ' + s.p + 'g</span><span>' + UI.esc(s.mealType) + '</span></div>' +
+              '</div></article>';
+          }).join('') +
+        '</div>' +
+      '</section>';
+
+    Icons.hydrate(root);
+
+    const hint = document.getElementById('addHint');
+    function paintHint(extra) {
+      const t = Store.totals(Store.TODAY);
+      const after = t.kcal + extra;
+      const pct = Math.round(after / goal.kcal * 100);
+      hint.textContent = '今日已摄入 ' + UI.num(t.kcal) + ' kcal，' +
+        (extra ? '加入本餐后约 ' + UI.num(after) + ' kcal，占每日目标 ' + pct + '%。' : '当前占每日目标 ' + pct + '%。');
+    }
+    paintHint(r.kcal);
+
+    const fav = document.getElementById('heroFav');
+    fav.addEventListener('click', async function () {
+      fav.disabled = true;
+      const res = await API.recipes.collect(r.id);
+      fav.disabled = false;
+      if (res.code !== 200) { UI.toast(res.message, 'error'); return; }
+      fav.classList.toggle('on', res.data.collected);
+      UI.toast(res.data.collected ? '已收藏「' + r.name + '」' : '已取消收藏「' + r.name + '」');
+    });
+
+    const addBtn = document.getElementById('addRecordBtn');
+    addBtn.addEventListener('click', async function () {
+      UI.loading(addBtn, true, '保存中');
+      const res = await API.records.submit({
+        mealType: r.mealType,
+        time: Store.nowTime(),
+        note: '来自食谱「' + r.name + '」',
+        items: [{ name: r.name, amount: 1, unit: '份', kcal: r.kcal, p: r.p, c: r.c, f: r.f }]
+      });
+      UI.loading(addBtn, false);
+      if (res.code !== 200) { UI.toast(res.message, 'error'); return; }
+      addBtn.disabled = true;
+      addBtn.innerHTML = '<i class="ic" data-ic="check-circle"></i>已记入今日' + r.mealType;
+      Icons.hydrate(addBtn);
+      UI.toast('已记入今日' + r.mealType + '：' + r.name);
+      paintHint(0);
+    });
+  }
+
+  API.recipes.get(recipeId).then(function (res) {
+    if (res.code !== 200) { renderError(res.message); return; }
+    render(res.data);
+  });
+})();
+</script>
+</body>
+</html>

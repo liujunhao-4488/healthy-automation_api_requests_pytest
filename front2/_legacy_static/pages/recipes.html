@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>食谱库 · 膳衡</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .filter-bar { padding: 18px 22px; display: flex; flex-direction: column; gap: 12px; }
+  .filter-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .filter-label { font-size: 11.5px; letter-spacing: 0.08em; color: var(--text-3); min-width: 34px; }
+  .pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 28px; }
+</style>
+</head>
+<body class="app" data-page="recipes">
+
+<header class="mobile-bar">
+  <span class="brand-mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+  </span>
+  <span class="brand-text"><strong>膳衡</strong><small>SHANHENG</small></span>
+  <button class="mobile-menu-btn" aria-label="打开菜单"><i class="ic" data-ic="menu"></i></button>
+</header>
+
+<aside class="app-nav">
+  <a class="brand" href="home.html">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+    </span>
+    <span class="brand-text"><strong>膳衡</strong><small>SHANHENG · 健康饮食</small></span>
+  </a>
+
+  <p class="nav-label">我的健康</p>
+  <a class="nav-item" data-nav="home" href="home.html"><i class="ic" data-ic="home"></i><span>首页</span></a>
+  <a class="nav-item" data-nav="health" href="health.html"><i class="ic" data-ic="heart-pulse"></i><span>健康档案</span></a>
+  <a class="nav-item" data-nav="goal" href="goal.html"><i class="ic" data-ic="target"></i><span>饮食目标</span></a>
+  <a class="nav-item" data-nav="record" href="record.html"><i class="ic" data-ic="notebook"></i><span>饮食记录</span></a>
+
+  <p class="nav-label">内容与工具</p>
+  <a class="nav-item" data-nav="recipes" href="recipes.html"><i class="ic" data-ic="book-open"></i><span>食谱库</span></a>
+  <a class="nav-item" data-nav="ingredients" href="ingredients.html"><i class="ic" data-ic="apple"></i><span>食材库</span></a>
+  <a class="nav-item" data-nav="knowledge" href="knowledge.html"><i class="ic" data-ic="news"></i><span>健康知识</span></a>
+  <a class="nav-item" data-nav="assistant" href="assistant.html"><i class="ic" data-ic="sparkles"></i><span>AI 助手</span></a>
+
+  <p class="nav-label">账户</p>
+  <a class="nav-item" data-nav="account" href="account.html"><i class="ic" data-ic="user"></i><span>个人中心</span><span class="nav-badge" id="navNotifBadge" style="display:none">0</span></a>
+  <a class="nav-item nav-admin" data-nav="admin" href="admin.html"><i class="ic" data-ic="settings"></i><span>管理后台</span></a>
+
+  <div class="nav-user">
+    <span class="nav-avatar" id="navAvatar">禾</span>
+    <span class="grow"><span class="nav-user-name" id="navUserName">林嘉禾</span><span class="nav-user-role" id="navUserRole">管理员 · 平台运营</span></span>
+    <button class="nav-logout" id="navLogout" title="退出登录"><i class="ic" data-ic="logout"></i></button>
+  </div>
+</aside>
+<div class="nav-scrim"></div>
+
+<main class="app-content">
+  <div class="page-shell">
+
+    <header class="page-head reveal">
+      <div>
+        <p class="eyebrow">Recipe Library</p>
+        <h1 class="page-title">食谱库</h1>
+        <p class="page-sub">按餐次、目标与营养密度筛选，共 148 道（演示 9 道）</p>
+      </div>
+      <div class="page-actions">
+        <div class="search-box" style="min-width:240px">
+          <i class="ic" data-ic="search"></i>
+          <input class="input" id="searchInput" type="search" placeholder="搜索食谱名称或食材" aria-label="搜索食谱">
+        </div>
+        <button class="btn btn-outline" id="refreshBtn"><i class="ic" data-ic="refresh"></i>换一批</button>
+      </div>
+    </header>
+
+    <div class="alert-inline green reveal d1" style="margin-bottom:20px">
+      <i class="ic" data-ic="sparkles"></i>
+      <span><b>今日推荐逻辑 · V2 混合引擎</b>：先用 SVD 协同过滤召回候选，再由 GBDT 结合健康档案、饮食目标与历史记录排序，规则护栏拦截过敏原与慢病禁忌。卡片上的「匹配分」综合单餐热量差、蛋白密度、纤维密度与目标契合度，满分 100，仅代表适配程度。</span>
+    </div>
+
+    <section class="card filter-bar reveal d2">
+      <div class="filter-row">
+        <span class="filter-label">餐次</span>
+        <div class="row wrap" style="gap:8px">
+          <button class="chip on" data-group="mealType" data-value="全部">全部</button>
+          <button class="chip" data-group="mealType" data-value="早餐">早餐</button>
+          <button class="chip" data-group="mealType" data-value="午餐">午餐</button>
+          <button class="chip" data-group="mealType" data-value="晚餐">晚餐</button>
+          <button class="chip" data-group="mealType" data-value="加餐">加餐</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">目标</span>
+        <div class="row wrap" style="gap:8px">
+          <button class="chip on" data-group="fit" data-value="全部">全部</button>
+          <button class="chip" data-group="fit" data-value="减脂">减脂</button>
+          <button class="chip" data-group="fit" data-value="增肌">增肌</button>
+          <button class="chip" data-group="fit" data-value="控糖">控糖</button>
+          <button class="chip" data-group="fit" data-value="维持">维持</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">菜系</span>
+        <div class="row wrap" style="gap:8px">
+          <button class="chip on" data-group="cuisine" data-value="全部">全部</button>
+          <button class="chip" data-group="cuisine" data-value="中式">中式</button>
+          <button class="chip" data-group="cuisine" data-value="西式">西式</button>
+          <button class="chip" data-group="cuisine" data-value="轻食">轻食</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">排序</span>
+        <select class="select" id="sortSel" style="max-width:210px" aria-label="排序方式">
+          <option value="recommend">推荐度</option>
+          <option value="kcal">热量从低到高</option>
+          <option value="protein">蛋白从高到低</option>
+        </select>
+        <span class="small muted">共 9 道演示数据，正式环境按 148 道分页</span>
+      </div>
+    </section>
+
+    <section class="mt-32">
+      <div class="section-title">
+        <h2>筛选结果</h2>
+        <span class="small muted" id="resultMeta">加载中</span>
+      </div>
+      <div class="grid g3" id="recipeGrid"></div>
+      <div class="pager" id="pager" style="display:none">
+        <button class="btn btn-outline btn-sm" id="prevPage"><i class="ic" data-ic="chevron-left"></i>上一页</button>
+        <span class="small num" id="pageLabel">第 1 / 1 页</span>
+        <button class="btn btn-outline btn-sm" id="nextPage">下一页<i class="ic" data-ic="chevron-right"></i></button>
+      </div>
+    </section>
+
+    <p class="small muted mt-32" style="text-align:center">
+      食谱营养为整份估算值，实际会因食材品种、烹调方式与用油量浮动。健康建议不构成医疗诊断，慢病管理请遵医嘱。
+    </p>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/mock.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  const UI = window.UI, API = window.API, Store = window.Store;
+  const PAGE_SIZE = 6;
+  const SORT_LABEL = { recommend: '推荐度', kcal: '热量从低到高', protein: '蛋白从高到低' };
+  const state = { mealType: '全部', fit: '全部', cuisine: '全部', sort: 'recommend', keyword: '', page: 1, seed: 0 };
+  let seq = 0;
+
+  const grid = document.getElementById('recipeGrid');
+  const pager = document.getElementById('pager');
+  const pageLabel = document.getElementById('pageLabel');
+  const resultMeta = document.getElementById('resultMeta');
+  const searchInput = document.getElementById('searchInput');
+  const sortSel = document.getElementById('sortSel');
+
+  function skeletonCards(n) {
+    let html = '';
+    for (let i = 0; i < n; i++) {
+      html += '<article class="card recipe-card">' +
+        '<div class="sk" style="aspect-ratio:4/3;border-radius:0"></div>' +
+        '<div class="body">' +
+          '<div class="sk" style="height:16px;width:68%"></div>' +
+          '<div class="sk" style="height:11px;width:92%"></div>' +
+          '<div class="sk" style="height:11px;width:80%"></div>' +
+          '<div class="row" style="gap:6px;margin-top:4px">' +
+            '<div class="sk" style="height:20px;width:62px"></div>' +
+            '<div class="sk" style="height:20px;width:62px"></div>' +
+            '<div class="sk" style="height:20px;width:62px"></div>' +
+          '</div>' +
+        '</div></article>';
+    }
+    return html;
+  }
+
+  function scoreOf(r) {
+    const goal = Store.goal();
+    let s = 30;
+    if (r.fit.includes(goal.goalType)) s += 22;
+    const gap = Math.abs(r.kcal - goal.kcal / goal.meals);
+    s += Math.max(0, 20 - gap / 18);
+    s += Math.min(12, r.p / 4);
+    s += Math.min(8, r.fiber / 1.4);
+    s += r.rating * 2;
+    return Math.min(96, Math.round(s));
+  }
+
+  function applySort(list) {
+    if (state.sort === 'kcal') return list.sort(function (a, b) { return a.kcal - b.kcal; });
+    if (state.sort === 'protein') return list.sort(function (a, b) { return b.p - a.p; });
+    return list.sort(function (a, b) { return scoreOf(b) - scoreOf(a) || b.rating - a.rating; });
+  }
+
+  function renderEmpty() {
+    grid.innerHTML = '<div style="grid-column:1 / -1">' +
+      UI.empty('没有符合条件的食谱', '试试放宽餐次或菜系，或清空关键词重新检索。', 'search') +
+      '<div style="text-align:center;padding-bottom:26px"><button class="btn btn-outline btn-sm" id="clearFilters"><i class="ic" data-ic="refresh"></i>清空筛选</button></div>' +
+      '</div>';
+    Icons.hydrate(grid);
+    pager.style.display = 'none';
+    resultMeta.textContent = '共 0 道';
+  }
+
+  function render(list, total, pages) {
+    if (!list.length) { renderEmpty(); return; }
+    grid.innerHTML = list.map(function (r, i) {
+      const on = Store.isRecipeCollected(r.id) ? ' on' : '';
+      return '<article class="card recipe-card reveal d' + ((i % 3) + 1) + '">' +
+        '<div class="cover">' +
+          '<a href="recipe-detail.html?id=' + r.id + '"><img src="' + r.img + '" alt="' + UI.esc(r.name) + '"></a>' +
+          '<span class="fit">' + UI.esc(r.fit.join(' / ')) + '</span>' +
+          '<button class="fav' + on + '" data-collect="' + r.id + '" aria-label="收藏' + UI.esc(r.name) + '"><i class="ic" data-ic="bookmark"></i></button>' +
+        '</div>' +
+        '<div class="body">' +
+          '<h3><a href="recipe-detail.html?id=' + r.id + '" style="text-decoration:none;color:inherit">' + UI.esc(r.name) + '</a></h3>' +
+          '<p class="desc">' + UI.esc(r.desc) + '</p>' +
+          '<div class="recipe-nut">' +
+            '<span class="nut-pill"><i class="ic" data-ic="flame" style="width:11px;height:11px"></i><b>' + r.kcal + '</b> kcal</span>' +
+            '<span class="nut-pill">蛋白 <b>' + r.p + '</b>g</span>' +
+            '<span class="nut-pill">纤维 <b>' + r.fiber + '</b>g</span>' +
+            '<span class="nut-pill">匹配 <b>' + scoreOf(r) + '</b></span>' +
+          '</div>' +
+          '<div class="meal-meta" style="margin-top:auto;padding-top:6px">' +
+            '<span><i class="ic" data-ic="clock"></i> ' + r.time + ' 分钟</span>' +
+            '<span>' + UI.esc(r.cuisine) + '</span>' +
+            '<span><i class="ic" data-ic="star"></i> ' + r.rating.toFixed(1) + '</span>' +
+          '</div>' +
+        '</div></article>';
+    }).join('');
+    Icons.hydrate(grid);
+
+    grid.querySelectorAll('[data-collect]').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        const id = +btn.dataset.collect;
+        const recipe = DB.recipes.find(function (x) { return x.id === id; });
+        btn.disabled = true;
+        const res = await API.recipes.collect(id);
+        btn.disabled = false;
+        if (res.code !== 200) { UI.toast(res.message, 'error'); return; }
+        const on = res.data.collected;
+        btn.classList.toggle('on', on);
+        btn.innerHTML = '<i class="ic" data-ic="bookmark"></i>';
+        Icons.hydrate(btn);
+        UI.toast(on ? '已收藏「' + recipe.name + '」' : '已取消收藏「' + recipe.name + '」');
+      });
+    });
+
+    resultMeta.textContent = '共 ' + total + ' 道 · ' + SORT_LABEL[state.sort] + '排序';
+    pager.style.display = 'flex';
+    pageLabel.textContent = '第 ' + state.page + ' / ' + pages + ' 页';
+    document.getElementById('prevPage').disabled = state.page <= 1;
+    document.getElementById('nextPage').disabled = state.page >= pages;
+  }
+
+  async function load() {
+    const my = ++seq;
+    grid.innerHTML = skeletonCards(PAGE_SIZE);
+    resultMeta.textContent = '正在检索…';
+    pager.style.display = 'none';
+
+    let all = [], page = 1, total = Infinity;
+    while (all.length < total && page <= 12) {
+      const res = await API.recipes.list({
+        mealType: state.mealType, fit: state.fit, keyword: state.keyword,
+        page: page, pageSize: PAGE_SIZE
+      });
+      if (my !== seq) return;
+      if (res.code !== 200) {
+        UI.toast(res.message, 'error');
+        renderEmpty();
+        return;
+      }
+      total = res.data.total;
+      all = all.concat(res.data.list);
+      if (!res.data.list.length) break;
+      page++;
+    }
+    if (my !== seq) return;
+
+    let list = all;
+    if (state.cuisine !== '全部') list = list.filter(function (r) { return r.cuisine === state.cuisine; });
+    list = applySort(list);
+    if (state.sort === 'recommend' && state.seed && list.length) {
+      const k = (state.seed * 3) % list.length;
+      list = list.slice(k).concat(list.slice(0, k));
+    }
+
+    const count = list.length;
+    const pages = Math.max(1, Math.ceil(count / PAGE_SIZE));
+    if (state.page > pages) state.page = pages;
+    const slice = list.slice((state.page - 1) * PAGE_SIZE, state.page * PAGE_SIZE);
+    render(slice, count, pages);
+  }
+
+  document.querySelectorAll('.chip[data-group]').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      const group = chip.dataset.group;
+      state[group] = chip.dataset.value;
+      document.querySelectorAll('.chip[data-group="' + group + '"]').forEach(function (c) {
+        c.classList.toggle('on', c === chip);
+      });
+      state.page = 1;
+      state.seed = 0;
+      load();
+    });
+  });
+
+  sortSel.addEventListener('change', function () {
+    state.sort = sortSel.value;
+    state.seed = 0;
+    state.page = 1;
+    load();
+  });
+
+  let timer = null;
+  searchInput.addEventListener('input', function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      state.keyword = searchInput.value.trim();
+      state.page = 1;
+      state.seed = 0;
+      load();
+    }, 300);
+  });
+  searchInput.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    clearTimeout(timer);
+    state.keyword = searchInput.value.trim();
+    state.page = 1;
+    load();
+  });
+
+  document.getElementById('refreshBtn').addEventListener('click', function () {
+    state.sort = 'recommend';
+    sortSel.value = 'recommend';
+    state.seed = state.seed + 1;
+    state.page = 1;
+    load();
+    UI.toast('已换一批推荐');
+  });
+
+  document.getElementById('prevPage').addEventListener('click', function () {
+    if (state.page <= 1) return;
+    state.page -= 1;
+    load();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  document.getElementById('nextPage').addEventListener('click', function () {
+    state.page += 1;
+    load();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  grid.addEventListener('click', function (e) {
+    const clear = e.target.closest('#clearFilters');
+    if (!clear) return;
+    state.mealType = '全部'; state.fit = '全部'; state.cuisine = '全部';
+    state.keyword = ''; state.sort = 'recommend'; state.page = 1; state.seed = 0;
+    searchInput.value = '';
+    sortSel.value = 'recommend';
+    document.querySelectorAll('.chip[data-group]').forEach(function (c) {
+      c.classList.toggle('on', c.dataset.value === '全部');
+    });
+    load();
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>

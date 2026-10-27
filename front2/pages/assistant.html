@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 饮食助手 · 膳衡</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+.conv-head{padding:14px 16px 10px;flex:none}
+.conv-search{padding:0 12px 12px;border-bottom:1px solid var(--border);flex:none}
+.conv-search .input{height:38px;font-size:12.5px}
+.conv-row{position:relative;display:flex;align-items:stretch}
+.conv-row .conv-item{padding-right:40px}
+.conv-del{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;border:0;background:transparent;color:var(--text-3);display:grid;place-items:center;cursor:pointer;opacity:0;pointer-events:none;transition:.15s}
+.conv-row:hover .conv-del,.conv-del:focus-visible{opacity:1;pointer-events:auto;background:var(--surface);color:var(--danger)}
+.conv-del:hover{background:var(--danger-bg)}
+.conv-del .ic{width:14px;height:14px}
+.conv-empty{padding:30px 16px;text-align:center;font-size:12px;color:var(--text-3);line-height:1.8}
+.chat-title{font-size:15px;font-weight:600;color:var(--green-950);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-body{display:flex;flex-direction:column;min-width:0}
+.stream-text{white-space:pre-wrap;margin:0}
+.chat-empty{margin:auto;max-width:520px;width:100%;text-align:center;display:flex;flex-direction:column;gap:14px;padding:18px}
+.guide-ico{width:52px;height:52px;border-radius:16px;margin:0 auto;display:grid;place-items:center;background:var(--green-050);border:1px solid var(--green-100);color:var(--green-700)}
+.guide-ico .ic{width:24px;height:24px}
+.chat-empty h3{font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--green-950)}
+.guide-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;text-align:left}
+.guide-list .suggest{border-radius:10px;padding:10px 12px;line-height:1.5;font-size:11.5px}
+.blocked-title{display:block;font-weight:600;margin-bottom:2px}
+.chat-hint .link-btn{color:var(--clay-600)}
+@media (max-width:960px){
+  .asst-layout{grid-template-columns:minmax(0,1fr);height:auto}
+  .asst-layout .conv-panel{max-height:230px}
+  .asst-layout .chat-panel{height:min(72vh,640px)}
+}
+</style>
+</head>
+<body class="app" data-page="assistant">
+
+<header class="mobile-bar">
+  <span class="brand-mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+  </span>
+  <span class="brand-text"><strong>膳衡</strong><small>SHANHENG</small></span>
+  <button class="mobile-menu-btn" aria-label="打开菜单"><i class="ic" data-ic="menu"></i></button>
+</header>
+
+<aside class="app-nav">
+  <a class="brand" href="home.html">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+    </span>
+    <span class="brand-text"><strong>膳衡</strong><small>SHANHENG · 健康饮食</small></span>
+  </a>
+
+  <p class="nav-label">我的健康</p>
+  <a class="nav-item" data-nav="home" href="home.html"><i class="ic" data-ic="home"></i><span>首页</span></a>
+  <a class="nav-item" data-nav="health" href="health.html"><i class="ic" data-ic="heart-pulse"></i><span>健康档案</span></a>
+  <a class="nav-item" data-nav="goal" href="goal.html"><i class="ic" data-ic="target"></i><span>饮食目标</span></a>
+  <a class="nav-item" data-nav="record" href="record.html"><i class="ic" data-ic="notebook"></i><span>饮食记录</span></a>
+
+  <p class="nav-label">内容与工具</p>
+  <a class="nav-item" data-nav="recipes" href="recipes.html"><i class="ic" data-ic="book-open"></i><span>食谱库</span></a>
+  <a class="nav-item" data-nav="ingredients" href="ingredients.html"><i class="ic" data-ic="apple"></i><span>食材库</span></a>
+  <a class="nav-item" data-nav="knowledge" href="knowledge.html"><i class="ic" data-ic="news"></i><span>健康知识</span></a>
+  <a class="nav-item" data-nav="assistant" href="assistant.html"><i class="ic" data-ic="sparkles"></i><span>AI 助手</span></a>
+
+  <p class="nav-label">账户</p>
+  <a class="nav-item" data-nav="account" href="account.html"><i class="ic" data-ic="user"></i><span>个人中心</span><span class="nav-badge" id="navNotifBadge" style="display:none">0</span></a>
+  <a class="nav-item nav-admin" data-nav="admin" href="admin.html"><i class="ic" data-ic="settings"></i><span>管理后台</span></a>
+
+  <div class="nav-user">
+    <span class="nav-avatar" id="navAvatar">禾</span>
+    <span class="grow"><span class="nav-user-name" id="navUserName">林嘉禾</span><span class="nav-user-role" id="navUserRole">管理员 · 平台运营</span></span>
+    <button class="nav-logout" id="navLogout" title="退出登录"><i class="ic" data-ic="logout"></i></button>
+  </div>
+</aside>
+<div class="nav-scrim"></div>
+
+<main class="app-content">
+  <div class="page-shell">
+
+    <header class="page-head reveal">
+      <div>
+        <p class="eyebrow">AI Assistant</p>
+        <h1 class="page-title">AI 饮食助手</h1>
+        <p class="page-sub">结合你的档案与权威食养指南，回答带意图与来源标注</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" id="newConvBtn" type="button"><i class="ic" data-ic="plus"></i>新对话</button>
+      </div>
+    </header>
+
+    <section class="chat-layout asst-layout reveal d1">
+      <aside class="card conv-panel">
+        <div class="conv-head">
+          <div class="row-between">
+            <strong style="font-size:13.5px">最近会话</strong>
+            <span class="small muted num" id="convCount">0</span>
+          </div>
+        </div>
+        <div class="conv-search">
+          <div class="search-box">
+            <i class="ic" data-ic="search"></i>
+            <input class="input" id="convSearch" type="search" placeholder="搜索会话" aria-label="搜索会话">
+          </div>
+        </div>
+        <div class="conv-list" id="convList"></div>
+      </aside>
+
+      <section class="card chat-panel">
+        <header class="chat-head">
+          <div class="grow">
+            <div class="row" style="gap:9px">
+              <span class="chat-title" id="chatTitle">AI 饮食助手</span>
+              <span class="badge"><i class="ic" data-ic="shield"></i>RAG · 权威源</span>
+            </div>
+            <p class="small muted" id="chatSub" style="margin-top:2px">尚未开始对话</p>
+          </div>
+        </header>
+
+        <div class="chat-scroll" id="chatScroll"></div>
+
+        <div class="chat-suggests" id="suggestRow"></div>
+
+        <div class="chat-input">
+          <div class="chat-input-row">
+            <textarea id="chatInput" rows="1" placeholder="问点具体的，比如「晚饭吃什么」" aria-label="输入问题"></textarea>
+            <button class="btn btn-primary btn-sm" id="sendBtn" type="button"><i class="ic" data-ic="send"></i>发送</button>
+          </div>
+          <div class="chat-hint">
+            <span class="row wrap" style="gap:12px">
+              <button class="link-btn" id="guardBtn" type="button"><i class="ic" data-ic="alert"></i>试试医疗越界问题</button>
+              <span>Enter 发送 · Shift + Enter 换行</span>
+            </span>
+            <span class="num" id="charCount">0 / 1000</span>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <p class="small muted mt-24" style="text-align:center">
+      AI 回答由本地规则桩生成并标注来源，仅作饮食参考，不构成医疗诊断或处方。
+    </p>
+  </div>
+</main>
+
+<script src="../js/icons.js"></script>
+<script src="../js/mock.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  const UI = window.UI, API = window.API, Store = window.Store;
+  const convList = document.getElementById('convList');
+  const convSearch = document.getElementById('convSearch');
+  const convCount = document.getElementById('convCount');
+  const chatScroll = document.getElementById('chatScroll');
+  const chatTitle = document.getElementById('chatTitle');
+  const chatSub = document.getElementById('chatSub');
+  const input = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const charCount = document.getElementById('charCount');
+  const suggestRow = document.getElementById('suggestRow');
+  const guardBtn = document.getElementById('guardBtn');
+
+  const SUGGESTS = [
+    '高血脂人群饮食要注意什么',
+    '鸡胸肉可以用什么替代',
+    '减脂期一周早餐怎么搭',
+    '米饭多少卡'
+  ];
+  const GUARD_Q = '帮我开个降脂药处方';
+
+  let currentId = null;
+  let sending = false;
+
+  const seeded = Store.conversations();
+  if (seeded.length) currentId = seeded[0].id;
+
+  function stamp() { return Store.now().slice(5); }
+  function currentConv() { return currentId ? Store.conversation(currentId) : null; }
+  function userChar() { return (App.userName() || '我').charAt(0); }
+
+  const INTENTS = {
+    knowledge: '知识问答', recipe: '食谱推荐', advice: '饮食建议', chat: '闲聊',
+    medical: '医疗越界', abuse: '不当内容', blocked: '护栏拦截'
+  };
+  const SOURCES = {
+    authority: '权威指南', ingredient: '食材库', recipe: '食谱库',
+    model: '模型生成', guardrail: '安全护栏', article: '知识库'
+  };
+
+  /* ---------------- 会话列表 ---------------- */
+  function renderConvList() {
+    const all = Store.conversations();
+    convCount.textContent = all.length;
+    const q = convSearch.value.trim();
+    const list = all.filter(function (c) {
+      return !q || (c.title || '').indexOf(q) > -1 || (c.summary || '').indexOf(q) > -1;
+    });
+
+    if (!list.length) {
+      convList.innerHTML = '<div class="conv-empty">' +
+        (all.length ? '没有匹配的会话，换个关键词试试。' : '还没有会话记录，点击右上角「新对话」开始提问。') +
+        '</div>';
+      return;
+    }
+
+    convList.innerHTML = list.map(function (c) {
+      const summary = c.summary || (c.messages.length ? String(c.messages[c.messages.length - 1].text || '').slice(0, 26) : '尚未开始对话');
+      return '<div class="conv-row">' +
+        '<button class="conv-item' + (c.id === currentId ? ' on' : '') + '" type="button" data-conv="' + UI.esc(c.id) + '">' +
+          '<strong>' + UI.esc(c.title || '新的对话') + '</strong>' +
+          '<span>' + UI.esc(c.time || '') + ' · ' + UI.esc(summary) + '</span>' +
+        '</button>' +
+        '<button class="conv-del" type="button" data-del="' + UI.esc(c.id) + '" title="删除会话" aria-label="删除会话">' +
+          '<i class="ic" data-ic="trash"></i></button>' +
+      '</div>';
+    }).join('');
+    Icons.hydrate(convList);
+  }
+
+  convList.addEventListener('click', function (e) {
+    const del = e.target.closest('[data-del]');
+    if (del) {
+      const id = del.dataset.del;
+      const c = Store.conversation(id);
+      UI.confirm('删除「' + (c ? c.title : '这条会话') + '」后，对话记录将从本机移除，无法恢复。', function () {
+        const wasCurrent = currentId === id;
+        Store.removeConversation(id);
+        if (wasCurrent) {
+          const rest = Store.conversations();
+          currentId = rest.length ? rest[0].id : null;
+        }
+        renderConvList();
+        if (wasCurrent) renderChat();
+        UI.toast('会话已删除');
+      }, { title: '删除会话', okText: '删除', danger: true });
+      return;
+    }
+    const item = e.target.closest('[data-conv]');
+    if (item) {
+      currentId = item.dataset.conv;
+      renderConvList();
+      renderChat();
+    }
+  });
+
+  convSearch.addEventListener('input', renderConvList);
+
+  /* ---------------- 消息渲染 ---------------- */
+  function chipIntent(m) {
+    const label = INTENTS[m.intent] || INTENTS.chat;
+    const dot = m.intent === 'recipe' ? ' amber' : ' gray';
+    return '<span class="intent-chip"><span class="dot' + dot + '"></span>意图：' + label + '</span>';
+  }
+  function chipSource(m) {
+    const label = SOURCES[m.source] || SOURCES.model;
+    return '<span class="intent-chip">来源：' + label + '</span>';
+  }
+  function metaHtml(m, fallbackTime) {
+    const time = m.time || fallbackTime || '';
+    return '<div class="msg-meta">' + chipIntent(m) + chipSource(m) +
+      '<span style="margin-left:auto">' + UI.esc(time) + '</span></div>';
+  }
+  function cardHtml(c) {
+    return '<a class="msg-card" href="' + (c.href || 'recipe-detail.html?id=1') + '">' +
+      (c.img ? '<img src="' + c.img + '" alt="' + UI.esc(c.title) + '">' : '') +
+      '<div><strong>' + UI.esc(c.title) + '</strong><span>' + UI.esc(c.sub || '') + '</span></div></a>';
+  }
+
+  function renderMsg(m, fallbackTime) {
+    const time = m.time || fallbackTime || '';
+    if (m.role === 'user') {
+      return '<div class="msg user"><div class="msg-avatar">' + UI.esc(userChar()) + '</div>' +
+        '<div class="msg-body"><div class="msg-bubble"><p>' + UI.esc(m.text) + '</p></div>' +
+        '<div class="msg-meta"><span style="margin-left:auto">' + UI.esc(time) + '</span></div></div></div>';
+    }
+
+    if (m.blocked) {
+      return '<div class="msg"><div class="msg-avatar">衡</div><div class="msg-body">' +
+        '<div class="blocked-note"><i class="ic" data-ic="alert"></i>' +
+        '<div><strong class="blocked-title">安全护栏已拦截</strong>' + UI.esc(m.text) + '</div></div>' +
+        metaHtml(m, fallbackTime) + '</div></div>';
+    }
+
+    let bubble = '<div class="msg-bubble"><p>' + UI.esc(m.text) + '</p>';
+    if (m.list && m.list.length) {
+      bubble += '<ul>' + m.list.map(function (x) { return '<li>' + UI.esc(x) + '</li>'; }).join('') + '</ul>';
+    }
+    if (m.cards && m.cards.length) {
+      bubble += '<div class="msg-cards">' + m.cards.map(cardHtml).join('') + '</div>';
+    }
+    if (m.note) {
+      bubble += '<p class="small muted" style="margin-top:8px">' + UI.esc(m.note) + '</p>';
+    }
+    bubble += '</div>';
+
+    return '<div class="msg"><div class="msg-avatar">衡</div><div class="msg-body">' +
+      bubble + metaHtml(m, fallbackTime) + '</div></div>';
+  }
+
+  function guideHtml() {
+    const health = Store.health();
+    const goal = Store.goal();
+    const chronic = (health.chronic && health.chronic.length) ? health.chronic.join('、') : '无慢病记录';
+    return '<div class="chat-empty">' +
+      '<div class="guide-ico"><i class="ic" data-ic="sparkles"></i></div>' +
+      '<h3>你好，我是膳衡 AI 饮食助手</h3>' +
+      '<p class="small muted" style="line-height:1.8">我会结合你的档案（' + UI.esc(chronic) + ' · ' + UI.esc(goal.goalType) + '目标）与权威食养指南作答，并标注每段回答的意图与来源。</p>' +
+      '<div class="guide-list">' + SUGGESTS.map(function (q) {
+        return '<button class="suggest" type="button" data-q="' + UI.esc(q) + '">' + UI.esc(q) + '</button>';
+      }).join('') + '</div>' +
+      '<div class="alert-inline" style="text-align:left"><i class="ic" data-ic="shield"></i>' +
+      '<span>涉及诊断、用药与处方的问题会被安全护栏拦截，请咨询医生或临床营养师。</span></div>' +
+    '</div>';
+  }
+
+  function scrollBottom() {
+    chatScroll.scrollTop = chatScroll.scrollHeight;
+  }
+
+  function renderChat() {
+    const conv = currentConv();
+    chatTitle.textContent = conv ? (conv.title || '新的对话') : 'AI 饮食助手';
+    chatTitle.title = conv ? (conv.title || '') : '';
+    const rounds = conv ? conv.messages.filter(function (m) { return m.role === 'user'; }).length : 0;
+    chatSub.textContent = rounds
+      ? '共 ' + rounds + ' 轮对话 · 回答标注来源，可追溯'
+      : '尚未开始对话 · 会结合你的健康档案与目标作答';
+
+    if (!conv || !conv.messages.length) {
+      suggestRow.style.display = 'none';
+      chatScroll.innerHTML = guideHtml();
+      Icons.hydrate(chatScroll);
+      return;
+    }
+    suggestRow.style.display = 'flex';
+    chatScroll.innerHTML = conv.messages.map(function (m) { return renderMsg(m, conv.time); }).join('');
+    Icons.hydrate(chatScroll);
+    scrollBottom();
+  }
+
+  /* ---------------- 输入与发送 ---------------- */
+  function updateCount() {
+    const n = input.value.length;
+    charCount.textContent = n + ' / 1000';
+    charCount.style.color = n > 1000 ? 'var(--danger)' : '';
+  }
+  function autoGrow() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(120, input.scrollHeight) + 'px';
+  }
+  function setBusy(on) {
+    sending = on;
+    input.disabled = on;
+    sendBtn.disabled = on;
+  }
+
+  async function send(prompt) {
+    if (sending) { UI.toast('正在生成回答，请稍候', 'error'); return; }
+    const text = String(prompt == null ? input.value : prompt).trim();
+    if (!text) { UI.toast('请输入问题', 'error'); input.focus(); return; }
+    if (text.length > 1000) { UI.toast('问题请控制在 1000 字以内', 'error'); return; }
+
+    let conv = currentConv();
+    if (!conv) {
+      conv = { id: 'c-' + Date.now(), title: '新的对话', summary: '尚未开始对话', time: stamp(), messages: [] };
+      Store.saveConversation(conv);
+      currentId = conv.id;
+    }
+    const targetId = conv.id;
+
+    if (!conv.title || conv.title === '新的对话') conv.title = text.slice(0, 18);
+    conv.messages.push({ role: 'user', text: text, time: Store.nowTime() });
+    Store.saveConversation(conv);
+
+    input.value = '';
+    autoGrow();
+    updateCount();
+    renderConvList();
+    renderChat();
+
+    setBusy(true);
+    const ph = document.createElement('div');
+    ph.className = 'msg';
+    ph.innerHTML = '<div class="msg-avatar">衡</div><div class="msg-body"><div class="msg-bubble">' +
+      '<span class="typing"><i></i><i></i><i></i></span><p class="stream-text"></p></div></div>';
+    chatScroll.appendChild(ph);
+    Icons.hydrate(ph);
+    scrollBottom();
+
+    const streamEl = ph.querySelector('.stream-text');
+    const typingEl = ph.querySelector('.typing');
+    let gotChunk = false;
+
+    try {
+      await API.assistant.chatStream(text, {
+        onChunk: function (shown) {
+          if (!gotChunk) {
+            gotChunk = true;
+            if (typingEl && typingEl.parentNode) typingEl.remove();
+          }
+          if (streamEl) streamEl.textContent = shown;
+          scrollBottom();
+        },
+        onDone: function (result) {
+          let aiMsg;
+          if (result.blocked) {
+            aiMsg = { role: 'ai', blocked: true, intent: result.intent, source: 'guardrail', text: result.text, time: Store.nowTime() };
+          } else {
+            aiMsg = {
+              role: 'ai', intent: result.intent, source: result.source,
+              text: result.text, list: result.list, cards: result.cards,
+              note: result.note, time: Store.nowTime()
+            };
+          }
+
+          const fresh = Store.conversation(targetId);
+          if (fresh) {
+            fresh.messages.push(aiMsg);
+            fresh.time = stamp();
+            fresh.title = fresh.title || text.slice(0, 18);
+            const plain = String(result.text || '');
+            fresh.summary = plain.slice(0, 26) + (plain.length > 26 ? '…' : '');
+            Store.saveConversation(fresh);
+          }
+          renderConvList();
+
+          if (currentId === targetId) {
+            if (ph.isConnected) {
+              ph.outerHTML = renderMsg(aiMsg, null);
+              Icons.hydrate(chatScroll);
+              scrollBottom();
+            } else {
+              renderChat();
+            }
+          }
+        }
+      });
+    } catch (err) {
+      if (ph.isConnected) ph.remove();
+      UI.toast('回答生成失败，请稍后重试', 'error');
+    } finally {
+      setBusy(false);
+      input.focus();
+      updateCount();
+      autoGrow();
+    }
+  }
+
+  input.addEventListener('input', function () { autoGrow(); updateCount(); });
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      send();
+    }
+  });
+  sendBtn.addEventListener('click', function () { send(); });
+  guardBtn.addEventListener('click', function () { send(GUARD_Q); });
+
+  suggestRow.innerHTML = SUGGESTS.map(function (q) {
+    return '<button class="suggest" type="button" data-q="' + UI.esc(q) + '">' + UI.esc(q) + '</button>';
+  }).join('');
+  Icons.hydrate(suggestRow);
+
+  suggestRow.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-q]');
+    if (btn) send(btn.dataset.q);
+  });
+  chatScroll.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-q]');
+    if (btn) send(btn.dataset.q);
+  });
+
+  document.getElementById('newConvBtn').addEventListener('click', function () {
+    const conv = { id: 'c-' + Date.now(), title: '新的对话', summary: '尚未开始对话', time: stamp(), messages: [] };
+    Store.saveConversation(conv);
+    currentId = conv.id;
+    renderConvList();
+    renderChat();
+    input.focus();
+    UI.toast('已新建对话');
+  });
+
+  /* ---------------- 启动 ---------------- */
+  renderConvList();
+  renderChat();
+  updateCount();
+  autoGrow();
+})();
+</script>
+</body>
+</html>

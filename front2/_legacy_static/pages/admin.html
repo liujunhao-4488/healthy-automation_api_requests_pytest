@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理后台 · 膳衡</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .admin-top { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+  @media (max-width: 1120px) { .admin-top { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 640px) { .admin-top { grid-template-columns: 1fr; } }
+  .admin-chart { width: 100%; height: auto; display: block; }
+  .user-cell { display: flex; align-items: center; gap: 10px; }
+  .user-cell strong { display: block; font-size: 12.5px; color: var(--text); font-weight: 500; }
+  .user-cell span { font-size: 11px; color: var(--text-3); }
+  .table tr.disabled td { opacity: .55; }
+  .status-dot { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; }
+  .status-dot i { width: 6px; height: 6px; border-radius: 50%; background: var(--green-600); }
+  .status-dot.off i { background: var(--text-3); }
+  .admin-tabs-hd { overflow-x: auto; }
+  .admin-tabs-hd .seg { flex: none; }
+  .admin-panel[hidden] { display: none; }
+  .admin-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 16px 24px 0; }
+  .admin-toolbar .search-box { flex: 1 1 220px; min-width: 190px; }
+  .admin-toolbar .search-box .input { width: 100%; height: 36px; }
+  .content-cell { display: flex; align-items: center; gap: 10px; min-width: 220px; }
+  .content-cell .thumb { width: 38px; height: 38px; border-radius: 9px; overflow: hidden; flex: none; background: var(--green-050); display: grid; place-items: center; color: var(--green-700); font-size: 12px; }
+  .content-cell .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .content-cell strong { display: block; font-size: 12.5px; color: var(--text); font-weight: 500; }
+  .content-cell span.sub { display: block; margin-top: 2px; max-width: 320px; font-size: 11px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .table tr.off td { opacity: .55; }
+</style>
+</head>
+<body class="app" data-page="admin">
+
+<header class="mobile-bar">
+  <span class="brand-mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+  </span>
+  <span class="brand-text"><strong>膳衡</strong><small>SHANHENG</small></span>
+  <button class="mobile-menu-btn" aria-label="打开菜单"><i class="ic" data-ic="menu"></i></button>
+</header>
+
+<aside class="app-nav">
+  <a class="brand" href="home.html">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 14-12 14H5c0-9 5-14 12-14h3Z"/><path d="M5 21c1-6 4-9 9-12"/></svg>
+    </span>
+    <span class="brand-text"><strong>膳衡</strong><small>SHANHENG · 健康饮食</small></span>
+  </a>
+
+  <p class="nav-label">我的健康</p>
+  <a class="nav-item" data-nav="home" href="home.html"><i class="ic" data-ic="home"></i><span>首页</span></a>
+  <a class="nav-item" data-nav="health" href="health.html"><i class="ic" data-ic="heart-pulse"></i><span>健康档案</span></a>
+  <a class="nav-item" data-nav="goal" href="goal.html"><i class="ic" data-ic="target"></i><span>饮食目标</span></a>
+  <a class="nav-item" data-nav="record" href="record.html"><i class="ic" data-ic="notebook"></i><span>饮食记录</span></a>
+
+  <p class="nav-label">内容与工具</p>
+  <a class="nav-item" data-nav="recipes" href="recipes.html"><i class="ic" data-ic="book-open"></i><span>食谱库</span></a>
+  <a class="nav-item" data-nav="ingredients" href="ingredients.html"><i class="ic" data-ic="apple"></i><span>食材库</span></a>
+  <a class="nav-item" data-nav="knowledge" href="knowledge.html"><i class="ic" data-ic="news"></i><span>健康知识</span></a>
+  <a class="nav-item" data-nav="assistant" href="assistant.html"><i class="ic" data-ic="sparkles"></i><span>AI 助手</span></a>
+
+  <p class="nav-label">账户</p>
+  <a class="nav-item" data-nav="account" href="account.html"><i class="ic" data-ic="user"></i><span>个人中心</span><span class="nav-badge" id="navNotifBadge" style="display:none">0</span></a>
+  <a class="nav-item nav-admin" data-nav="admin" href="admin.html"><i class="ic" data-ic="settings"></i><span>管理后台</span></a>
+
+  <div class="nav-user">
+    <span class="nav-avatar" id="navAvatar">禾</span>
+    <span class="grow"><span class="nav-user-name" id="navUserName">林嘉禾</span><span class="nav-user-role" id="navUserRole">管理员 · 平台运营</span></span>
+    <button class="nav-logout" id="navLogout" title="退出登录"><i class="ic" data-ic="logout"></i></button>
+  </div>
+</aside>
+<div class="nav-scrim"></div>
+
+<main class="app-content">
+  <div class="page-shell">
+
+    <header class="page-head reveal">
+      <div>
+        <p class="eyebrow">Admin Console · 运营视图</p>
+        <h1 class="page-title">管理后台</h1>
+        <p class="page-sub">数据截至 2026-10-23 14:20 · 全站用户、内容与 AI 调用概览</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" id="exportBtn"><i class="ic" data-ic="file-text"></i>导出报表</button>
+        <button class="btn btn-primary" id="publishBtn"><i class="ic" data-ic="bell"></i>发布通知</button>
+      </div>
+    </header>
+
+    <section class="admin-top reveal d1" id="statCards">
+      <article class="card stat-card"><span class="sk" style="height:10px;width:50%"></span><span class="sk" style="height:26px;width:70%"></span></article>
+      <article class="card stat-card"><span class="sk" style="height:10px;width:50%"></span><span class="sk" style="height:26px;width:70%"></span></article>
+      <article class="card stat-card"><span class="sk" style="height:10px;width:50%"></span><span class="sk" style="height:26px;width:70%"></span></article>
+      <article class="card stat-card"><span class="sk" style="height:10px;width:50%"></span><span class="sk" style="height:26px;width:70%"></span></article>
+    </section>
+
+    <section class="grid split mt-24">
+      <article class="card reveal d2">
+        <div class="card-hd">
+          <h3>近 7 日活跃与记录</h3>
+          <div class="chart-legend">
+            <span><i></i>活跃用户</span>
+            <span><i class="amber"></i>饮食记录</span>
+          </div>
+        </div>
+        <div class="card-bd">
+          <div class="chart-box" id="trendChart"></div>
+          <div class="row-between small muted mt-12">
+            <span>日均活跃 <b class="num" id="avgDau">—</b></span>
+            <span>日均记录 <b class="num" id="avgRecords">—</b></span>
+            <span>AI 调用成功率 <b class="num">98.4%</b></span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="card reveal d3">
+        <div class="card-hd"><h3>最近动态</h3><span class="size small muted">实时</span></div>
+        <div class="card-bd" id="activityList"></div>
+      </aside>
+    </section>
+
+    <section class="grid split-even mt-24">
+      <article class="card reveal d4">
+        <div class="card-hd"><h3>热门食谱 Top 5</h3><a class="link-btn" href="recipes.html">查看全部 <i class="ic" data-ic="chevron-right"></i></a></div>
+        <div class="card-bd" id="topRecipes"></div>
+      </article>
+      <article class="card reveal d5">
+        <div class="card-hd"><h3>热门文章 Top 5</h3><a class="link-btn" href="knowledge.html">查看全部 <i class="ic" data-ic="chevron-right"></i></a></div>
+        <div class="card-bd" id="topArticles"></div>
+      </article>
+    </section>
+
+    <section class="card mt-24 reveal d6">
+      <div class="card-hd admin-tabs-hd">
+        <div class="seg" id="adminTabs">
+          <button type="button" data-tab="users" class="on"><i class="ic" data-ic="users"></i>用户管理</button>
+          <button type="button" data-tab="recipe"><i class="ic" data-ic="book-open"></i>食谱管理</button>
+          <button type="button" data-tab="article"><i class="ic" data-ic="news"></i>文章管理</button>
+          <button type="button" data-tab="ingredient"><i class="ic" data-ic="apple"></i>食材管理</button>
+        </div>
+        <span class="size small muted">演示数据</span>
+      </div>
+
+      <!-- 用户 -->
+      <div class="admin-panel" data-panel="users">
+        <div class="admin-toolbar">
+          <div class="search-box">
+            <i class="ic" data-ic="search"></i>
+            <input class="input" id="userSearch" placeholder="搜索用户名或邮箱">
+          </div>
+          <select class="select" id="goalFilter" style="width:120px;height:36px">
+            <option value="">全部目标</option>
+            <option>减脂</option>
+            <option>增肌</option>
+            <option>控糖</option>
+            <option>维持</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>用户</th><th>目标</th><th>记录数</th><th>注册时间</th><th>状态</th><th style="text-align:right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="userTable"></tbody>
+          </table>
+        </div>
+        <div class="card-ft row-between">
+          <span class="small muted" id="userCountTip">共 10 位用户</span>
+          <div class="row">
+            <button class="btn btn-outline btn-sm" id="prevUser">上一页</button>
+            <span class="small muted">第 1 / 1 页</span>
+            <button class="btn btn-outline btn-sm" id="nextUser" disabled>下一页</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 食谱 -->
+      <div class="admin-panel" data-panel="recipe" hidden>
+        <div class="admin-toolbar">
+          <div class="search-box">
+            <i class="ic" data-ic="search"></i>
+            <input class="input" id="recipeSearch" placeholder="搜索食谱名称">
+          </div>
+          <select class="select" id="recipeMealFilter" style="width:120px;height:36px">
+            <option value="">全部餐次</option>
+            <option>早餐</option><option>午餐</option><option>晚餐</option><option>加餐</option>
+          </select>
+          <select class="select" id="recipeStatusFilter" style="width:112px;height:36px">
+            <option value="">全部状态</option>
+            <option value="on">已上架</option>
+            <option value="off">已下架</option>
+          </select>
+          <button class="btn btn-primary btn-sm" id="recipeAddBtn"><i class="ic" data-ic="plus"></i>新建食谱</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>食谱</th><th>餐次</th><th>热量</th><th>适宜目标</th><th>浏览</th><th>状态</th><th style="text-align:right">操作</th></tr>
+            </thead>
+            <tbody id="recipeTable"></tbody>
+          </table>
+        </div>
+        <div class="card-ft row-between">
+          <span class="small muted" id="recipeCountTip">—</span>
+          <div class="row" id="recipePager"></div>
+        </div>
+      </div>
+
+      <!-- 文章 -->
+      <div class="admin-panel" data-panel="article" hidden>
+        <div class="admin-toolbar">
+          <div class="search-box">
+            <i class="ic" data-ic="search"></i>
+            <input class="input" id="articleSearch" placeholder="搜索文章标题">
+          </div>
+          <select class="select" id="articleCatFilter" style="width:130px;height:36px">
+            <option value="">全部分类</option>
+            <option>减肥指南</option><option>饮食指南</option><option>营养知识</option><option>食品安全</option>
+          </select>
+          <select class="select" id="articleStatusFilter" style="width:112px;height:36px">
+            <option value="">全部状态</option>
+            <option value="on">已发布</option>
+            <option value="off">已下架</option>
+          </select>
+          <button class="btn btn-primary btn-sm" id="articleAddBtn"><i class="ic" data-ic="plus"></i>新建文章</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>文章</th><th>分类</th><th>作者</th><th>浏览</th><th>状态</th><th style="text-align:right">操作</th></tr>
+            </thead>
+            <tbody id="articleTable"></tbody>
+          </table>
+        </div>
+        <div class="card-ft row-between">
+          <span class="small muted" id="articleCountTip">—</span>
+          <div class="row" id="articlePager"></div>
+        </div>
+      </div>
+
+      <!-- 食材 -->
+      <div class="admin-panel" data-panel="ingredient" hidden>
+        <div class="admin-toolbar">
+          <div class="search-box">
+            <i class="ic" data-ic="search"></i>
+            <input class="input" id="ingredientSearch" placeholder="搜索食材名称">
+          </div>
+          <select class="select" id="ingredientCatFilter" style="width:130px;height:36px">
+            <option value="">全部分类</option>
+            <option>肉类</option><option>蛋类</option><option>豆制品</option><option>主食</option>
+            <option>蔬菜</option><option>水果</option><option>乳制品</option><option>坚果</option>
+          </select>
+          <select class="select" id="ingredientStatusFilter" style="width:112px;height:36px">
+            <option value="">全部状态</option>
+            <option value="on">已上架</option>
+            <option value="off">已下架</option>
+          </select>
+          <button class="btn btn-primary btn-sm" id="ingredientAddBtn"><i class="ic" data-ic="plus"></i>新建食材</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>食材</th><th>分类</th><th>热量</th><th>蛋白</th><th>碳水</th><th>脂肪</th><th>状态</th><th style="text-align:right">操作</th></tr>
+            </thead>
+            <tbody id="ingredientTable"></tbody>
+          </table>
+        </div>
+        <div class="card-ft row-between">
+          <span class="small muted" id="ingredientCountTip">—</span>
+          <div class="row" id="ingredientPager"></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="small muted mt-32" style="text-align:center">
+      后台数据为演示用假数据；真实实现需接入管理端鉴权、审计日志与内容审核流。
+    </p>
+  </div>
+</main>
+
+<!-- 发布通知 -->
+<div class="overlay" id="publishModal">
+  <div class="modal">
+    <div class="modal-hd">
+      <div><h3>发布通知</h3><p>面向全站或指定用户推送，发布后立即生效。</p></div>
+      <button class="modal-close" data-close-modal><i class="ic" data-ic="x"></i></button>
+    </div>
+    <div class="modal-bd">
+      <label class="field mb-16">
+        <span class="field-label">通知类型</span>
+        <select class="select" id="notifType">
+          <option>系统</option>
+          <option>目标达成</option>
+          <option>饮食提醒</option>
+          <option>文章推荐</option>
+          <option>警告</option>
+        </select>
+      </label>
+      <label class="field mb-16">
+        <span class="field-label">标题</span>
+        <input class="input" id="notifTitle" placeholder="例如：本周目标完成度 86%">
+      </label>
+      <label class="field mb-16">
+        <span class="field-label">内容</span>
+        <textarea class="textarea" id="notifContent" placeholder="写清楚要提醒用户什么，以及下一步动作。"></textarea>
+      </label>
+      <p class="field-label">发送范围</p>
+      <div class="row wrap" style="gap:16px">
+        <label class="switch"><input type="radio" name="scope" value="all" checked style="position:static;opacity:1;width:auto;height:auto"><span class="switch-text">全部启用用户</span></label>
+        <label class="switch"><input type="radio" name="scope" value="one" style="position:static;opacity:1;width:auto;height:auto"><span class="switch-text">指定用户</span></label>
+      </div>
+      <label class="field mt-12">
+        <span class="field-label">指定用户 ID（选择「指定用户」时填写）</span>
+        <input class="input" id="notifUser" placeholder="例如：1024" disabled>
+      </label>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="confirmPublish">确认发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- 内容编辑（食谱 / 文章 / 食材共用） -->
+<div class="overlay" id="contentModal">
+  <div class="modal">
+    <div class="modal-hd">
+      <div><h3 id="contentModalTitle">新建内容</h3><p id="contentModalSub">保存后立即同步到前台内容库。</p></div>
+      <button class="modal-close" data-close-modal><i class="ic" data-ic="x"></i></button>
+    </div>
+    <div class="modal-bd">
+      <!-- 食谱 -->
+      <div data-fields="recipe" hidden>
+        <label class="field mb-16">
+          <span class="field-label">食谱名称</span>
+          <input class="input" id="crName" placeholder="例如：香煎鸡胸藜麦碗">
+        </label>
+        <div class="grid g2 mb-16" style="gap:14px">
+          <label class="field">
+            <span class="field-label">餐次</span>
+            <select class="select" id="crMeal"><option>早餐</option><option>午餐</option><option>晚餐</option><option>加餐</option></select>
+          </label>
+          <label class="field">
+            <span class="field-label">菜系</span>
+            <input class="input" id="crCuisine" placeholder="轻食 / 中式 / 西式">
+          </label>
+          <label class="field">
+            <span class="field-label">烹饪时长（分钟）</span>
+            <input class="input" id="crTime" type="number" min="1" placeholder="25">
+          </label>
+          <label class="field">
+            <span class="field-label">总热量（kcal）</span>
+            <input class="input" id="crKcal" type="number" min="0" placeholder="520">
+          </label>
+          <label class="field">
+            <span class="field-label">蛋白质（g）</span>
+            <input class="input" id="crP" type="number" min="0" placeholder="42">
+          </label>
+          <label class="field">
+            <span class="field-label">碳水（g）</span>
+            <input class="input" id="crC" type="number" min="0" placeholder="48">
+          </label>
+          <label class="field">
+            <span class="field-label">脂肪（g）</span>
+            <input class="input" id="crF" type="number" min="0" placeholder="16">
+          </label>
+          <label class="field">
+            <span class="field-label">状态</span>
+            <select class="select" id="crStatus"><option value="1">上架</option><option value="0">下架</option></select>
+          </label>
+        </div>
+        <label class="field mb-16">
+          <span class="field-label">简介</span>
+          <textarea class="textarea" id="crDesc" placeholder="一句话说明这道菜适合谁、解决什么问题。"></textarea>
+        </label>
+        <p class="field-label mb-8">适宜目标</p>
+        <div class="row wrap" style="gap:8px" id="crFit">
+          <button type="button" class="chip on" data-fit="减脂">减脂</button>
+          <button type="button" class="chip" data-fit="增肌">增肌</button>
+          <button type="button" class="chip" data-fit="控糖">控糖</button>
+          <button type="button" class="chip" data-fit="维持">维持</button>
+        </div>
+      </div>
+
+      <!-- 文章 -->
+      <div data-fields="article" hidden>
+        <label class="field mb-16">
+          <span class="field-label">文章标题</span>
+          <input class="input" id="caTitle" placeholder="例如：减脂期怎么选主食">
+        </label>
+        <div class="grid g2 mb-16" style="gap:14px">
+          <label class="field">
+            <span class="field-label">分类</span>
+            <select class="select" id="caCat">
+              <option>减肥指南</option><option>饮食指南</option><option>营养知识</option><option>食品安全</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">作者</span>
+            <input class="input" id="caAuthor" placeholder="平台编辑部">
+          </label>
+          <label class="field">
+            <span class="field-label">标签（逗号分隔）</span>
+            <input class="input" id="caTags" placeholder="低GI, 主食, 减脂">
+          </label>
+          <label class="field">
+            <span class="field-label">状态</span>
+            <select class="select" id="caStatus"><option value="1">发布</option><option value="0">下架</option></select>
+          </label>
+        </div>
+        <label class="field">
+          <span class="field-label">摘要</span>
+          <textarea class="textarea" id="caSummary" placeholder="用一两句话概括文章解决的问题。"></textarea>
+        </label>
+      </div>
+
+      <!-- 食材 -->
+      <div data-fields="ingredient" hidden>
+        <label class="field mb-16">
+          <span class="field-label">食材名称</span>
+          <input class="input" id="ciName" placeholder="例如：芦笋">
+        </label>
+        <div class="grid g2 mb-16" style="gap:14px">
+          <label class="field">
+            <span class="field-label">分类</span>
+            <select class="select" id="ciCat">
+              <option>肉类</option><option>蛋类</option><option>豆制品</option><option>主食</option>
+              <option>蔬菜</option><option>水果</option><option>乳制品</option><option>坚果</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">热量（kcal / 100g）</span>
+            <input class="input" id="ciKcal" type="number" min="0" placeholder="20">
+          </label>
+          <label class="field">
+            <span class="field-label">蛋白质（g）</span>
+            <input class="input" id="ciP" type="number" min="0" placeholder="2.2">
+          </label>
+          <label class="field">
+            <span class="field-label">碳水（g）</span>
+            <input class="input" id="ciC" type="number" min="0" placeholder="3.9">
+          </label>
+          <label class="field">
+            <span class="field-label">脂肪（g）</span>
+            <input class="input" id="ciF" type="number" min="0" placeholder="0.1">
+          </label>
+          <label class="field">
+            <span class="field-label">膳食纤维（g）</span>
+            <input class="input" id="ciFiber" type="number" min="0" placeholder="2.1">
+          </label>
+          <label class="field">
+            <span class="field-label">状态</span>
+            <select class="select" id="ciStatus"><option value="1">上架</option><option value="0">下架</option></select>
+          </label>
+        </div>
+        <label class="field">
+          <span class="field-label">简介</span>
+          <textarea class="textarea" id="ciDesc" placeholder="说明营养特点与适用人群。"></textarea>
+        </label>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="contentSaveBtn">保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/icons.js"></script>
+<script src="../js/mock.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function () {
+  const UI = window.UI, API = window.API, DB = window.DB;
+
+  /* ---------- 概览 ---------- */
+  API.admin.overview().then(function (res) {
+    if (res.code !== 200) { UI.toast(res.message, 'error'); return; }
+    const d = res.data, s = d.stats;
+
+    document.getElementById('statCards').innerHTML =
+      card('累计用户', UI.num(s.users), '+3.2% 较上周', 'users', false) +
+      card('今日活跃', UI.num(s.dau), '+6.8% 较昨日', 'activity', false) +
+      card('今日记录', UI.num(s.records), '覆盖率 71%', 'notebook', false) +
+      card('内容总量', UI.num(s.recipes + s.articles + s.ingredients), s.recipes + ' 食谱 · ' + s.articles + ' 文章 · ' + s.ingredients + ' 食材', 'book-open', false);
+    Icons.hydrate(document.getElementById('statCards'));
+
+    // 趋势图
+    const data = d.trend;
+    const W = 760, H = 260, P = { l: 34, r: 18, t: 20, b: 34 };
+    const iw = W - P.l - P.r, ih = H - P.t - P.b;
+    const maxU = Math.max.apply(null, data.map(x => x.users)) * 1.25;
+    const maxR = Math.max.apply(null, data.map(x => x.records)) * 1.25;
+    const x = i => P.l + (iw / (data.length - 1)) * i;
+    const yU = v => P.t + ih - (v / maxU) * ih;
+    const yR = v => P.t + ih - (v / maxR) * ih;
+    const line = (key, fn) => data.map((d, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + fn(d[key]).toFixed(1)).join(' ');
+    const area = data.map((d, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + yU(d.users).toFixed(1)).join(' ') +
+      ' L' + x(data.length - 1) + ' ' + (P.t + ih) + ' L' + P.l + ' ' + (P.t + ih) + ' Z';
+
+    let grid = '';
+    for (let i = 0; i <= 4; i++) {
+      const y = P.t + (ih / 4) * i;
+      grid += '<line x1="' + P.l + '" y1="' + y + '" x2="' + (W - P.r) + '" y2="' + y + '" stroke="#eceae1" stroke-width="1"/>';
+      grid += '<text x="' + (P.l - 8) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="#9aa39a">' + Math.round(maxU * (1 - i / 4)) + '</text>';
+    }
+    const dotsU = data.map((d, i) => '<circle cx="' + x(i) + '" cy="' + yU(d.users) + '" r="3.5" fill="#1e6b52" stroke="#fff" stroke-width="2"/>').join('');
+    const dotsR = data.map((d, i) => '<circle cx="' + x(i) + '" cy="' + yR(d.records) + '" r="3.5" fill="#cf7c2e" stroke="#fff" stroke-width="2"/>').join('');
+    const labels = data.map((d, i) => '<text x="' + x(i) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="10" fill="#9aa39a">' + d.date + '</text>').join('');
+
+    document.getElementById('trendChart').innerHTML =
+      '<svg class="admin-chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="近 7 日活跃用户与饮食记录趋势">' +
+        '<defs><linearGradient id="gUsers" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0%" stop-color="#1e6b52" stop-opacity=".18"/><stop offset="100%" stop-color="#1e6b52" stop-opacity="0"/>' +
+        '</linearGradient></defs>' +
+        grid +
+        '<path d="' + area + '" fill="url(#gUsers)"/>' +
+        '<path d="' + line('users', yU) + '" fill="none" stroke="#1e6b52" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<path d="' + line('records', yR) + '" fill="none" stroke="#cf7c2e" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round"/>' +
+        dotsU + dotsR + labels +
+      '</svg>';
+
+    document.getElementById('avgDau').textContent = UI.num(Math.round(data.reduce((a, b) => a + b.users, 0) / data.length));
+    document.getElementById('avgRecords').textContent = UI.num(Math.round(data.reduce((a, b) => a + b.records, 0) / data.length));
+
+    // 动态
+    document.getElementById('activityList').innerHTML = d.activities.map(function (a) {
+      return '<div class="activity-row"><span class="dot ' + (a.type === 'amber' ? 'amber' : (a.type === 'gray' ? 'gray' : '')) + '"></span>' +
+        '<span class="grow">' + UI.esc(a.text) + '</span><time>' + a.time + '</time></div>';
+    }).join('');
+
+    // 榜单
+    document.getElementById('topRecipes').innerHTML = d.topRecipes.map(function (r, i) {
+      return '<div class="rank-row"><span class="rank">' + (i + 1) + '</span>' +
+        '<span class="rank-name">' + UI.esc(r.name) + '</span>' +
+        '<span class="rank-val">' + UI.num(r.views) + ' 浏览</span></div>';
+    }).join('');
+    document.getElementById('topArticles').innerHTML = d.topArticles.map(function (a, i) {
+      return '<div class="rank-row"><span class="rank">' + (i + 1) + '</span>' +
+        '<span class="rank-name">' + UI.esc(a.title) + '</span>' +
+        '<span class="rank-val">' + UI.num(a.views) + ' 阅读</span></div>';
+    }).join('');
+  });
+
+  function card(label, value, delta, icon, down) {
+    return '<article class="card stat-card">' +
+      '<div class="row-between"><span class="label">' + label + '</span><span class="q-ico" style="width:30px;height:30px;border-radius:9px;background:var(--green-050);color:var(--green-700);display:grid;place-items:center"><i class="ic" data-ic="' + icon + '"></i></span></div>' +
+      '<div class="value">' + value + '</div>' +
+      '<div class="delta' + (down ? ' down' : '') + '"><i class="ic" data-ic="' + (down ? 'trend-down' : 'trend-up') + '"></i>' + delta + '</div>' +
+    '</article>';
+  }
+
+  /* ---------- 用户管理 ---------- */
+  let users = [];
+  let goalFilter = '';
+
+  async function loadUsers(keyword) {
+    const res = await API.admin.users({ keyword: keyword || '' });
+    if (res.code !== 200) return;
+    users = res.data.list.filter(u => !goalFilter || u.goal === goalFilter);
+    renderUsers();
+  }
+
+  function renderUsers() {
+    const body = document.getElementById('userTable');
+    if (!users.length) {
+      body.innerHTML = '<tr><td colspan="6">' + UI.empty('没有匹配的用户', '换个关键词或筛选条件试试。', 'users') + '</td></tr>';
+      Icons.hydrate(body);
+      return;
+    }
+    body.innerHTML = users.map(function (u) {
+      return '<tr class="' + (u.status ? '' : 'disabled') + '">' +
+        '<td><div class="user-cell"><span class="avatar sm">' + u.name[0] + '</span>' +
+          '<div><strong>' + UI.esc(u.name) + '</strong><span>' + u.email + '</span></div></div></td>' +
+        '<td><span class="tag">' + u.goal + '</span></td>' +
+        '<td class="num">' + u.records + '</td>' +
+        '<td class="num">' + u.joined + '</td>' +
+        '<td><span class="status-dot ' + (u.status ? '' : 'off') + '"><i></i>' + (u.status ? '正常' : '已禁用') + '</span></td>' +
+        '<td style="text-align:right"><button class="btn btn-sm ' + (u.status ? 'btn-danger' : 'btn-soft') + '" data-toggle="' + u.id + '">' +
+          (u.status ? '禁用' : '启用') + '</button></td>' +
+      '</tr>';
+    }).join('');
+    document.getElementById('userCountTip').textContent = '共 ' + users.length + ' 位用户';
+
+    body.querySelectorAll('[data-toggle]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        const u = users.find(x => x.id === +b.dataset.toggle);
+        UI.confirm('确定要' + (u.status ? '禁用' : '启用') + '用户「' + u.name + '」吗？', async function () {
+          const res = await API.admin.toggleUser(u.id, u.status ? 0 : 1);
+          UI.toast(res.message);
+          loadUsers(document.getElementById('userSearch').value.trim());
+        }, { title: u.status ? '禁用用户' : '启用用户', okText: '确定', danger: !!u.status });
+      });
+    });
+  }
+  loadUsers();
+
+  let searchTimer;
+  document.getElementById('userSearch').addEventListener('input', function () {
+    clearTimeout(searchTimer);
+    const v = this.value.trim();
+    searchTimer = setTimeout(function () { loadUsers(v); }, 300);
+  });
+  document.getElementById('goalFilter').addEventListener('change', function () {
+    goalFilter = this.value;
+    loadUsers(document.getElementById('userSearch').value.trim());
+  });
+  document.getElementById('prevUser').addEventListener('click', function () { UI.toast('已经是第一页'); });
+  document.getElementById('nextUser').addEventListener('click', function () { UI.toast('已经是最后一页'); });
+
+  /* ---------- 内容管理：食谱 / 文章 / 食材 ---------- */
+  const CONTENT = {
+    recipe: {
+      search: 'recipeSearch', cat: 'recipeMealFilter', status: 'recipeStatusFilter',
+      addBtn: 'recipeAddBtn', table: 'recipeTable', count: 'recipeCountTip', pager: 'recipePager',
+      empty: ['还没有食谱', '点击「新建食谱」创建第一条内容。', 'book-open']
+    },
+    article: {
+      search: 'articleSearch', cat: 'articleCatFilter', status: 'articleStatusFilter',
+      addBtn: 'articleAddBtn', table: 'articleTable', count: 'articleCountTip', pager: 'articlePager',
+      empty: ['还没有文章', '点击「新建文章」发布第一篇内容。', 'news']
+    },
+    ingredient: {
+      search: 'ingredientSearch', cat: 'ingredientCatFilter', status: 'ingredientStatusFilter',
+      addBtn: 'ingredientAddBtn', table: 'ingredientTable', count: 'ingredientCountTip', pager: 'ingredientPager',
+      empty: ['还没有食材', '点击「新建食材」补充营养库。', 'apple']
+    }
+  };
+  const PAGE_SIZE = 8;
+  const contentState = {};
+  Object.keys(CONTENT).forEach(function (type) {
+    contentState[type] = { list: [], page: 1, loaded: false };
+  });
+
+  /* Tab 切换（内容面板按需加载） */
+  UI.$$('#adminTabs button').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      UI.$$('#adminTabs button').forEach(x => x.classList.remove('on'));
+      tab.classList.add('on');
+      const key = tab.dataset.tab;
+      UI.$$('.admin-panel').forEach(function (p) { p.hidden = p.dataset.panel !== key; });
+      if (key !== 'users' && !contentState[key].loaded) loadContent(key);
+    });
+  });
+
+  function statusCell(on, onText, offText) {
+    return '<span class="status-dot ' + (on ? '' : 'off') + '"><i></i>' + (on ? onText : offText) + '</span>';
+  }
+
+  function contentRow(type, x) {
+    const on = x.status !== 0;
+    const ops = '<td style="text-align:right"><div class="row" style="justify-content:flex-end;gap:6px">' +
+      '<button class="btn btn-outline btn-sm" data-edit="' + x.id + '">编辑</button>' +
+      '<button class="btn btn-sm ' + (on ? 'btn-soft' : 'btn-danger') + '" data-toggle="' + x.id + '">' + (on ? '下架' : '上架') + '</button>' +
+      '</div></td>';
+
+    if (type === 'recipe') {
+      return '<tr class="' + (on ? '' : 'off') + '">' +
+        '<td><div class="content-cell"><span class="thumb"><img src="' + x.img + '" alt=""></span>' +
+          '<div><strong>' + UI.esc(x.name) + '</strong><span class="sub">' + UI.esc(x.desc) + '</span></div></div></td>' +
+        '<td><span class="tag">' + x.mealType + '</span></td>' +
+        '<td class="num">' + UI.num(x.kcal) + '</td>' +
+        '<td><div class="row wrap" style="gap:4px">' + (x.fit || []).map(f => '<span class="tag">' + f + '</span>').join('') + '</div></td>' +
+        '<td class="num">' + UI.num(x.views || 0) + '</td>' +
+        '<td>' + statusCell(on, '已上架', '已下架') + '</td>' + ops + '</tr>';
+    }
+    if (type === 'article') {
+      return '<tr class="' + (on ? '' : 'off') + '">' +
+        '<td><div class="content-cell"><span class="thumb"><img src="' + x.cover + '" alt=""></span>' +
+          '<div><strong>' + UI.esc(x.title) + '</strong><span class="sub">' + UI.esc(x.summary) + '</span></div></div></td>' +
+        '<td><span class="tag">' + x.cat + '</span></td>' +
+        '<td>' + UI.esc(x.author) + '</td>' +
+        '<td class="num">' + UI.num(x.views || 0) + '</td>' +
+        '<td>' + statusCell(on, '已发布', '已下架') + '</td>' + ops + '</tr>';
+    }
+    return '<tr class="' + (on ? '' : 'off') + '">' +
+      '<td><div class="content-cell"><span class="thumb">' + UI.esc(x.name.charAt(0)) + '</span>' +
+        '<div><strong>' + UI.esc(x.name) + '</strong><span class="sub">' + UI.esc(x.desc || '') + '</span></div></div></td>' +
+      '<td><span class="tag">' + x.cat + '</span></td>' +
+      '<td class="num">' + UI.num(x.kcal) + '</td>' +
+      '<td class="num">' + x.p + 'g</td>' +
+      '<td class="num">' + x.c + 'g</td>' +
+      '<td class="num">' + x.f + 'g</td>' +
+      '<td>' + statusCell(on, '已上架', '已下架') + '</td>' + ops + '</tr>';
+  }
+
+  function renderPager(type, pages) {
+    const st = contentState[type], cfg = CONTENT[type];
+    const pager = document.getElementById(cfg.pager);
+    pager.innerHTML =
+      '<button class="btn btn-outline btn-sm" data-page="prev"' + (st.page <= 1 ? ' disabled' : '') + '>上一页</button>' +
+      '<span class="small muted">第 ' + st.page + ' / ' + pages + ' 页</span>' +
+      '<button class="btn btn-outline btn-sm" data-page="next"' + (st.page >= pages ? ' disabled' : '') + '>下一页</button>';
+    pager.querySelectorAll('[data-page]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        st.page += b.dataset.page === 'next' ? 1 : -1;
+        renderContent(type);
+      });
+    });
+  }
+
+  function renderContent(type) {
+    const cfg = CONTENT[type], st = contentState[type];
+    const body = document.getElementById(cfg.table);
+    const pages = Math.max(1, Math.ceil(st.list.length / PAGE_SIZE));
+    if (st.page > pages) st.page = pages;
+    const rows = st.list.slice((st.page - 1) * PAGE_SIZE, st.page * PAGE_SIZE);
+    const cols = type === 'recipe' ? 7 : (type === 'article' ? 6 : 8);
+
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="' + cols + '">' + UI.empty(cfg.empty[0], cfg.empty[1], cfg.empty[2]) + '</td></tr>';
+    } else {
+      body.innerHTML = rows.map(function (x) { return contentRow(type, x); }).join('');
+    }
+    document.getElementById(cfg.count).textContent = '共 ' + st.list.length + ' 条 · 每页 ' + PAGE_SIZE + ' 条';
+    renderPager(type, pages);
+    Icons.hydrate(body);
+
+    body.querySelectorAll('[data-edit]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        const item = st.list.find(x => x.id === +b.dataset.edit);
+        openContentModal(type, item);
+      });
+    });
+    body.querySelectorAll('[data-toggle]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        const item = st.list.find(x => x.id === +b.dataset.toggle);
+        const on = item.status !== 0;
+        UI.confirm('确定要' + (on ? '下架' : '上架') + '「' + (item.name || item.title) + '」吗？' + (on ? '下架后前台将不再展示。' : ''), async function () {
+          const res = await API.admin.contentToggle(type, item.id, on ? 0 : 1);
+          UI.toast(res.message);
+          loadContent(type);
+        }, { title: on ? '下架内容' : '上架内容', okText: '确定', danger: on });
+      });
+    });
+  }
+
+  async function loadContent(type) {
+    const cfg = CONTENT[type], st = contentState[type];
+    const res = await API.admin.contentList(type, {
+      keyword: document.getElementById(cfg.search).value.trim(),
+      cat: document.getElementById(cfg.cat).value,
+      status: document.getElementById(cfg.status).value
+    });
+    if (res.code !== 200) { UI.toast(res.message, 'error'); return; }
+    st.list = res.data.list;
+    st.loaded = true;
+    st.page = 1;
+    renderContent(type);
+  }
+
+  Object.keys(CONTENT).forEach(function (type) {
+    const cfg = CONTENT[type];
+    let timer;
+    document.getElementById(cfg.search).addEventListener('input', function () {
+      clearTimeout(timer);
+      timer = setTimeout(function () { loadContent(type); }, 300);
+    });
+    document.getElementById(cfg.cat).addEventListener('change', function () { loadContent(type); });
+    document.getElementById(cfg.status).addEventListener('change', function () { loadContent(type); });
+    document.getElementById(cfg.addBtn).addEventListener('click', function () { openContentModal(type, null); });
+  });
+
+  /* 内容编辑弹窗 */
+  let editing = { type: 'recipe', id: 0 };
+
+  function setVal(id, v) {
+    document.getElementById(id).value = v == null ? '' : v;
+  }
+
+  function openContentModal(type, item) {
+    editing = { type: type, id: item ? item.id : 0 };
+    const label = { recipe: '食谱', article: '文章', ingredient: '食材' }[type];
+    document.getElementById('contentModalTitle').textContent = (item ? '编辑' : '新建') + label;
+    document.getElementById('contentModalSub').textContent = item
+      ? '修改后保存，前台内容会同步更新。'
+      : '保存后立即同步到前台内容库。';
+    UI.$$('#contentModal [data-fields]').forEach(function (box) {
+      box.hidden = box.dataset.fields !== type;
+    });
+
+    if (type === 'recipe') {
+      setVal('crName', item && item.name);
+      setVal('crMeal', (item && item.mealType) || '午餐');
+      setVal('crCuisine', (item && item.cuisine) || '轻食');
+      setVal('crTime', item && item.time);
+      setVal('crKcal', item && item.kcal);
+      setVal('crP', item && item.p);
+      setVal('crC', item && item.c);
+      setVal('crF', item && item.f);
+      setVal('crDesc', item && item.desc);
+      setVal('crStatus', String(item ? (item.status === 0 ? 0 : 1) : 1));
+      const fit = (item && item.fit) || ['减脂'];
+      UI.$$('#crFit .chip').forEach(function (c) {
+        c.classList.toggle('on', fit.indexOf(c.dataset.fit) > -1);
+      });
+    } else if (type === 'article') {
+      setVal('caTitle', item && item.title);
+      setVal('caCat', (item && item.cat) || '减肥指南');
+      setVal('caAuthor', (item && item.author) || '平台编辑部');
+      setVal('caTags', item && (item.tags || []).join(', '));
+      setVal('caStatus', String(item ? (item.status === 0 ? 0 : 1) : 1));
+      setVal('caSummary', item && item.summary);
+    } else {
+      setVal('ciName', item && item.name);
+      setVal('ciCat', (item && item.cat) || '蔬菜');
+      setVal('ciKcal', item && item.kcal);
+      setVal('ciP', item && item.p);
+      setVal('ciC', item && item.c);
+      setVal('ciF', item && item.f);
+      setVal('ciFiber', item && item.fiber);
+      setVal('ciStatus', String(item ? (item.status === 0 ? 0 : 1) : 1));
+      setVal('ciDesc', item && item.desc);
+    }
+    Icons.hydrate(document.getElementById('contentModal'));
+    UI.openModal('contentModal');
+  }
+
+  UI.$$('#crFit .chip').forEach(function (c) {
+    c.addEventListener('click', function () { c.classList.toggle('on'); });
+  });
+
+  document.getElementById('contentSaveBtn').addEventListener('click', async function () {
+    const btn = this;
+    const type = editing.type;
+    const num = function (id) { return Number(document.getElementById(id).value) || 0; };
+    const payload = {};
+    if (editing.id) payload.id = editing.id;
+
+    if (type === 'recipe') {
+      const name = document.getElementById('crName').value.trim();
+      if (!name) { UI.toast('请填写食谱名称', 'error'); return; }
+      const fit = UI.$$('#crFit .chip.on').map(c => c.dataset.fit);
+      if (!fit.length) { UI.toast('请至少选择一个适宜目标', 'error'); return; }
+      Object.assign(payload, {
+        name: name,
+        mealType: document.getElementById('crMeal').value,
+        cuisine: document.getElementById('crCuisine').value.trim() || '家常',
+        time: num('crTime'), kcal: num('crKcal'), p: num('crP'), c: num('crC'), f: num('crF'),
+        desc: document.getElementById('crDesc').value.trim(),
+        fit: fit,
+        status: +document.getElementById('crStatus').value
+      });
+      if (!editing.id) {
+        Object.assign(payload, {
+          level: '简单', servings: 1, fiber: 0, rating: 0, views: 0, collects: 0,
+          img: '../assets/recipe-chicken.jpg',
+          ingredients: [{ name: '待完善', amount: '100', unit: 'g' }],
+          steps: ['步骤待完善，可在后续版本补充。'], tips: ''
+        });
+      }
+    } else if (type === 'article') {
+      const title = document.getElementById('caTitle').value.trim();
+      if (!title) { UI.toast('请填写文章标题', 'error'); return; }
+      const tags = document.getElementById('caTags').value.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+      Object.assign(payload, {
+        title: title,
+        cat: document.getElementById('caCat').value,
+        author: document.getElementById('caAuthor').value.trim() || '平台编辑部',
+        tags: tags,
+        summary: document.getElementById('caSummary').value.trim() || '内容整理中。',
+        status: +document.getElementById('caStatus').value
+      });
+      if (!editing.id) {
+        const d = new Date();
+        Object.assign(payload, {
+          date: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'),
+          cover: '../assets/article-vegetables.jpg',
+          views: 0, likes: 0, collects: 0, comments: 0,
+          body: [{ t: 'p', text: payload.summary }]
+        });
+      }
+    } else {
+      const name = document.getElementById('ciName').value.trim();
+      if (!name) { UI.toast('请填写食材名称', 'error'); return; }
+      Object.assign(payload, {
+        name: name,
+        cat: document.getElementById('ciCat').value,
+        kcal: num('ciKcal'), p: num('ciP'), c: num('ciC'), f: num('ciF'), fiber: num('ciFiber'),
+        desc: document.getElementById('ciDesc').value.trim(),
+        status: +document.getElementById('ciStatus').value
+      });
+      if (!editing.id) {
+        Object.assign(payload, { sugar: 0, sodium: 0, gi: 0, chol: 0, tags: [] });
+      }
+    }
+
+    UI.loading(btn, true, '保存中');
+    const res = await API.admin.contentSave(type, payload);
+    UI.loading(btn, false);
+    if (res.code !== 200) { UI.toast(res.message, 'error'); return; }
+    UI.closeModal('contentModal');
+    UI.toast(res.message);
+    loadContent(type);
+  });
+
+  /* ---------- 发布通知 ---------- */
+  document.getElementById('publishBtn').addEventListener('click', function () {
+    UI.openModal('publishModal');
+  });
+  document.querySelectorAll('input[name="scope"]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      document.getElementById('notifUser').disabled = r.value !== 'one';
+    });
+  });
+  document.getElementById('confirmPublish').addEventListener('click', async function () {
+    const btn = this;
+    const type = document.getElementById('notifType').value;
+    const title = document.getElementById('notifTitle').value.trim();
+    const content = document.getElementById('notifContent').value.trim();
+    const scope = document.querySelector('input[name="scope"]:checked').value;
+    const userId = document.getElementById('notifUser').value.trim();
+    if (!title || !content) { UI.toast('标题与内容不能为空', 'error'); return; }
+    if (scope === 'one' && !userId) { UI.toast('请填写指定用户 ID', 'error'); return; }
+    UI.loading(btn, true, '发布中');
+    const res = await API.notifications.publish({ type, title, content, userId, all: scope === 'all' });
+    UI.loading(btn, false);
+    if (res.code !== 200) { UI.toast(res.message, 'error'); return; }
+    DB.notifications.unshift({ id: Date.now(), type, title, content, time: Store.now(), read: false, link: '' });
+    UI.closeModal('publishModal');
+    UI.toast(res.message);
+    document.getElementById('notifTitle').value = '';
+    document.getElementById('notifContent').value = '';
+    document.getElementById('notifUser').value = '';
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', function () {
+    UI.toast('报表已生成（演示环境不产生文件）');
+  });
+
+  Icons.hydrate();
+})();
+</script>
+</body>
+</html>
