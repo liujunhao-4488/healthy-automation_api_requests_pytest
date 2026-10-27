@@ -11,13 +11,13 @@
 #    只跑 contract（纯离线断言层自测）不需要服务，但那不是主链路。
 #
 #  分层策略（标记由 conftest.py 自动挂，这里只管选）：
-#    pull_request   → smoke  （117 条，不调模型，目标 1 分钟内）
-#    push master    → p0     （148 条，阻断级，仍不调模型）
-#    schedule       → regression（345 条；没配模型密钥时自动排除 p1）
+#    pull_request   → smoke  （118 条，不调模型，目标 1 分钟内）
+#    push main      → p0     （149 条，阻断级，仍不调模型）
+#    schedule       → regression（346 条；没配模型密钥时自动排除 p1）
 #    手动触发        → 自选 smoke / p0 / p1 / regression
 #
-#  ⚠️ 仓库当前 remote 是 Gitee。GitHub Actions 只在 GitHub 仓库上运行，
-#     需要先把代码推到 GitHub（或做镜像），本文件才会被触发。
+#  ⚠️ GitHub Actions 只在 GitHub 仓库上运行（Gitee 侧不会触发），
+#     推送 main 或在此仓库手动触发时，本文件才会被执行。
 #
 #  可选 Secret：
 #    DEEPSEEK_API_KEY —— p1（AI 助手行为用例）依赖真实模型，没配就跳过
