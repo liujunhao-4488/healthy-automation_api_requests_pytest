@@ -100,7 +100,7 @@ class BaseApiClient:
             全标成警告的话，警告就泛滥成噪音、失去"一眼挑出问题"的作用。
         · 顺手把这次交互贴进 Allure 报告（见 common/allure_helper.py）。
             放在这儿同样是"一处埋点、全覆盖"：所有业务请求都过 _log，
-            98 条用例一行都不用改，报告里天然带完整现场。
+            所有用例一行都不用改，报告里天然带完整现场。
         """
         ms = resp.elapsed.total_seconds() * 1000
         line = "→ %-4s %-18s %3d %6.0fms" % (
@@ -125,16 +125,131 @@ class BaseApiClient:
     # ---- 判结果 ----
 
     @staticmethod
-    def assert_ok(resp, msg="接口应成功"):
+    def assert_ok(resp, msg="接口应成功", schema=None):
         """一行断定"接口成功"：HTTP 200 且业务 code==200，返回解析好的 body。
 
-        只用于"期望成功"的调用；期望失败的用例要自己写断言。
+        只用于"期望成功"的调用；期望失败的用 assert_error。
+
+        ══ schema 参数（可选）══
+        传了就把整份响应的**结构和字段类型**也验掉，而不只是 code：
+
+            body = api.assert_ok(resp, "登录应成功", schema=schemas.LOGIN_SCHEMA)
+
+        schema 从 common/schemas.py 拿（普通 JSON Schema 字典）。
+        不传时行为和以前完全一样 —— 老调用一行都不用改。
 
         为什么是 staticmethod？因为它只做一件事 —— 检查传进来的这个响应，
         跟"谁发的请求、用哪个 client 发的"毫无关系。不写 self 反而更诚实，
         也让 api/__init__.py 的总入口能直接把它借过去用。
+
+        ⚠️ 2026-10-26 顺手改掉两处会**混淆病因**的写法：
+          · `body["code"]` → `body.get("code")`：原来 code 字段一缺就抛 KeyError，
+            报错是一行 `KeyError: 'code'`，看不出是"契约坏了"还是"用例写错了"；
+            现在走断言，错误信息里带完整响应体。
+          · 补了"响应体必须是 JSON 对象"的检查：HTTP 200 但 body 是 HTML（打错地址、
+            被登录页接走）时，原来会在 resp.json() 抛一句看不懂的 JSONDecodeError。
         """
-        assert resp.status_code == 200, f"{msg}：HTTP {resp.status_code}"
-        body = resp.json()
-        assert body["code"] == 200, f"{msg}：code={body.get('code')}，message={body.get('message')}"
+        assert resp.status_code == 200, (
+            f"{msg}：HTTP {resp.status_code}，响应体 {(resp.text or '')[:400]}"
+        )
+
+        try:
+            body = resp.json()
+        except ValueError:
+            raise AssertionError(
+                f"{msg}：HTTP 200 但响应体不是 JSON：{(resp.text or '')[:400]}\n"
+                f"→ 多半是打错了地址 / 被网关或登录页接走了，不是接口逻辑问题。"
+            )
+
+        assert isinstance(body, dict), (
+            f"{msg}：期望统一信封（JSON 对象），实际 {type(body).__name__}："
+            f"{str(body)[:300]}"
+        )
+        assert body.get("code") == 200, (
+            f"{msg}：code={body.get('code')}，message={body.get('message')}"
+        )
+
+        # 形状校验放最后：code 都不对的时候，先报"失败原因"比报"字段漂了"有用。
+        if schema is not None:
+            from common.schemas import check
+
+            check(body, schema, label=f"{msg}的响应")
+        return body
+
+    @staticmethod
+    def assert_error(resp, code, message=None, http=400, contains=False):
+        """一行断定"接口该失败"：HTTP 状态 + 业务 code + 错误文案，全部验掉。
+
+        以前每个失败用例都要手写三层：
+
+            assert resp.status_code == case["want_http"], "..."
+            body = resp.json()
+            assert body["code"] == case["want_code"], "..."
+            assert case["want_msg"] in body["message"], "..."
+
+        现在一行：
+
+            api.assert_error(resp, 400, "手机号格式不正确")
+
+        参数怎么给：
+          code      业务 code（后端约定和 HTTP 状态码一致，都是 400）
+          message   错误文案。三种给法：
+                      "手机号格式不正确"        → **完全相等**（默认，跟老的 == 一致）
+                      ["文案 A", "文案 B"]     → 属于其中之一（一个字段挂了两个约束时用）
+                      None                     → 这条不验文案
+          http      HTTP 状态码，默认 400（实测所有业务校验失败都是 400）。
+                    401（没带 token）这种要显式传 http=401。
+          contains  设 True 时改成"包含"比对 —— 只在文案很长、只关心关键词时用。
+                    ⚠️ 默认是精确相等，别随手打开：那会让断言变弱，
+                       "手机号格式不正确" 和 "手机号格式不正确，请重填" 都会被放过。
+
+        ⚠️ 401 的响应体是**空的**，不是 JSON 信封（实测）。
+           所以先看体是不是空的：空的就只验 HTTP 状态，不去 resp.json()。
+           这种情况必须把 message 传 None，否则会冤枉后端。
+        """
+        assert resp.status_code == http, (
+            f"期望失败（code={code}）：HTTP 实际 {resp.status_code}，"
+            f"响应体 {(resp.text or '')[:300]}"
+        )
+
+        # 空响应体（实测 401 就是这种）没东西可验，到此为止。
+        if not (resp.text or "").strip():
+            assert message is None, (
+                f"HTTP {http} 的响应体是空的，没有 message 可比 —— "
+                f"要么把期望的文案去掉（传 None），要么这条不该验文案。"
+            )
+            return None
+
+        try:
+            body = resp.json()
+        except ValueError:
+            raise AssertionError(
+                f"期望失败响应是 JSON，实际不是：{(resp.text or '')[:300]}"
+            )
+
+        assert body.get("code") == code, (
+            f"业务 code 不符：期望 {code}，实际 {body.get('code')}，"
+            f"message={body.get('message')!r}"
+        )
+
+        if message is None:
+            return body
+
+        actual = body.get("message") or ""
+        # 候选集合：一个字段挂了两个约束时，后端报哪条由校验器顺序决定（实测会翻），
+        # 这种情况只能接受"属于其中之一"。
+        if isinstance(message, (list, tuple)):
+            assert actual in message, (
+                f"错误文案不符：期望属于 {list(message)} 之一，实际 {actual!r}"
+            )
+        elif contains:
+            assert message in actual, (
+                f"错误文案不符：期望包含 {message!r}，实际 {actual!r}"
+            )
+        else:
+            assert actual == message, (
+                f"错误文案不符：期望 {message!r}，实际 {actual!r}\n"
+                f"→ 文案变了是**用户能看到的**输出变了。确认是有意改的，"
+                f"就来改这里的期望值；否则是后端回归。"
+            )
         return body

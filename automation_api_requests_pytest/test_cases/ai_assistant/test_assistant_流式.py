@@ -35,6 +35,7 @@
 
 import pytest
 
+from common import cleanup
 from common.logger import log_qa
 
 # 允许出现的取值 —— 来源：RecipeServiceImpl 的 classifyIntent / detectBlockedType。
@@ -77,6 +78,7 @@ def stream_ask(api, auth_headers):
         cid = (result["start"] or {}).get("conversationId")
         if cid and cid not in created:
             created.append(cid)
+            cleanup.register_conversation(cid)
 
         final_text = ((result["done"] or {}).get("assistantMessage") or {}).get("text")
         log_qa(text, final_text or result["text"])
@@ -85,9 +87,9 @@ def stream_ask(api, auth_headers):
 
     yield _ask
 
-    # 流式同样是**写操作**（建会话、存消息），必须清场
-    for cid in created:
-        api.assistant.delete_conversation(cid, headers=auth_headers)
+    # 流式同样是**写操作**（建会话、存消息），必须清场；
+    # 和 ask 一样：先接口软删，再硬删库里的行。
+    cleanup.delete_conversations(api, auth_headers, created)
 
 
 # ==================== 一、协议形状：头部、事件顺序 ====================

@@ -2,6 +2,7 @@
 # pytest 的"公共工具间"：夹具（fixture）与全局日志钩子都放这里，pytest 会自动加载。
 
 import logging
+import os
 import time
 import unicodedata
 from datetime import datetime
@@ -12,7 +13,7 @@ import requests
 
 from api import Api
 from api.base_api_client import set_unauthorized_handler
-from common import allure_helper, eval_record
+from common import allure_helper, cleanup, eval_record
 from common.accounts import (
     AccountBootstrapError,
     ensure_login_seed_account,
@@ -93,6 +94,19 @@ def token(_auth_state):
 def auth_headers(_auth_state):
     """把**当前** token 包成请求头：{"Authorization": "Bearer xxx"}。"""
     return {"Authorization": f"Bearer {_auth_state.token}"}
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _cleanup_guard():
+    """会话收尾兜底：夹具漏清 / 清理中途抛异常时，按登记表再删一次。
+
+    xdist 下每个 worker 各有一份进程内登记表，只回收自己创建的资源，
+    不会误删别的 worker 正在用的临时账号。
+    """
+    yield
+    failures = cleanup.cleanup_all()
+    if failures:
+        log.warning("清理兜底：仍有 %d 项未回收：%s", len(failures), failures)
 
 
 # ==================== 控制台分块日志 ====================
@@ -254,6 +268,12 @@ def pytest_sessionstart(session):
     allure_helper.activate(
         _allure_dir is not None and not config.getoption("--collect-only", default=False))
 
+    # xdist controller：worker 各自探活会重复建账号 / 打 Flask，统一在这里探一次。
+    # 串行不使用这里 —— 仍走 collection_finish（保持“收集完再探活”的原行为）。
+    if (config.getoption("numprocesses", default=None) is not None
+            and not _is_xdist_worker(config)):
+        _precheck_or_exit(session)
+
 
 # ==================== 环境探活（session 级） ====================
 # 后端(8080) / MySQL(3306) / 算法服务 Flask(5000) 任何一个没起，
@@ -387,10 +407,24 @@ def _probe_reason(exc):
     return text.splitlines()[0][:160] if text else type(exc).__name__
 
 
-def pytest_collection_finish(session):
-    """收集完、开跑前探活；缺一个依赖就中止整场。"""
+def _is_xdist_worker(config):
+    """当前进程是不是 xdist worker —— 只有 worker 才有 workerinput。"""
+    return hasattr(config, "workerinput")
+
+
+def _precheck_or_exit(session):
+    """探活；缺一个依赖就中止整场。"""
     # --collect-only 只是"看有哪些用例"，不跑用例，也不该要求服务全在
     if session.config.getoption("collectonly", default=False):
+        return
+
+    # 2026-10-26 新增逃生口：纯离线用例（如 common/contract.py 的自测）
+    # 不需要任何服务，但预检是 session 级的、一条用例都没跑就先中止了。
+    # 设 AUTOTEST_SKIP_PRECHECK=1 可跳过探活，**只该在跑离线用例时用**：
+    #   set AUTOTEST_SKIP_PRECHECK=1 && pytest test_cases/contract
+    # 跑业务用例时开着它，缺服务就会变成一片 ConnectionError —— 那正是预检要防的事。
+    if os.getenv("AUTOTEST_SKIP_PRECHECK", "") == "1":
+        meta_log.warning("已跳过环境预检（AUTOTEST_SKIP_PRECHECK=1）")
         return
 
     lines, missing = [], []
@@ -414,6 +448,20 @@ def pytest_collection_finish(session):
     meta_log.error("环境探活未通过：%s", "；".join(lines))
     pytest.exit("环境未就绪：" + "、".join(missing),
                 returncode=pytest.ExitCode.TESTS_FAILED)
+
+
+def pytest_collection_finish(session):
+    """串行：收集完、开跑前探活。
+
+    xdist 下由 controller 在 sessionstart 统一探一次：
+    worker 各自探活会重复建账号、重复打 Flask，启动反而更慢。
+    """
+    config = session.config
+    if _is_xdist_worker(config):
+        return
+    if config.getoption("numprocesses", default=None) is not None:
+        return
+    _precheck_or_exit(session)
 
 
 def _short_name(nodeid):
@@ -450,6 +498,9 @@ def pytest_report_teststatus(report, config):
     """
     if report.when != "call":
         return None
+    if report.outcome == "rerun":
+        # 空 letter = quiet 模式不刷 R；结果由块尾的 ↻ RERUN 展示
+        return "rerun", "", "RERUN"
     wasxfail = getattr(report, "wasxfail", None)
     if wasxfail is not None and report.skipped:
         return "xfailed", "", "XFAIL"
@@ -542,6 +593,11 @@ def _record_outcome(report):
         还要把 xfail 和 failed **分开**存 —— 报告里把"已知缺陷"算进"回归失败"，数字就废了。
     所以两件事不共用一份代码：显示可以省，数据不能省。
     """
+    # pytest-rerunfailures 的中间报告 outcome="rerun"：既不是通过也不是失败，
+    # 记进去会让评测留痕多出假失败；只认最后一次（passed / failed）。
+    if report.outcome == "rerun":
+        return
+
     wasxfail = getattr(report, "wasxfail", None)
     if report.when == "call":
         if report.passed:
@@ -572,7 +628,12 @@ def pytest_runtest_logreport(report):
     if report.when == "call":
         name = pad(_short_name(report.nodeid), _NAME_WIDTH)
         wasxfail = getattr(report, "wasxfail", None)
-        if report.passed:
+        if report.outcome == "rerun":
+            # 网络类失败被重试：单独标一下，别让它看起来像真失败
+            text = f"└─ ↻ RERUN   {name} {report.duration:.2f}s"
+            _write_footer(_reporter, text, "yellow")
+            meta_log.warning("↻ %s %.2fs", name, report.duration)
+        elif report.passed:
             text = f"└─ ✔ PASSED  {name} {report.duration:.2f}s"
             _write_footer(_reporter, text, "green")
             meta_log.info("✓ %s %.2fs", name, report.duration)
@@ -716,6 +777,11 @@ def pytest_sessionfinish(session, exitstatus):
     ⚠️ 评测留痕只在**真的采到观测**时才写 —— 跑一批非 AI 用例（0 次模型调用）
     不该把上一份完整评测数据覆盖成一份空的。
     """
+    # xdist worker 不落评测留痕 / 环境文件：多个 worker 同时写会互相覆盖，
+    # 观测数据又是进程内内存、无法跨 worker 合并。需要 AI 评测时跑串行。
+    if _is_xdist_worker(session.config):
+        return
+
     global _eval_path
     path = eval_record.dump(_eval_out, meta={
         "scope": " ".join(session.config.invocation_params.args),
@@ -846,6 +912,38 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
 #
 # 标签取值表放在 common/allure_helper.py（一张 dict），要改名去那里改。
 # 用例若自己想要更细的标价，直接加装饰器即可 —— 这里会跳过已有的类型。
+
+# ==================== 用例分层标记 ====================
+# 在**收集阶段**挂标记（pytest_itemcollected 早于 -m 过滤），用例文件里不用写装饰器。
+#   regression : 全部用例
+#   smoke      : 不调模型的核心链路（auth / health / user / toolbox）
+#   p0         : 阻断级 = smoke 集合 + AI 的确定性安全拦截（不调模型）
+#   p1         : 扩展级 = AI 助手行为用例（依赖模型，慢且有波动）
+# 按目录 / 文件名判断；新模块默认 p0，要调整只改下面两张表。
+
+# contract/ 是断言层自测（纯内存、秒级）—— 放进 smoke，断言本身坏了能第一时间发现
+_SMOKE_MODULES = {"auth", "health", "user", "toolbox", "contract"}
+_DETERMINISTIC_AI_FILES = {"test_assistant_安全拦截.py"}
+
+
+def pytest_itemcollected(item):
+    """收集到一条用例就挂分层标记 —— 必须早于 -m 过滤，否则筛选看不到标记。"""
+    module = _module_of(item.nodeid)
+    filename = item.nodeid.split("::")[0].split("/")[-1]
+
+    item.add_marker(pytest.mark.regression)
+
+    if module in _SMOKE_MODULES:
+        item.add_marker(pytest.mark.smoke)
+        item.add_marker(pytest.mark.p0)
+    elif module == "ai_assistant":
+        if filename in _DETERMINISTIC_AI_FILES:
+            item.add_marker(pytest.mark.p0)
+        else:
+            item.add_marker(pytest.mark.p1)
+    else:
+        item.add_marker(pytest.mark.p0)
+
 
 def _has_allure_label(item, label_type):
     """这条用例是不是已经有某类 allure 标签了（装饰器加的优先）。"""

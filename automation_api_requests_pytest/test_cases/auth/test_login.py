@@ -30,18 +30,18 @@ def case_name(case):
 
 @pytest.mark.parametrize("case", CASES, ids=case_name)
 def test_login(api, case):
-    """登录：成功 + 各类失败，期望值全部来自数据文件，代码里没有任何硬编码。"""
+    """登录：成功 + 各类失败，期望值全部来自数据文件，代码里没有任何硬编码。
+
+    ⚠️ 这份数据里**成功和失败混在一起**，所以按 want_code 分流：
+       200 → assert_ok   其余 → assert_error
+       以前两种情况都套同一套三层断言，读代码的人得先看数据才知道这条是成功还是失败。
+    """
     resp = api.auth.login({"email": case["email"], "password": case["password"]})
 
-    assert resp.status_code == case["want_http"], \
-        f"期望 HTTP {case['want_http']}，实际 {resp.status_code}"
-
-    body = resp.json()
-    assert body["code"] == case["want_code"], \
-        f"期望 code={case['want_code']}，实际 {body.get('code')}"
-    assert body["message"] == case["want_msg"], \
-        f"期望 message={case['want_msg']}，实际 {body.get('message')}"
-
-    # 成功用例额外验证：返回里要带 token
     if case["want_code"] == 200:
+        body = api.assert_ok(resp, "登录应成功")
         assert "token" in body["data"], "登录成功必须返回 token"
+    else:
+        api.assert_error(
+            resp, case["want_code"], case["want_msg"], http=case["want_http"]
+        )

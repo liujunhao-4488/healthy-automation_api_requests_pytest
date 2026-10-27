@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from common import db, eval_record
+from common import cleanup, db, eval_record
 from common.logger import log_qa
 
 _HERE = Path(__file__).resolve().parent
@@ -65,6 +65,7 @@ def ask(api, auth_headers):
         cid = body["data"]["conversationId"]
         if cid not in created:
             created.append(cid)
+            cleanup.register_conversation(cid)
 
         # 把这一问一答记进日志 —— AI 接口的价值全在 200 的 body 里，
         # 而 base_api_client 只在 4xx/5xx 时才附 body，正好漏掉它。
@@ -79,8 +80,9 @@ def ask(api, auth_headers):
     yield _ask
 
     # ---- 清理：用例跑完才轮到这儿 ----
-    for cid in created:
-        api.assistant.delete_conversation(cid, headers=auth_headers)
+    # 先走接口软删（产品行为），再硬删库里的消息/会话行 ——
+    # 只软删的话 is_deleted=1 的行会一直堆在主账号名下。
+    cleanup.delete_conversations(api, auth_headers, created)
 
 
 @pytest.fixture
@@ -88,10 +90,12 @@ def conversation(api, auth_headers):
     """直接建一个**空会话**（不聊），跑完删掉。返回会话的 data。"""
     body = api.assert_ok(api.assistant.create_conversation({}, headers=auth_headers),
                          "创建会话应成功")
+    cid = body["data"]["id"]
+    cleanup.register_conversation(cid)
 
     yield body["data"]
 
-    api.assistant.delete_conversation(body["data"]["id"], headers=auth_headers)
+    cleanup.delete_conversations(api, auth_headers, [cid])
 
 
 @pytest.fixture
@@ -132,6 +136,8 @@ def other_user(api):
         "headers": headers,
         "conversationId": cid,
     }
+    cleanup.register_user(user["userId"], user["email"])
+    cleanup.register_conversation(cid)
     yield user
 
     # ---- 清理 ----
@@ -156,3 +162,5 @@ def other_user(api):
             (user["userId"],),
         )
         db.execute("DELETE FROM `user` WHERE `id` = %s", (user["userId"],))
+        cleanup.unregister_conversations([cid])
+        cleanup.unregister_user(user["userId"])

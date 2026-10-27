@@ -26,9 +26,20 @@ class Api:
         # ⚠️ 它打在算法服务（Flask 5000）上，不是 Java 后端 —— 见 kb_api.py 顶部说明
         self.kb = KbApi()                # 用例里：api.kb.search("高血压怎么吃")
 
-    def assert_ok(self, resp, msg="接口应成功"):
+    def assert_ok(self, resp, msg="接口应成功", schema=None):
         """把底座的判定器借过来（用例里 api.assert_ok(resp) 照旧能用）。
 
         判定器不属于任何一个具体接口，所以不挂在 self.auth 下面，而是放在总入口。
+
+        schema 是可选参数：传了就顺带校验整份响应的结构（字段缺失 / 类型 / 枚举），
+        不传行为和以前完全一致。schema 从 common/schemas.py 拿。
         """
-        return BaseApiClient.assert_ok(resp, msg)
+        return BaseApiClient.assert_ok(resp, msg, schema=schema)
+
+    def assert_error(self, resp, code, message=None, http=400, contains=False):
+        """错误场景判定器 —— 替代手写的 HTTP / code / message 三层断言。
+
+        用例里：api.assert_error(resp, 400, "手机号格式不正确")
+        参数说明见 BaseApiClient.assert_error。
+        """
+        return BaseApiClient.assert_error(resp, code, message, http=http, contains=contains)

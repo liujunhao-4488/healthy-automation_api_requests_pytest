@@ -16,6 +16,7 @@ import pytest
 from common import db
 from common.accounts import ensure_login_seed_account
 from common.data_loader import load_cases
+from common.schemas import REGISTER_SCHEMA
 
 # 本模块会直接查库/删库（注册后对账、清理），数据库不可用时由根 conftest 跳过。
 pytestmark = pytest.mark.requires_db
@@ -73,22 +74,20 @@ def test_register_fail(api, case):
         "email": case["email"],
     })
 
-    assert resp.status_code == case["want_http"], \
-        f"期望 HTTP {case['want_http']}，实际 {resp.status_code}"
-
-    body = resp.json()
-    assert body["code"] == case["want_code"], \
-        f"期望 code={case['want_code']}，实际 {body.get('code')}"
-
+    # want_msg_alt 是"候选文案集合"，assert_error 的 message 参数直接吃 list，
+    # 所以"属于其中之一"这件事不用在用例里手写 in 了。
     allowed = [case["want_msg"]] + list(case.get("want_msg_alt") or [])
-    assert body["message"] in allowed, \
-        f"期望 message ∈ {allowed}，实际 {body.get('message')}"
+    api.assert_error(resp, case["want_code"], allowed, http=case["want_http"])
 
 
 def test_register_success(api, new_user):
-    """注册成功：返回 200 + token（注册即登录），且用户真的进了库。"""
+    """注册成功：返回 200 + token（注册即登录），且用户真的进了库。
+
+    schema=REGISTER_SCHEMA 顺带把**响应形状**也验掉（字段齐不齐、类型对不对）；
+    值层面的断言（用户名/邮箱一致、库里真有这条）仍在下面单独写。
+    """
     resp = api.auth.register(new_user)
-    body = api.assert_ok(resp, "注册应成功")
+    body = api.assert_ok(resp, "注册应成功", schema=REGISTER_SCHEMA)
 
     assert body["message"] == "注册成功"
 

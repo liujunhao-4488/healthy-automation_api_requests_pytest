@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from common import db
+from common import cleanup, db
 
 _HERE = Path(__file__).resolve().parent
 
@@ -50,6 +50,8 @@ def health_user(api):
         "username": uniq,
         "headers": {"Authorization": "Bearer " + body["data"]["token"]},
     }
+    # 登记：万一下面的清理没跑完，会话收尾还能按 userId 再删一次
+    cleanup.register_user(user["userId"], user["email"])
     yield user
 
     # ---- 清理：顺序不能反 ----
@@ -61,4 +63,5 @@ def health_user(api):
     n1 = db.execute("DELETE FROM health_info WHERE user_id = %s", (uid,))
     n2 = db.execute("DELETE FROM diet_goal WHERE user_id = %s", (uid,))
     n3 = db.execute("DELETE FROM `user` WHERE id = %s", (uid,))
+    cleanup.unregister_user(uid)
     print(f"\n[清理] 靶子 userId={uid}: history={n0} info={n1} goal={n2} user={n3}")

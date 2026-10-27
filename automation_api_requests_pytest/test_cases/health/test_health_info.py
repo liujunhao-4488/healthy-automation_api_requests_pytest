@@ -142,14 +142,7 @@ def test_save_info_fail(api, health_user, case):
     """校验失败：13 类非法输入，期望值全部来自数据文件。"""
     resp = api.health.save_info(case["body"], headers=health_user["headers"])
 
-    assert resp.status_code == case["want_http"], \
-        f"期望 HTTP {case['want_http']}，实际 {resp.status_code}"
-
-    body = resp.json()
-    assert body["code"] == case["want_code"], \
-        f"期望 code={case['want_code']}，实际 {body.get('code')}"
-    assert body["message"] == case["want_msg"], \
-        f"期望 message={case['want_msg']}，实际 {body.get('message')}"
+    api.assert_error(resp, case["want_code"], case["want_msg"], http=case["want_http"])
 
 
 def test_save_info_without_token(api):

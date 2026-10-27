@@ -21,6 +21,8 @@
 
 import pytest
 
+from common import cleanup
+
 # 意图识别（"问什么该走哪条分支"）**不在本文件** —— 见 test_assistant_意图识别.py。
 # 本文件只管结构 / 鉴权 / 参数校验。
 
@@ -138,10 +140,11 @@ def test_create_conversation_default_title(conversation):
 def test_deleted_conversation_disappears(api, auth_headers):
     """删掉的会话不再出现在列表里（软删除：库里还在，但接口不再返回）。
 
-    注意：这条用例**自己删自己建的东西**，所以不需要夹具兜底清理。
+    用例自己建、自己删；最后的硬删是为了不把 is_deleted=1 的行留在库里。
     """
     created = api.assert_ok(api.assistant.create_conversation({}, headers=auth_headers))["data"]
     cid = created["id"]
+    cleanup.register_conversation(cid)      # 断言中途挂了也能兜底硬删
 
     listed = api.assert_ok(api.assistant.list_conversations(headers=auth_headers))["data"]
     assert any(c["id"] == cid for c in listed), "刚建的会话应该在列表里"
@@ -150,3 +153,7 @@ def test_deleted_conversation_disappears(api, auth_headers):
 
     listed = api.assert_ok(api.assistant.list_conversations(headers=auth_headers))["data"]
     assert not any(c["id"] == cid for c in listed), "删掉的会话不该还留在列表里"
+
+    # 接口软删只是 is_deleted=1；用例自己的产物自己硬删干净
+    cleanup.hard_delete_conversations([cid])
+    cleanup.unregister_conversations([cid])

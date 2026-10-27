@@ -8,9 +8,9 @@ pytest + requests 写的接口自动化测试，被测系统：健康饮食后�
 > ⚠️ **历史记录提示：§一 / §二 的表格是重构前的学习向记录**（合计 151 条，
 > `recipe/`、`toolbox/test_data_factory.py` 等文件已删除），**只作演进史参考，不要当当前清单用**。
 >
-> **当前真实状态（2026-10-23 `--collect-only` 实测）**：
-> - 用例 **293 条**：AI 助手 221 / health 35 / user 15 / auth 15 / toolbox 7
-> - 目录：`ai_assistant/` `auth/` `health/` `toolbox/` `user/` + `api/` `common/` `config/` `data/` `tools/`
+> **当前真实状态（2026-10-26 `--collect-only` 实测）**：
+> - 用例 **345 条**：AI 助手 221 / health 44 / auth 19 / user 19 / assistant 契约 7 / 断言层自测 28 / toolbox 7
+> - 目录：`ai_assistant/` `assistant/` `auth/` `health/` `user/` `toolbox/` `contract/` + `api/` `common/` `config/` `data/` `tools/`
 > - 后端接口：控制器实测 **78 个**（方法级）；已覆盖 **15 个**（auth 2 / user 2 / health 5 / assistant 6，含 SSE）
 > - `api/` 层封装 18 个方法 = 15 个后端接口 + 3 个算法服务（KB）接口
 > - 覆盖矩阵见 `docs/接口覆盖矩阵.md` 顶部；AI 助手的来龙去脉见 `docs/AI助手模块-迭代记录.md`
@@ -129,8 +129,8 @@ automation_api_requests_pytest/
 │   └── Allure报告-使用说明.md ← 报告怎么看 / 怎么跑 / 为什么这么集成
 ├── pytest.ini           ← pytest 运行配置（pythonpath / 中文用例名显示 / SQL 日志）
 ├── requirements.txt     ← 依赖清单
-├── test_cases/          ← 测试用例，按业务模块分目录（合计 293 条，2026-10-23 收集数）
-│   ├── ai_assistant/    ← /assistant/* + 算法服务 RAG                  ★ 已覆盖（221 条）
+├── test_cases/          ← 测试用例，按业务模块分目录（合计 345 条，2026-10-26 收集数）
+│   ├── ai_assistant/    ← AI 行为（模型问答 / RAG / 安全）             ★ 已覆盖（221 条）
 │   │   ├── test_assistant_结构鉴权.py            11
 │   │   ├── test_assistant_安全拦截.py            24
 │   │   ├── test_assistant_意图标签.py            31
@@ -143,13 +143,20 @@ automation_api_requests_pytest/
 │   │   ├── test_assistant_通用问题不追问档案.py   3
 │   │   ├── test_assistant_RAG召回.py             80
 │   │   └── test_assistant_RAG生成.py             9
-│   ├── auth/            ← /auth/*                                    ★ 已覆盖（15 条）
+│   ├── assistant/       ← /assistant/* 契约（只验形状）              7 条
+│   │   └── test_assistant_契约.py                7
+│   ├── auth/            ← /auth/*                                  ★ 已覆盖（19 条）
 │   │   ├── test_login.py                         6
+│   │   ├── test_login_契约.py                    4
 │   │   └── test_register.py                      9
-│   ├── health/          ← /health/*                                  ★ 已覆盖（35 条）
+│   ├── contract/        ← 断言层自测（纯内存，不连服务）             28 条
+│   │   └── test_契约层_自测.py                   28
+│   ├── health/          ← /health/*                                ★ 已覆盖（44 条）
 │   │   ├── test_health_info.py                   21
-│   │   └── test_health_goal.py                   14
-│   ├── user/            ← /user/*                                    ★ 已覆盖（15 条）
+│   │   ├── test_health_goal.py                   14
+│   │   └── test_health_契约.py                   9
+│   ├── user/            ← /user/*                                  ★ 已覆盖（19 条）
+│   │   ├── test_profile_契约.py                  4
 │   │   └── test_user_profile.py                  15
 │   └── toolbox/         ← 工具零件自测（不对应业务接口）             7 条
 │       └── test_data_loader.py                   ← Excel 多工作表加载
@@ -159,6 +166,8 @@ automation_api_requests_pytest/
 │   ├── data_factory.py  ← 批量生成数据：组合 / 边界 / fuzz
 │   ├── db.py            ← MySQL 工具：连接复用 + 读/写 + 事务 + SQL 日志
 │   ├── eval_record.py   ← AI 评测留痕（旁路，不影响断言结果）
+│   ├── cleanup.py       ← 清理登记表：临时账号/会话登记 + 会话收尾兜底
+│   ├── schemas.py       ← 响应契约（JSON Schema draft-07）+ check()
 │   ├── logger.py        ← 日志：控制台一行摘要 / 文件留全量 / 顺手贴进 Allure
 │   └── allure_helper.py ← 【Allure 唯一出口】请求响应附件、脱敏、层级标签、环境信息
 ├── tools/               ← 辅助脚本（**不是用例**：产出数字/清单，不产出红绿）
@@ -197,7 +206,8 @@ cd D:\jiankang\healthy\automation_api_requests_pytest
 #      cd ..\backend && mvnw spring-boot:run
 #      后端默认仍连 health_diet；忘了设置时环境预检会直接中止并提示。
 
-# 跑全套（293 条收集数；通过 / 跳过 / xfail 以本次运行结果为准）
+# 网络类失败自动重试 2 次（断言失败不重试）；单条用例超时 180 秒
+# 跑全套（345 条收集数；通过 / 跳过 / xfail 以本次运行结果为准）
 # 注1：health 早先的 4 条"缺陷固化"用例已在后端修复后转正，现在是正式断言。
 # 注2：user 仍有 1 条 xfail 钉住已知缺陷 #9（PUT 后 update_time 不刷新），
 #      后端修好后会变 XPASS，届时摘掉 @pytest.mark.xfail。
@@ -210,6 +220,16 @@ cd D:\jiankang\healthy\automation_api_requests_pytest
 
 # 只跑某一个文件
 .venv\Scripts\python.exe -m pytest test_cases/auth/test_login.py -v
+
+# 分层跑（smoke / p0 / p1 / regression 由收集钩子自动挂，用例文件不用改）
+.venv\Scripts\python.exe -m pytest -m smoke -q        # 核心链路 117 条，不调模型
+.venv\Scripts\python.exe -m pytest -m p0 -q           # 阻断级 148 条
+.venv\Scripts\python.exe -m pytest -m p1 -q           # 模型依赖 197 条
+.venv\Scripts\python.exe -m pytest -m regression -q   # 全量 345 条（等同默认）
+
+# 并行（可选）：4 worker，同模块落在同一个 worker
+# ⚠️ AI 评测留痕只支持串行；并行时每个 worker 各自登录一次
+.venv\Scripts\python.exe -m pytest -n 4 --dist=loadscope -q
 
 # 只看有哪些用例、不执行（当"活清单"用）
 .venv\Scripts\python.exe -m pytest test_cases --collect-only -q
