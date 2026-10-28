@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_out_of_scope_question_is_refused[越界-问天气]  0.02s

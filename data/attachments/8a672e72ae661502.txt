@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_doc[肾病患者能吃豆制品吗]  0.00s

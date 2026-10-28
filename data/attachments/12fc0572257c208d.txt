@@ -1,0 +1,5 @@
+03:10:09 I → POST /assistant/chat    200   3405ms
+03:10:09 I · AI    问「我想换个口味，有什么建议」  → 换口味可以从三个方向入手：换主食材、换风味体系、换烹饪方式，比单纯换菜名更有效。 一是换主食材。日常如果以鸡胸、鸡蛋、米饭为主，可以轮换成鱼虾（如三文鱼、鲈鱼、虾仁）、瘦牛肉、豆腐豆制品、藜麦或糙米、…
+03:10:09 I → DELETE /assistant/conversations/3481 200      5ms
+03:10:09 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3481,) | affected=2 | 0.9ms
+03:10:09 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3481,) | affected=1 | 0.8ms

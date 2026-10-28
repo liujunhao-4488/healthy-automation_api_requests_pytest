@@ -1,0 +1,5 @@
+03:09:58 I → POST /assistant/chat    200   3634ms
+03:09:58 I · AI    问「鸡胸肉怎么做才好吃」  → 鸡胸肉好吃的关键在于别让它变柴，核心是控火候、提前腌制、锁住水分。 最省事的做法是煎：把鸡胸肉横着片成两片薄片，或者用刀背拍松，加一点盐、黑胡椒、蒜末和少许油抓匀，腌15分钟；平底锅中火，每面煎2到3…
+03:09:58 I → DELETE /assistant/conversations/3476 200      5ms
+03:09:58 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3476,) | affected=2 | 0.9ms
+03:09:58 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3476,) | affected=1 | 50.4ms

@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_save_info_gender_enum_is_strict  0.00s

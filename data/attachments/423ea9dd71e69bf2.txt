@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_update_phone_success            0.01s
-
-[清理] 删除靶子账号 pf_9884a486b4@example.com，affected=1

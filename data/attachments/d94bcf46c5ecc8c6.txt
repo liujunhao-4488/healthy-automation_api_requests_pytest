@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2096 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:10:02 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:10:00",
+      "id": 7385,
+      "text": "早餐吃什么比较抗饿"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:10:02",
+      "ragUsed": false,
+      "id": 7386,
+      "text": "早餐想更抗饿，核心是让蛋白质和膳食纤维足够，同时少吃精制糖和精白主食，这样血糖平稳、胃排空慢，饱腹感能撑得更久。\n\n具体可以这样搭：主食选燕麦、全麦面包、杂粮粥或玉米红薯这类粗粮，比白粥白馒头更耐饿；再配一份优质蛋白，比如鸡蛋、牛奶、无糖酸奶、豆浆或少量瘦肉；有条件加一点蔬菜或一小把坚果，纤维和脂肪都能延缓饥饿。比如燕麦牛奶加一个鸡蛋、全麦面包夹鸡蛋配一杯豆浆，都是简单又抗饿的组合。\n\n要避免的是纯白粥配咸菜、甜面包、果汁这类早餐，升糖快、掉得也快，往往不到中午就饿了。另外早餐别吃太少，吃够量本身也是抗饿的关键。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3478,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "早餐想更抗饿，核心是让蛋白质和膳食纤维足够，同时少吃精制糖和精白主食，这样血糖平稳、胃排空慢，饱腹感能撑得更久。  具体可以这样搭：主食选燕麦、全麦面包、杂粮粥或玉米红薯这类粗粮，比白粥白馒头更耐饿；再配一份优质蛋白，比如鸡蛋、牛奶、无糖…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:10:02.891459012",
+      "createTime": "2026-10-28T03:10:00",
+      "updateTime": "2026-10-28T03:10:00",
+      "id": 3478,
+      "title": "早餐吃什么比较抗饿"
+    }
+  },
+  "message": "发送消息成功"
+}

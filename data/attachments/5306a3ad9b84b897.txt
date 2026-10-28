@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1551 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:10:04 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:10:02",
+      "id": 7387,
+      "text": "我每天该喝多少水"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:10:04",
+      "ragUsed": false,
+      "id": 7388,
+      "text": "一般成年人每天饮水（不含食物中的水）建议在1500～1700毫升左右，大约7～8杯。中国居民膳食指南对成年男性建议约1700毫升、女性约1500毫升，具体可按体重、活动量、气温和出汗情况调整。\n\n判断是否喝够，可以看尿液颜色：淡黄色通常说明水分充足，颜色偏深则提示需要补水。运动量大、天气炎热、出汗多时要相应增加；有心脏、肾脏疾病或医生限制饮水的情况，请以医生的建议为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3479,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "一般成年人每天饮水（不含食物中的水）建议在1500～1700毫升左右，大约7～8杯。中国居民膳食指南对成年男性建议约1700毫升、女性约1500毫升，具体可按体重、活动量、气温和出汗情况调整。  判断是否喝够，可以看尿液颜色：淡黄色通常说…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:10:04.454753491",
+      "createTime": "2026-10-28T03:10:02",
+      "updateTime": "2026-10-28T03:10:02",
+      "id": 3479,
+      "title": "我每天该喝多少水"
+    }
+  },
+  "message": "发送消息成功"
+}

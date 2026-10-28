@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_empty_body_no_change            0.01s
-
-[清理] 删除靶子账号 pf_aa5cf09d26@example.com，affected=1

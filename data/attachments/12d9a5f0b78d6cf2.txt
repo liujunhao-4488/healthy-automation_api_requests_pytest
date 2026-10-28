@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_stream_and_non_stream_agree_on_intent  1.33s
-                                                                         [ 52%]
-test_cases/ai_assistant/test_assistant_结构鉴权.py 

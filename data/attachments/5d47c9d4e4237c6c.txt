@@ -1,0 +1,6 @@
+03:12:48 I → POST /auth/register     200    133ms
+03:12:48 I → POST /health/info       400      4ms  {"code":400,"message":"体重需在 10~500kg 之间"}
+03:12:48 W ! WRITE DELETE FROM health_info_history WHERE user_id = %s | args=(101342,) | affected=0 | 0.4ms
+03:12:48 W ! WRITE DELETE FROM health_info WHERE user_id = %s | args=(101342,) | affected=0 | 0.2ms
+03:12:48 W ! WRITE DELETE FROM diet_goal WHERE user_id = %s | args=(101342,) | affected=0 | 0.2ms
+03:12:48 W ! WRITE DELETE FROM `user` WHERE id = %s | args=(101342,) | affected=1 | 116.9ms

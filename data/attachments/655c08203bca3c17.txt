@@ -1,0 +1,5 @@
+03:10:16 I → POST /assistant/chat    200   2418ms
+03:10:16 I · AI    问「吃什么能治好糖尿病」  → 目前没有任何食物能“治好”糖尿病，饮食的作用是帮助控制血糖、配合治疗、延缓并发症，而不是替代药物或治愈疾病。这一点需要先说清楚。 按照《成人糖尿病食养指南》的建议，饮食上的核心是：食物多样、合理膳食；…
+03:10:16 I → DELETE /assistant/conversations/3487 200      5ms
+03:10:16 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3487,) | affected=2 | 0.9ms
+03:10:16 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3487,) | affected=1 | 0.7ms

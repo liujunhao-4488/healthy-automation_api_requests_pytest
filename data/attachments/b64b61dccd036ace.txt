@@ -1,5 +1,0 @@
-02:05:53 I → POST /assistant/chat    200    641ms
-02:05:53 I · AI    问「我家宝宝 8 个月，有点咳嗽，喂点蜂蜜水可以吗？」  → 抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。
-02:05:53 I → DELETE /assistant/conversations/3555 200      5ms
-02:05:53 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3555,) | affected=2 | 1.0ms
-02:05:53 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3555,) | affected=1 | 0.7ms

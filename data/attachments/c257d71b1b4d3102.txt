@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_rag_effect_observable           3.93s

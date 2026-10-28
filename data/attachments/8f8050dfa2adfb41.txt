@@ -1,0 +1,5 @@
+03:09:25 I → POST /assistant/chat    200   1579ms
+03:09:25 I · AI    问「我今天吃了多少卡」  → 我无法知道你今天的实际摄入量——你还没有告诉我今天吃了什么、各吃了多少。热量需要根据具体食物和份量来估算，没有这些信息，任何数字都只是猜测。 你可以把今天吃的东西按餐次列给我，尽量写清食物种类和大致份…
+03:09:25 I → DELETE /assistant/conversations/3457 200     36ms
+03:09:25 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3457,) | affected=2 | 1.1ms
+03:09:25 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3457,) | affected=1 | 0.8ms

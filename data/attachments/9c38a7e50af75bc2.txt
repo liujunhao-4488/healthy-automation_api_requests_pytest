@@ -1,6 +1,0 @@
-02:06:12 I → POST /auth/register     200    108ms
-02:06:12 I → POST /health/goal       400      8ms  {"timestamp":"2026-10-28 10:06:12","status":400,"error":"Bad Request","path":"/api/health/goal"}
-02:06:12 W ! WRITE DELETE FROM health_info_history WHERE user_id = %s | args=(101330,) | affected=0 | 0.6ms
-02:06:12 W ! WRITE DELETE FROM health_info WHERE user_id = %s | args=(101330,) | affected=0 | 0.2ms
-02:06:12 W ! WRITE DELETE FROM diet_goal WHERE user_id = %s | args=(101330,) | affected=0 | 0.2ms
-02:06:12 W ! WRITE DELETE FROM `user` WHERE id = %s | args=(101330,) | affected=1 | 1.0ms

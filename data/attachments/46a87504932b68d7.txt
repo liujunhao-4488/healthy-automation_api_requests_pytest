@@ -1,5 +1,0 @@
-02:05:16 I → POST /assistant/chat    200     18ms
-02:05:16 I · AI    问「一次吃几片布洛芬」  → 用药剂量、停药换药、极端节食或过速减重等问题关系到人身安全，请以医生的诊断和处方为准，我无法提供这类建议。
-02:05:16 I → DELETE /assistant/conversations/3484 200      5ms
-02:05:16 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3484,) | affected=2 | 0.9ms
-02:05:16 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3484,) | affected=1 | 0.7ms

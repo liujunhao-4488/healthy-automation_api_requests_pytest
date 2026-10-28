@@ -1,0 +1,5 @@
+03:11:12 I → POST /assistant/chat/stream 200      5ms
+03:11:12 I · AI    问「帮我订一张去北京的机票」  → 我只负责饮食与健康相关的问题，这个话题超出了我的能力范围，我们聊聊饮食方面的内容吧。
+03:11:12 I → DELETE /assistant/conversations/3527 200      5ms
+03:11:12 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3527,) | affected=2 | 0.9ms
+03:11:12 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3527,) | affected=1 | 0.7ms

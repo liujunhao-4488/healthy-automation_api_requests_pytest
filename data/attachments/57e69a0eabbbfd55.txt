@@ -1,2 +1,0 @@
-
-└─ ✘ FAILED  test_substitute_question_stays_on_substitute_topic[替代-忌口换料]  0.64s  assert []

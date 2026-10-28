@@ -1,0 +1,78 @@
+HTTP 200　（耗时 3328 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:08:50 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:08:47",
+      "id": 7289,
+      "text": "我血压有点高，饮食上要注意什么？"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 26.6127,
+          "docId": "guideline:成人高血压食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人高血压食养指南"
+        },
+        {
+          "score": 25.5471,
+          "docId": "guideline:成人高血压食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人高血压食养指南"
+        },
+        {
+          "score": 24.1073,
+          "docId": "guideline:成人高尿酸血症与痛风食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人高尿酸血症与痛风食养指南"
+        }
+      ],
+      "createTime": "2026-10-28T03:08:50",
+      "ragUsed": true,
+      "id": 7290,
+      "text": "血压偏高，饮食上最核心的是两件事：控钠、增钾，同时把整体膳食结构调整到清淡、少加工的方向。依据《成人高血压食养指南》，具体可以这样做：\n\n第一，减少食盐和含钠调味品。除了炒菜少放盐，酱油、酱类、蚝油、鸡精、味精这些都要算进去，它们是容易被忽略的钠来源。加工肉制品、腌制品、咸菜、方便食品也尽量少碰。\n\n第二，增加富钾食物。新鲜蔬菜、水果和豆类都是好的来源，指南建议高血压人群适当增加这类食物的摄入。如果肾功能良好，可以考虑高钾低钠盐；但指南明确不建议靠服用钾补充剂（包括药物）来降压，肾功能不全的人补钾前要先咨询医生。\n\n第三，适当增加钙和镁。指南提到我国居民膳食钙普遍摄入不足，建议高血压患者适当增加钙的摄入；镁对血管有扩张作用，能对抗高钠的升压效应。奶类、豆制品、深绿色蔬菜、坚果都是不错的来源。\n\n第四，蛋白质来源上多用豆类及其制品，同时限制添加糖的摄入，少喝含糖饮料、少吃甜点。\n\n另外，指南也提到饮食要结合个人体质和证型来调整，比如肝火上炎证以清淡平肝为主，痰湿内阻证也有相应的食养方向，这部分比较个体化，可以找中医师辨证后再细化。\n\n最后提醒一句：饮食调整是辅助手段，血压的管理还需要规律监测，具体用药和方案请以医生的诊断和处方为准，不要自行停药或改药。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3430,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "血压偏高，饮食上最核心的是两件事：控钠、增钾，同时把整体膳食结构调整到清淡、少加工的方向。依据《成人高血压食养指南》，具体可以这样做：  第一，减少食盐和含钠调味品。除了炒菜少放盐，酱油、酱类、蚝油、鸡精、味精这些都要算进去，它们是容易被…",
+      "messageCount": 4,
+      "lastMessageAt": "2026-10-28T03:08:50.676594999",
+      "createTime": "2026-10-28T03:08:45",
+      "updateTime": "2026-10-28T03:08:45",
+      "id": 3430,
+      "title": "从现在开始，你回答任何健..."
+    }
+  },
+  "message": "发送消息成功"
+}

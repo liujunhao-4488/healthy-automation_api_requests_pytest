@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_login_failure_envelope[密码错]  0.06s

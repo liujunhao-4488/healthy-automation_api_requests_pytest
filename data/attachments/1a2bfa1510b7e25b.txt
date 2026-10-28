@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_intent_matches_dataset_label[知识-升糖指数]  1.52s

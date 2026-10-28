@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2531 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:11:47 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:11:45",
+      "id": 7527,
+      "text": "我怀孕 5 个月了，能吃三文鱼刺身吗？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:11:47",
+      "ragUsed": false,
+      "id": 7528,
+      "text": "不建议吃三文鱼刺身。孕期（包括孕5个月）应避免生食鱼类和生海鲜，三文鱼刺身属于生食，风险主要来自寄生虫（如异尖线虫）和致病菌（如李斯特菌、沙门氏菌）。孕期免疫功能相对下降，感染后处理起来更麻烦，李斯特菌还可能影响胎儿，所以这个阶段以“全熟”为原则更稳妥。\n\n想吃三文鱼的话，可以改成熟制做法：煎、烤、蒸到中心完全变色不透明，或者选罐装/真空包装的熟制三文鱼。日料店里的炙烤三文鱼表面虽烤过、中心仍是生的，也不建议。另外，孕期吃鱼注意选低汞品种，三文鱼本身汞含量较低，熟吃是合适的选择；每周吃两到三次、每次约一个手掌大小的量即可。\n\n如果已经吃过一次刺身，不用过度紧张，留意之后有无发热、腹泻、腹痛等不适，有异常及时就医。具体请以产科医生的诊断和建议为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3550,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不建议吃三文鱼刺身。孕期（包括孕5个月）应避免生食鱼类和生海鲜，三文鱼刺身属于生食，风险主要来自寄生虫（如异尖线虫）和致病菌（如李斯特菌、沙门氏菌）。孕期免疫功能相对下降，感染后处理起来更麻烦，李斯特菌还可能影响胎儿，所以这个阶段以“全熟…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:11:47.525318627",
+      "createTime": "2026-10-28T03:11:44",
+      "updateTime": "2026-10-28T03:11:44",
+      "id": 3550,
+      "title": "我怀孕 5 个月了，能吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

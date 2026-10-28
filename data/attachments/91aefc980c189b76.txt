@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2544 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:10:18 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:10:16",
+      "id": 7405,
+      "text": "鸡胸肉有什么替代品"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:10:18",
+      "ragUsed": false,
+      "id": 7406,
+      "text": "鸡胸肉的主要优势是低脂高蛋白、性价比高、做法百搭，替代品可以从“同样低脂高蛋白”和“换个口感/风味”两个方向选。\n\n想保持低脂高蛋白，可以选：鸡腿肉去皮（口感更嫩，脂肪略高一点）、虾仁、龙利鱼/巴沙鱼、鳕鱼、瘦牛肉（里脊）、猪里脊、鸡蛋和蛋清、豆腐及豆制品（北豆腐、豆干、素鸡）、希腊酸奶。豆制品和鱼虾的氨基酸组成也不错，搭配着吃完全能顶替鸡胸肉的角色。\n\n想换口感、不想再吃“柴”的鸡胸，鸭胸去皮、火鸡胸、低脂火腿片也可以轮换，但注意加工肉制品钠含量偏高，别天天吃。\n\n如果替代是为了减脂控热量，优先选虾仁、白身鱼、去皮鸡腿、蛋清、北豆腐这类；豆干、素鸡蛋白质密度高但热量和脂肪也比鸡胸高一些，份量上相应减少即可。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3488,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉的主要优势是低脂高蛋白、性价比高、做法百搭，替代品可以从“同样低脂高蛋白”和“换个口感/风味”两个方向选。  想保持低脂高蛋白，可以选：鸡腿肉去皮（口感更嫩，脂肪略高一点）、虾仁、龙利鱼/巴沙鱼、鳕鱼、瘦牛肉（里脊）、猪里脊、鸡蛋和…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:10:18.636404369",
+      "createTime": "2026-10-28T03:10:16",
+      "updateTime": "2026-10-28T03:10:16",
+      "id": 3488,
+      "title": "鸡胸肉有什么替代品"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2195 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:09:44 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:09:42",
+      "id": 7363,
+      "text": "我该吃多少鸡胸肉"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:09:44",
+      "ragUsed": false,
+      "id": 7364,
+      "text": "按你的情况，如果鸡胸肉是当天主要的蛋白质来源，一餐吃 100–150 克生重比较合适；如果一天分两餐吃，每餐 80–100 克生重就够。你目前没有慢病和过敏忌口信息，这个量主要按体重和活动水平来定：你体重 70.2 公斤、中度活动，每天蛋白质大致 110–125 克比较合适，鸡胸肉每 100 克生重约含 22–23 克蛋白质，所以一餐 100–150 克能提供 22–34 克蛋白质，再配合鸡蛋、奶、豆制品和主食里的蛋白质，全天比较容易达标。注意鸡胸肉别用重油煎炸，水煮、蒸、烤或少油煎更符合控油方向；如果当天还吃了较多红肉或蛋白粉，鸡胸肉可以相应减到 80–100 克。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3467,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "按你的情况，如果鸡胸肉是当天主要的蛋白质来源，一餐吃 100–150 克生重比较合适；如果一天分两餐吃，每餐 80–100 克生重就够。你目前没有慢病和过敏忌口信息，这个量主要按体重和活动水平来定：你体重 70.2 公斤、中度活动，每天蛋…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:09:44.642260106",
+      "createTime": "2026-10-28T03:09:42",
+      "updateTime": "2026-10-28T03:09:42",
+      "id": 3467,
+      "title": "我该吃多少鸡胸肉"
+    }
+  },
+  "message": "发送消息成功"
+}

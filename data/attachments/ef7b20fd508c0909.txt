@@ -1,0 +1,56 @@
+HTTP 200　（耗时 3031 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:08:22 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:08:19",
+      "id": 7257,
+      "text": "生酮饮食是什么"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:08:22",
+      "ragUsed": false,
+      "id": 7258,
+      "text": "生酮饮食是一种把碳水化合物压到极低、同时大幅提高脂肪比例的饮食方式，通常碳水占总热量的5%–10%，脂肪占70%–75%，蛋白质适量。它的核心目的是让身体从“烧糖”转向“烧酮体”——当碳水摄入很少、肝糖原耗尽后，肝脏会把脂肪分解成酮体供能，这个状态叫营养性酮症。\n\n常见吃法包括：主食和含糖食物基本不吃，肉类、蛋、鱼、油脂、坚果、低糖蔬菜为主。一般几天到一两周身体才逐渐适应，期间可能出现乏力、头痛、便秘等“生酮流感”表现。\n\n需要提醒的是：生酮饮食最初用于难治性癫痫的医疗辅助，并非适合所有人的日常减重方案。它有明确禁忌和风险，比如可能影响血脂、增加肾结石和电解质紊乱风险，糖尿病患者尤其是用胰岛素或磺脲类药物者有低血糖风险，孕期哺乳期、肝肾功能不全、有进食障碍史的人也不适合自行尝试。长期执行的证据和安全性仍有争议，容易因食物选择受限而缺乏膳食纤维和部分维生素。\n\n如果你是想了解它是否适合自己减重，建议先评估基础疾病和用药情况，并在医生或注册营养师指导下进行，不要自行长期严格执行。具体请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "empty"
+    },
+    "conversationId": 3424,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "生酮饮食是一种把碳水化合物压到极低、同时大幅提高脂肪比例的饮食方式，通常碳水占总热量的5%–10%，脂肪占70%–75%，蛋白质适量。它的核心目的是让身体从“烧糖”转向“烧酮体”——当碳水摄入很少、肝糖原耗尽后，肝脏会把脂肪分解成酮体供能…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:08:22.730592124",
+      "createTime": "2026-10-28T03:08:19",
+      "updateTime": "2026-10-28T03:08:19",
+      "id": 3424,
+      "title": "生酮饮食是什么"
+    }
+  },
+  "message": "发送消息成功"
+}

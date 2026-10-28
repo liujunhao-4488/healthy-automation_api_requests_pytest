@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1323 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:10:39 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:10:37",
+      "id": 7445,
+      "text": "推荐几部好看的电影"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:10:39",
+      "ragUsed": false,
+      "id": 7446,
+      "text": "这类问题不在我的职责范围内——我只负责饮食与健康相关的问题，比如食材选择、三餐搭配、营养与热量估算、控油控糖控钠、慢病饮食注意事项等。电影推荐建议你使用专门的影视推荐渠道。\n\n如果你有饮食或健康方面的疑问，欢迎随时问我。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3508,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "这类问题不在我的职责范围内——我只负责饮食与健康相关的问题，比如食材选择、三餐搭配、营养与热量估算、控油控糖控钠、慢病饮食注意事项等。电影推荐建议你使用专门的影视推荐渠道。  如果你有饮食或健康方面的疑问，欢迎随时问我。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:10:39.215255959",
+      "createTime": "2026-10-28T03:10:37",
+      "updateTime": "2026-10-28T03:10:37",
+      "id": 3508,
+      "title": "推荐几部好看的电影"
+    }
+  },
+  "message": "发送消息成功"
+}

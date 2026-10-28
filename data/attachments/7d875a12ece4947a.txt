@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2074 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:12:22 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:12:19",
+      "id": 7563,
+      "text": "那如果我想更快一点呢，最快能多快？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:12:22",
+      "ragUsed": false,
+      "id": 7564,
+      "text": "在保证安全的前提下，一般不建议超过每周 2 斤（约 1 公斤）；对体重基数较大的人，短期可能接近每周 2～3 斤，但这属于上限，不宜长期维持。\n\n再快就基本要靠极端节食、断食或减肥药了，代价是肌肉流失、代谢下降、乏力掉发、月经紊乱、胆结石风险上升，反弹率也高，所以不建议追求更快的速度。想在自己能承受的范围内尽量快一些，可以这样做：把精制主食和含糖饮料减下来、保证每餐有足量蛋白质和蔬菜、每周 2～3 次力量训练保住肌肉，再加上每天多走动；同时保证睡眠，因为睡不够会明显拖慢减重。\n\n如果你有基础疾病、正在服药，或处于孕期哺乳期，具体节奏请以医生的评估为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3563,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "在保证安全的前提下，一般不建议超过每周 2 斤（约 1 公斤）；对体重基数较大的人，短期可能接近每周 2～3 斤，但这属于上限，不宜长期维持。  再快就基本要靠极端节食、断食或减肥药了，代价是肌肉流失、代谢下降、乏力掉发、月经紊乱、胆结石…",
+      "messageCount": 4,
+      "lastMessageAt": "2026-10-28T03:12:22.049062088",
+      "createTime": "2026-10-28T03:12:17",
+      "updateTime": "2026-10-28T03:12:17",
+      "id": 3563,
+      "title": "健康的减重速度是每周多少..."
+    }
+  },
+  "message": "发送消息成功"
+}

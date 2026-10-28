@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_chat_appends_to_same_conversation  1.42s

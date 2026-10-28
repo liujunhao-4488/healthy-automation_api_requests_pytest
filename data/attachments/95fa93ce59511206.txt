@@ -1,0 +1,5 @@
+03:08:53 I → POST /assistant/chat    200     11ms
+03:08:53 I · AI    问「cnm」              → 请文明交流哦～我会尽力帮你解答饮食与健康相关的问题，比如食材替代、三餐搭配、热量营养估算等。
+03:08:53 I → DELETE /assistant/conversations/3433 200      6ms
+03:08:53 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3433,) | affected=2 | 0.9ms
+03:08:53 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3433,) | affected=1 | 0.6ms

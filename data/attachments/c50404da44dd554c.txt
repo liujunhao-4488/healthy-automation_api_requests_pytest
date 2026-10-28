@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_intent_matches_dataset_label[闲聊-问做法]  0.64s

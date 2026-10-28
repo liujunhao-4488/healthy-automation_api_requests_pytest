@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1990 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:10:00 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:09:58",
+      "id": 7383,
+      "text": "我能吃海虾吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:10:00",
+      "ragUsed": false,
+      "id": 7384,
+      "text": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况，我这边没有你的相关信息，所以只能给你判断依据。\n\n如果你对虾蟹等甲壳类海鲜过敏，那就不要吃，而且要注意虾酱、虾皮、含虾成分的调味料和加工食品也可能引发反应。如果以前吃过海虾没有不适，一般可以正常吃，注意新鲜、彻底煮熟即可。\n\n有高尿酸或痛风的人要适量，海虾属于中等嘌呤食物，急性发作期尽量少吃。血脂偏高的人注意烹调方式，清蒸、白灼比油炸、油焖更合适。对孕期、哺乳期或有慢性病正在用药的情况，具体请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3477,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况，我这边没有你的相关信息，所以只能给你判断依据。  如果你对虾蟹等甲壳类海鲜过敏，那就不要吃，而且要注意虾酱、虾皮、含虾成分的调味料和加工食品也可能引发反应。如果以前吃过海虾没有…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:10:00.635999194",
+      "createTime": "2026-10-28T03:09:58",
+      "updateTime": "2026-10-28T03:09:58",
+      "id": 3477,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}

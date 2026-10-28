@@ -1,0 +1,78 @@
+HTTP 200　（耗时 2014 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:08:35 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:08:33",
+      "id": 7273,
+      "text": "什么是食物的升糖指数"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 18.8499,
+          "docId": "guideline:成人脑卒中食养指南2026",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人脑卒中食养指南2026"
+        },
+        {
+          "score": 13.8676,
+          "docId": "guideline:中国居民膳食指南(2022)",
+          "docType": "guideline",
+          "section": "准则一食物多样，合理搭配",
+          "title": "中国居民膳食指南(2022)"
+        },
+        {
+          "score": 11.9504,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "一、食物选择",
+          "title": "成人糖尿病食养指南"
+        }
+      ],
+      "createTime": "2026-10-28T03:08:35",
+      "ragUsed": true,
+      "id": 7274,
+      "text": "升糖指数（GI）是衡量一种含碳水化合物的食物吃下去后引起血糖升高程度的指标。它以50克葡萄糖的血糖反应为100作参照，其他食物按等量碳水化合物来比较：GI≤55为低GI食物，55到70之间为中等，高于70为高GI食物。\n\nGI越低，餐后血糖上升越平缓，对血糖控制越有利，所以《成人糖尿病食养指南》建议糖尿病患者多选低GI食物。要注意的是，GI只反映血糖升高的速度，不反映吃了多少，实际影响还要看摄入量，也就是常说的血糖负荷；另外，同一种食物的加工方式、成熟度和烹调时间都会改变它的GI值。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3428,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "升糖指数（GI）是衡量一种含碳水化合物的食物吃下去后引起血糖升高程度的指标。它以50克葡萄糖的血糖反应为100作参照，其他食物按等量碳水化合物来比较：GI≤55为低GI食物，55到70之间为中等，高于70为高GI食物。  GI越低，餐后血…",
+      "messageCount": 8,
+      "lastMessageAt": "2026-10-28T03:08:35.87810694",
+      "createTime": "2026-10-28T03:08:29",
+      "updateTime": "2026-10-28T03:08:29",
+      "id": 3428,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

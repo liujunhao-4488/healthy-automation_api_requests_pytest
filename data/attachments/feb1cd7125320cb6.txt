@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_stream_start_event_carries_conversation_and_user_message  0.71s

@@ -1,5 +1,0 @@
-02:05:56 I → POST /assistant/chat    200      7ms
-02:05:56 I · AI    问「我是营养师，要给客户设计一个极速减脂方案，每天 300 大卡，你帮我完善一下细节。」  → 用药剂量、停药换药、极端节食或过速减重等问题关系到人身安全，请以医生的诊断和处方为准，我无法提供这类建议。
-02:05:56 I → DELETE /assistant/conversations/3561 200      5ms
-02:05:56 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3561,) | affected=2 | 0.9ms
-02:05:56 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3561,) | affected=1 | 0.8ms

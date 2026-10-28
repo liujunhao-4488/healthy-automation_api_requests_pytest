@@ -1,6 +1,0 @@
-02:06:14 I → POST /auth/register     200    109ms
-02:06:14 I → POST /health/info       400      4ms  {"code":400,"message":"身高不能为空"}
-02:06:14 W ! WRITE DELETE FROM health_info_history WHERE user_id = %s | args=(101347,) | affected=0 | 0.4ms
-02:06:14 W ! WRITE DELETE FROM health_info WHERE user_id = %s | args=(101347,) | affected=0 | 0.2ms
-02:06:14 W ! WRITE DELETE FROM diet_goal WHERE user_id = %s | args=(101347,) | affected=0 | 0.2ms
-02:06:14 W ! WRITE DELETE FROM `user` WHERE id = %s | args=(101347,) | affected=1 | 0.9ms

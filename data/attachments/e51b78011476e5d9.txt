@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_substitute_question_stays_on_substitute_topic[替代-乳制品]  2.49s

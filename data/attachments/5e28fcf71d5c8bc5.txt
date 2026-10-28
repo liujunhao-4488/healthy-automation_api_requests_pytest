@@ -1,0 +1,2 @@
+
+└─ ✘ FAILED  test_long_term_memory_survives_filler_turns[记忆-八轮闲聊后仍记得]  13.49s  +      where <built-in method strip of str object at 0x73de42b4dfb0> = ('紫色灯塔77号。').strip

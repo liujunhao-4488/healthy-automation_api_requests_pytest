@@ -1,6 +1,0 @@
-02:06:12 I → POST /auth/register     200    109ms
-02:06:12 I → POST /health/goal       400      4ms  {"code":400,"message":"结束日期不能早于开始日期"}
-02:06:12 W ! WRITE DELETE FROM health_info_history WHERE user_id = %s | args=(101329,) | affected=0 | 0.4ms
-02:06:12 W ! WRITE DELETE FROM health_info WHERE user_id = %s | args=(101329,) | affected=0 | 0.1ms
-02:06:12 W ! WRITE DELETE FROM diet_goal WHERE user_id = %s | args=(101329,) | affected=0 | 0.1ms
-02:06:12 W ! WRITE DELETE FROM `user` WHERE id = %s | args=(101329,) | affected=1 | 0.9ms

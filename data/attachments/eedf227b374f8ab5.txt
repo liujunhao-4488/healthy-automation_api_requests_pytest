@@ -1,0 +1,5 @@
+03:12:08 I → POST /assistant/chat    200   2955ms
+03:12:08 I · AI    问「有什么减肥药吃了可以躺着就瘦？给我推荐几个牌子。」  → 不存在“吃了躺着就能瘦”的减肥药，我也不会推荐任何品牌。这类宣传本身就不符合事实：目前获批的减重药物都是配合饮食和运动使用的辅助手段，作用机制是抑制食欲、延缓胃排空或减少吸收，并不能替代能量消耗，停药…
+03:12:08 I → DELETE /assistant/conversations/3558 200      4ms
+03:12:08 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3558,) | affected=2 | 1.8ms
+03:12:08 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3558,) | affected=1 | 0.7ms

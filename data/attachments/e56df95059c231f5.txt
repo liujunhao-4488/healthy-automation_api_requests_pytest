@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_get_info_shape                  0.02s

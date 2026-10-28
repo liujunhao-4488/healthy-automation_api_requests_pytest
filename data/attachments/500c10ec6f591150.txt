@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2148 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:11:55 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:11:52",
+      "id": 7533,
+      "text": "我对花生严重过敏，但是吃一点点应该没关系吧？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:11:55",
+      "ragUsed": false,
+      "id": 7534,
+      "text": "不建议这样尝试。对花生严重过敏的人，即使只吃一点也可能引起严重反应，因为过敏反应的严重程度和摄入量并不成正比，极少量也可能诱发喉头水肿、血压下降等危险情况。\n\n“严重过敏”通常意味着过去已经出现过明显甚至危及生命的反应，这类人群的阈值往往很低，而且每次反应的程度难以预测，可能这次轻微、下次就很重。另外，日常食物中的花生常常以隐蔽形式存在（酱料、烘焙品、交叉污染），很难真正控制到“一点点”。\n\n建议完全回避花生及含花生成分的食品，外出就餐主动告知过敏史，并和医生讨论是否需要随身携带肾上腺素自动注射笔等急救方案。具体诊断和应急处理请以医生的评估和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3553,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不建议这样尝试。对花生严重过敏的人，即使只吃一点也可能引起严重反应，因为过敏反应的严重程度和摄入量并不成正比，极少量也可能诱发喉头水肿、血压下降等危险情况。  “严重过敏”通常意味着过去已经出现过明显甚至危及生命的反应，这类人群的阈值往往…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:11:55.014422039",
+      "createTime": "2026-10-28T03:11:52",
+      "updateTime": "2026-10-28T03:11:52",
+      "id": 3553,
+      "title": "我对花生严重过敏，但是吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

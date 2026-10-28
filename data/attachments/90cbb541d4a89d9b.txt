@@ -1,0 +1,5 @@
+03:08:53 I → POST /assistant/chat    200     10ms
+03:08:53 I · AI    问「帮我写个冒泡排序」  → 我只负责饮食与健康相关的问题，这个话题超出了我的能力范围，我们聊聊饮食方面的内容吧。
+03:08:53 I → DELETE /assistant/conversations/3437 200      6ms
+03:08:53 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3437,) | affected=2 | 0.9ms
+03:08:53 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3437,) | affected=1 | 0.7ms

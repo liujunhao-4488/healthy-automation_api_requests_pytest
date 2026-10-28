@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_save_goal_fail[缺 targetCalories]  0.00s
+
+[清理] 靶子 userId=101328: history=0 info=0 goal=0 user=1

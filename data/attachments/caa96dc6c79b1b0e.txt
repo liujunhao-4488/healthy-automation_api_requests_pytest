@@ -1,2 +1,0 @@
-
-└─ ✘ FAILED  test_citation_present_rate           1.95s  assert 0 > 0

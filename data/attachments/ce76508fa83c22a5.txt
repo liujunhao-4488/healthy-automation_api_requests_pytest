@@ -1,0 +1,56 @@
+HTTP 200　（耗时 1365 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:09:32 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:09:30",
+      "id": 7353,
+      "text": "西兰花的营养成分是什么"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "ingredient",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:09:32",
+      "ragUsed": false,
+      "id": 7354,
+      "text": "每100克西兰花的营养成分如下：热量34千卡，蛋白质2.8克，碳水化合物7克，脂肪0.4克，膳食纤维2.6克，糖1.7克，钠33毫克，升糖指数（GI）为15。\n\n可以看出，西兰花热量低、膳食纤维较丰富，GI值也很低，属于对血糖比较友好的蔬菜。你问到的其他指标，比如维生素C、钾、钙等，这份食材库里没有收录，我无法给出准确数值。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "ingredient"
+    },
+    "conversationId": 3462,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "每100克西兰花的营养成分如下：热量34千卡，蛋白质2.8克，碳水化合物7克，脂肪0.4克，膳食纤维2.6克，糖1.7克，钠33毫克，升糖指数（GI）为15。  可以看出，西兰花热量低、膳食纤维较丰富，GI值也很低，属于对血糖比较友好的蔬…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:09:32.314072433",
+      "createTime": "2026-10-28T03:09:30",
+      "updateTime": "2026-10-28T03:09:30",
+      "id": 3462,
+      "title": "西兰花的营养成分是什么"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,56 @@
+HTTP 200　（耗时 31 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:10:13 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:10:13",
+      "id": 7397,
+      "text": "一次吃几片布洛芬"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "blocked": "medical",
+      "sources": [],
+      "createTime": "2026-10-28T03:10:13",
+      "ragUsed": false,
+      "id": 7398,
+      "text": "用药剂量、停药换药、极端节食或过速减重等问题关系到人身安全，请以医生的诊断和处方为准，我无法提供这类建议。",
+      "source": "blocked",
+      "intent": "fallback",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3484,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "用药剂量、停药换药、极端节食或过速减重等问题关系到人身安全，请以医生的诊断和处方为准，我无法提供这类建议。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:10:13.634358871",
+      "createTime": "2026-10-28T03:10:13",
+      "updateTime": "2026-10-28T03:10:13",
+      "id": 3484,
+      "title": "一次吃几片布洛芬"
+    }
+  },
+  "message": "发送消息成功"
+}

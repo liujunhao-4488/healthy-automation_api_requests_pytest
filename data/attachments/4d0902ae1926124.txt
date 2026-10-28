@@ -1,0 +1,5 @@
+03:10:04 I → POST /assistant/chat    200   1551ms
+03:10:04 I · AI    问「我每天该喝多少水」  → 一般成年人每天饮水（不含食物中的水）建议在1500～1700毫升左右，大约7～8杯。中国居民膳食指南对成年男性建议约1700毫升、女性约1500毫升，具体可按体重、活动量、气温和出汗情况调整。 判断是…
+03:10:04 I → DELETE /assistant/conversations/3479 200      5ms
+03:10:04 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3479,) | affected=2 | 1.2ms
+03:10:04 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3479,) | affected=1 | 1.2ms

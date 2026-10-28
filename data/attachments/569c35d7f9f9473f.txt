@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_update_profile_fail[用户名超长]  0.00s
-
-[清理] 删除靶子账号 pf_1674254af7@example.com，affected=1

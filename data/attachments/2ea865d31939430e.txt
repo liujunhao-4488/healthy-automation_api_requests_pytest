@@ -1,8 +1,0 @@
-02:04:33 I → POST /auth/login        200     64ms
-02:04:33 I → GET  http://127.0.0.1:5000/api/kb/stats 200      2ms
-02:04:33 I → POST http://127.0.0.1:5000/api/kb/search 200      6ms
-02:04:34 I → POST /assistant/chat    200   1065ms
-02:04:34 I · AI    问「高血压怎么吃」     → 抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。
-02:04:34 I → DELETE /assistant/conversations/3417 200     20ms
-02:04:34 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3417,) | affected=2 | 1.4ms
-02:04:34 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3417,) | affected=1 | 0.8ms

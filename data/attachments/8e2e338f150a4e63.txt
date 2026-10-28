@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2315 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:09:03 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:09:01",
+      "id": 7321,
+      "text": "我能吃海虾吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:09:03",
+      "ragUsed": false,
+      "id": 7322,
+      "text": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及甲状腺、痛风、肾功能这几方面的情况。如果你对虾蟹类过敏，那就不能吃；如果没有过敏史，一般人群适量吃海虾是没问题的。\n\n海虾属于高蛋白、低脂肪的食材，还含有硒、碘和一定量的胆固醇。对大多数人来说，清蒸、白灼、少油快炒都是不错的做法，注意彻底加热、别吃生腌。如果你有痛风或高尿酸，虾属于中等嘌呤食物，急性发作期建议避免，平时少量吃并注意多喝水；如果有甲状腺疾病，尤其是需要控碘的情况，吃之前最好问一下医生。另外，虾头、虾线不是必须去掉，但虾头胆固醇和重金属相对集中，少吃为好。\n\n如果你有具体的疾病或正在服药，具体能不能吃、吃多少，请以医生的诊断和建议为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3446,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及甲状腺、痛风、肾功能这几方面的情况。如果你对虾蟹类过敏，那就不能吃；如果没有过敏史，一般人群适量吃海虾是没问题的。  海虾属于高蛋白、低脂肪的食材，还含有硒、碘和一定量的胆固醇。对大多数人来说…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:09:03.421308649",
+      "createTime": "2026-10-28T03:09:01",
+      "updateTime": "2026-10-28T03:09:01",
+      "id": 3446,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}
