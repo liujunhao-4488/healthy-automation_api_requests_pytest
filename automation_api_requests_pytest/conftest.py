@@ -21,6 +21,7 @@ from common.accounts import (
 )
 from common.logger import begin_run_log, log, pad
 from config.config import (
+    ADMIN_USER,
     BASE_URL,
     DB,
     KB_BASE_URL,
@@ -96,6 +97,45 @@ def auth_headers(_auth_state):
     return {"Authorization": f"Bearer {_auth_state.token}"}
 
 
+@pytest.fixture(scope="session")
+def admin_headers(api):
+    """管理员账号的请求头 —— 鉴权矩阵的**对照组**。
+
+    为什么单独一个夹具，而不是复用 auth_headers 换个账号：
+      它是**另一个身份**，不是同一个人的另一个 token。普通用户和管理员
+      在鉴权测试里是"错角色"和"正角色"两方，混在一起写容易搞错谁是谁。
+
+    为什么登不上就 skip（而不是 fail）：
+      这个账号不在 seed_test.sql 里，只有开发库和补过种子之后才有。
+      登录失败说明"这台机器没配管理员账号"，这是**环境没准备好**，
+      不是被测系统坏了 —— 报红会冤枉后端。skip 时会把原因打出来，
+      不会变成一条"看起来过了"的假绿灯。
+
+    为什么 scope="session"：
+      token 用一整个测试会话没问题，而登录本身要打一次接口 + 一次 bcrypt
+      校验（~100ms）。每条用例都登一次纯属浪费。
+    """
+    resp = api.auth.login({"email": ADMIN_USER["email"], "password": ADMIN_USER["password"]})
+
+    if resp.status_code != 200:
+        pytest.skip(
+            f"管理员账号 {ADMIN_USER['email']} 登录失败"
+            f"（HTTP {resp.status_code}），鉴权矩阵的正角色对照跑不了。\n"
+            f"→ 需要库里有一个 role='admin' 的账号。"
+            f"开发库已有；测试库请执行 database/seed_test.sql。"
+        )
+
+    body = resp.json()
+    if (body.get("data") or {}).get("role") != "admin":
+        pytest.skip(
+            f"{ADMIN_USER['email']} 登录成功但 role="
+            f"{(body.get('data') or {}).get('role')!r}，不是 admin —— "
+            f"拿它当正角色对照会得出错误结论。"
+        )
+
+    return {"Authorization": "Bearer " + body["data"]["token"]}
+
+
 @pytest.fixture(scope="session", autouse=True)
 def _cleanup_guard():
     """会话收尾兜底：夹具漏清 / 清理中途抛异常时，按登记表再删一次。
@@ -105,8 +145,22 @@ def _cleanup_guard():
     """
     yield
     failures = cleanup.cleanup_all()
-    if failures:
-        log.warning("清理兜底：仍有 %d 项未回收：%s", len(failures), failures)
+    if not failures:
+        return
+
+    log.warning("清理兜底：仍有 %d 项未回收：%s", len(failures), failures)
+
+    # ⚠️ 只写日志等于没人看见。
+    #    开发库里堆了 112 个临时账号（pf_ / hx_ / np_），跑了几十轮都没人发现，
+    #    原因就在这里：日志进了文件，而人只看屏幕上那句"没有失败用例 ✓"。
+    #    所以强制打到终端上，让"有东西没清掉"没法被顺手划过去。
+    #
+    #    为什么不做成让整场失败：清理失败往往是环境问题（后端连错库），
+    #    把它算成"用例失败"会污染"通过率"这个数字。这里要的是**看得见**，
+    #    不是把它混进失败统计。真要做到红，应当另设一个退出码约定。
+    _term_write(f"\n  ⚠ 清理兜底：{len(failures)} 项临时数据没回收\n", red=True, bold=True)
+    for kind, ident, exc in failures:
+        _term_write(f"    · {kind} {ident} — {str(exc).splitlines()[0][:150]}\n", red=True)
 
 
 # ==================== 控制台分块日志 ====================

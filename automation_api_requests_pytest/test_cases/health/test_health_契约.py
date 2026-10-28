@@ -21,7 +21,7 @@ import uuid
 
 import pytest
 
-from common import cleanup, db
+from common import cleanup
 from common.schemas import (
     HEALTH_GOAL_SCHEMA,
     HEALTH_HISTORY_SCHEMA,
@@ -109,8 +109,9 @@ def test_get_info_without_profile_returns_null_data(api):
         # 注意：未建档不是 404，是 200 + data:null —— 这点容易想当然
         api.assert_ok(resp, "未建档时读取也应成功", schema=HEALTH_INFO_EMPTY_SCHEMA)
     finally:
-        db.execute("DELETE FROM `user` WHERE email = %s", (data["email"],))
-        cleanup.unregister_user(reg["data"]["userId"])
+        # 探针账号只在测试库里存在，没有任何子数据；purge_user 删完会回查确认，
+        # 删不干净会抛异常而不是静默留下（同 temp_user 的教训）。
+        cleanup.purge_user(reg["data"]["userId"])
 
 
 def test_get_info_analysis_is_not_empty(api, auth_headers, health_profile):

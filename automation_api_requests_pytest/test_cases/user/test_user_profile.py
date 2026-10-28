@@ -57,9 +57,17 @@ def temp_user(api):
     yield user
 
     # ---- 清理：用例跑完才轮到这儿 ----
-    affected = db.execute("DELETE FROM `user` WHERE email = %s", (user["email"],))
-    cleanup.unregister_user(user["userId"])
-    print(f"\n[清理] 删除靶子账号 {user['email']}，affected={affected}")
+    # ⚠️ 这里原来是一句 `affected = db.execute("DELETE ...")` + 无条件 unregister_user()。
+    #    那个写法**看不出"没删掉"**，也不会有人知道，两个坑叠在一起：
+    #      ① affected=0 被当成"删完了"；它同样可能是"这个 id 不在我连的这个库里"；
+    #      ② 不管删没删掉都注销了登记表 → 会话收尾的兜底再也捞不到它 → 永久留下。
+    #    实测代价：开发库堆了 65 个同类临时账号（hx_），跑了几十轮都没人发现。
+    #
+    #    现在统一交给 purge_user()：**删 → 回查确认 → 真删掉了才注销**。
+    #    删不干净会抛异常（这条用例标 ERROR，红得看得见），
+    #    失败时不注销，登记表留着给会话收尾再试一次。
+    cleanup.purge_user(user["userId"])
+    print(f"\n[清理] 已回查确认删除靶子账号 {user['email']}（userId={user['userId']}）")
 
 
 def _free_phone():

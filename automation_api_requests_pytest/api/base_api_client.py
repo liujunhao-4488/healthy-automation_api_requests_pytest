@@ -253,3 +253,60 @@ class BaseApiClient:
                 f"就来改这里的期望值；否则是后端回归。"
             )
         return body
+
+    # ==================== 鉴权专用 ====================
+    @staticmethod
+    def assert_forbidden(resp, msg="越权应被 403 拒绝"):
+        """一行断定"这个请求被权限拦住了"，返回解析好的 body。
+
+        ══ 为什么不能直接用 assert_error ══
+        403 走的是**另一套响应体系**。业务错误（400）是统一信封：
+
+            {"code": 400, "message": "手机号格式不正确"}
+
+        而 403 是 Spring Security 在**进业务层之前**拦下的，给的是框架默认错误体：
+
+            {"timestamp": "...", "status": 403, "error": "Forbidden", "path": "..."}
+
+        里面**没有 code 也没有 message**。硬套 assert_error 只能两个参数都传 None，
+        那这条断言就什么都没验 —— 名义上"统一了"，实际是空壳。
+
+        ══ 那这里验什么才不是空壳 ══
+        不验"格式对不对"（格式是缺陷，见下面的说明），验**安全上必须成立的三件事**：
+
+          ① HTTP 必须是 403 —— 不是 200、不是 500。500 说明"崩了"而不是"拦住了"。
+          ② 响应体里**不能有 data** —— 有 data 就是业务数据泄露。
+             这条是真正有杀伤力的：哪天有人把权限判断从 Security 挪进业务层却写漏了
+             返回分支，很可能返回 `{"code":403,"data":[用户列表]}`，只断 403 会放过。
+          ③ 不能是 `code == 200` —— 那是越权**成功**了。
+
+        ⚠️ 已知缺陷（接口覆盖矩阵 #10）：403 不走统一信封。
+           这是**后端的问题，不是测试的问题**。所以这里不去断言"必须是 Spring 默认体"
+           —— 那等于把缺陷当正确答案钉住。缺陷单独用一条 xfail 用例标记，
+           修好那天会变 XPASS 提醒你（见 test_admin_authz.py 最后一节）。
+        """
+        assert resp.status_code == 403, (
+            f"{msg}：期望 HTTP 403，实际 {resp.status_code}，"
+            f"响应体 {(resp.text or '')[:400]}\n"
+            f"→ 200 = 越权成功了（严重）；500/502 = 后端崩了或没起来；"
+            f"404 = 路径写错，或后端先查存在性再查权限（会泄露 id 是否存在）。"
+        )
+
+        try:
+            body = resp.json()
+        except ValueError:
+            raise AssertionError(
+                f"{msg}：HTTP 403 但响应体不是 JSON：{(resp.text or '')[:300]}"
+            )
+
+        # ② 不泄露业务数据
+        assert "data" not in body, (
+            f"{msg}：被拒绝的响应里带了 data 字段，可能泄露了业务数据："
+            f"{str(body.get('data'))[:300]}"
+        )
+
+        # ③ 不是"越权成功"
+        assert body.get("code") != 200, (
+            f"{msg}：HTTP 403 但业务 code=200，自相矛盾：{str(body)[:300]}"
+        )
+        return body

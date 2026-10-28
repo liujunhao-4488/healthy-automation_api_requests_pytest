@@ -10,10 +10,12 @@
 #   路径想漏都漏不出去 —— 这条防线是"结构上不给"，比"约定上不写"硬。
 
 from .assistant_api import AssistantApi
+from .admin_api import AdminApi
 from .auth_api import AuthApi
 from .base_api_client import BaseApiClient
 from .health_api import HealthApi
 from .kb_api import KbApi
+from .notification_api import NotificationApi
 from .user_api import UserApi
 
 
@@ -25,6 +27,10 @@ class Api:
         self.assistant = AssistantApi()  # 用例里：api.assistant.chat(...)
         # ⚠️ 它打在算法服务（Flask 5000）上，不是 Java 后端 —— 见 kb_api.py 顶部说明
         self.kb = KbApi()                # 用例里：api.kb.search("高血压怎么吃")
+        # 只有 ROLE_ADMIN 能调，普通用户一律 403 —— 见 admin_api.py 顶部说明
+        self.admin = AdminApi()          # 用例里：api.admin.list_users(headers=...)
+        # 只操作自己的通知，发通知在 admin 里 —— 见 notification_api.py 顶部说明
+        self.notification = NotificationApi()  # 用例里：api.notification.list_mine(...)
 
     def assert_ok(self, resp, msg="接口应成功", schema=None):
         """把底座的判定器借过来（用例里 api.assert_ok(resp) 照旧能用）。
@@ -43,3 +49,16 @@ class Api:
         参数说明见 BaseApiClient.assert_error。
         """
         return BaseApiClient.assert_error(resp, code, message, http=http, contains=contains)
+
+    def assert_forbidden(self, resp, msg="越权应被 403 拒绝"):
+        """越权判定器 —— 专门断"权限拦住了"。
+
+        用例里：api.assert_forbidden(resp)
+
+        ⚠️ 它和 assert_error 是**两个东西**，不是重复：
+           业务失败（400）走统一信封，有 code 和 message；
+           权限拒绝（403）是 Spring Security 在业务层之前拦的，给的是框架默认错误体，
+           **里面没有 code 也没有 message**。两套响应体系，得两把尺子。
+           详细理由见 BaseApiClient.assert_forbidden 的注释。
+        """
+        return BaseApiClient.assert_forbidden(resp, msg)

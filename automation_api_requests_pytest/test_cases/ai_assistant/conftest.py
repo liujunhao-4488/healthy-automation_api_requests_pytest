@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from common import cleanup, db, eval_record
+from common import cleanup, eval_record
 from common.logger import log_qa
 
 _HERE = Path(__file__).resolve().parent
@@ -142,25 +142,13 @@ def other_user(api):
 
     # ---- 清理 ----
     # ① 先走接口软删除：和产品行为保持一致，也顺带验证 B 自己能删自己的会话。
-    # ② 再在库里硬删消息/会话：后端 deleteConversation 只是把 is_deleted 置 1，
-    #    行还在，外键 fk_assistant_conversation_user 会挡住下面删账号（1451）。
-    #    所以光调接口清不干净，必须补这一步。
-    # ③ 最后删账号。顺序不能反：assistant_message → assistant_conversation → user。
+    # ② 再硬删：后端 deleteConversation 只是把 is_deleted 置 1，行还在，
+    #    外键 fk_assistant_conversation_user 会挡住删账号（1451）。
+    #    消息 / 会话 / 账号的删除顺序（孙 → 子 → 父）和"还剩哪几张子表"
+    #    都沉在 common/cleanup.py 的 purge_user() 里，它删完会**回查确认**：
+    #    删不干净就抛异常，只有真删掉了才注销登记表。
     try:
         api.assistant.delete_conversation(cid, headers=headers)
     finally:
-        # 按会话删消息，而不是按 user_id：万一越权用例真的把 A 的消息写进了
-        # B 的会话，那条消息的 user_id 是 A，按 B 的 user_id 删会漏掉，
-        # 接着删会话时又会被 fk_assistant_message_conversation 挡住。
-        db.execute(
-            "DELETE FROM `assistant_message` WHERE `conversation_id` IN "
-            "(SELECT `id` FROM `assistant_conversation` WHERE `user_id` = %s)",
-            (user["userId"],),
-        )
-        db.execute(
-            "DELETE FROM `assistant_conversation` WHERE `user_id` = %s",
-            (user["userId"],),
-        )
-        db.execute("DELETE FROM `user` WHERE `id` = %s", (user["userId"],))
+        cleanup.purge_user(user["userId"])
         cleanup.unregister_conversations([cid])
-        cleanup.unregister_user(user["userId"])

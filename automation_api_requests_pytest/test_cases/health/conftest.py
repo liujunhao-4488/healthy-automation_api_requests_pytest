@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from common import cleanup, db
+from common import cleanup
 
 _HERE = Path(__file__).resolve().parent
 
@@ -57,11 +57,12 @@ def health_user(api):
     # ---- 清理：顺序不能反 ----
     # health_info_history 上有外键指向 user(id) 且是 ON DELETE RESTRICT，
     # 直接删 user 会直接炸 IntegrityError(1451)（实测踩过）。
-    # 所以：先删"孩子"（history / info / goal），最后删"家长"（user）。
-    uid = user["userId"]
-    n0 = db.execute("DELETE FROM health_info_history WHERE user_id = %s", (uid,))
-    n1 = db.execute("DELETE FROM health_info WHERE user_id = %s", (uid,))
-    n2 = db.execute("DELETE FROM diet_goal WHERE user_id = %s", (uid,))
-    n3 = db.execute("DELETE FROM `user` WHERE id = %s", (uid,))
-    cleanup.unregister_user(uid)
-    print(f"\n[清理] 靶子 userId={uid}: history={n0} info={n1} goal={n2} user={n3}")
+    # 所以：先删"孩子"（message / history / info / goal / record …），最后删"家长"（user）。
+    #
+    # 这一整套（含"还剩哪几张子表"的清单）已经沉到 common/cleanup.py 的 purge_user()：
+    # 它删完会**回查确认**，删不干净就抛异常，并且只有真删掉了才注销登记表。
+    # 原来这里是自己写 4 句 DELETE、不看 affected、最后无条件注销 ——
+    # 结果开发库里漏了 65 个 hx_ 账号（后端连开发库时，DELETE 打在测试库上，
+    # affected 全是 0，照样"清完了"）。
+    cleanup.purge_user(user["userId"])
+    print(f"\n[清理] 已回查确认删除靶子账号 userId={user['userId']}")

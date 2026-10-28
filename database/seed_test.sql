@@ -7,9 +7,10 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
--- 两个测试账号，密码均为 123456（bcrypt 哈希，仅用于本地/CI 测试库）
+-- 三个测试账号，密码均为 123456（bcrypt 哈希，仅用于本地/CI 测试库）
 --   2311697186@qq.com  → conftest.py 的 TEST_USER（token 夹具）
 --   123456@qq.com      → 登录/注册数据驱动用例依赖的“已存在账号”
+--   admin@qq.com       → conftest.py 的 ADMIN_USER（鉴权矩阵的正角色对照）
 --
 -- ⚠️ id=2 的 username / phone 是**用例的依赖数据**，不是随手起的名字：
 --     data/register_cases.yaml「用户名已存在」需要一个叫“张三”的账号（期望 400）
@@ -19,13 +20,20 @@ SET FOREIGN_KEY_CHECKS = 0;
 --   本地跑绿（后端连的是开发库 health_diet，那里恰好真有“张三”和这个手机号），
 --   CI 干净库跑 p0 直接红两条 —— 期望 400 却拿到 200。
 --   也就是说，那两条用例一直在偷偷依赖**开发库的历史数据**，CI 第一次跑才照出来。
+--
+-- ⚠️ id=3 的 role 必须是 'admin'（2026-10-28 加）：
+--    鉴权矩阵要证明“普通用户被 403 是因为权限，不是接口坏了”，必须有管理员对照。
+--    没有它，那 3 条正角色用例在 CI 上会 skip —— 鉴权矩阵只测了一半。
+--    密码哈希对应 123456，和开发库里的 admin@qq.com 是同一个密码。
 INSERT INTO `user` (`id`, `username`, `password`, `email`, `phone`, `avatar`, `role`, `status`) VALUES
-(1, 'autotest_primary', '$2a$10$rs0vAkSKgVKMWWWSYojuje4dho5mfroXlf9HhF.93/MFFPqXSGvt2', '2311697186@qq.com', NULL,          NULL, 'user', 1),
-(2, '张三',             '$2a$10$rs0vAkSKgVKMWWWSYojuje4dho5mfroXlf9HhF.93/MFFPqXSGvt2', '123456@qq.com',      '19330406783', NULL, 'user', 1)
+(1, 'autotest_primary', '$2a$10$rs0vAkSKgVKMWWWSYojuje4dho5mfroXlf9HhF.93/MFFPqXSGvt2', '2311697186@qq.com', NULL,          NULL, 'user',  1),
+(2, '张三',             '$2a$10$rs0vAkSKgVKMWWWSYojuje4dho5mfroXlf9HhF.93/MFFPqXSGvt2', '123456@qq.com',      '19330406783', NULL, 'user',  1),
+(3, 'autotest_admin',   '$2a$10$e3hGOVm.MysyEXTZF1f9buOUSVNFAwaXs7IYipFHsnCBRqP3II1Fm', 'admin@qq.com',       NULL,          NULL, 'admin', 1)
 ON DUPLICATE KEY UPDATE
   `username` = VALUES(`username`),
   `password` = VALUES(`password`),
   `phone`    = VALUES(`phone`),
+  `role`     = VALUES(`role`),
   `status`   = VALUES(`status`);
 
 -- 主测试账号（id=1）的健康档案。

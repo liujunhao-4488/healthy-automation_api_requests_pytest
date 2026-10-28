@@ -56,6 +56,20 @@ SEED_LOGIN_USER = {
     "password": "123456",
 }
 
+# 管理员账号 —— 鉴权矩阵的**对照组**（2026-10-28 加）。
+#
+# 为什么必须有它：
+#   只断言"普通用户调管理接口返回 403"是不够的。如果整个 Controller 写坏了
+#   （抛异常 / 路由没注册），可能也是 403 或 500 —— 那种情况下同样的断言照样绿。
+#   必须有"admin 调能成功"做对照，才能证明那个 403 是**因为权限**，而不是因为坏。
+#
+# ⚠️ 它**不在** seed_test.sql 里（那个库里只有一个 admin 账号，是我们后来补的）。
+#    登不上时用例会 skip 并说明原因，不会假绿。
+ADMIN_USER = {
+    "email": _env("AUTOTEST_ADMIN_EMAIL", "admin@qq.com"),
+    "password": _env("AUTOTEST_ADMIN_PASSWORD", "123456"),
+}
+
 # 数据库连接参数 —— common/db.py 直连库时用。
 #
 # ⚠️ 默认库名是 **health_diet_test**，不是开发库 health_diet。
