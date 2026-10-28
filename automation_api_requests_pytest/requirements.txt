@@ -1,16 +1,35 @@
-pytest
-requests
-pyyaml
-openpyxl
-pymysql
+# ============================================================
+# 测试依赖 —— 全部锁精确版本
+#
+# 为什么要锁：
+#   CI 每次都是全新环境，不锁版本时 pip 会装"当天最新"的 pytest / 插件。
+#   哪天 pytest 或某个插件发了不兼容版本，就会出现"本地绿、CI 红"
+#   或者反过来"昨天绿、今天红"，而且和业务代码一点关系都没有。
+#   这里的版本取的是本地 .venv 实际跑通过的版本，CI 与本地保持一致。
+#
+# 升级方式：
+#   改版本号 → 本地 pip install -r requirements.txt → 跑一遍 p0
+#   → 确认没回归 → 再提交。
+#
+# ⚠️ 只锁了直接依赖；pytest 的传递依赖（pluggy / iniconfig 等）
+#    仍会浮动。要做到完全可复现，用 pip-tools 生成带 hash 的锁文件。
+# ============================================================
+pytest==9.1.1
+requests==2.34.2
+PyYAML==6.0.3
+openpyxl==3.1.5
+PyMySQL==1.2.0
 # 响应结构校验：common/schemas.py 里的契约字典就是标准的 JSON Schema（draft-07），
 # 用这个库按图索骥。不自己写校验逻辑，报错格式也统一。
-jsonschema
+jsonschema==4.26.0
 # 执行效率：并行（-n）、网络类失败重试、单用例超时
-pytest-xdist
-pytest-rerunfailures
-pytest-timeout
+pytest-xdist==3.8.0
+pytest-rerunfailures==16.7
+pytest-timeout==2.4.0
 # Allure 报告：pytest 插件（产出 reports/allure-results/*.json）。
 # 它只负责"产出原始结果"，把结果渲染成网页还要 Allure 命令行工具 ——
 # 见 tools/allure_report.py 顶部说明与 docs/Allure报告-使用说明.md。
-allure-pytest
+allure-pytest==2.16.2
+# CI 专用：MySQL 8 默认 caching_sha2_password，PyMySQL 完整认证需要 cryptography。
+# 本地如果用 mysql_native_password 则用不到，装上无副作用。
+cryptography==50.0.2

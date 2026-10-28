@@ -161,7 +161,7 @@ jobs:
           cache: pip
           cache-dependency-path: |
             automation_api_requests_pytest/requirements.txt
-            algorithm/requirements.txt
+            algorithm/requirements-ci.txt
 
       - name: 编译后端（跳过 Maven 单测）
         working-directory: backend
@@ -172,10 +172,10 @@ jobs:
       - name: 安装测试与算法服务依赖
         run: |
           python -m pip install --upgrade pip
+          # 测试依赖已锁精确版本（含 CI 需要的 cryptography），见 requirements.txt 顶部说明
           pip install -r automation_api_requests_pytest/requirements.txt
-          pip install -r algorithm/requirements.txt
-          # MySQL 8 默认 caching_sha2_password，PyMySQL 完整认证需要 cryptography
-          pip install cryptography
+          # 算法服务在 CI 用锁定版本，避免 Flask 大版本升级导致"代码没改却起不来"
+          pip install -r algorithm/requirements-ci.txt
 
       - name: 重建测试库（schema + 种子数据）
         run: python database/init_test_db.py
@@ -281,3 +281,78 @@ jobs:
           pkill -f "health-diet-backend-1.0-SNAPSHOT.jar" 2>/dev/null || true
           # app.py 开了 debug 重载，父进程之外还有一个子进程，按命令行一起清
           pkill -f "python app.py" 2>/dev/null || true
+
+  # ============================================================
+  #  把 Allure 报告自动发布到 GitHub Pages
+  #
+  #  一次性设置（只需做一次）：
+  #    Settings → Pages → Build and deployment → Source
+  #    → Deploy from a branch → 分支选 gh-pages，目录 / (root)
+  #  之后固定地址：
+  #    https://liujunhao-4488.github.io/healthy-automation_api_requests_pytest/
+  #
+  #  ⚠️ 公开仓库的 Pages 也是公开的，报告里带请求/响应体（token 已脱敏）。
+  #     不想公开就删掉这个 job，继续用 Artifacts 下载。
+  #
+  #  发布失败不把整场 CI 判红：测试结果以 api-tests 为准。
+  # ============================================================
+  publish-report:
+    name: 发布 Allure 报告到 Pages
+    needs: api-tests
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    permissions:
+      contents: write
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 下载测试产物
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: api-test-report-${{ github.run_number }}
+          path: artifacts
+
+      - name: 安装 JDK 21
+        if: steps.download.outcome == 'success'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: 安装 Allure CLI
+        if: steps.download.outcome == 'success'
+        run: |
+          mkdir -p "$HOME/allure"
+          curl -sSL https://github.com/allure-framework/allure2/releases/download/2.46.1/allure-2.46.1.tgz \
+            | tar -xz -C "$HOME/allure"
+          echo "$HOME/allure/allure-2.46.1/bin" >> "$GITHUB_PATH"
+
+      - name: 生成 Allure HTML
+        id: generate
+        if: steps.download.outcome == 'success'
+        run: |
+          results=$(find artifacts -type d -name allure-results 2>/dev/null | head -n 1)
+          if [ -z "$results" ]; then
+            echo "::warning::产物里没有 allure-results，跳过发布"
+            echo "has_report=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          allure generate "$results" -o public --clean
+          echo "run ${{ github.run_number }} / ${{ github.sha }}" > public/run-info.txt
+          echo "has_report=true" >> "$GITHUB_OUTPUT"
+
+      - name: 推送到 gh-pages 分支
+        if: steps.generate.outputs.has_report == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com

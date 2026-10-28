@@ -1,0 +1,24 @@
+# ============================================================
+# 算法服务依赖 —— **CI 专用**锁定版本
+#
+# 为什么单独一份，而不是改 requirements.txt：
+#   requirements.txt 保留"不锁版本、换机器都能装"的本地开发策略；
+#   但 CI 每次都是全新环境，必须可复现，否则 Flask 4 一发布
+#   就可能出现"代码没改、CI 起不来"。
+#
+# 版本来源：2026-10-27 GitHub Actions 实际跑通的那一套
+#   （Flask 3.x + Flask-Cors 6.x，joblib 能正常加载 models/*.joblib）。
+#
+# ⚠️ 本地 algorithm/.venv 目前还是旧的 Flask 2.0.1 / Werkzeug 2.0.1，
+#    和这里不一致。要让本地与 CI 对齐，重建一次：
+#      python -m venv .venv
+#      .venv\Scripts\pip install -r requirements-ci.txt
+#
+# ⚠️ 只锁直接依赖；Werkzeug / Jinja2 / click 等传递依赖仍由 pip 解析。
+#    要做到完全可复现，用 pip-tools 生成带 hash 的完整锁文件。
+# ============================================================
+
+Flask==3.1.3
+Flask-Cors==6.0.5
+PyMySQL==1.2.3
+joblib==1.6.0

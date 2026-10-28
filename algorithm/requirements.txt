@@ -1,6 +1,10 @@
 # ============================================================
 # 算法服务依赖 —— 运行 app.py 所需
 #
+# ⚠️ 这是**本地/换机器安装**用的清单（不锁版本）。
+#    CI 用的是 requirements-ci.txt（锁定版本），别把这份删了：
+#    README、需求文档、新机器搭环境都按这份装。
+#
 # 在 algorithm 目录下重建环境（换任何一台机器都是这三步）：
 #   python -m venv .venv
 #   .venv\Scripts\pip install -r requirements.txt
