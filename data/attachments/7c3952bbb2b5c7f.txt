@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_admin_api_rejects_normal_user[总览]  0.01s

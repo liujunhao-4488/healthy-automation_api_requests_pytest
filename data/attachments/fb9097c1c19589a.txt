@@ -1,0 +1,2 @@
+08:46:34 I → GET  /user/profile      200      5ms
+08:46:34 I → POST /notification/admin/publish 403      4ms  {"timestamp":"2026-10-28 16:46:34","status":403,"error":"Forbidden","path":"/api/notification/admin/publish"}

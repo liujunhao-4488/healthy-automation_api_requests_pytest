@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2893 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 08:46:41 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T08:46:38",
+      "id": 7263,
+      "text": "我想换个口味，有什么建议"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T08:46:41",
+      "ragUsed": false,
+      "id": 7264,
+      "text": "换口味可以从「换蛋白、换主食、换风味」三个方向入手，每个方向换一两个就行，不用大改结构。\n\n蛋白上，除了常见的鸡胸、鸡蛋，可以试试虾仁、龙利鱼、瘦牛肉、豆腐或豆制品轮换；主食可以把白米饭换成糙米、燕麦、荞麦面、玉米、红薯交替；风味上可以走酸辣（柠檬+小米辣）、咖喱、番茄罗勒、蒜香黑椒、韩式辣酱（少放）等路线，同一份食材换个调味就是新口味。\n\n你的BMI约22.8，属于正常范围，没有慢病和已知忌口，所以换口味时主要注意别让油盐糖跟着上去——比如咖喱、辣酱类做法容易油盐偏高，可以少放酱、多用香料和柠檬汁提味。另外你活动水平中等，每天蛋白可以按每公斤体重1.2–1.6克安排，换口味时保证每餐有一份优质蛋白就够了。\n\n如果你告诉我平时常吃哪几样、不太喜欢什么，我可以直接给你配两三套换口味的具体搭配。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3427,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "换口味可以从「换蛋白、换主食、换风味」三个方向入手，每个方向换一两个就行，不用大改结构。  蛋白上，除了常见的鸡胸、鸡蛋，可以试试虾仁、龙利鱼、瘦牛肉、豆腐或豆制品轮换；主食可以把白米饭换成糙米、燕麦、荞麦面、玉米、红薯交替；风味上可以走…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T08:46:41.553935654",
+      "createTime": "2026-10-28T08:46:38",
+      "updateTime": "2026-10-28T08:46:38",
+      "id": 3427,
+      "title": "我想换个口味，有什么建议"
+    }
+  },
+  "message": "发送消息成功"
+}

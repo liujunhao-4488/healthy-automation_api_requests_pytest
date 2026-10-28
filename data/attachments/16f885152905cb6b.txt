@@ -1,5 +1,0 @@
-08:27:07 I → POST /assistant/chat    200   2737ms
-08:27:07 I · AI    问「我妈妈的饮食建议是少吃油」  → 「少吃油」对中老年人来说是个合理的大方向，但关键不是单纯把油减到最少，而是控制总量、选对种类。具体可以这样落地： 一是控总量。烹调油每天控制在25克左右（大约2～3白瓷勺），用带刻度的油壶或喷油壶更容…
-08:27:07 I → DELETE /assistant/conversations/3437 200      7ms
-08:27:07 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3437,) | affected=2 | 1.0ms
-08:27:07 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3437,) | affected=1 | 4.9ms

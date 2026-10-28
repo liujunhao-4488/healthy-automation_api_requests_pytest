@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_overlong_input_is_blocked       0.01s
+                                                                         [ 23%]
+test_cases/assistant/test_assistant_契约.py 

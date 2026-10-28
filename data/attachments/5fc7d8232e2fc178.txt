@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2562 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 08:46:59 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T08:46:57",
+      "id": 7281,
+      "text": "我草莓过敏，还能吃什么水果"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T08:46:59",
+      "ragUsed": false,
+      "id": 7282,
+      "text": "草莓过敏并不代表大多数水果都不能吃，通常只需避开草莓及可能的近亲（如其他蔷薇科浆果），多数常见水果是可以正常吃的。\n\n可以优先考虑这几类：\n- 苹果、梨、桃、葡萄、柑橘、香蕉、猕猴桃、火龙果、西瓜、哈密瓜等常见水果；\n- 蓝莓、树莓、黑莓等浆果与草莓亲缘较近，第一次吃时先少量尝试，观察有无口痒、皮疹等反应；\n- 芒果、菠萝等本身容易引起口周刺激的水果，切小块、熟透后再吃，别让汁液长时间接触嘴唇周围皮肤。\n\n需要提醒的是，草莓过敏有时与花粉过敏存在交叉反应（比如对桦树花粉敏感的人吃苹果、桃、樱桃也可能口痒），如果你吃某些水果时出现嘴麻、喉咙痒，建议记录下来并咨询医生，必要时做过敏原评估。具体判断和应急处理请以医生的诊断为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3436,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "草莓过敏并不代表大多数水果都不能吃，通常只需避开草莓及可能的近亲（如其他蔷薇科浆果），多数常见水果是可以正常吃的。  可以优先考虑这几类： - 苹果、梨、桃、葡萄、柑橘、香蕉、猕猴桃、火龙果、西瓜、哈密瓜等常见水果； - 蓝莓、树莓、黑莓…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T08:46:59.828437721",
+      "createTime": "2026-10-28T08:46:57",
+      "updateTime": "2026-10-28T08:46:57",
+      "id": 3436,
+      "title": "我草莓过敏，还能吃什么水..."
+    }
+  },
+  "message": "发送消息成功"
+}

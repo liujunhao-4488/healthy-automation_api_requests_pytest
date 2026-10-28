@@ -1,0 +1,20 @@
+HTTP 400　（耗时 3 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 08:47:13 GMT
+Connection: close
+
+【响应体】
+{
+  "code": 400,
+  "message": "身高需在 50~250cm 之间"
+}

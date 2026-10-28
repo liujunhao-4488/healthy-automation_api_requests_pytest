@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_admin_api_rejects_normal_user[发布通知]  0.00s

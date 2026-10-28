@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3207 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 08:47:03 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T08:46:59",
+      "id": 7283,
+      "text": "我妈妈的饮食建议是少吃油"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T08:47:03",
+      "ragUsed": false,
+      "id": 7284,
+      "text": "「少吃油」这个方向对中老年人来说是合理的，但关键是「少而优」，不是一味把油降到极低。\n\n具体可以这样落地：烹调油总量控制在每天 25 克左右（大约 2.5 瓷勺），优先用蒸、煮、炖、凉拌、少油快炒，少用煎炸和反复加热的油；少吃肥肉、动物油、起酥点心、油炸零食这类「隐形油」大户，它们往往比炒菜油更值得先减。同时别把油减到过低——完全不沾油会影响脂溶性维生素吸收，也容易让人靠精制主食吃饱。建议把一部分烹调用油换成每周两三次的深海鱼、每天一小把坚果，用「好油」替代「多油」。\n\n另外，如果她本身有高血压、高血脂或血糖问题，控油之外还要一起看控盐和主食结构，具体请以医生的诊断和处方为准。\n\n这条建议本身不涉及你本人的过敏忌口或慢病情况（你档案里没有相关记录），所以主要是针对你妈妈的日常饮食调整；如果你希望帮她排一份具体的一日三餐搭配，可以告诉我她的年龄、身高体重和有没有慢性病。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3437,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "「少吃油」这个方向对中老年人来说是合理的，但关键是「少而优」，不是一味把油降到极低。  具体可以这样落地：烹调油总量控制在每天 25 克左右（大约 2.5 瓷勺），优先用蒸、煮、炖、凉拌、少油快炒，少用煎炸和反复加热的油；少吃肥肉、动物油…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T08:47:03.048692876",
+      "createTime": "2026-10-28T08:46:59",
+      "updateTime": "2026-10-28T08:46:59",
+      "id": 3437,
+      "title": "我妈妈的饮食建议是少吃油"
+    }
+  },
+  "message": "发送消息成功"
+}
