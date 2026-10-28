@@ -133,6 +133,7 @@ _handler = None
 # ---- 结尾汇总的记账（见文件末 pytest_terminal_summary）----
 _started_at = 0.0        # 会话开始时刻（perf_counter）
 _module_duration = {}    # 模块名 -> 累计耗时（setup + call + teardown 全算，才是真实耗时）
+_abort_reason = ""       # 预检中止整场时的原因 —— 结尾汇总要再报一次，别只留在开头
 
 # 评测留痕的落盘位置（--eval-out 可覆盖，默认 tools/eval_results.json）
 _eval_out = None
@@ -289,6 +290,12 @@ def pytest_sessionstart(session):
 
 _PRECHECK_TIMEOUT = 5       # MySQL / 后端探活超时
 _KB_PRECHECK_TIMEOUT = 30   # Flask 首次访问要懒加载知识库索引，给足时间
+_MODEL_PRECHECK_TIMEOUT = 60  # 真实模型首包可能较慢，单独给超时
+
+# 模型不可用时，后端返回的是 HTTP 200 + 这段固定文案（assistantMessage.source=error）。
+# p1 里大量断言只验"没有违禁词 / 长度够"，会把它当成正常回答判成 passed ——
+# 所以要在跑 p1 之前单独探一次模型，不能只看 HTTP 200。
+_MODEL_ERROR_MARKERS = ("模型服务连接失败", "尚未配置密钥", "AI 助手暂时无法回复")
 
 
 def _probe_mysql():
@@ -368,6 +375,48 @@ def _probe_algorithm():
     return "索引正常"
 
 
+def _probe_model(token, prompt="1+1等于几"):
+    """发一条最简单的聊天，确认后端真的调到了模型（source=deepseek）。
+
+    为什么不能只看 HTTP 200：模型不可用时后端返回 200 + 固定错误文案
+    （source=error），p1 里大量弱断言会把它判成通过。
+    探针用完的会话直接硬删，不留在主账号名下。
+    """
+    cid = None
+    try:
+        resp = requests.post(
+            BASE_URL + "/assistant/chat",
+            json={"rawPrompt": prompt},
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=_MODEL_PRECHECK_TIMEOUT,
+        )
+        if resp.status_code != 200:
+            raise RuntimeError(f"HTTP {resp.status_code}：{(resp.text or '')[:160]}")
+        try:
+            body = resp.json()
+        except ValueError as exc:
+            raise RuntimeError(f"响应不是 JSON：{(resp.text or '')[:160]}") from exc
+
+        data = body.get("data") or {}
+        cid = data.get("conversationId")
+        message = data.get("assistantMessage") or {}
+        source = message.get("source")
+        text = (message.get("text") or "").strip()
+
+        if source == "deepseek" and not any(m in text for m in _MODEL_ERROR_MARKERS):
+            return "模型可用（source=deepseek）"
+
+        raise RuntimeError(
+            f"source={source!r}，回答={text[:120]!r}（不是真实模型回答）"
+        )
+    finally:
+        if cid:
+            try:
+                cleanup.hard_delete_conversations([cid])
+            except Exception:
+                pass
+
+
 def _env_probes():
     """按依赖顺序返回探活项；AUTOTEST_REQUIRE_DB=0 时不要求本机 MySQL。"""
     probes = []
@@ -414,6 +463,8 @@ def _is_xdist_worker(config):
 
 def _precheck_or_exit(session):
     """探活；缺一个依赖就中止整场。"""
+    global _abort_reason
+
     # --collect-only 只是"看有哪些用例"，不跑用例，也不该要求服务全在
     if session.config.getoption("collectonly", default=False):
         return
@@ -446,22 +497,73 @@ def _precheck_or_exit(session):
         + f"  启动顺序：{order}\n",
         red=True)
     meta_log.error("环境探活未通过：%s", "；".join(lines))
-    pytest.exit("环境未就绪：" + "、".join(missing),
-                returncode=pytest.ExitCode.TESTS_FAILED)
+    _abort_reason = "环境未就绪：" + "、".join(missing)
+    pytest.exit(_abort_reason, returncode=pytest.ExitCode.TESTS_FAILED)
+
+
+def _selected_p1(session):
+    """本次真正会执行的用例里有没有 p1（被 skip 掉的不算）。"""
+    for item in session.items:
+        if item.get_closest_marker("p1") and item.get_closest_marker("skip") is None:
+            return True
+    return False
+
+
+def _model_precheck_or_exit(session):
+    """p1 才会跑：用一条真实聊天确认模型可用；不可用就中止整场。
+
+    为什么要单独预检，而不是等用例自己红：
+      模型不可用时后端返回 200 + 固定错误文案（source=error），
+      p1 里大量断言只验"没有违禁词 / 长度够"，会把一大批用例判成 passed（假绿）。
+      这里只报一条明确原因，不刷上百条失败。
+    """
+    global _abort_reason
+
+    if session.config.getoption("collectonly", default=False):
+        return
+    if not _selected_p1(session):
+        return
+    if os.getenv("AUTOTEST_SKIP_PRECHECK", "") == "1":
+        meta_log.warning("已跳过模型预检（AUTOTEST_SKIP_PRECHECK=1）：p1 结果可能不可信")
+        return
+
+    try:
+        token = ensure_primary_account().get("token")
+        if not token:
+            raise RuntimeError("登录响应里没有 token")
+        detail = _probe_model(token)
+    except Exception as exc:
+        reason = _probe_reason(exc)
+        _term_write(
+            "\n✘ 模型不可用，已中止（p1 依赖真实模型；继续跑只会把固定错误文案当回答，刷出一批假绿）：\n"
+            f"  ✘ DeepSeek  {BASE_URL}/assistant/chat  {reason}\n"
+            "  检查：DEEPSEEK_API_KEY 是否有效且有余额、DEEPSEEK_MODEL 是否正确、"
+            "api.deepseek.com 是否可达\n",
+            red=True)
+        meta_log.error("模型预检未通过：%s", reason)
+        _abort_reason = "模型不可用：" + reason
+        pytest.exit(_abort_reason, returncode=pytest.ExitCode.TESTS_FAILED)
+
+    _term_write(f"\n  ✔ 模型  {BASE_URL}/assistant/chat  {detail}\n", green=True)
+    meta_log.info("模型预检通过：%s", detail)
 
 
 def pytest_collection_finish(session):
-    """串行：收集完、开跑前探活。
+    """串行：收集完、开跑前探活；xdist controller 在这里补模型预检。
 
-    xdist 下由 controller 在 sessionstart 统一探一次：
+    xdist 下环境探活由 controller 在 sessionstart 统一做：
     worker 各自探活会重复建账号、重复打 Flask，启动反而更慢。
+    模型预检要等收集结果才能判断有没有 p1，所以放在 collection_finish。
     """
     config = session.config
     if _is_xdist_worker(config):
         return
     if config.getoption("numprocesses", default=None) is not None:
+        # 环境预检已在 sessionstart 做过，这里只补模型预检
+        _model_precheck_or_exit(session)
         return
     _precheck_or_exit(session)
+    _model_precheck_or_exit(session)
 
 
 def _short_name(nodeid):
@@ -886,7 +988,8 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
         else:
             # 探活没通过 / 收集失败时会走到这里：一条用例都没跑，
             # 再打"没有失败用例 ✓"会让人以为这轮是绿的。
-            terminalreporter.write_line("未执行任何用例（见上方原因）", red=True)
+            terminalreporter.write_line(
+                _abort_reason or "未执行任何用例（见上方原因）", red=True)
 
         if _eval_path:
             c = eval_record.counts()
