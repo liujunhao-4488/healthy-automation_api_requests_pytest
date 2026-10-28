@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_get_info_after_save             0.02s
-
-[清理] 靶子 userId=101330: history=2 info=1 goal=0 user=1

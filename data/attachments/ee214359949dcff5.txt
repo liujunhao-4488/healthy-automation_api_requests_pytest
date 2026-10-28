@@ -1,5 +1,0 @@
-03:21:47 I → POST /assistant/chat    200   3495ms
-03:21:47 I · AI    问「我妈妈的饮食建议是少吃油」  → 「少吃油」这个方向是对的，但更准确的说法是「控总量、换种类」，而不是一味追求无油或水煮。 具体可以这样落地： - 总量：日常烹调用油控制在每人每天 25～30 克，大约 2～3 瓷勺；如果她常吃坚果、…
-03:21:47 I → DELETE /assistant/conversations/3437 200      9ms
-03:21:47 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3437,) | affected=2 | 1.1ms
-03:21:47 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3437,) | affected=1 | 0.7ms

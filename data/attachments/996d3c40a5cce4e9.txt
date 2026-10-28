@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_save_info_fail[缺 age]          0.01s
-
-[清理] 靶子 userId=101341: history=0 info=0 goal=0 user=1

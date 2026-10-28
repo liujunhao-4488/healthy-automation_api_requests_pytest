@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_save_goal_fail[goalType 为空]   0.01s
-
-[清理] 靶子 userId=101321: history=0 info=0 goal=0 user=1

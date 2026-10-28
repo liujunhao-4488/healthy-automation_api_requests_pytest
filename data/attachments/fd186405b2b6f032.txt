@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_update_avatar_then_clear        0.02s
-
-[清理] 删除靶子账号 pf_af6c1330f6@example.com，affected=1

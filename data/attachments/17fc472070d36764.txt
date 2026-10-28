@@ -1,1 +1,0 @@
-03:22:00 I → POST /health/info       400      6ms  {"code":400,"message":"性别取值不合法，只能是 male 或 female"}

@@ -1,3 +1,0 @@
-03:22:02 I → POST /auth/register     200    140ms
-03:22:02 I → PUT  /user/profile      200      8ms
-03:22:02 W ! WRITE DELETE FROM `user` WHERE email = %s | args=('pf_04a5755270@example.com',) | affected=1 | 1.3ms

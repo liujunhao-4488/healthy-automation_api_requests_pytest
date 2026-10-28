@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_login_failure_envelope[空邮箱]  0.00s
+                                                                         [ 36%]
+test_cases/auth/test_register.py 

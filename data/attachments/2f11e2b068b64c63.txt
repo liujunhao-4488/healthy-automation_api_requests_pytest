@@ -1,0 +1,2 @@
+
+└─ ⊘ XFAIL   test_forbidden_body_uses_unified_envelope   缺陷#10：403 返回 Spring 默认错误体，不走统一信封 {code,message}

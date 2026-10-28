@@ -1,3 +1,0 @@
-03:22:01 I → POST /auth/register     200    136ms
-03:22:01 I → PUT  /user/profile      400      7ms  {"code":400,"message":"手机号已被使用"}
-03:22:01 W ! WRITE DELETE FROM `user` WHERE email = %s | args=('pf_8711f0c45c@example.com',) | affected=1 | 1.4ms

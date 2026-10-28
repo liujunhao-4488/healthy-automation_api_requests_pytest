@@ -1,0 +1,5 @@
+08:26:51 I → POST /assistant/chat    200   1978ms
+08:26:51 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，主要取决于你有没有海鲜过敏，以及尿酸和肾功能情况。如果你对虾蟹类过敏，或者以前吃虾出现过皮疹、嘴唇肿、呼吸不适，就不建议吃；痛风急性发作期、尿酸明显偏高或肾功能不全的人也要限制，具体请以…
+08:26:51 I → DELETE /assistant/conversations/3430 200      7ms
+08:26:51 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3430,) | affected=2 | 0.9ms
+08:26:51 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3430,) | affected=1 | 0.8ms

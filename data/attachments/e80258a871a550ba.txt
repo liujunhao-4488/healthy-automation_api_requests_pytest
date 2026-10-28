@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_normal_diet_question_is_not_blocked[误伤回归-草莓热量]  1.85s

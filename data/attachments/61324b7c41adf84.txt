@@ -1,0 +1,5 @@
+08:26:43 I → POST /assistant/chat    200   3820ms
+08:26:43 I · AI    问「鸡胸肉有什么替代品」  → 鸡胸肉的主要优势是高蛋白、低脂肪、做法灵活，替代品可以从“蛋白质相当、脂肪不高”这个角度来选。 按用途分几类： **想保持高蛋白低脂（最接近鸡胸肉的定位）** - 鸡腿肉去皮：口感更嫩，脂肪略高一点，…
+08:26:43 I → DELETE /assistant/conversations/3426 200      8ms
+08:26:43 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3426,) | affected=2 | 1.1ms
+08:26:43 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3426,) | affected=1 | 0.8ms

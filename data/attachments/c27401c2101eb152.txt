@@ -1,0 +1,5 @@
+08:26:46 I → POST /assistant/chat    200   2732ms
+08:26:46 I · AI    问「我想换个口味，有什么建议」  → 从你的档案看，目前没有记录过敏/忌口和慢性病，BMI 22.8 属于正常范围，基础代谢约 1729 kcal、中度活动，日常维持热量大概在 2600–2700 kcal 左右。所以「换口味」不用太拘束…
+08:26:46 I → DELETE /assistant/conversations/3427 200      9ms
+08:26:46 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3427,) | affected=2 | 1.0ms
+08:26:46 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3427,) | affected=1 | 0.8ms

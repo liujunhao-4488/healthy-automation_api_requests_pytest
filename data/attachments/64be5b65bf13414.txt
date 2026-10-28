@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_get_goal_with_bad_token         0.00s
-
-[清理] 靶子 userId=101316: history=0 info=0 goal=1 user=1

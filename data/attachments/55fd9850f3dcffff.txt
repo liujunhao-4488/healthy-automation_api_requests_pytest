@@ -1,0 +1,78 @@
+HTTP 200　（耗时 1913 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 08:27:02 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T08:27:00",
+      "id": 7279,
+      "text": "帮我翻译一下这个营养成分表"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 16.8781,
+          "docId": "guideline:中国居民膳食指南(2022)",
+          "docType": "guideline",
+          "section": "准则七会烹会选，会看标签",
+          "title": "中国居民膳食指南(2022)"
+        },
+        {
+          "score": 11.7182,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 11.3172,
+          "docId": "guideline:成人慢性肾脏病食养指南",
+          "docType": "guideline",
+          "section": "一、食物选择",
+          "title": "成人慢性肾脏病食养指南"
+        }
+      ],
+      "createTime": "2026-10-28T08:27:02",
+      "ragUsed": true,
+      "id": 7280,
+      "text": "翻译营养成分表属于饮食健康范畴，我可以帮忙。不过你这条消息里没有附上表格内容，我这边看不到具体数据，麻烦把营养成分表的内容发过来（拍照文字、复制文字或列出项目都可以）。\n\n收到后我会按中文营养标签的常见格式帮你逐项对照翻译，比如能量、蛋白质、脂肪、碳水化合物、钠等，并说明各项目对应的含义。另外提醒一句：如果是进口食品的标签，各国格式和计量单位不完全一样，翻译时我会尽量保留原始数值和单位，不做换算或改写。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3435,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "翻译营养成分表属于饮食健康范畴，我可以帮忙。不过你这条消息里没有附上表格内容，我这边看不到具体数据，麻烦把营养成分表的内容发过来（拍照文字、复制文字或列出项目都可以）。  收到后我会按中文营养标签的常见格式帮你逐项对照翻译，比如能量、蛋白…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T08:27:02.116444714",
+      "createTime": "2026-10-28T08:27:00",
+      "updateTime": "2026-10-28T08:27:00",
+      "id": 3435,
+      "title": "帮我翻译一下这个营养成分..."
+    }
+  },
+  "message": "发送消息成功"
+}

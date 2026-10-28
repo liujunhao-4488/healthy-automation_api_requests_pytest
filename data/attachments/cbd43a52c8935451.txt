@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3820 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 08:26:43 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T08:26:40",
+      "id": 7261,
+      "text": "鸡胸肉有什么替代品"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T08:26:43",
+      "ragUsed": false,
+      "id": 7262,
+      "text": "鸡胸肉的主要优势是高蛋白、低脂肪、做法灵活，替代品可以从“蛋白质相当、脂肪不高”这个角度来选。\n\n按用途分几类：\n\n**想保持高蛋白低脂（最接近鸡胸肉的定位）**\n- 鸡腿肉去皮：口感更嫩，脂肪略高一点，但仍在可接受范围。\n- 虾仁、龙利鱼、鳕鱼、巴沙鱼：蛋白质密度高、脂肪很低，适合清蒸、水煮、快炒。\n- 鸡蛋清、低脂希腊酸奶：适合做沙拉、拌菜，补充蛋白。\n- 豆腐、豆干、毛豆、鹰嘴豆：植物蛋白来源，豆干和毛豆蛋白密度较高，豆腐水分多、蛋白相对低一些。\n\n**想换口味、不追求极低脂**\n- 瘦牛肉、瘦猪肉里脊：蛋白质量好，注意选瘦的部位、控制用油。\n- 三文鱼、鲈鱼：含优质脂肪，热量比鸡胸肉高，但营养更全面。\n\n**素食者的组合思路**\n单靠一种植物蛋白往往氨基酸不够全面，豆腐+谷物（米饭、全麦面包）或豆类+坚果搭配，蛋白质量会更接近动物蛋白。\n\n具体选哪种，主要看你的做法和口味偏好：凉拌沙拉适合虾仁、豆干、鸡腿肉；炖煮适合鱼块、豆腐；快炒适合里脊、虾仁。如果你告诉我平时怎么做鸡胸肉、想避开什么口感，我可以给更具体的替换比例。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3426,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉的主要优势是高蛋白、低脂肪、做法灵活，替代品可以从“蛋白质相当、脂肪不高”这个角度来选。  按用途分几类：  **想保持高蛋白低脂（最接近鸡胸肉的定位）** - 鸡腿肉去皮：口感更嫩，脂肪略高一点，但仍在可接受范围。 - 虾仁、龙利…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T08:26:43.934871378",
+      "createTime": "2026-10-28T08:26:40",
+      "updateTime": "2026-10-28T08:26:40",
+      "id": 3426,
+      "title": "鸡胸肉有什么替代品"
+    }
+  },
+  "message": "发送消息成功"
+}

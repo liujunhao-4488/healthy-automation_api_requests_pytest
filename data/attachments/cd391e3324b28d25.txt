@@ -1,3 +1,0 @@
-03:22:01 I → POST /auth/register     200    138ms
-03:22:01 I → PUT  /user/profile      400      5ms  {"code":400,"message":"用户名长度需在 1 到 50 个字符之间"}
-03:22:01 W ! WRITE DELETE FROM `user` WHERE email = %s | args=('pf_4095516bd2@example.com',) | affected=1 | 1.6ms

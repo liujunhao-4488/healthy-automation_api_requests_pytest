@@ -1,6 +1,0 @@
-03:21:57 I → POST /auth/register     200    140ms
-03:21:57 I → POST /health/info       200     32ms
-03:21:57 W ! WRITE DELETE FROM health_info_history WHERE user_id = %s | args=(101327,) | affected=1 | 1.2ms
-03:21:57 W ! WRITE DELETE FROM health_info WHERE user_id = %s | args=(101327,) | affected=1 | 1.1ms
-03:21:57 W ! WRITE DELETE FROM diet_goal WHERE user_id = %s | args=(101327,) | affected=0 | 0.3ms
-03:21:57 W ! WRITE DELETE FROM `user` WHERE id = %s | args=(101327,) | affected=1 | 0.7ms

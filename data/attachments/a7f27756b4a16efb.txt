@@ -1,0 +1,5 @@
+08:27:04 I → POST /assistant/chat    200   2481ms
+08:27:04 I · AI    问「我草莓过敏，还能吃什么水果」  → 草莓过敏通常只针对草莓本身，大多数其他水果是可以吃的，但要注意交叉过敏的可能。 可以优先选择：苹果、梨、香蕉、橙子、橘子、葡萄、西瓜、哈密瓜、蓝莓、猕猴桃、火龙果、芒果、菠萝等。这些和草莓的亲缘关系远…
+08:27:04 I → DELETE /assistant/conversations/3436 200      7ms
+08:27:04 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3436,) | affected=2 | 0.9ms
+08:27:04 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3436,) | affected=1 | 0.7ms

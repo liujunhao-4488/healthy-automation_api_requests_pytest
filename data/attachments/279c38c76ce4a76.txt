@@ -1,6 +1,0 @@
-03:21:59 I → POST /auth/register     200    136ms
-03:21:59 I → POST /health/info       400      5ms  {"code":400,"message":"身高需在 50~250cm 之间"}
-03:21:59 W ! WRITE DELETE FROM health_info_history WHERE user_id = %s | args=(101336,) | affected=0 | 0.7ms
-03:21:59 W ! WRITE DELETE FROM health_info WHERE user_id = %s | args=(101336,) | affected=0 | 0.3ms
-03:21:59 W ! WRITE DELETE FROM diet_goal WHERE user_id = %s | args=(101336,) | affected=0 | 0.2ms
-03:21:59 W ! WRITE DELETE FROM `user` WHERE id = %s | args=(101336,) | affected=1 | 1.0ms
