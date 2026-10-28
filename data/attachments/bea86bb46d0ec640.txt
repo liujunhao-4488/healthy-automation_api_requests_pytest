@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_save_info_fail[bloodSugar 超上限 51]  0.01s
+
+[清理] 靶子 userId=101340: history=0 info=0 goal=0 user=1

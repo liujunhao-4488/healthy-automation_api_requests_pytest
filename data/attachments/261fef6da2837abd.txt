@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_update_profile_fail[用户名已存在]  0.01s
+
+[清理] 删除靶子账号 pf_06c1e0498a@example.com，affected=1

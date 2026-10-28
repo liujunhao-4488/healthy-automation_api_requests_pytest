@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_register_fail[密码空]           0.00s

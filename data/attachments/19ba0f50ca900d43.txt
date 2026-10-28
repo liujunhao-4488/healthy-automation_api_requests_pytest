@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_nullable_accepts_both_null_and_real_value  0.00s

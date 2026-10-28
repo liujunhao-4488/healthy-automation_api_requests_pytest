@@ -1,0 +1,19 @@
+POST http://127.0.0.1:8080/api/health/info
+
+【请求头】
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Content-Type: application/json
+Authorization: Bearer eyJhbGci…***（已脱敏）（共 175 字符）
+Content-Length: 80
+
+【请求体】
+{
+  "age": 30,
+  "gender": "male",
+  "height": 175.0,
+  "weight": 70.0,
+  "bloodSugar": 51
+}

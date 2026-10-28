@@ -1,0 +1,8 @@
+01:45:31 I → POST /auth/register     200    104ms
+01:45:31 I → POST /health/info       200     11ms
+01:45:31 I → POST /health/info       200     12ms
+01:45:31 I · READ  SELECT COUNT(*) AS n FROM health_info WHERE user_id = %s | args=(101328,) | rows=1 | 0.5ms
+01:45:31 W ! WRITE DELETE FROM health_info_history WHERE user_id = %s | args=(101328,) | affected=2 | 0.9ms
+01:45:31 W ! WRITE DELETE FROM health_info WHERE user_id = %s | args=(101328,) | affected=1 | 0.7ms
+01:45:31 W ! WRITE DELETE FROM diet_goal WHERE user_id = %s | args=(101328,) | affected=0 | 0.2ms
+01:45:31 W ! WRITE DELETE FROM `user` WHERE id = %s | args=(101328,) | affected=1 | 0.7ms

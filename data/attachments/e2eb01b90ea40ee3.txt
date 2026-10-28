@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_health_goal_accepts_not_yet_computed_fields  0.00s

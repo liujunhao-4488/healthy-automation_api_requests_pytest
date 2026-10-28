@@ -1,0 +1,6 @@
+01:45:32 I → POST /auth/register     200    109ms
+01:45:32 I → POST /health/info       400      4ms  {"code":400,"message":"年龄需在 1~150 岁之间"}
+01:45:32 W ! WRITE DELETE FROM health_info_history WHERE user_id = %s | args=(101332,) | affected=0 | 0.4ms
+01:45:32 W ! WRITE DELETE FROM health_info WHERE user_id = %s | args=(101332,) | affected=0 | 0.2ms
+01:45:32 W ! WRITE DELETE FROM diet_goal WHERE user_id = %s | args=(101332,) | affected=0 | 0.1ms
+01:45:32 W ! WRITE DELETE FROM `user` WHERE id = %s | args=(101332,) | affected=1 | 0.9ms

@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_enum_violation_is_reported      0.00s

@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_update_profile_fail[手机号空]   0.00s
+
+[清理] 删除靶子账号 pf_377d1aa82e@example.com，affected=1

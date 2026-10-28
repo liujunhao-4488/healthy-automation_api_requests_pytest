@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_login_and_profile_are_different_shapes  0.00s

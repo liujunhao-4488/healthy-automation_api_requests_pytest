@@ -1,0 +1,6 @@
+01:45:33 I → POST /auth/register     200    101ms
+01:45:33 I → POST /health/info       400      2ms  {"code":400,"message":"体重不能为空"}
+01:45:33 W ! WRITE DELETE FROM health_info_history WHERE user_id = %s | args=(101343,) | affected=0 | 0.3ms
+01:45:33 W ! WRITE DELETE FROM health_info WHERE user_id = %s | args=(101343,) | affected=0 | 0.1ms
+01:45:33 W ! WRITE DELETE FROM diet_goal WHERE user_id = %s | args=(101343,) | affected=0 | 0.1ms
+01:45:33 W ! WRITE DELETE FROM `user` WHERE id = %s | args=(101343,) | affected=1 | 0.7ms

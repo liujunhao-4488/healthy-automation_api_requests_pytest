@@ -1,0 +1,18 @@
+POST http://127.0.0.1:8080/api/health/goal
+
+【请求头】
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Content-Type: application/json
+Authorization: Bearer eyJhbGci…***（已脱敏）（共 175 字符）
+Content-Length: 105
+
+【请求体】
+{
+  "goalType": "lose_weight",
+  "targetCalories": 1800.0,
+  "startDate": "2026-10-10",
+  "endDate": "2026-10-01"
+}

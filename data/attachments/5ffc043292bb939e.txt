@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_save_info_fail[gender 传非法值 X]  0.00s
+
+[清理] 靶子 userId=101335: history=0 info=0 goal=0 user=1
