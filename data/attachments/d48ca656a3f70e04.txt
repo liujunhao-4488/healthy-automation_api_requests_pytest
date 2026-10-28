@@ -1,6 +1,0 @@
-01:45:33 I → POST /auth/register     200    114ms
-01:45:33 I → POST /health/info       400      5ms  {"code":400,"message":"血糖需在 0~50mmol/L 之间"}
-01:45:33 W ! WRITE DELETE FROM health_info_history WHERE user_id = %s | args=(101339,) | affected=0 | 0.3ms
-01:45:33 W ! WRITE DELETE FROM health_info WHERE user_id = %s | args=(101339,) | affected=0 | 0.2ms
-01:45:33 W ! WRITE DELETE FROM diet_goal WHERE user_id = %s | args=(101339,) | affected=0 | 0.1ms
-01:45:33 W ! WRITE DELETE FROM `user` WHERE id = %s | args=(101339,) | affected=1 | 0.9ms

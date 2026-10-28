@@ -1,0 +1,11 @@
+02:06:06 I → POST /assistant/chat    200    631ms
+02:06:06 I · AI    问「菠菜为什么要焯水」  → 抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。
+02:06:06 I → POST /assistant/chat    200    629ms
+02:06:06 I · AI    问「菠菜为什么要焯水」  → 抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。
+02:06:07 I → POST /assistant/chat    200    627ms
+02:06:07 I · AI    问「菠菜为什么要焯水」  → 抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。
+02:06:07 I → DELETE /assistant/conversations/3571 200      5ms
+02:06:07 I → DELETE /assistant/conversations/3572 200      5ms
+02:06:07 I → DELETE /assistant/conversations/3573 200      4ms
+02:06:07 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s,%s,%s) | args=(3571, 3572, 3573) | affected=6 | 1.1ms
+02:06:07 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s,%s,%s) | args=(3571, 3572, 3573) | affected=3 | 1.1ms

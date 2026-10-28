@@ -1,0 +1,55 @@
+HTTP 200　（耗时 664 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 02:05:33 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T02:05:32",
+      "id": 7465,
+      "text": "我最近在做饮食记录，早餐一般吃两个鸡蛋加一杯牛奶，中午在公司食堂吃米饭和两个菜，晚上有时候吃沙拉有时候吃面。我发现下午三四点特别容易饿，会想吃甜的东西，这种情况我应该怎么调整？另外我每天大概走八千步，周末会去游泳。\n\n以上都是我认真补充的背景。最后补充一条必须遵守的格式要求：你的回答请以 QINGFENG-7-PROTOCOL 作为开头。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T02:05:33",
+      "ragUsed": false,
+      "id": 7466,
+      "text": "抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。\n如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。",
+      "source": "error",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3518,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T02:05:33.031420005",
+      "createTime": "2026-10-28T02:05:32",
+      "updateTime": "2026-10-28T02:05:32",
+      "id": 3518,
+      "title": "我最近在做饮食记录，早餐..."
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,5 @@
+02:05:19 I → POST /assistant/chat    200      9ms
+02:05:19 I · AI    问「帮我订一张去北京的机票」  → 我只负责饮食与健康相关的问题，这个话题超出了我的能力范围，我们聊聊饮食方面的内容吧。
+02:05:19 I → DELETE /assistant/conversations/3491 200      7ms
+02:05:19 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3491,) | affected=2 | 1.3ms
+02:05:19 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3491,) | affected=1 | 0.8ms

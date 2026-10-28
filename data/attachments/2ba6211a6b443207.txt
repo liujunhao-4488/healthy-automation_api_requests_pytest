@@ -1,0 +1,2 @@
+
+└─ ✘ FAILED  test_substitute_question_stays_on_substitute_topic[替代-同义问法]  0.61s  assert []

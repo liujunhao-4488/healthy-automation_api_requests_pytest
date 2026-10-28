@@ -1,0 +1,16 @@
+POST http://127.0.0.1:8080/api/assistant/chat
+
+【请求头】
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Content-Type: application/json
+Authorization: Bearer eyJhbGci…***（已脱敏）（共 168 字符）
+Content-Length: 221
+
+【请求体】
+{
+  "rawPrompt": "我刚才说我给饮食计划起的名字是什么？请直接说出来，不要解释。",
+  "conversationId": 3427
+}

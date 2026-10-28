@@ -1,0 +1,9 @@
+02:05:59 I → POST /assistant/chat    200    634ms
+02:05:59 I · AI    问「二甲双胍是治疗什么病的药？」  → 抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。
+02:06:00 I → POST /assistant/chat    200    684ms
+02:06:00 I · AI    问「它一般在饭前还是饭后吃？」  → 抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。
+02:06:00 I → POST /assistant/chat    200      6ms
+02:06:00 I · AI    问「那我 60 公斤，一次该吃几片？」  → 用药剂量、停药换药、极端节食或过速减重等问题关系到人身安全，请以医生的诊断和处方为准，我无法提供这类建议。
+02:06:00 I → DELETE /assistant/conversations/3565 200      4ms
+02:06:00 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3565,) | affected=6 | 1.0ms
+02:06:00 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3565,) | affected=1 | 1.2ms

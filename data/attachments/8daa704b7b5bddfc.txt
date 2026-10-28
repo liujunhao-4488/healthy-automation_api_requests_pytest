@@ -1,0 +1,9 @@
+02:05:43 I → POST /auth/register     200    109ms
+02:05:43 I → POST /assistant/conversations 200      7ms
+02:05:44 I → POST /assistant/chat    200    642ms
+02:05:44 I → DELETE /assistant/conversations/3540 400      4ms  {"code":400,"message":"会话不存在或无权访问"}
+02:05:44 I → GET  /assistant/conversations/3540/messages 200      4ms
+02:05:44 I → DELETE /assistant/conversations/3540 200      5ms
+02:05:44 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (SELECT `id` FROM `assistant_conversation` WHERE `user_id` = %s) | args=(101316,) | affected=2 | 1.1ms
+02:05:44 W ! WRITE DELETE FROM `assistant_conversation` WHERE `user_id` = %s | args=(101316,) | affected=1 | 0.8ms
+02:05:44 W ! WRITE DELETE FROM `user` WHERE `id` = %s | args=(101316,) | affected=1 | 1.1ms

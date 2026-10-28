@@ -1,0 +1,4 @@
+02:05:42 I → POST /assistant/conversations 200      8ms
+02:05:42 I → DELETE /assistant/conversations/3536 200      6ms
+02:05:42 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3536,) | affected=0 | 0.4ms
+02:05:42 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3536,) | affected=1 | 0.9ms

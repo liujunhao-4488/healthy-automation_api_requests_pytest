@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_assistant_endpoints_reject_without_token  0.00s
+                                                                         [ 65%]
+test_cases/auth/test_login.py 

@@ -1,0 +1,5 @@
+02:05:13 I → POST /assistant/chat    200    638ms
+02:05:13 I · AI    问「早餐吃什么比较抗饿」  → 抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。
+02:05:13 I → DELETE /assistant/conversations/3478 200      5ms
+02:05:13 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3478,) | affected=2 | 0.9ms
+02:05:13 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3478,) | affected=1 | 1.1ms

@@ -1,5 +1,0 @@
-01:45:34 I → POST /auth/register     200    101ms
-01:45:34 I · READ  SELECT COUNT(*) AS n FROM `user` WHERE phone = %s | args=('13565762638',) | rows=1 | 0.3ms
-01:45:34 I → PUT  /user/profile      200      5ms
-01:45:34 I · READ  SELECT phone FROM `user` WHERE email = %s | args=('pf_ff748cfc9b@example.com',) | rows=1 | 0.3ms
-01:45:34 W ! WRITE DELETE FROM `user` WHERE email = %s | args=('pf_ff748cfc9b@example.com',) | affected=1 | 1.0ms

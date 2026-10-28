@@ -1,5 +1,0 @@
-01:45:34 I → POST /auth/register     200    100ms
-01:45:34 I → PUT  /user/profile      200      4ms
-01:45:34 I → PUT  /user/profile      200      4ms
-01:45:34 I · READ  SELECT avatar FROM `user` WHERE email = %s | args=('pf_ad223371dd@example.com',) | rows=1 | 0.3ms
-01:45:34 W ! WRITE DELETE FROM `user` WHERE email = %s | args=('pf_ad223371dd@example.com',) | affected=1 | 0.8ms

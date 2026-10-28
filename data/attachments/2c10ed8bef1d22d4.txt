@@ -1,2 +1,0 @@
-01:45:33 I → GET  /health/info       200      3ms
-01:45:33 I → POST /health/info       200      6ms

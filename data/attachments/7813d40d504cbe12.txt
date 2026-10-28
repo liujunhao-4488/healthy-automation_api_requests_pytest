@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_save_info_without_token         0.00s
+                                                                         [ 89%]
+test_cases/health/test_health_契约.py 

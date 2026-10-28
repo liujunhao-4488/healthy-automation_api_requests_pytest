@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_save_goal_create                0.03s
+
+[清理] 靶子 userId=101322: history=0 info=0 goal=1 user=1

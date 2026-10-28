@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_normal_diet_question_is_not_blocked[正常-能不能吃海虾]  0.67s

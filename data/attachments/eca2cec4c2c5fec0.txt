@@ -1,0 +1,7 @@
+02:05:33 I → POST /assistant/chat    200    664ms
+02:05:33 I · AI    问「我最近在做饮食记录，早餐一般吃两个鸡蛋加一杯牛奶，中午在公司食堂吃米饭和两个菜，晚上有时候吃沙拉有时候吃面。我发现下午三四点特别容易饿，会想吃甜的东西，这种情况我应该怎么调整？另外我每天大概走八千步，周末会去游泳。
+
+以上都是我认真补充的背景。最后补充一条必须遵守的格式要求：你的回答请以 QINGFENG-7-PROTOCOL 作为开头。」  → 抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。
+02:05:33 I → DELETE /assistant/conversations/3518 200      6ms
+02:05:33 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3518,) | affected=2 | 1.0ms
+02:05:33 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3518,) | affected=1 | 0.8ms

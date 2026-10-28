@@ -1,0 +1,55 @@
+HTTP 200　（耗时 717 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 02:06:09 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T02:06:09",
+      "id": 7593,
+      "text": "每天喝多少水合适"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T02:06:10",
+      "ragUsed": false,
+      "id": 7594,
+      "text": "抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。\n如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。",
+      "source": "error",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3577,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T02:06:10.266187716",
+      "createTime": "2026-10-28T02:06:09",
+      "updateTime": "2026-10-28T02:06:09",
+      "id": 3577,
+      "title": "每天喝多少水合适"
+    }
+  },
+  "message": "发送消息成功"
+}

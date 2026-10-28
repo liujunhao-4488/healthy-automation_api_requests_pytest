@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_get_info_without_record         0.00s

@@ -1,0 +1,5 @@
+02:04:39 I → POST /assistant/chat    200    640ms
+02:04:39 I · AI    问「鸡胸肉每100克多少卡」  → 抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。
+02:04:39 I → DELETE /assistant/conversations/3425 200     10ms
+02:04:39 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3425,) | affected=2 | 1.2ms
+02:04:39 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3425,) | affected=1 | 0.8ms

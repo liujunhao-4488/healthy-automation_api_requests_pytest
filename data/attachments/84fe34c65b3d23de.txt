@@ -1,5 +1,0 @@
-01:45:24 I → POST /assistant/chat    200    631ms
-01:45:24 I · AI    问「早餐吃几片全麦面包合适」  → 抱歉，AI 助手暂时无法回复。模型服务连接失败或尚未配置密钥，请稍后再试。 如果一直如此，请联系管理员检查 DEEPSEEK_API_KEY 配置。
-01:45:24 I → DELETE /assistant/conversations/3432 200      6ms
-01:45:24 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3432,) | affected=2 | 1.0ms
-01:45:24 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3432,) | affected=1 | 0.7ms
