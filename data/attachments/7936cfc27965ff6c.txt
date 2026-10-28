@@ -1,0 +1,5 @@
+11:13:03 I → POST /assistant/chat    200   2272ms
+11:13:03 I · AI    问「减脂期蛋白质吃多少克」  → 减脂期建议每天每公斤体重摄入约1.6–2.2克蛋白质，按你70.2公斤算，大约是每天112–154克，取中间值130克左右比较稳妥。 原因是减脂时热量有缺口，蛋白质给足能尽量保住肌肉、减少掉秤掉的是肌…
+11:13:03 I → DELETE /assistant/conversations/3431 200      6ms
+11:13:03 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3431,) | affected=2 | 1.0ms
+11:13:03 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3431,) | affected=1 | 0.7ms

@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_register_success                0.13s
+                                                                         [ 37%]
+test_cases/contract/test_契约层_自测.py 

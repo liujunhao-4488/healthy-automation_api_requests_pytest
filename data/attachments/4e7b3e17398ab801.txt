@@ -1,3 +1,0 @@
-08:47:14 I → GET  /health/info       401      1ms
-08:47:14 I → GET  /health/goal       401      1ms
-08:47:14 I → GET  /health/history    401      1ms

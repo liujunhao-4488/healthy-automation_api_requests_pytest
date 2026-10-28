@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2272 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 11:13:03 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T11:13:00",
+      "id": 7271,
+      "text": "减脂期蛋白质吃多少克"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T11:13:03",
+      "ragUsed": false,
+      "id": 7272,
+      "text": "减脂期建议每天每公斤体重摄入约1.6–2.2克蛋白质，按你70.2公斤算，大约是每天112–154克，取中间值130克左右比较稳妥。\n\n原因是减脂时热量有缺口，蛋白质给足能尽量保住肌肉、减少掉秤掉的是肌肉而不是脂肪，同时饱腹感更强、更不容易饿。你目前BMI 22.8属于正常范围，没有慢性病，也没有提到过敏忌口，所以按这个区间执行是安全的；如果后续运动量加大（比如力量训练频率提高），可以往上限靠，但不必超过每公斤2.2克。\n\n分配上建议每餐25–40克，分3–4餐摄入，比一顿集中吃更利于利用。来源优先瘦肉、鱼虾、蛋、奶、豆制品，注意同时控制烹调用油和加工肉制品的钠含量。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3431,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "减脂期建议每天每公斤体重摄入约1.6–2.2克蛋白质，按你70.2公斤算，大约是每天112–154克，取中间值130克左右比较稳妥。  原因是减脂时热量有缺口，蛋白质给足能尽量保住肌肉、减少掉秤掉的是肌肉而不是脂肪，同时饱腹感更强、更不容…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T11:13:03.011081551",
+      "createTime": "2026-10-28T11:13:00",
+      "updateTime": "2026-10-28T11:13:00",
+      "id": 3431,
+      "title": "减脂期蛋白质吃多少克"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,3 @@
+11:13:22 I → POST /auth/register     200    124ms
+11:13:22 I · READ  SELECT id, username, email FROM `user` WHERE email = %s | args=('at_d2447ab8e9@example.com',) | rows=1 | 0.5ms
+11:13:22 W ! WRITE DELETE FROM `user` WHERE email = %s | args=('at_d2447ab8e9@example.com',) | affected=1 | 1.0ms

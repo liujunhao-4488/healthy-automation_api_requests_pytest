@@ -1,0 +1,5 @@
+11:13:15 I → POST /assistant/chat    200   2464ms
+11:13:15 I · AI    问「我妈妈的饮食建议是少吃油」  → 「少吃油」这个方向本身是对的，但更准确的说法是「控总量、换种类」，而不是一味吃得寡淡。对中老年人来说，油吃太多会增加热量和饱和脂肪摄入，不利于血脂和体重管理；但完全不吃油又会影响脂溶性维生素吸收和必需…
+11:13:15 I → DELETE /assistant/conversations/3437 200      7ms
+11:13:15 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3437,) | affected=2 | 1.0ms
+11:13:15 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3437,) | affected=1 | 0.8ms

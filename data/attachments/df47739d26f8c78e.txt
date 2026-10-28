@@ -1,0 +1,5 @@
+11:12:55 I → POST /assistant/chat    200   3335ms
+11:12:55 I · AI    问「我想换个口味，有什么建议」  → 你这次只说了“想换个口味”，但没提是换哪一餐、想换掉什么（比如吃腻了米饭、鸡胸肉、某类菜系），所以我先按“整体口味多样化”来给建议，你可以再告诉我具体想换什么。 几个容易上手的方向：主食上把白米饭换成…
+11:12:55 I → DELETE /assistant/conversations/3427 200      7ms
+11:12:55 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3427,) | affected=2 | 1.6ms
+11:12:55 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3427,) | affected=1 | 0.8ms

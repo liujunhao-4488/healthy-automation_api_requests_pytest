@@ -1,6 +1,0 @@
-08:46:34 I → POST /auth/login        200     61ms
-08:46:34 I → GET  /user/profile      200      4ms
-08:46:34 I → GET  /user/admin/list   200      7ms
-08:46:34 I → PUT  /user/admin/1/status?status=0 403      4ms  {"timestamp":"2026-10-28 16:46:34","status":403,"error":"Forbidden","path":"/api/user/admin/1/status"}
-08:46:34 I → GET  /user/admin/list   200      5ms
-08:46:34 I → PUT  /user/admin/1/status?status=1 200     14ms

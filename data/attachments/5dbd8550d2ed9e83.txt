@@ -1,0 +1,5 @@
+11:13:09 I → POST /assistant/chat    200   1924ms
+11:13:09 I · AI    问「今天天气冷了，适合喝什么汤」  → 天冷适合喝温热、少油少盐的汤，比如萝卜排骨汤、番茄牛肉汤、山药鸡汤、菌菇豆腐汤，想清淡一些可以选冬瓜虾皮汤或白菜豆腐汤。这类汤能暖身、补充水分，饭前喝一小碗还有助于控制食量。 需要提醒的是，汤的“暖”…
+11:13:09 I → DELETE /assistant/conversations/3434 200      7ms
+11:13:09 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3434,) | affected=2 | 1.0ms
+11:13:09 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3434,) | affected=1 | 0.9ms

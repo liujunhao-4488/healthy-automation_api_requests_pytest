@@ -3,12 +3,12 @@ launch_status_broken 0
 launch_status_passed 183
 launch_status_skipped 6
 launch_status_unknown 0
-launch_time_duration 46912
+launch_time_duration 45581
 launch_time_min_duration 0
-launch_time_max_duration 3429
-launch_time_sum_duration 37184
-launch_time_start 1793177194541
-launch_time_stop 1793177241453
+launch_time_max_duration 3336
+launch_time_sum_duration 35477
+launch_time_start 1793185968653
+launch_time_stop 1793186014234
 launch_problems_已知缺陷（xfail_固化，等后端修） 4
 launch_retries_retries 0
 launch_retries_run 189

@@ -1,5 +1,0 @@
-08:46:46 I → POST /assistant/chat    200   2375ms
-08:46:46 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，取决于你自身的过敏情况和健康状况，我这边没有你的相关信息，所以只能给你判断依据。 如果你以前吃虾没有出现皮疹、瘙痒、嘴唇肿、喉咙发紧或腹泻等反应，一般是可以正常吃的。海虾蛋白质优质、脂肪…
-08:46:46 I → DELETE /assistant/conversations/3430 200      7ms
-08:46:46 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3430,) | affected=2 | 1.2ms
-08:46:46 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3430,) | affected=1 | 1.0ms

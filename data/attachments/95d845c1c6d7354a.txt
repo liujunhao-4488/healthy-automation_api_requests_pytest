@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_normal_diet_question_is_not_blocked[正常-寒暄]  1.28s

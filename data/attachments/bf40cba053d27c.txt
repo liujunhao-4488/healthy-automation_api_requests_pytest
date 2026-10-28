@@ -1,0 +1,2 @@
+11:12:48 I → GET  /user/profile      200      7ms
+11:12:48 I → PUT  /user/admin/1/status?status=0 401      1ms

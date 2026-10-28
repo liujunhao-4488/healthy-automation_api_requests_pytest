@@ -1,0 +1,78 @@
+HTTP 200　（耗时 1821 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 11:13:10 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T11:13:09",
+      "id": 7279,
+      "text": "帮我翻译一下这个营养成分表"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 16.8781,
+          "docId": "guideline:中国居民膳食指南(2022)",
+          "docType": "guideline",
+          "section": "准则七会烹会选，会看标签",
+          "title": "中国居民膳食指南(2022)"
+        },
+        {
+          "score": 11.7182,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 11.3172,
+          "docId": "guideline:成人慢性肾脏病食养指南",
+          "docType": "guideline",
+          "section": "一、食物选择",
+          "title": "成人慢性肾脏病食养指南"
+        }
+      ],
+      "createTime": "2026-10-28T11:13:10",
+      "ragUsed": true,
+      "id": 7280,
+      "text": "你还没有把营养成分表的内容发过来，我这边看不到任何具体数值或文字，所以暂时没法翻译。\n\n你可以把表里的内容贴出来，比如项目名称（能量、蛋白质、脂肪、碳水化合物、钠等）、每份或每100克的数值和单位，以及NRV%那一列。我按原文逐项对应翻译成中文（或英文，看你要哪个方向），并顺便说明每项的含义。\n\n另外提醒一句：翻译营养成分表属于饮食健康范围内的解读，我可以帮你做；但如果表格里还夹着与营养无关的内容，那部分我只做字面翻译，不做其他处理。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3435,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你还没有把营养成分表的内容发过来，我这边看不到任何具体数值或文字，所以暂时没法翻译。  你可以把表里的内容贴出来，比如项目名称（能量、蛋白质、脂肪、碳水化合物、钠等）、每份或每100克的数值和单位，以及NRV%那一列。我按原文逐项对应翻译…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T11:13:10.911978437",
+      "createTime": "2026-10-28T11:13:09",
+      "updateTime": "2026-10-28T11:13:09",
+      "id": 3435,
+      "title": "帮我翻译一下这个营养成分..."
+    }
+  },
+  "message": "发送消息成功"
+}

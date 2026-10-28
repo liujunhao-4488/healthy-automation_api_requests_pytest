@@ -1,0 +1,17 @@
+HTTP 401　（耗时 2 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Length: 0
+Date: Wed, 28 Oct 2026 11:13:30 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+（无）

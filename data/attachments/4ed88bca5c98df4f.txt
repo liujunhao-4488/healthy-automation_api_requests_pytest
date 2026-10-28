@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_save_info_fail[缺 weight]       0.00s
