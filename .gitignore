@@ -119,7 +119,7 @@ logs/
 #     eval_results.json 每次跑测试覆盖、机器生成（含本机绝对路径），不入库；
 #     根目录 `_` 前缀的 .py/.txt 是一次性调试脚本，不入库
 # ------------------------------------------------------------
-automation_api_requests_pytest/tools/eval_results.json
+automation_api_requests_pytest/tools/eval/eval_results.json
 /_*.py
 /_*.txt
 
@@ -128,3 +128,10 @@ automation_api_requests_pytest/tools/eval_results.json
 #     Trae 的 HTML 分享包（每次分享生成一个约 1MB 的 zip），不入库
 # ------------------------------------------------------------
 .trae-html-share-packages/
+
+# ------------------------------------------------------------
+# 11. 沙箱 ACL 诊断产物
+#     诊断工具自己写的 DACL 备份 / JSONL 报告，含本机 SID 与绝对路径，
+#     属于本机环境信息而非项目内容，不入库
+# ------------------------------------------------------------
+/_acl_recovery/

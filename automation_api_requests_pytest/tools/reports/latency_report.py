@@ -1,10 +1,10 @@
-# tools/latency_report.py
+# tools/reports/latency_report.py
 # 【工具】耗时报告 —— 拿一份提问集跑一遍，量出"每条要等多久"。
 #
 # 用法（在项目根目录下跑）：
-#     .venv/Scripts/python.exe tools/latency_report.py                 # 跑默认提问集
-#     .venv/Scripts/python.exe tools/latency_report.py --limit 5       # 只跑前 5 条，先看看
-#     .venv/Scripts/python.exe tools/latency_report.py --data xxx.yaml
+#     .venv/Scripts/python.exe tools/reports/latency_report.py                 # 跑默认提问集
+#     .venv/Scripts/python.exe tools/reports/latency_report.py --limit 5       # 只跑前 5 条，先看看
+#     .venv/Scripts/python.exe tools/reports/latency_report.py --data xxx.yaml
 #
 # 会做三件事：跑一遍 → 控制台打表 → 导出 reports/assistant_latency_<时间>.xlsx
 #
@@ -32,9 +32,9 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# 脚本放在 tools/ 下，而 api/ common/ config/ 都在**上一层**。
+# 脚本放在 tools/reports/ 下，而 api/ common/ config/ 都在**上两层**。
 # 把项目根塞进搜索路径，这样不管从哪个目录调用都能 import 到（双击、IDE 里都行）。
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from api import Api                              # noqa: E402

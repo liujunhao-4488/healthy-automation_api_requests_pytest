@@ -171,16 +171,21 @@ automation_api_requests_pytest/
 │   ├── logger.py        ← 日志：控制台一行摘要 / 文件留全量 / 顺手贴进 Allure
 │   └── allure_helper.py ← 【Allure 唯一出口】请求响应附件、脱敏、层级标签、环境信息
 ├── tools/               ← 辅助脚本（**不是用例**：产出数字/清单，不产出红绿）
-│   ├── smoke_check.py      ← 核心链路冒烟
-│   ├── eval_runner.py      ← 离线算 AI 评测指标（改口径不重跑模型）
-│   ├── collect_judge_samples.py / judge_faithfulness.py ← LLM-as-Judge 采样与校准
-│   ├── followup_probe.py / memory_probe.py ← 多轮追问、上下文集探针
-│   ├── latency_report.py   ← 拿提问集跑一遍，量耗时并导出 Excel
-│   ├── jailbreak_report.py ← 红队对抗：跑越狱样本集，算攻破率并导出 Excel
-│   ├── run_tests.py        ← 跑 pytest 并把输出写文件（本机抓不到 stdout 的兜底）
-│   ├── allure_report.py    ← 把结果渲染成 Allure 网页（--run 可顺手跑一轮）
-│   ├── allure_selftest/    ← 故意做红的自检用例（只验报告本身对不对）
-│   └── clean_artifacts.py  ← 清理 logs/runs 与 reports 的旧文件（默认演习，加 --yes 才真删）
+│   ├── README.md               ← 工具索引：每个脚本「干什么 / 怎么跑 / 产物在哪」
+│   ├── run_tests.py            ← 跑 pytest 并把输出写文件（本机抓不到 stdout 的兜底）
+│   ├── reports/                ← 出报告（控制台 / Excel / Allure 网页）
+│   │   ├── latency_report.py   ← 拿提问集跑一遍，量耗时并导出 Excel
+│   │   ├── jailbreak_report.py ← 红队对抗：跑越狱样本集，算攻破率并导出 Excel
+│   │   └── allure_report.py    ← 把结果渲染成 Allure 网页（--run 可顺手跑一轮）
+│   ├── eval/                   ← 评测：留痕、指标、judge 校准
+│   │   ├── eval_runner.py      ← 离线算 AI 评测指标（改口径不重跑模型）
+│   │   ├── eval_results.json   ← pytest 跑完自动落盘的留痕（生成物）
+│   │   ├── collect_judge_samples.py / judge_faithfulness.py ← LLM-as-Judge 采样与校准
+│   │   └── （校准数据在项目根 eval/judge_calibration/，脚本读它、不写它）
+│   ├── maintenance/
+│   │   └── clean_artifacts.py  ← 清理 logs/runs 与 reports 的旧文件（默认演习，加 --yes 才真删）
+│   ├── allure-cli/             ← 自带 allure 命令行工具（约 32 MB，不入库）
+│   └── allure_selftest/        ← 故意做红的自检用例（只验报告本身对不对）
 └── data/                ← 外部数据文件（同一份 6 行登录数据的 4 个孪生版本）
     ├── login_cases.json
     ├── login_cases.csv
@@ -238,25 +243,25 @@ cd D:\jiankang\healthy\automation_api_requests_pytest
 .venv\Scripts\python.exe -m pytest test_cases -v --tb=short
 
 # 跑"报告"（不是用例，不产红绿）：AI 助手提问集的耗时，导出 reports/*.xlsx
-.venv\Scripts\python.exe tools/latency_report.py --limit 5
+.venv\Scripts\python.exe tools/reports/latency_report.py --limit 5
 
 # 清理产物堆积：logs/runs 保留 30 天、reports 保留 90 天
 # （默认只演习列清单，确认后加 --yes 才真删；每个目录至少留最新 1 个）
-.venv\Scripts\python.exe tools/clean_artifacts.py
+.venv\Scripts\python.exe tools/maintenance/clean_artifacts.py
 ```
 
-**看 Allure 报告**（跑完用例才会有所得看；完整说明见 `docs/Allure报告-使用说明.md`）：
+**看 Allure 报告**（跑完用例才会有所得看；脚本本身的说明见 `tools/reports/allure_report.py` 顶部与 `tools/README.md`）：
 
 ```bash
 # 两步：先跑用例（顺带产出 reports/allure-results/），再渲染成网页并打开
 .venv\Scripts\python.exe -m pytest test_cases -q
-.venv\Scripts\python.exe tools/allure_report.py --open
+.venv\Scripts\python.exe tools/reports/allure_report.py --open
 
 # 一条命令搞定：跑全套 → 清旧结果 → 出报告 → 打开浏览器
-.venv\Scripts\python.exe tools/allure_report.py --run --open
+.venv\Scripts\python.exe tools/reports/allure_report.py --run --open
 
 # 只跑一个模块并出报告（--run 后面的参数原样透给 pytest）
-.venv\Scripts\python.exe tools/allure_report.py --run test_cases/auth -q --open
+.venv\Scripts\python.exe tools/reports/allure_report.py --run test_cases/auth -q --open
 
 # 只看"严重级别 = critical"（登录 / 用户资料，挂了说明鉴权和越权出问题）
 .venv\Scripts\python.exe -m pytest test_cases --allure-severities=critical -q

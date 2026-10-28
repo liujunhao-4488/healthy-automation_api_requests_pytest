@@ -20,12 +20,12 @@ pytest 只负责产出**原始结果**（reports/allure-results/ 下一堆 JSON�
   ③ **工作目录**：不管你从哪个目录调用，它都按脚本位置算绝对路径。
 
 ── 用法 ──────────────────────────────────────────────────────────
-    python tools/allure_report.py                    # 用上次 pytest 的结果生成报告
-    python tools/allure_report.py --open             # 生成后启动本地服务并打开浏览器
-    python tools/allure_report.py --run              # 先跑全套用例，再生成报告
-    python tools/allure_report.py --run test_cases/auth -q     # 参数原样透给 pytest
-    python tools/allure_report.py --serve            # 不落盘，直接起服务看结果（临时）
-    python tools/allure_report.py --clean            # 只清空结果目录
+    python tools/reports/allure_report.py                    # 用上次 pytest 的结果生成报告
+    python tools/reports/allure_report.py --open             # 生成后启动本地服务并打开浏览器
+    python tools/reports/allure_report.py --run              # 先跑全套用例，再生成报告
+    python tools/reports/allure_report.py --run test_cases/auth -q     # 参数原样透给 pytest
+    python tools/reports/allure_report.py --serve            # 不落盘，直接起服务看结果（临时）
+    python tools/reports/allure_report.py --clean            # 只清空结果目录
 
 ⚠️ 跑之前先确认后端在跑（8080）—— 否则报告里会是一大片"环境问题"分类的红。
 """
@@ -38,8 +38,8 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-TOOLS = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]      # 项目根（tools/reports/ 往上两级）
+TOOLS = Path(__file__).resolve().parent.parent  # tools/（allure-cli、allure_selftest 在这下面）
 RESULTS = ROOT / "reports" / "allure-results"
 REPORT = ROOT / "reports" / "allure-report"
 
@@ -207,7 +207,7 @@ def main():
         description="生成 / 打开 Allure HTML 报告",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="额外的未知参数会原样透给 pytest（配合 --run 使用），"
-               "例如：python tools/allure_report.py --run test_cases/health -q",
+               "例如：python tools/reports/allure_report.py --run test_cases/health -q",
     )
     parser.add_argument("--run", nargs="?", const="", default=None, metavar="目标",
                         help="先跑 pytest 再出报告（不写目标就是 test_cases 全套）")
@@ -270,7 +270,7 @@ def main():
     if total == 0:
         _say("❌ 结果目录里没有结果：%s" % results_dir)
         _say("   是不是还没跑用例？先跑 `python -m pytest test_cases`，")
-        _say("   或者用 `python tools/allure_report.py --run` 一条命令搞定。")
+        _say("   或者用 `python tools/reports/allure_report.py --run` 一条命令搞定。")
         return 1
     _say("结果文件：%d 份（%s）" % (total, results_dir))
 
@@ -282,7 +282,7 @@ def main():
         return 1
     _say("")
     _say("✅ 报告已生成：%s" % (report_dir / "index.html"))
-    _say("   看报告：python tools/allure_report.py --open")
+    _say("   看报告：python tools/reports/allure_report.py --open")
     _say("   （报告是纯静态页面，可以直接整个目录拷给别人 / 丢到 nginx 上）")
 
     if args.open:

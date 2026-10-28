@@ -30,8 +30,8 @@ from pathlib import Path
 # 项目根（本文件在 common/ 下，往上一级）
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-# 默认落盘位置：tools/eval_results.json（会覆盖 —— 里面记着本次范围，看 meta 就能判断完整度）
-DEFAULT_OUT = PROJECT_ROOT / "tools" / "eval_results.json"
+# 默认落盘位置：tools/eval/eval_results.json（会覆盖 —— 里面记着本次范围，看 meta 就能判断完整度）
+DEFAULT_OUT = PROJECT_ROOT / "tools" / "eval" / "eval_results.json"
 
 _current_nodeid = None      # 当前正在跑的用例；由顶层 conftest 在 logstart 时更新
 _observations = []          # list[dict]：每次问答一条

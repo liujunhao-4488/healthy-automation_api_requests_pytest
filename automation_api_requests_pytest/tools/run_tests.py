@@ -13,7 +13,7 @@
     python tools/run_tests.py test_cases/health -q    # 参数原样透给 pytest
     python tools/run_tests.py -k 词表外 -v
 
-输出写到 tools/_last_test_run.txt（覆盖式），命令结束时会打印一行摘要。
+输出写到 logs/last_test_run.txt（覆盖式），命令结束时会打印一行摘要。
 
 ⚠️ 跑之前先确认后端在跑（8080）—— 否则会看到一片 ConnectionError。
 """
@@ -24,7 +24,7 @@ import sys
 import time
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUT = pathlib.Path(__file__).resolve().parent / "_last_test_run.txt"
+OUT = ROOT / "logs" / "last_test_run.txt"
 
 # 不带参数时给个默认目标 —— 就是本项目最常跑的那个目录。
 args = sys.argv[1:] or ["test_cases/ai_assistant", "-q"]
@@ -51,6 +51,7 @@ text = (
     + proc.stderr.decode("utf-8", "replace")
 )
 
+OUT.parent.mkdir(parents=True, exist_ok=True)
 OUT.write_text(text, encoding="utf-8")
 
 print("wrote %s (%d chars, %.1fs, exit=%d)" % (OUT, len(text), elapsed, proc.returncode))

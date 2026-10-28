@@ -7,7 +7,7 @@
 #   Java 侧 buildKnowledgeContext() 用的就是 topK=3 的 title/section/snippet，
 #   这里用同样的参数再取一次，内容与模型实际看到的基本一致。
 #
-# 用法：python tools/collect_judge_samples.py
+# 用法：python tools/eval/collect_judge_samples.py
 # 产出：eval/judge_calibration/{samples.json, label_sheet.md, label_sheet.csv}
 
 import csv
@@ -15,7 +15,8 @@ import json
 import os
 import sys
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# tools/eval/ 比项目根深两层：BASE_DIR = 项目根
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, BASE_DIR)
 
 import requests

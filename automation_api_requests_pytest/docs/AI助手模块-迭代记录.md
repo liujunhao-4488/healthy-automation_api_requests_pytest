@@ -1982,9 +1982,9 @@ user prompt 里原本恒有两句指向画像的话："请结合以下用户信�
 于是拆成两段：
 
 ```
-pytest 跑一次 ──> tools/eval_results.json（actual 全文留痕）
+pytest 跑一次 ──> tools/eval/eval_results.json（actual 全文留痕）
                         │
-                        └─> tools/eval_runner.py  ← 想怎么算就怎么算（0 成本）
+                        └─> tools/eval/eval_runner.py  ← 想怎么算就怎么算（0 成本）
 ```
 
 新增两个零件（都不改任何 `test_*.py`，守住铁律 1）：
@@ -2376,7 +2376,7 @@ result.put("facts", searchKnowledgeBase(question)); // 失败 / 空召回都返�
 | 2026-10-14 | 13 → 14 | **SSE 流式响应**（**新增端点，老端点一字未动**）：`POST /assistant/chat/stream` 四事件（start / delta / done / error）；提示词**抽公共方法**两条路共用；**换独立线程推送**（否则被缓存成一次性返回）；`RestTemplate.execute` 逐行读流、**零新增依赖**；落库仍在流后一次性完成、**不加事务**。网页端改 fetch + ReadableStream（EventSource 只能 GET、带不上 Authorization）。实测：首段 1.10s / 末段 2.01s **时间戳散开**；Vite 代理**不攒批**；新用例 **9 passed**（核心断言 = deltas 拼起来 == done 里的落库文本）。全量 **178 = 168 / 2 / 8**，**零真回归** |
 | 2026-10-14 | 14 → 15 | **测试侧收尾**（**不做** `intent` 落库 —— 结论：落库对测试无增量价值，只服务"事后翻历史"）：修 `conftest.py` 的 **xfail 显示 bug**（三处补 `wasxfail` 分流 → 显示 `⊘ XFAIL` 带原因、汇总单独成「预期失败」列，不再混进 skipped）；2 条越界红判据改为「**拒绝词 或 `blocked=="out_of_scope"`**」（两条已被硬拦接住、测不到模型，且安全拦截数据集里本就有同源重复样本）。全量 **178 = 170 passed / 0 failed / 8 xfail**（改前 168 / 3 / 7） |
 | 2026-10-14 | 15 → 16 | **画像按意图装配 —— `intent` 第一次真的驱动行为**：`buildAssistantRequestBody` 新增 `includeProfile`（流式/非流式**共用的唯一拼装点**，一处改动两条路生效）→ **只有 `advice` 带画像**，其余整块跳过；画像缺席时 user prompt 里"请结合以下用户信息回答""如果涉及过敏/忌口…"**一起进退**（留着会变成指向不存在信息的空指令、模型顺口编"你目前没有填写过敏信息"）；`BLOCK_MEDICAL_PATTERNS` 补 `极速减脂|极速减肥|暴瘦`（**刻意不收** `快速减肥/快速减脂`＝正常问法会被误伤、`催吐/泻药`＝表里已有、"X 天瘦 N 斤"＝那条越狱样本还要留着测模型），`BLOCK_REPLY_MEDICAL` 文案扩成"…极端节食或过速减重等问题…"（被断言的子串保留）。实测 3 条：advice 带画像 ✓ / knowledge 无串味 ✓ / "极速减脂"硬拦 0 调用 ✓。全量 **178 = 169 / 1 / 8**：B3-角色扮演越狱因撞新硬拦被前置断言报红 → 按机制标 `known_defect`（单跑验证 XFAIL，0 调用）；另 1 红是 `B1-给药-禁止说免责话术` 的 **XPASS 已知来回跳** |
-| 2026-10-14 | 16 → 17 | **评测留痕 + 指标运行器（H1）**：新增 `common/eval_record.py`（观测 + 用例结果落 `tools/eval_results.json`）与 `tools/eval_runner.py`（混淆矩阵 / 每类 P·R·F1 / **漏拦率 + 误拦率** / 攻破率 B1~B4 分桶 / 小样本告警）；埋点只在 `ask` 夹具与顶层 conftest，**未改任何 `test_*.py`**；首版指标 **意图准确率 96.3%（26/27）、漏拦率 0%、误拦率 0%、攻破率 0%（0/15）**；顺带修掉 **strict XPASS 被误记成 FAILED** 的真缺陷（pytest 对 XPASS **不设 `wasxfail`**），并用**离线改口径**避免重跑 94 次调用 |
+| 2026-10-14 | 16 → 17 | **评测留痕 + 指标运行器（H1）**：新增 `common/eval_record.py`（观测 + 用例结果落 `tools/eval/eval_results.json`）与 `tools/eval/eval_runner.py`（混淆矩阵 / 每类 P·R·F1 / **漏拦率 + 误拦率** / 攻破率 B1~B4 分桶 / 小样本告警）；埋点只在 `ask` 夹具与顶层 conftest，**未改任何 `test_*.py`**；首版指标 **意图准确率 96.3%（26/27）、漏拦率 0%、误拦率 0%、攻破率 0%（0/15）**；顺带修掉 **strict XPASS 被误记成 FAILED** 的真缺陷（pytest 对 XPASS **不设 `wasxfail`**），并用**离线改口径**避免重跑 94 次调用 |
 | 2026-10-21 | 17 → 18 | **安全评测收口**：① 全量日志总账改到 `pytest_sessionfinish`（`--no-summary` 会跳过 `pytest_terminal_summary`），并按 nodeid 去重（call 通过 + teardown 失败只算一次 error）；② 越权组 2 条假红修复（SSE 拒绝是 200 + `error` 事件；软删除后按 message → conversation → user 顺序硬删）；③ 注入/泄漏三层修复（system 加【输入边界】+ `<user_input>` 数据标签 + 输出骨架句兜底与流式 holdback）；④ 注入判据排除"拒绝时复述标记"误报。实测越权 **5/5**、注入 **12 passed + 1 skipped** |
 | 2026-10-21 | 18 → 19 | **RAG 检索排序修复**：口语同义词表 `query_aliases.json`（12 实体 + 9 内容 + 2 意图）+ 覆盖率归一化 + 实体/章节/摘要/否定四类加权；`docType` 透传；6 条 `known_defect` 摘标，2 条加强为章节级断言。离线 golden **40/40**，线上探针 top-1 命中，RAG 用例 **80 passed / 0 failed** |
 | 2026-10-22 | 19 → 20 | **RAG 生成侧可观测**：`assistantMessage` 新增 `ragUsed` / `sources` / `retrievalStatus`（hit / empty / error / ingredient / not_attempted），流式与非流式同时透传；生成侧 strict xfail 转正，新增空召回 / 非 RAG 路由用例；`test_assistant_RAG生成.py` **8 passed / 1 skipped / 0 failed** |

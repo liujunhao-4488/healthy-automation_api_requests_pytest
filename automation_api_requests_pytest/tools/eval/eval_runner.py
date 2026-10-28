@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-# tools/eval_runner.py
+# tools/eval/eval_runner.py
 # 【评测运行器】把 pytest 的红绿，算成**能支撑结论的数字**。
 #
-# ══ 它和 run_tests.py / jailbreak_report.py 的分工 ══
-#   run_tests.py        跑用例 → 红绿（断言层）
-#   jailbreak_report.py  越狱专项报告（一个工位、一种指标）
-#   本文件               **所有工位**的指标层：读留痕 JSON + 数据集 → 指标 + 报告
+# ══ 它和 run_tests.py / reports/jailbreak_report.py 的分工 ══
+#   tools/run_tests.py                    跑用例 → 红绿（断言层）
+#   tools/reports/jailbreak_report.py     越狱专项报告（一个工位、一种指标）
+#   本文件                                **所有工位**的指标层：读留痕 JSON + 数据集 → 指标 + 报告
 #
 # ══ 为什么必须"先留痕、再算指标"（架构上的关键决定）══
 #   指标口径一定会变（今天算准确率，明天想加误拒率，后天想按攻击手法分桶）。
 #   若指标直接算在用例里，每改一次口径就得**重跑一遍模型** —— 又慢又烧钱。
 #   所以拆成两段：
-#       pytest 跑一次 → tools/eval_results.json（actual 全文留痕，见 common/eval_record.py）
+#       pytest 跑一次 → tools/eval/eval_results.json（actual 全文留痕，见 common/eval_record.py）
 #                                ↓
 #       本文件想怎么算就怎么算（离线、免费、可反复）
 #   这一条就是"评测自动化"里最值钱的那句话：**跑一次，算很多次**。
@@ -26,10 +26,10 @@
 #       混在一起算，平均值会把"B1 全挡住、B3 全漏"抹平（jailbreak_report 的教训）。
 #
 # 用法：
-#   python tools/eval_runner.py                    # 读 tools/eval_results.json
-#   python tools/eval_runner.py --in other.json
-#   python tools/eval_runner.py --md docs/AI助手-评测报告.md
-#   python tools/eval_runner.py --selftest         # 只自测算法（不读文件、不调模型、0 成本）
+#   python tools/eval/eval_runner.py                    # 读 tools/eval/eval_results.json
+#   python tools/eval/eval_runner.py --in other.json
+#   python tools/eval/eval_runner.py --md docs/AI助手-评测报告.md
+#   python tools/eval/eval_runner.py --selftest         # 只自测算法（不读文件、不调模型、0 成本）
 
 import argparse
 import json
@@ -37,14 +37,14 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]   # 项目根（tools/eval/ 往上两级）
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.data_loader import load_cases          # noqa: E402
 from common.logger import pad                      # noqa: E402
 
-DEFAULT_IN = PROJECT_ROOT / "tools" / "eval_results.json"
+DEFAULT_IN = PROJECT_ROOT / "tools" / "eval" / "eval_results.json"
 DEFAULT_MD = PROJECT_ROOT / "docs" / "AI助手-评测报告.md"
 
 # 小样本阈值：低于它，百分比没有统计意义，报告里必须打警告（防刷分的第一道闸）
@@ -420,7 +420,7 @@ def render_markdown(m_intent, m_guard, m_jail, m_run):
     a("> 生成时间：%s ｜ 运行范围：`%s`" % (meta.get("generated_at", "—"),
                                           meta.get("scope", "—")))
     a(">")
-    a("> 本文件由 `tools/eval_runner.py` 从 `tools/eval_results.json` 生成（**离线计算，0 次模型调用**）。")
+    a("> 本文件由 `tools/eval/eval_runner.py` 从 `tools/eval/eval_results.json` 生成（**离线计算，0 次模型调用**）。")
     a("> 数据来源是 pytest 运行时留下的真实观测，改指标口径只需重跑本脚本，不必重跑模型。")
     a("")
 
@@ -570,7 +570,7 @@ def render_markdown(m_intent, m_guard, m_jail, m_run):
     a("")
     a("---")
     a("")
-    a("生成命令：`python tools/eval_runner.py`")
+    a("生成命令：`python tools/eval/eval_runner.py`")
     return "\n".join(L)
 
 

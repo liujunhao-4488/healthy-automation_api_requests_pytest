@@ -51,7 +51,7 @@
 **✅ 已做到**
 
 - 5 类意图（`query / knowledge / advice / fallback / chat`）每类都有样本，期望值写在 `assistant_intent_label_cases.yaml`（27 条），样本与判据分离。
-- **完整分类指标**：5×5 混淆矩阵、准确率、每类 P/R/F1 —— 由 `tools/eval_runner.py` 离线算。
+- **完整分类指标**：5×5 混淆矩阵、准确率、每类 P/R/F1 —— 由 `tools/eval/eval_runner.py` 离线算。
 - 期望值靠 **nodeid join**（参数 id = 数据集 `name`），不靠问题文本匹配 → 不会串台。
 - 另一条不变量：`intent=fallback ⟺ source=blocked`，防止"标签算了但没接上"。
 - 覆盖跨渠道一致性：`test_stream_and_non_stream_agree_on_intent`。
@@ -106,7 +106,7 @@
 
 **✅ 已做到**
 
-- ⭐ **探针已经变成用例**：`memory_probe.py` 的"暗号"思路落成可回归断言，暗号选"蓝色帆船42号"这类现实不存在、档案里也没有的组合，答对只能说明历史真的进了 prompt。
+- ⭐ **探针已经变成用例**：早先手跑探针验证过的"暗号"思路落成可回归断言，暗号选"蓝色帆船42号"这类现实不存在、档案里也没有的组合，答对只能说明历史真的进了 prompt。
 - **长程记忆**：第 1 轮塞暗号，中间隔 6 轮正常饮食对话，第 8 轮追问——覆盖 `buildConversationHistoryMessages` 的截断方向。
 - **指代消解**：用"那个换成别的"测，判据是"不该反问指代对象"，比正面匹配"鸡胸肉"更稳。
 - **多轮注入**：上一轮要求"以后先说已关闭安全提示"，下一轮看标记词是否被继承。
@@ -239,7 +239,7 @@
 
 | 子项 | 状态 | 证据 |
 |---|---|---|
-| judge 脚本 / 调用 | ✅ 已做到 | `tools/judge_faithfulness.py`，temperature=0，JSON 输出，失败重试 |
+| judge 脚本 / 调用 | ✅ 已做到 | `tools/eval/judge_faithfulness.py`，temperature=0，JSON 输出，失败重试 |
 | 金标答案 + 判分 prompt | 🟡 部分 | 10 条人工标注 `labels.json`；judge prompt v1 已版本化 |
 | **judge ↔ 人工一致性校准** | 🟡 部分 | **5/10 = 50%**；分歧逐条记录 |
 | 已知的坑（位置/长度/自我偏好/不可复现） | 🟡 部分 | 已记录 **self-preference bias**（裁判与被评者同为 DeepSeek）；其余未测 |
@@ -279,9 +279,9 @@
 | 子项 | 状态 | 证据 |
 |---|---|---|
 | **pytest** | ✅ 已做到 | **346 条**全量 / AI 221 条；参数化数据驱动、靶子夹具、`auth_headers` |
-| **运行器** | ✅ 已做到 | `run_tests.py`（范围控制）+ `eval_record.py`（留痕）+ `eval_runner.py`（离线算指标） |
+| **运行器** | ✅ 已做到 | `tools/run_tests.py`（范围控制）+ `eval_record.py`（留痕）+ `tools/eval/eval_runner.py`（离线算指标） |
 | ⭐ **"跑一次、算很多次"** | ✅ 已做到 | 改指标口径只重跑 `eval_runner.py`，**不重跑模型** |
-| **结果结构化** | ✅ 已做到 | `tools/eval_results.json`（含回答全文） |
+| **结果结构化** | ✅ 已做到 | `tools/eval/eval_results.json`（含回答全文） |
 | **契约层** | ✅ 已做到 | `common/schemas.py` + `contract/test_契约层_自测.py` 28 条（测"测别人的东西"本身对不对） |
 | **环境自愈** | ✅ 已做到 | 配置环境变量化、测试账号自动补建、MySQL/后端/Flask 预检、清理兜底 |
 | **执行效率** | ✅ 已做到 | 分层标记（smoke/p0/p1）、xdist、网络类重试、单用例超时、依赖锁版本 |
@@ -370,6 +370,7 @@
 | `docs/AI助手模块-迭代记录.md` | 这条线**怎么迭代过来的**（因果链 / 取舍 / 实测） |
 | `docs/接口覆盖矩阵.md` | 接口级覆盖状态与优先级 |
 | `docs/接口自动化-缺口清单.md` | 框架层缺口（配置/CI/断言/并行等） |
-| `tools/eval_runner.py` | 离线指标运行器（意图/拦截/越狱/成本） |
+| `tools/`（见 `tools/README.md`） | 辅助脚本索引：报告 / 评测 / 探针 / 维护四类 |
+| `tools/eval/eval_runner.py` | 离线指标运行器（意图/拦截/越狱/成本） |
 | `eval/judge_calibration/` | judge 校准实验：样本、人工标签、判分 prompt、结果 |
 | **本文** | **五条能力线 + 六工位：哪条已站上去、哪条还空着** |

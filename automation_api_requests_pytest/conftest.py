@@ -189,7 +189,7 @@ _started_at = 0.0        # 会话开始时刻（perf_counter）
 _module_duration = {}    # 模块名 -> 累计耗时（setup + call + teardown 全算，才是真实耗时）
 _abort_reason = ""       # 预检中止整场时的原因 —— 结尾汇总要再报一次，别只留在开头
 
-# 评测留痕的落盘位置（--eval-out 可覆盖，默认 tools/eval_results.json）
+# 评测留痕的落盘位置（--eval-out 可覆盖，默认 tools/eval/eval_results.json）
 _eval_out = None
 _eval_path = None        # 本次实际写到了哪（结尾汇总要显示给用户）
 
@@ -269,7 +269,7 @@ def pytest_addoption(parser):
         action="store",
         default=None,
         metavar="PATH",
-        help="评测留痕的落盘路径（默认 tools/eval_results.json，跑完整评测前可换个名字留着）",
+        help="评测留痕的落盘路径（默认 tools/eval/eval_results.json，跑完整评测前可换个名字留着）",
     )
 
 
@@ -1049,7 +1049,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
             c = eval_record.counts()
             terminalreporter.write_line(
                 "评测留痕: %s（观测 %d 条；调模型 %d 次 / 硬拦 %d 次）"
-                " —— 跑 tools/eval_runner.py 出指标"
+                " —— 跑 tools/eval/eval_runner.py 出指标"
                 % (_eval_path, c["observations"], c["model_calls"], c["blocked_calls"]),
                 cyan=True)
 

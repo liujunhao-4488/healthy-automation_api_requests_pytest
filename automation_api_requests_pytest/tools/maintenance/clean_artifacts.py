@@ -16,9 +16,9 @@
 这两个**已经自我约束**了，本脚本不碰它们（它们也不在 logs/runs/ 里，天然安全）。
 
 ── 用法（在项目根目录下跑）────────────────────────────────────
-    python tools/clean_artifacts.py                     # 演习：只列清单，不删
-    python tools/clean_artifacts.py --runs-days 7       # 换个保留天数
-    python tools/clean_artifacts.py --yes               # 真删
+    python tools/maintenance/clean_artifacts.py                     # 演习：只列清单，不删
+    python tools/maintenance/clean_artifacts.py --runs-days 7       # 换个保留天数
+    python tools/maintenance/clean_artifacts.py --yes               # 真删
 
 默认保留：logs/runs 最近 30 天，reports 最近 90 天。
 （报告是用来回溯决策的，该留得久一点；运行日志过了几天就没参考价值了。）
@@ -37,14 +37,14 @@ import argparse
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]      # 项目根（tools/maintenance/ 往上两级）
 
 RUNS_DIR = ROOT / "logs" / "runs"
 REPORT_DIR = ROOT / "reports"
 
-# 演习/真删的清单写到这儿（_ 前缀已被 .gitignore 排除）。
+# 演习/真删的清单写到 logs/last_cleanup.txt（logs/ 已被 .gitignore 排除）。
 # 这台机器跨 shell 抓不到 stdout，所以让脚本自己写文件、再打开看。
-AUDIT = Path(__file__).resolve().parent / "_last_cleanup.txt"
+AUDIT = ROOT / "logs" / "last_cleanup.txt"
 
 # reports/ 里认得出类型的报告命名（前缀_时间戳.xlsx）。
 # 新增报告类型时，把前缀加到这里，否则它会落进"未识别、不删"那一档。
@@ -153,6 +153,7 @@ def main():
             for p in pl["delete"]:
                 p.unlink()
 
+    AUDIT.parent.mkdir(parents=True, exist_ok=True)
     AUDIT.write_text(text, encoding="utf-8")
     print(text)
     print("\n[clean_artifacts] %s，%d 个文件；清单见 %s"

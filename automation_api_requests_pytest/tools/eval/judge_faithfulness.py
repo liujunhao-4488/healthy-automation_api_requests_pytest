@@ -15,14 +15,15 @@
 #   分母里先算全部 10 条；分歧逐条打印，尤其是「人判忠实、judge 判有编造」的方向——
 #   那个方向说明判据在收紧，通常是人在被"看起来专业"的回答糊弄。
 #
-# 用法：python tools/judge_faithfulness.py
+# 用法：python tools/eval/judge_faithfulness.py
 
 import json
 import os
 import sys
 import time
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# tools/eval/ 比项目根深两层：BASE_DIR = 项目根
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, BASE_DIR)
 
 import requests

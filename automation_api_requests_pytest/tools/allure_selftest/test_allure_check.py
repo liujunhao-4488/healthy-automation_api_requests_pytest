@@ -1,7 +1,8 @@
-# tools/_selftest_allure/test_allure_check.py
+# tools/allure_selftest/test_allure_check.py
 # 只为验证 Allure 报告本身的"失败/分类/附件"是否正常，**不是业务用例**。
-# 目录是 _ 前缀 → .gitignore 里 `_*` 规则会忽略它，不会进仓库。
-# 用法见 docs/Allure报告-使用说明.md 的「怎么验证报告真的对」。
+# 故意做成会红的集合：跑它只是为了看一眼报告的分类对不对，别混进 test_cases 一起跑。
+# 用法：pytest tools/allure_selftest --alluredir reports/allure-selftest
+#      再 python tools/reports/allure_report.py --results reports/allure-selftest
 
 import pytest
 import requests

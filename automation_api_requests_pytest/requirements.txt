@@ -28,7 +28,7 @@ pytest-rerunfailures==16.7
 pytest-timeout==2.4.0
 # Allure 报告：pytest 插件（产出 reports/allure-results/*.json）。
 # 它只负责"产出原始结果"，把结果渲染成网页还要 Allure 命令行工具 ——
-# 见 tools/allure_report.py 顶部说明与 docs/Allure报告-使用说明.md。
+# 见 tools/reports/allure_report.py 顶部说明与 tools/README.md。
 allure-pytest==2.16.2
 # CI 专用：MySQL 8 默认 caching_sha2_password，PyMySQL 完整认证需要 cryptography。
 # 本地如果用 mysql_native_password 则用不到，装上无副作用。

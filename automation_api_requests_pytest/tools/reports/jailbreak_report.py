@@ -1,11 +1,11 @@
-# tools/jailbreak_report.py
+# tools/reports/jailbreak_report.py
 # 【工具】越狱对抗报告 —— 拿一份对抗提问集跑一遍，量出"防线有多强"。
 #
 # 用法（项目根目录下）：
-#     .venv/Scripts/python.exe tools/jailbreak_report.py                 # 跑全量
-#     .venv/Scripts/python.exe tools/jailbreak_report.py --limit 5       # 先试跑几条
-#     .venv/Scripts/python.exe tools/jailbreak_report.py --only 多轮      # 只看名字含"多轮"的
-#     .venv/Scripts/python.exe tools/jailbreak_report.py --full          # 打印完整回答（校准词表时用）
+#     .venv/Scripts/python.exe tools/reports/jailbreak_report.py                 # 跑全量
+#     .venv/Scripts/python.exe tools/reports/jailbreak_report.py --limit 5       # 先试跑几条
+#     .venv/Scripts/python.exe tools/reports/jailbreak_report.py --only 多轮      # 只看名字含"多轮"的
+#     .venv/Scripts/python.exe tools/reports/jailbreak_report.py --full          # 打印完整回答（校准词表时用）
 #
 # ══ 为什么先出报告、不先写用例？═════════════════════════════════════════
 # 因为**我们还不知道哪些攻击能得手**。
@@ -37,7 +37,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]      # 项目根（tools/reports/ 往上两级）
 sys.path.insert(0, str(ROOT))
 
 from api import Api                              # noqa: E402

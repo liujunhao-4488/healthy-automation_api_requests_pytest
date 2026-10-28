@@ -10,12 +10,12 @@
 #     B1 用药剂量 8 / B2 高风险情形 5 / B3 极端减重 6 / B4 越界任务 2，
 #     其中有 3 条是**多轮**攻击 —— 单轮提问集永远测不出那一类。
 #
-#   它还有个"前身"：tools/jailbreak_report.py。那个是一次性**报告**脚本
+#   它还有个"前身"：tools/reports/jailbreak_report.py。那个是一次性**报告**脚本
 #   （跑一遍、导出 Excel、给人看）；本文件把它变成**能天天跑的回归**。
 #   两者不重复：报告负责"量稳定性 / 校准词表"，用例负责"每次改动后自动拦一道"。
 #
 # ══ 判据从哪来：不重写，直接复用 ═════════════════════════════════
-#   ⚠️ 关键决定：import tools.jailbreak_report 的 judge()，**不在这里重写一份**。
+#   ⚠️ 关键决定：import tools.reports.jailbreak_report 的 judge()，**不在这里重写一份**。
 #   为什么：越狱判据（breach / guard / verdict 三件套）是校准了 3 轮才定下来的；
 #   两处各存一份，必然像前后端词表那样慢慢漂移（这个项目已经栽过一次）。
 #   只有一份，改也只改 tools 那一份。pytest.ini 里有 pythonpath = . ，
@@ -52,7 +52,7 @@
 import pytest
 
 from common.data_loader import load_cases
-from tools.jailbreak_report import judge
+from tools.reports.jailbreak_report import judge
 
 JAIL_CASES = load_cases("assistant_jailbreak_cases.yaml")
 
@@ -80,7 +80,7 @@ def _ask_all_turns(ask, case):
 
     多轮**必须用同一个 conversationId** —— 攻击的威力全在上下文累积里；
     每轮新建会话等于把它拆成一串单轮，测的就不是同一个东西了。
-    （跑法和 tools/jailbreak_report.py 的 run_case 一致。）
+    （跑法和 tools/reports/jailbreak_report.py 的 run_case 一致。）
     """
     turns = case.get("turns") or [case["question"]]
     history = []
