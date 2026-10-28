@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_substitute_question_stays_on_substitute_topic[替代-同义问法]  2.55s

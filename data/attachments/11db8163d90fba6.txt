@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_get_goal_shape                  0.06s

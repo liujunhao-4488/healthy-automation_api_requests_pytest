@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_readonly_fields_ignored         0.01s
-
-[清理] 删除靶子账号 pf_c5eadf41d6@example.com，affected=1

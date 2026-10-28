@@ -1,8 +1,0 @@
-03:11:31 I → POST /auth/register     200    134ms
-03:11:31 I → POST /assistant/conversations 200     17ms
-03:11:32 I → POST /assistant/chat    200   1235ms
-03:11:32 I → GET  /assistant/conversations 200      3ms
-03:11:32 I → DELETE /assistant/conversations/3542 200      4ms
-03:11:32 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (SELECT `id` FROM `assistant_conversation` WHERE `user_id` = %s) | args=(101318,) | affected=2 | 1.0ms
-03:11:32 W ! WRITE DELETE FROM `assistant_conversation` WHERE `user_id` = %s | args=(101318,) | affected=1 | 0.7ms
-03:11:32 W ! WRITE DELETE FROM `user` WHERE `id` = %s | args=(101318,) | affected=1 | 0.9ms

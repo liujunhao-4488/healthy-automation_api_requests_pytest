@@ -1,5 +1,0 @@
-
-└─ ✔ PASSED  test_save_goal_bad_date_format_response_not_unified  0.01s
-                                                                         [ 83%]
-test_cases/health/test_health_info.py 
-[清理] 靶子 userId=101331: history=0 info=0 goal=0 user=1

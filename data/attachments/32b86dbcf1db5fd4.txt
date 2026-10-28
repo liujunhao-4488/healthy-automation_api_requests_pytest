@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_get_profile_success             0.00s

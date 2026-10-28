@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_non_rag_routes_are_labeled[精确查表]  1.09s

@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_doc[肥胖的人减重期间每天吃多少能量]  0.01s

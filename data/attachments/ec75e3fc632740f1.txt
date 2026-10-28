@@ -1,5 +1,0 @@
-03:09:29 I → POST /assistant/chat    200   2021ms
-03:09:29 I · AI    问「我今天的蛋白质摄入够吗」  → 仅凭这句话我无法判断你的蛋白质摄入够不够，因为我不知道你今天吃了什么、吃了多少，也不知道你的体重和活动量。蛋白质是否充足，主要看全天摄入总量与你个人需要量的对比。 如果你愿意，可以把你今天吃过的食物和…
-03:09:29 I → DELETE /assistant/conversations/3460 200      5ms
-03:09:29 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3460,) | affected=2 | 0.8ms
-03:09:29 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3460,) | affected=1 | 0.6ms

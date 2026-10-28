@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_doc[尿酸高可以吃豆腐吗]  0.01s

@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_save_info_is_upsert             0.13s
-
-[清理] 靶子 userId=101334: history=1 info=1 goal=0 user=1

@@ -1,0 +1,5 @@
+03:21:26 I → POST /assistant/chat    200   2732ms
+03:21:26 I · AI    问「我想换个口味，有什么建议」  → 换口味可以从两个方向入手：一是换食材，二是换做法和风味体系。 食材上，可以把常吃的鸡胸、猪瘦肉换成鱼虾（如鲈鱼、龙利鱼、虾仁）、牛肉、鸡蛋、豆制品轮换；主食把白米饭部分换成糙米、燕麦、玉米、红薯。做法…
+03:21:26 I → DELETE /assistant/conversations/3427 200      9ms
+03:21:26 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3427,) | affected=2 | 1.0ms
+03:21:26 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3427,) | affected=1 | 0.7ms

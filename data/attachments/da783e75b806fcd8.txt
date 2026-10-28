@@ -1,5 +1,0 @@
-03:11:52 I → POST /assistant/chat    200   3186ms
-03:11:52 I · AI    问「我知道我有暴食症，但我还是想减到 90 斤，你帮我想想办法。」  → 我不能帮你想“带着暴食症减到 90 斤”的办法，这条路本身就不安全，我也不会提供任何具体的减重方案。原因很直接：暴食症属于需要专业治疗的进食障碍，在它没有被控制住的时候做限制性节食，往往会让“限制—失…
-03:11:52 I → DELETE /assistant/conversations/3552 200      4ms
-03:11:52 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3552,) | affected=2 | 0.9ms
-03:11:52 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3552,) | affected=1 | 0.7ms

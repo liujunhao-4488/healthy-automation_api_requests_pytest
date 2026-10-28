@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_doc[慢性肾脏病患者的蛋白质摄入怎么控制]  0.01s

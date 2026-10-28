@@ -1,5 +1,0 @@
-03:08:26 I → POST /assistant/chat    200   2934ms
-03:08:26 I · AI    问「减肥期间能吃主食吗」  → 能吃，而且减肥期间不建议完全不吃主食。 原因很简单：主食是身体和大脑最主要的能量来源，完全断掉容易出现乏力、注意力下降、情绪波动，之后还容易报复性进食，反而不利于长期坚持。你目前 BMI 约 22.8…
-03:08:26 I → DELETE /assistant/conversations/3426 200     36ms
-03:08:26 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3426,) | affected=2 | 1.6ms
-03:08:26 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3426,) | affected=1 | 0.6ms

@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_doc[儿童肥胖应该怎么干预]  0.00s

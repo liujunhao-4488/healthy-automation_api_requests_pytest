@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_intent_matches_dataset_label[建议-吃多少鸡胸肉]  2.20s

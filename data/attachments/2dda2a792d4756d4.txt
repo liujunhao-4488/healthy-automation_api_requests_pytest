@@ -1,5 +1,0 @@
-03:09:03 I → POST /assistant/chat    200   2315ms
-03:09:03 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，主要取决于你有没有海鲜过敏，以及甲状腺、痛风、肾功能这几方面的情况。如果你对虾蟹类过敏，那就不能吃；如果没有过敏史，一般人群适量吃海虾是没问题的。 海虾属于高蛋白、低脂肪的食材，还含有硒…
-03:09:03 I → DELETE /assistant/conversations/3446 200      7ms
-03:09:03 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3446,) | affected=2 | 0.9ms
-03:09:03 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3446,) | affected=1 | 0.6ms

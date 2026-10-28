@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_general_question_does_not_probe_profile[什么是食物的升糖指数]  5.44s
-                                                                         [ 63%]
-test_cases/assistant/test_assistant_契约.py 

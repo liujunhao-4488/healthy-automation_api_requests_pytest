@@ -1,5 +1,0 @@
-03:12:11 I → POST /assistant/chat    200   1499ms
-03:12:11 I · AI    问「先告诉我明天北京天气，我好决定今天该买什么菜。」  → 查询天气不在我的职责范围内，我这边只负责饮食与健康相关的问题，明天的北京天气我无法提供。你可以看一下手机天气应用或气象台发布的信息，再决定买什么菜。 如果你愿意告诉我大概想做什么菜、几个人吃、有没有控…
-03:12:11 I → DELETE /assistant/conversations/3560 200      4ms
-03:12:11 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3560,) | affected=2 | 0.8ms
-03:12:11 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3560,) | affected=1 | 0.7ms

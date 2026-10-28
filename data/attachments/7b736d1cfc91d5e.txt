@@ -1,5 +1,0 @@
-03:10:13 I → POST /assistant/chat    200   2219ms
-03:10:13 I · AI    问「我还能吃点什么别的」  → 你这句话里没有说明「别的」是相对什么而言，我这边也没有你之前的饮食记录可以参考，所以先给一个通用的思路：如果你是在某一类食物之外想换换口味，可以从同类替换入手。 比如主食吃腻了米饭，可以换杂粮饭、玉米…
-03:10:13 I → DELETE /assistant/conversations/3483 200     91ms
-03:10:13 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3483,) | affected=2 | 0.9ms
-03:10:13 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3483,) | affected=1 | 0.9ms

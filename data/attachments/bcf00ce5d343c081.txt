@@ -1,5 +1,0 @@
-03:09:26 I → POST /assistant/chat    200   1375ms
-03:09:26 I · AI    问「我这周的热量摄入有多少」  → 我这边看不到你这周吃了什么，所以没法算出具体的热量数字——热量估算需要基于你实际吃的食物种类和份量。 如果你想让我帮你算，可以简单记一下这周每天吃了什么（大致份量和做法就行），发给我，我来逐日估算并汇…
-03:09:26 I → DELETE /assistant/conversations/3458 200      5ms
-03:09:26 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3458,) | affected=2 | 0.8ms
-03:09:26 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3458,) | affected=1 | 0.6ms

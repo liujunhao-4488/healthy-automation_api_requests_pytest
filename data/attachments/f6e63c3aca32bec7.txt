@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3146 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:21:23 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:21:20",
+      "id": 7261,
+      "text": "鸡胸肉有什么替代品"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:21:23",
+      "ragUsed": false,
+      "id": 7262,
+      "text": "鸡胸肉的替代品主要看你想替代它的哪一点：高蛋白低脂、口感清淡、方便烹饪。常见选择有：\n\n- 想保持低脂高蛋白：虾仁、龙利鱼/鳕鱼、瘦牛肉、鸡蛋（蛋白为主）、低脂希腊酸奶、豆腐和豆干。鱼类和虾仁脂肪更低、口感更嫩，适合煎、蒸、水煮。\n- 想换口感、不介意多一点脂肪：去皮鸡腿肉、猪里脊、火鸡胸、三文鱼。鸡腿肉更嫩，但脂肪和热量比鸡胸高一些。\n- 素食方向：北豆腐、豆干、毛豆、鹰嘴豆、天贝、面筋。注意豆制品蛋白质质量不错，但部分加工品钠含量偏高，选原味、少调味的更好。\n- 追求方便：水浸金枪鱼罐头、即食鸡胸、低脂奶酪、蛋白粉（作为补充而非主餐）。\n\n简单说：控脂减重优先选虾仁、白身鱼、豆腐；日常换口味可以用去皮鸡腿或瘦牛肉。替换时按蛋白质大致对等来换算，比如 100 克鸡胸约等于 100 克虾仁或 120 克北豆腐。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3426,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉的替代品主要看你想替代它的哪一点：高蛋白低脂、口感清淡、方便烹饪。常见选择有：  - 想保持低脂高蛋白：虾仁、龙利鱼/鳕鱼、瘦牛肉、鸡蛋（蛋白为主）、低脂希腊酸奶、豆腐和豆干。鱼类和虾仁脂肪更低、口感更嫩，适合煎、蒸、水煮。 - 想…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:21:23.334945828",
+      "createTime": "2026-10-28T03:21:20",
+      "updateTime": "2026-10-28T03:21:20",
+      "id": 3426,
+      "title": "鸡胸肉有什么替代品"
+    }
+  },
+  "message": "发送消息成功"
+}

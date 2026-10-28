@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_save_info_fail[height 为 0（曾泄露异常栈，已修）]  0.01s
+
+[清理] 靶子 userId=101336: history=0 info=0 goal=0 user=1

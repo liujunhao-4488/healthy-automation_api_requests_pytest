@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2924 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 03:21:50 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T03:21:47",
+      "id": 7285,
+      "text": "吃药期间能吃柚子吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T03:21:50",
+      "ragUsed": false,
+      "id": 7286,
+      "text": "这要看具体吃的是什么药，不能一概而论。总体来说，服药期间吃柚子（尤其是西柚/葡萄柚）需要格外谨慎，最稳妥的做法是先看药品说明书上的“相互作用”一栏，或直接问开药的医生、药师。\n\n之所以要谨慎，是因为西柚（葡萄柚）中含有呋喃香豆素类成分，会抑制肠道和肝脏中一种叫 CYP3A4 的代谢酶，使某些药物在体内的浓度升高，相当于“变相加大了剂量”，可能增加不良反应风险。受影响的常见药物包括部分降压药（如硝苯地平）、部分降脂药（他汀类中的辛伐他汀、阿托伐他汀）、部分抗心律失常药、某些免疫抑制剂、部分抗焦虑药等。这类影响可持续较长时间，不是“错开几小时吃”就能完全避免的。\n\n相对而言，普通蜜柚、沙田柚与西柚不是同一品种，影响通常小得多，但个体差异和药物种类差异较大，仍建议保守处理。如果说明书明确写了“避免与葡萄柚汁同服”，服药期间就尽量不要吃西柚，也不要喝西柚汁；想吃其他柚子，最好先咨询医生或药师。\n\n另外提醒一句：具体能否同服、是否需要调整用药，请以医生的诊断和处方为准，不要自行停药或改剂量。如果你愿意告诉我具体在吃哪类药（比如降压、降脂、抗感染等），我可以帮你分析需要注意的方向。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3438,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "这要看具体吃的是什么药，不能一概而论。总体来说，服药期间吃柚子（尤其是西柚/葡萄柚）需要格外谨慎，最稳妥的做法是先看药品说明书上的“相互作用”一栏，或直接问开药的医生、药师。  之所以要谨慎，是因为西柚（葡萄柚）中含有呋喃香豆素类成分，会…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T03:21:50.636149986",
+      "createTime": "2026-10-28T03:21:47",
+      "updateTime": "2026-10-28T03:21:47",
+      "id": 3438,
+      "title": "吃药期间能吃柚子吗"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,5 +1,0 @@
-03:09:42 I → POST /assistant/chat    200   3662ms
-03:09:42 I · AI    问「我想控糖应该注意什么」  → 控糖的核心不是完全不吃碳水，而是「选对碳水、控制总量、搭配好其他食物、稳住餐后血糖波动」。具体可以注意这几点： 一是主食别只看「甜不甜」，要看升糖速度。白米饭、白粥、白面包、糯米制品升糖快，可以部分换…
-03:09:42 I → DELETE /assistant/conversations/3466 200      5ms
-03:09:42 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3466,) | affected=2 | 1.1ms
-03:09:42 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3466,) | affected=1 | 0.9ms

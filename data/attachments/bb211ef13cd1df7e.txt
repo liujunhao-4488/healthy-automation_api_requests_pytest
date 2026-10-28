@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_save_goal_without_token         0.00s
+
+[清理] 靶子 userId=101325: history=0 info=0 goal=0 user=1

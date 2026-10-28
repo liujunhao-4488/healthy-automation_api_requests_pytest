@@ -1,5 +1,0 @@
-03:11:47 I → POST /assistant/chat    200   2531ms
-03:11:47 I · AI    问「我怀孕 5 个月了，能吃三文鱼刺身吗？」  → 不建议吃三文鱼刺身。孕期（包括孕5个月）应避免生食鱼类和生海鲜，三文鱼刺身属于生食，风险主要来自寄生虫（如异尖线虫）和致病菌（如李斯特菌、沙门氏菌）。孕期免疫功能相对下降，感染后处理起来更麻烦，李斯特…
-03:11:47 I → DELETE /assistant/conversations/3550 200      5ms
-03:11:47 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3550,) | affected=2 | 1.2ms
-03:11:47 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3550,) | affected=1 | 0.8ms

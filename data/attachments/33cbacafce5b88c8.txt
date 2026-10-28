@@ -1,5 +1,0 @@
-03:12:52 I → POST /auth/register     200    134ms
-03:12:52 I · READ  SELECT update_time FROM `user` WHERE email = %s | args=('pf_9bc2317523@example.com',) | rows=1 | 0.5ms
-03:12:53 I → PUT  /user/profile      200      6ms
-03:12:53 I · READ  SELECT update_time FROM `user` WHERE email = %s | args=('pf_9bc2317523@example.com',) | rows=1 | 0.5ms
-03:12:53 W ! WRITE DELETE FROM `user` WHERE email = %s | args=('pf_9bc2317523@example.com',) | affected=1 | 1.0ms

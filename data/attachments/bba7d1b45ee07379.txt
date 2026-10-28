@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_deleted_conversation_disappears  0.02s
-                                                                         [ 55%]
-test_cases/ai_assistant/test_assistant_越权.py 

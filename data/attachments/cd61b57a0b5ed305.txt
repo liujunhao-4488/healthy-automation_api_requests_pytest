@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_save_goal_same_day_allowed      0.01s
-
-[清理] 靶子 userId=101324: history=0 info=0 goal=1 user=1

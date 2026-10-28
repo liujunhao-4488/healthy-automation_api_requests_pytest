@@ -1,0 +1,5 @@
+03:21:36 I → POST /assistant/chat    200   2393ms
+03:21:36 I · AI    问「早餐吃几片全麦面包合适」  → 一般来说，早餐吃 1～2 片全麦面包比较合适，常见规格一片约 35～45 克。如果把它当作主食的全部，2 片大致相当于一小碗米饭的主食量；如果还搭配了燕麦、粥或鸡蛋等，1 片就够。 具体片数主要看两点…
+03:21:36 I → DELETE /assistant/conversations/3432 200      8ms
+03:21:36 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3432,) | affected=2 | 1.3ms
+03:21:36 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3432,) | affected=1 | 0.7ms

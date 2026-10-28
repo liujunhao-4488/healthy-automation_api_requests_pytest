@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_blank_query_is_rejected         0.00s
-                                                                         [ 23%]
-test_cases/ai_assistant/test_assistant_RAG生成.py 

@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_section[血糖高的人能吃水果吗]  0.00s

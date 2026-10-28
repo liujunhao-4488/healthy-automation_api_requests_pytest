@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_oos_outside_blocklist_model_stays_on_duty[越界外-程序]  1.25s
-                                                                         [ 45%]
-test_cases/ai_assistant/test_assistant_注入.py 

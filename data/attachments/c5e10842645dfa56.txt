@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_sheet_arg_on_non_excel_is_rejected  0.00s
-                                                                         [ 94%]
-test_cases/user/test_profile_契约.py 
