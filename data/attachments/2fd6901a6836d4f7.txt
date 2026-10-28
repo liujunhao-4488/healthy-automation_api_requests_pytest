@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1271 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:24:09 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:24:08",
+      "id": 7443,
+      "text": "这个算法的时间复杂度怎么算"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:24:09",
+      "ragUsed": false,
+      "id": 7444,
+      "text": "这个问题超出了我的职责范围，我只负责饮食与健康相关的问题，比如食材替换、食谱营养分析、三餐搭配、控油控糖控钠、慢病饮食注意事项、体重管理等，算法复杂度这类内容建议你查专门的资料或问相关领域的工具。\n\n如果你有饮食或健康方面的问题，可以告诉我。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3507,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "这个问题超出了我的职责范围，我只负责饮食与健康相关的问题，比如食材替换、食谱营养分析、三餐搭配、控油控糖控钠、慢病饮食注意事项、体重管理等，算法复杂度这类内容建议你查专门的资料或问相关领域的工具。  如果你有饮食或健康方面的问题，可以告诉…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:24:09.396303591",
+      "createTime": "2026-10-28T22:24:08",
+      "updateTime": "2026-10-28T22:24:08",
+      "id": 3507,
+      "title": "这个算法的时间复杂度怎么..."
+    }
+  },
+  "message": "发送消息成功"
+}

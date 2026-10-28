@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1186 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:22:34 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:22:33",
+      "id": 7293,
+      "text": "我给我这一周的饮食计划起了个名字叫橙色雨伞88号，请记住这个名字。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:22:34",
+      "ragUsed": false,
+      "id": 7294,
+      "text": "好的，我记住了：你这周的饮食计划叫「橙色雨伞88号」。之后你提到这个名字，我就知道是指这一周的饮食安排。\n\n不过你目前还没告诉我这份计划的具体内容（比如每天吃什么、目标热量或宏量营养素是多少），所以暂时没法帮你评估。你把菜单或安排发过来，我可以结合你的情况（25岁男性、BMI约22.8、中度活动、无慢病）帮你看看热量是否合适、蛋白质和三大营养素配比是否合理，以及有没有需要调整的地方。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3432,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "好的，我记住了：你这周的饮食计划叫「橙色雨伞88号」。之后你提到这个名字，我就知道是指这一周的饮食安排。  不过你目前还没告诉我这份计划的具体内容（比如每天吃什么、目标热量或宏量营养素是多少），所以暂时没法帮你评估。你把菜单或安排发过来，…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:22:34.649000322",
+      "createTime": "2026-10-28T22:22:33",
+      "updateTime": "2026-10-28T22:22:33",
+      "id": 3432,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

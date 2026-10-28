@@ -1,0 +1,5 @@
+
+└─ ✔ PASSED  test_save_goal_bad_date_format_response_not_unified  0.01s
+                                                                         [ 80%]
+test_cases/health/test_health_info.py 
+[清理] 已回查确认删除靶子账号 userId=101331

@@ -1,0 +1,11 @@
+22:25:53 I → POST /assistant/chat    200    654ms
+22:25:53 I · AI    问「鸡胸肉每100克大概多少卡路里」  → 鸡胸肉每100克约165千卡。
+22:25:54 I → POST /assistant/chat    200    892ms
+22:25:54 I · AI    问「鸡胸肉每100克大概多少卡路里」  → 鸡胸肉每100克大约165千卡。
+22:25:55 I → POST /assistant/chat    200    869ms
+22:25:55 I · AI    问「鸡胸肉每100克大概多少卡路里」  → 鸡胸肉每100克约165千卡。
+22:25:55 I → DELETE /assistant/conversations/3569 200      5ms
+22:25:55 I → DELETE /assistant/conversations/3570 200      5ms
+22:25:55 I → DELETE /assistant/conversations/3571 200      5ms
+22:25:55 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s,%s,%s) | args=(3569, 3570, 3571) | affected=6 | 1.2ms
+22:25:55 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s,%s,%s) | args=(3569, 3570, 3571) | affected=3 | 0.9ms

@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_list_does_not_include_other_users_notifications  0.04s

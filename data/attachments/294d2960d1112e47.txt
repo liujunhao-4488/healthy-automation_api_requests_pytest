@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1852 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:25:52 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:25:51",
+      "id": 7575,
+      "text": "一天只吃一顿饭能不能达到这个速度？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:25:52",
+      "ragUsed": false,
+      "id": 7576,
+      "text": "不能，而且不建议这么做。一天只吃一顿饭，短期内体重可能掉得很快，但减掉的多是水分和肌肉，不是脂肪，也达不到“健康地更快”的目的。\n\n原因在于：一顿饭很难吃够蛋白质、维生素和矿物质，长期下来容易乏力、注意力差、掉发、免疫力下降，女性还可能出现月经紊乱；同时空腹时间过长，之后更容易暴食，反弹概率很高。它带来的速度也不是稳定的每周多少斤，而是先快后停滞。\n\n想加快一点，更可靠的是保持三餐或两餐规律、把每天能量缺口控制在 500 千卡左右，再增加活动和力量训练，而不是靠减少餐次硬扛。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3568,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不能，而且不建议这么做。一天只吃一顿饭，短期内体重可能掉得很快，但减掉的多是水分和肌肉，不是脂肪，也达不到“健康地更快”的目的。  原因在于：一顿饭很难吃够蛋白质、维生素和矿物质，长期下来容易乏力、注意力差、掉发、免疫力下降，女性还可能出…",
+      "messageCount": 6,
+      "lastMessageAt": "2026-10-28T22:25:52.927040511",
+      "createTime": "2026-10-28T22:25:47",
+      "updateTime": "2026-10-28T22:25:47",
+      "id": 3568,
+      "title": "健康的减重速度是每周多少..."
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,5 @@
+22:23:14 I → POST /assistant/chat    200   1889ms
+22:23:14 I · AI    问「牛油果的热量高吗」  → 牛油果的热量在水果里算偏高的：每 100 克约 160 千卡，比苹果、橙子这类水果高不少。 不过它的热量主要来自脂肪（每 100 克 14.7 克），而且以不饱和脂肪为主；同时膳食纤维有 6.7 克、…
+22:23:14 I → DELETE /assistant/conversations/3465 200      7ms
+22:23:14 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3465,) | affected=2 | 1.3ms
+22:23:14 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3465,) | affected=1 | 1.0ms

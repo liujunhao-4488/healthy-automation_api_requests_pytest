@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_update_phone_success            0.01s
+
+[清理] 已回查确认删除靶子账号 pf_1eec0cf9da@example.com（userId=101392）

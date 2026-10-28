@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1853 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:22:49 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:22:47",
+      "id": 7327,
+      "text": "早餐吃几片全麦面包合适"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:22:49",
+      "ragUsed": false,
+      "id": 7328,
+      "text": "一般早餐吃 1～2 片全麦面包比较合适，常见一片约 30～40 克。具体看你的食量和搭配：如果还搭配了鸡蛋、牛奶或豆浆、蔬菜，1～2 片就够；如果早餐只有面包，可以吃到 2～3 片，但更建议补上蛋白质和蔬果，让饱腹感更持久、血糖更平稳。\n\n挑选时注意看配料表，全麦粉排在第一位、膳食纤维含量较高的才是真正的全麦面包，有些“褐色面包”其实以精制小麦粉为主，还加了不少糖和油。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3449,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "一般早餐吃 1～2 片全麦面包比较合适，常见一片约 30～40 克。具体看你的食量和搭配：如果还搭配了鸡蛋、牛奶或豆浆、蔬菜，1～2 片就够；如果早餐只有面包，可以吃到 2～3 片，但更建议补上蛋白质和蔬果，让饱腹感更持久、血糖更平稳。 …",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:22:49.021620811",
+      "createTime": "2026-10-28T22:22:47",
+      "updateTime": "2026-10-28T22:22:47",
+      "id": 3449,
+      "title": "早餐吃几片全麦面包合适"
+    }
+  },
+  "message": "发送消息成功"
+}

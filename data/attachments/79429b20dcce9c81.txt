@@ -1,2 +1,0 @@
-11:12:48 I → GET  /user/profile      200      6ms
-11:12:48 I → POST /notification/admin/publish 401      2ms

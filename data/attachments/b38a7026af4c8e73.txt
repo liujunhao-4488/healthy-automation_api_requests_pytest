@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1792 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:23:58 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:23:56",
+      "id": 7411,
+      "text": "牛奶可以用什么代替"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:23:58",
+      "ragUsed": false,
+      "id": 7412,
+      "text": "牛奶的替代品主要看你想替代它的哪方面作用。\n\n如果是为了补钙和蛋白质，无糖豆浆、强化钙的豆奶、低乳糖奶或酸奶都可以；对乳糖不耐受的人，酸奶和低乳糖奶通常更友好。如果是为了烹饪口感，椰奶、燕麦奶适合做饮品和甜品，但它们蛋白质含量低、碳水偏高，不能完全等同于牛奶的营养。\n\n如果是牛奶蛋白过敏，就需要避开所有乳制品，改用强化钙的豆奶、豌豆蛋白饮品等，并注意从其他食物补钙。具体选择可以结合你的用途（直接喝、做菜还是补钙）来定。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3491,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "牛奶的替代品主要看你想替代它的哪方面作用。  如果是为了补钙和蛋白质，无糖豆浆、强化钙的豆奶、低乳糖奶或酸奶都可以；对乳糖不耐受的人，酸奶和低乳糖奶通常更友好。如果是为了烹饪口感，椰奶、燕麦奶适合做饮品和甜品，但它们蛋白质含量低、碳水偏高…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:23:58.767808782",
+      "createTime": "2026-10-28T22:23:56",
+      "updateTime": "2026-10-28T22:23:56",
+      "id": 3491,
+      "title": "牛奶可以用什么代替"
+    }
+  },
+  "message": "发送消息成功"
+}

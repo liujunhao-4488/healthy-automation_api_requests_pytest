@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2580 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:23:46 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:23:44",
+      "id": 7393,
+      "text": "我想换个口味，有什么建议"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:23:46",
+      "ragUsed": false,
+      "id": 7394,
+      "text": "换口味可以从两个方向入手：一是换风味体系，二是换同类食材的做法。\n\n风味上可以试试：地中海风（橄榄油+柠檬+香草烤鱼或烤鸡腿配全麦面包）、东南亚风（椰浆咖喱鸡配糙米、冬阴功汤）、日式清淡风（味噌汤+照烧鸡+荞麦面）、川湘微辣风（少油版口水鸡、剁椒蒸鱼）。主食也可以轮换：糙米、藜麦、荞麦面、玉米、红薯交替着吃，比一直吃白米饭更有新鲜感。\n\n做法上，把常吃的煎炒换成烤、蒸、凉拌、炖，同样的食材口感差别很大。比如鸡胸肉从水煮换成香草烤或手撕凉拌，蔬菜从清炒换成烤箱烤杂蔬。\n\n你目前体重和BMI都在正常范围，没有慢病和忌口记录，所以换口味时主要注意别让油盐糖跟着上去——新菜式多用香料、柠檬、醋、葱姜蒜提味，少用重油重酱的做法，这样既能换口味又不影响日常热量平衡。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3482,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "换口味可以从两个方向入手：一是换风味体系，二是换同类食材的做法。  风味上可以试试：地中海风（橄榄油+柠檬+香草烤鱼或烤鸡腿配全麦面包）、东南亚风（椰浆咖喱鸡配糙米、冬阴功汤）、日式清淡风（味噌汤+照烧鸡+荞麦面）、川湘微辣风（少油版口水…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:23:46.739162417",
+      "createTime": "2026-10-28T22:23:44",
+      "updateTime": "2026-10-28T22:23:44",
+      "id": 3482,
+      "title": "我想换个口味，有什么建议"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,2 @@
+22:21:43 I → POST /notification/admin/publish 403      7ms  {"timestamp":"2026-10-29 06:21:43","status":403,"error":"Forbidden","path":"/api/notification/admin/publish"}
+22:21:43 I → GET  /notification/list 200     25ms

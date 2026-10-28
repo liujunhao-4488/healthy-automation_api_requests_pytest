@@ -1,0 +1,5 @@
+22:23:46 I → POST /assistant/chat    200   2580ms
+22:23:46 I · AI    问「我想换个口味，有什么建议」  → 换口味可以从两个方向入手：一是换风味体系，二是换同类食材的做法。 风味上可以试试：地中海风（橄榄油+柠檬+香草烤鱼或烤鸡腿配全麦面包）、东南亚风（椰浆咖喱鸡配糙米、冬阴功汤）、日式清淡风（味噌汤+照烧…
+22:23:46 I → DELETE /assistant/conversations/3482 200      6ms
+22:23:46 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3482,) | affected=2 | 1.1ms
+22:23:46 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3482,) | affected=1 | 0.9ms

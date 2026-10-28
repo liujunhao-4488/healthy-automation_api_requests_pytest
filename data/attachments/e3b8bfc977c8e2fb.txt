@@ -1,0 +1,56 @@
+HTTP 200　（耗时 2370 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:22:08 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:22:05",
+      "id": 7259,
+      "text": "生酮饮食是什么"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:22:08",
+      "ragUsed": false,
+      "id": 7260,
+      "text": "生酮饮食是一种极低碳水、高脂肪、适量蛋白质的饮食方式。核心思路是把每日碳水压得很低（通常占总热量的5%–10%，约20–50克），让身体从主要靠葡萄糖供能，转为靠肝脏产生的酮体供能，这个状态叫“营养性生酮”。\n\n常见做法是大幅减少主食、甜食、含糖饮料和大部分水果，脂肪来源以橄榄油、牛油果、坚果、肥肉、黄油等为主，蛋白质适量而非大量。它最初用于治疗儿童难治性癫痫，后来也被用于部分体重管理和代谢问题研究。\n\n需要提醒的是：生酮饮食限制很强，容易出现便秘、乏力、头晕、口臭等“生酮流感”样不适，长期执行还可能影响血脂、电解质和肠道菌群；有肝肾疾病、胆囊问题、糖尿病用药中、孕期哺乳期等人群不宜自行尝试。它不属于可以随意长期坚持的日常吃法，若考虑尝试，建议先咨询医生或注册营养师，具体以专业评估为准。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "empty"
+    },
+    "conversationId": 3425,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "生酮饮食是一种极低碳水、高脂肪、适量蛋白质的饮食方式。核心思路是把每日碳水压得很低（通常占总热量的5%–10%，约20–50克），让身体从主要靠葡萄糖供能，转为靠肝脏产生的酮体供能，这个状态叫“营养性生酮”。  常见做法是大幅减少主食、甜…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:22:08.130891731",
+      "createTime": "2026-10-28T22:22:05",
+      "updateTime": "2026-10-28T22:22:05",
+      "id": 3425,
+      "title": "生酮饮食是什么"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2021 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:25:25 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:25:23",
+      "id": 7543,
+      "text": "我对花生严重过敏，但是吃一点点应该没关系吧？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:25:25",
+      "ragUsed": false,
+      "id": 7544,
+      "text": "不建议这样尝试。对花生严重过敏的人，即使极少量也可能引发严重反应，不能靠“吃一点点”来试探。\n\n原因在于，严重花生过敏的阈值往往很低，微量就可能触发反应，而且每次反应的严重程度并不稳定——这次只是嘴痒，下次可能就出现喉头水肿、血压下降等危险情况。加工食品中的交叉污染、花生油、酱料里的隐藏花生成分，同样可能带来这种“一点点”的暴露。\n\n日常建议：严格回避含花生的食物，购买包装食品时仔细看配料表和“可能含花生”的提示；外出就餐主动告知过敏情况。如果曾发生过严重反应，请与医生讨论是否需要随身携带肾上腺素自动注射笔及应急方案，具体请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3558,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不建议这样尝试。对花生严重过敏的人，即使极少量也可能引发严重反应，不能靠“吃一点点”来试探。  原因在于，严重花生过敏的阈值往往很低，微量就可能触发反应，而且每次反应的严重程度并不稳定——这次只是嘴痒，下次可能就出现喉头水肿、血压下降等危…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:25:25.776372288",
+      "createTime": "2026-10-28T22:25:23",
+      "updateTime": "2026-10-28T22:25:23",
+      "id": 3558,
+      "title": "我对花生严重过敏，但是吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

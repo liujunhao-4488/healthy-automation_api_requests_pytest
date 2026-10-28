@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2218 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:24:48 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:24:45",
+      "id": 7499,
+      "text": "我能吃海虾吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:24:48",
+      "ragUsed": false,
+      "id": 7500,
+      "text": "能不能吃海虾，取决于你有没有海鲜过敏或相关禁忌，单从饮食健康角度来说，大多数人是可以吃的。\n\n海虾是很好的优质蛋白来源，脂肪低，还含硒、碘、维生素B12等营养素。健康人正常吃、注意新鲜和彻底煮熟即可，一般每周吃两三次、每次一小把到一掌心量都没问题。\n\n需要留意的情况：如果你对虾蟹等甲壳类过敏，就应完全避免，并且要注意虾酱、虾皮、部分调味料里的隐藏来源；有高尿酸或痛风的人要适量，急性发作期先少吃或不吃；对碘摄入有特殊限制的甲状腺疾病患者，建议按医生意见来。具体是否适合你，请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3535,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "能不能吃海虾，取决于你有没有海鲜过敏或相关禁忌，单从饮食健康角度来说，大多数人是可以吃的。  海虾是很好的优质蛋白来源，脂肪低，还含硒、碘、维生素B12等营养素。健康人正常吃、注意新鲜和彻底煮熟即可，一般每周吃两三次、每次一小把到一掌心量…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:24:48.158115923",
+      "createTime": "2026-10-28T22:24:45",
+      "updateTime": "2026-10-28T22:24:45",
+      "id": 3535,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}

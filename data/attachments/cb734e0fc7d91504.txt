@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2375 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:22:41 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:22:38",
+      "id": 7317,
+      "text": "我想换个口味，有什么建议"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:22:41",
+      "ragUsed": false,
+      "id": 7318,
+      "text": "你的档案里没有记录过敏/忌口和慢性病，所以换口味可以从几个方向挑：\n\n- 换蛋白来源：把常吃的鸡胸、鸡蛋换成鱼虾、瘦牛肉、豆腐或豆制品，风味差别大，蛋白质照样够。\n- 换主食：白米饭换成糙米、燕麦、荞麦面、玉米或红薯，口感不同，膳食纤维也更多。\n- 换调味风格：同样是炒菜，可以试试番茄口、咖喱口、柠檬香草口、黑椒口，用香料和酸味代替重油重盐，控油控钠更容易做到。\n- 换烹饪方式：蒸、烤、炖、凉拌轮着来，比一直炒或煎更省油，味道也不单调。\n\n你BMI 22.8、体重正常，基础代谢约1729kcal、中度活动，每天总消耗大概在2600kcal上下，换口味时只要保证每餐有一份优质蛋白、主食不过量、蔬菜占一半盘子，热量和宏量营养素基本不会跑偏。如果之后发现自己对某类食材过敏或忌口，告诉我，我再帮你调整。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3444,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你的档案里没有记录过敏/忌口和慢性病，所以换口味可以从几个方向挑：  - 换蛋白来源：把常吃的鸡胸、鸡蛋换成鱼虾、瘦牛肉、豆腐或豆制品，风味差别大，蛋白质照样够。 - 换主食：白米饭换成糙米、燕麦、荞麦面、玉米或红薯，口感不同，膳食纤维也…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:22:41.147482169",
+      "createTime": "2026-10-28T22:22:38",
+      "updateTime": "2026-10-28T22:22:38",
+      "id": 3444,
+      "title": "我想换个口味，有什么建议"
+    }
+  },
+  "message": "发送消息成功"
+}

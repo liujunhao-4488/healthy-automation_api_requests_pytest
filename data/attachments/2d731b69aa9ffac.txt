@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1335 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:22:13 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:22:12",
+      "id": 7265,
+      "text": "我给我这一周的饮食计划起了个名字叫蓝色帆船42号，请记住这个名字。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:22:13",
+      "ragUsed": false,
+      "id": 7266,
+      "text": "好的，我记住了：你这一周的饮食计划叫「蓝色帆船42号」。之后你提到这个名字，我就知道是指这份周计划。\n\n如果方便，可以把这一周的具体安排发我，我可以按你的情况（25岁男性、BMI 22.8、中度活动、无慢病）帮你看看热量和三大营养素是否合适，以及有没有需要调整的地方。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3428,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "好的，我记住了：你这一周的饮食计划叫「蓝色帆船42号」。之后你提到这个名字，我就知道是指这份周计划。  如果方便，可以把这一周的具体安排发我，我可以按你的情况（25岁男性、BMI 22.8、中度活动、无慢病）帮你看看热量和三大营养素是否合…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:22:13.620635113",
+      "createTime": "2026-10-28T22:22:12",
+      "updateTime": "2026-10-28T22:22:12",
+      "id": 3428,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

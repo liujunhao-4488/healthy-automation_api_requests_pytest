@@ -1,0 +1,5 @@
+22:22:45 I → POST /assistant/chat    200   2414ms
+22:22:45 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，关键看两点：你有没有海鲜过敏，以及你的健康状况是否需要限制。 如果你对虾蟹等甲壳类海鲜过敏，就不能吃，而且要注意虾酱、虾皮、含虾成分的调味料和交叉污染。没吃过的话，第一次少量尝试，观察有…
+22:22:45 I → DELETE /assistant/conversations/3447 200      7ms
+22:22:45 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3447,) | affected=2 | 1.0ms
+22:22:45 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3447,) | affected=1 | 1.0ms

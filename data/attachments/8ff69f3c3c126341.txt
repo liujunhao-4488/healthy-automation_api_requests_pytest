@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1589 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:24:51 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:24:50",
+      "id": 7503,
+      "text": "那鸡胸肉呢"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:24:51",
+      "ragUsed": false,
+      "id": 7504,
+      "text": "鸡胸肉可以吃，而且它是很典型的低脂高蛋白食材，比海虾更适合日常控脂、增肌时作为主要蛋白来源。\n\n它的脂肪含量很低，蛋白质密度高，饱腹感也不错，水煮、煎、烤、凉拌都行；想口感不柴，可以提前用少量盐、黑胡椒、柠檬汁腌一下，或者切薄片快炒。需要注意的是别用重油重盐的做法，比如油炸、大量酱料红烧，那样会把它的低脂优势抵消掉。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3536,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉可以吃，而且它是很典型的低脂高蛋白食材，比海虾更适合日常控脂、增肌时作为主要蛋白来源。  它的脂肪含量很低，蛋白质密度高，饱腹感也不错，水煮、煎、烤、凉拌都行；想口感不柴，可以提前用少量盐、黑胡椒、柠檬汁腌一下，或者切薄片快炒。需要…",
+      "messageCount": 4,
+      "lastMessageAt": "2026-10-28T22:24:51.801545609",
+      "createTime": "2026-10-28T22:24:48",
+      "updateTime": "2026-10-28T22:24:48",
+      "id": 3536,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}

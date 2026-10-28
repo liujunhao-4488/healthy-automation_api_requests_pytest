@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2009 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:22:24 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:22:22",
+      "id": 7281,
+      "text": "每天喝水有什么讲究"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:22:24",
+      "ragUsed": false,
+      "id": 7282,
+      "text": "每天喝水主要讲究“量够、少量多次、别等渴了再喝”。一般成年人每天饮水1500～1700毫升（约7～8杯），天气热、出汗多或运动时可增加到2000毫升以上。白开水最好，淡茶也可以，含糖饮料和果汁不算在内。\n\n喝法上，建议分散在全天，早上起床后先喝一杯，三餐之间和两餐之间各补一些，每次150～200毫升，不要一次猛灌。睡前1小时少喝，避免起夜。运动前后和出汗后要及时补水，可少量加一点盐或选择淡盐水。\n\n另外，尿液颜色是简单参考：淡黄色说明水分基本够，颜色深黄就要多喝。有心衰、肾功能不全等需要限水的疾病，饮水量要遵医嘱，不能照搬上面的通用量。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3429,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "每天喝水主要讲究“量够、少量多次、别等渴了再喝”。一般成年人每天饮水1500～1700毫升（约7～8杯），天气热、出汗多或运动时可增加到2000毫升以上。白开水最好，淡茶也可以，含糖饮料和果汁不算在内。  喝法上，建议分散在全天，早上起床…",
+      "messageCount": 14,
+      "lastMessageAt": "2026-10-28T22:22:24.841305737",
+      "createTime": "2026-10-28T22:22:14",
+      "updateTime": "2026-10-28T22:22:14",
+      "id": 3429,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

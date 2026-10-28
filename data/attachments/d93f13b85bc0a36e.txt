@@ -1,1 +1,0 @@
-11:13:27 I → GET  /health/history    200      3ms

@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_intent_matches_dataset_label[补录-蛋白质目标]  1.61s

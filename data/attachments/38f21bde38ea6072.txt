@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2099 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:23:42 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:23:40",
+      "id": 7389,
+      "text": "我每天该喝多少水"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:23:42",
+      "ragUsed": false,
+      "id": 7390,
+      "text": "健康成年人每天饮水（白水、淡茶等无糖饮品）一般建议在 1500～1700 毫升左右，大约 7～8 杯。这是指额外喝进去的水，不包括食物里的水分。\n\n为什么是这个量：中国居民膳食指南给出的成年人推荐量是男性约 1700 毫升、女性约 1500 毫升。这个量是按轻体力活动、常温环境估算的，能满足多数人的基本需要。\n\n实际可以按情况调整：\n- 出汗多、运动、天热、发烧或腹泻时，要相应多喝；\n- 吃的水果蔬菜、汤羹多，可以略少一些；\n- 心衰、肾功能不全等需要限水的疾病，饮水量要听医生的，不要按上面的通用量来。\n\n判断够不够，最简单的办法是看尿液颜色：淡黄色通常说明水分合适，颜色深黄就提示该补水了。喝水以少量多次为好，不要一次猛灌。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3480,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "健康成年人每天饮水（白水、淡茶等无糖饮品）一般建议在 1500～1700 毫升左右，大约 7～8 杯。这是指额外喝进去的水，不包括食物里的水分。  为什么是这个量：中国居民膳食指南给出的成年人推荐量是男性约 1700 毫升、女性约 150…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:23:42.5170241",
+      "createTime": "2026-10-28T22:23:40",
+      "updateTime": "2026-10-28T22:23:40",
+      "id": 3480,
+      "title": "我每天该喝多少水"
+    }
+  },
+  "message": "发送消息成功"
+}

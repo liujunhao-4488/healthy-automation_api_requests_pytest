@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2840 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:23:17 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:23:14",
+      "id": 7361,
+      "text": "减脂晚餐怎么吃"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:23:17",
+      "ragUsed": false,
+      "id": 7362,
+      "text": "减脂晚餐的核心思路是：控制总热量、保证蛋白质、主食减量但不为零、蔬菜占一半盘子。你目前BMI约22.8、属于正常范围，减脂更适合温和地制造300–500kcal的缺口，而不是靠不吃晚饭硬扛。\n\n具体可以这样搭：一掌心大小的优质蛋白（鱼虾、去皮禽肉、瘦牛肉、豆腐或鸡蛋），一大盘少油烹调的蔬菜（绿叶菜、菌菇、瓜茄类），主食控制在半碗到一小碗，优先选杂粮饭、玉米、红薯、燕麦这类升糖慢的。烹调方式以蒸、煮、炖、凉拌、少油快炒为主，晚餐尽量少喝汤水多的油汤、少碰油炸和含糖饮料。\n\n按你的基础代谢约1729kcal、中度活动水平估算，每日总消耗大概在2600kcal上下，减脂期晚餐控制在500–600kcal比较合适，蛋白质给到30–40g，这样既不容易饿，也能尽量保住肌肉。晚餐时间建议睡前3小时左右吃完，吃完可以散步15–20分钟。\n\n另外你的档案里没有记录过敏忌口和慢性病，如果有海鲜过敏、乳糖不耐或血压血糖方面的情况，可以告诉我，我再帮你把食材替换得更贴合。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3466,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "减脂晚餐的核心思路是：控制总热量、保证蛋白质、主食减量但不为零、蔬菜占一半盘子。你目前BMI约22.8、属于正常范围，减脂更适合温和地制造300–500kcal的缺口，而不是靠不吃晚饭硬扛。  具体可以这样搭：一掌心大小的优质蛋白（鱼虾、…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:23:17.644572781",
+      "createTime": "2026-10-28T22:23:14",
+      "updateTime": "2026-10-28T22:23:14",
+      "id": 3466,
+      "title": "减脂晚餐怎么吃"
+    }
+  },
+  "message": "发送消息成功"
+}

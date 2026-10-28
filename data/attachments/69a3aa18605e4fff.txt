@@ -1,0 +1,11 @@
+22:25:57 I → POST /assistant/chat    200   1632ms
+22:25:57 I · AI    问「菠菜为什么要焯水」  → 菠菜焯水主要是为了去掉草酸。草酸会和钙结合成草酸钙，既影响钙、铁等矿物质的吸收，摄入过多也会增加肾结石风险；焯水能让大部分草酸溶到水里，一般沸水焯30秒到1分钟即可，叶色变深绿就捞出。另外焯水还能去掉…
+22:25:59 I → POST /assistant/chat    200   2001ms
+22:25:59 I · AI    问「菠菜为什么要焯水」  → 菠菜焯水主要是为了去掉大部分草酸。草酸会和钙结合成草酸钙，既影响钙、铁等矿物质的吸收，对容易长结石的人也不友好；焯一下能溶出相当一部分草酸，涩味也会明显减轻，口感更好。另外焯水还能去除部分表面农残和杂…
+22:26:01 I → POST /assistant/chat    200   2196ms
+22:26:01 I · AI    问「菠菜为什么要焯水」  → 菠菜焯水主要是为了去掉草酸，同时改善口感和安全性。 草酸会与钙结合成草酸钙，既影响钙、铁等矿物质的吸收，对容易长草酸钙结石的人也不友好。焯水能溶出大部分草酸，通常沸水焯 30 秒到 1 分钟即可去掉相…
+22:26:01 I → DELETE /assistant/conversations/3572 200      6ms
+22:26:01 I → DELETE /assistant/conversations/3573 200      5ms
+22:26:01 I → DELETE /assistant/conversations/3574 200      5ms
+22:26:01 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s,%s,%s) | args=(3572, 3573, 3574) | affected=6 | 1.3ms
+22:26:01 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s,%s,%s) | args=(3572, 3573, 3574) | affected=3 | 0.8ms

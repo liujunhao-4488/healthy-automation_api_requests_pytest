@@ -1,0 +1,5 @@
+22:23:23 I → POST /assistant/chat    200   2107ms
+22:23:23 I · AI    问「我该吃多少鸡胸肉」  → 你的档案里没有记录过敏忌口和慢性病，也没有设定具体目标（减脂、增肌还是维持），所以我按“维持体重、中度活动”来估算：每天鸡胸肉吃 100–150 克（生重）比较合适，大约能提供 22–33 克蛋白质。…
+22:23:23 I → DELETE /assistant/conversations/3468 200      7ms
+22:23:23 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3468,) | affected=2 | 1.2ms
+22:23:23 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3468,) | affected=1 | 1.2ms

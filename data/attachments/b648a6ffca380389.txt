@@ -1,0 +1,15 @@
+POST http://127.0.0.1:5000/api/kb/search
+
+【请求头】
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Content-Type: application/json
+Content-Length: 84
+
+【请求体】
+{
+  "query": "骨质疏松每天喝多少奶",
+  "topK": 3
+}

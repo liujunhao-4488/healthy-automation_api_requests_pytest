@@ -1,0 +1,78 @@
+HTTP 200　（耗时 1682 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:22:54 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:22:52",
+      "id": 7333,
+      "text": "帮我翻译一下这个营养成分表"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 16.8781,
+          "docId": "guideline:中国居民膳食指南(2022)",
+          "docType": "guideline",
+          "section": "准则七会烹会选，会看标签",
+          "title": "中国居民膳食指南(2022)"
+        },
+        {
+          "score": 11.7182,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 11.3172,
+          "docId": "guideline:成人慢性肾脏病食养指南",
+          "docType": "guideline",
+          "section": "一、食物选择",
+          "title": "成人慢性肾脏病食养指南"
+        }
+      ],
+      "createTime": "2026-10-28T22:22:54",
+      "ragUsed": true,
+      "id": 7334,
+      "text": "你还没有把营养成分表的内容发过来，我这边看不到具体数字和项目，所以暂时没法翻译。\n\n你可以把表里的项目名称和数值贴出来（比如“能量 1650kJ、蛋白质 8.2g、脂肪 12g、碳水化合物 55g、钠 480mg”这样的形式），中文或外文都行，我来帮你逐项翻译并解释含义。如果表上还有 NRV% 一栏，也一并贴上，我可以顺带说明它表示什么。\n\n另外提醒一句：翻译营养成分表属于看标签、读食品信息的范围，我可以帮你做；但如果你问的是疾病诊断、用药这类问题，就需要以医生的诊断和处方为准了。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3452,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你还没有把营养成分表的内容发过来，我这边看不到具体数字和项目，所以暂时没法翻译。  你可以把表里的项目名称和数值贴出来（比如“能量 1650kJ、蛋白质 8.2g、脂肪 12g、碳水化合物 55g、钠 480mg”这样的形式），中文或外文…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:22:54.205354797",
+      "createTime": "2026-10-28T22:22:52",
+      "updateTime": "2026-10-28T22:22:52",
+      "id": 3452,
+      "title": "帮我翻译一下这个营养成分..."
+    }
+  },
+  "message": "发送消息成功"
+}

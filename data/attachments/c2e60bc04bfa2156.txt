@@ -1,0 +1,78 @@
+HTTP 200　（耗时 3068 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:21:56 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:21:53",
+      "id": 7251,
+      "text": "高血压怎么吃"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 25.1508,
+          "docId": "guideline:成人高血压食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人高血压食养指南"
+        },
+        {
+          "score": 21.9146,
+          "docId": "guideline:成人高血压食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人高血压食养指南"
+        },
+        {
+          "score": 21.6967,
+          "docId": "guideline:成人高血压食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人高血压食养指南"
+        }
+      ],
+      "createTime": "2026-10-28T22:21:56",
+      "ragUsed": true,
+      "id": 7252,
+      "text": "高血压饮食的核心是“减钠增钾、饮食清淡”，再配合合理的整体膳食和体重管理。依据《成人高血压食养指南》，具体可以这样做：\n\n第一，控盐是重点。每人每日食盐摄入量要逐步降到5克以下，同时减少酱油、酱类、蚝油、鸡精、味精等含钠调味品。可以多用醋、柠檬、葱姜蒜、香辛料来提味，少用盐和含钠调料。\n\n第二，多吃富钾食物。新鲜蔬菜、水果、豆类、薯类等含钾较丰富，在肾功能正常的前提下适当增加这类食物，有助于钠钾平衡。蔬菜每天尽量吃够量、种类多样。\n\n第三，整体膳食要合理。主食注意粗细搭配，蛋白质来源可多选鱼、禽、豆及其制品，少用肥肉和加工肉制品；同时限制添加糖摄入，少喝含糖饮料。\n\n第四，吃动平衡，保持健康体重。超重或肥胖的人减重本身就有助于降压，具体运动方式可以结合自身情况循序渐进。\n\n第五，戒烟限酒、规律作息、保持心理平衡，并定期监测血压、遵医嘱长期管理。指南也提到，精神紧张会激活交感神经使血压升高，所以压力管理和充足睡眠同样重要。\n\n需要说明的是，以上是生活方式层面的饮食建议，不能替代医生的诊断和处方；如果血压控制不理想或正在服药，具体方案请以医生的意见为准。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3421,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "高血压饮食的核心是“减钠增钾、饮食清淡”，再配合合理的整体膳食和体重管理。依据《成人高血压食养指南》，具体可以这样做：  第一，控盐是重点。每人每日食盐摄入量要逐步降到5克以下，同时减少酱油、酱类、蚝油、鸡精、味精等含钠调味品。可以多用醋…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:21:56.453913036",
+      "createTime": "2026-10-28T22:21:53",
+      "updateTime": "2026-10-28T22:21:53",
+      "id": 3421,
+      "title": "高血压怎么吃"
+    }
+  },
+  "message": "发送消息成功"
+}

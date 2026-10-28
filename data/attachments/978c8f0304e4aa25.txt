@@ -1,0 +1,16 @@
+HTTP 200　（耗时 1 ms）
+
+【响应头】
+Server: Werkzeug/3.1.9 Python/3.11.17
+Date: Wed, 28 Oct 2026 22:21:44 GMT
+Content-Type: application/json
+Content-Length: 104
+Access-Control-Allow-Origin: *
+Connection: close
+
+【响应体】
+{
+  "code": 400,
+  "data": [],
+  "message": "sourceType 只能是 authority / article / all"
+}

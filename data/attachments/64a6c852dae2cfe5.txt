@@ -1,5 +1,0 @@
-11:13:05 I → POST /assistant/chat    200   2235ms
-11:13:05 I · AI    问「早餐吃几片全麦面包合适」  → 一般早餐吃 2 片全麦面包比较合适，大约 60–80 克，能提供约 140–180 千卡热量和 4–6 克膳食纤维，作为主食份量适中。 之所以建议这个量，是因为全麦面包虽比白面包纤维多、饱腹感强，但本…
-11:13:05 I → DELETE /assistant/conversations/3432 200      8ms
-11:13:05 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3432,) | affected=2 | 1.3ms
-11:13:05 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3432,) | affected=1 | 0.7ms

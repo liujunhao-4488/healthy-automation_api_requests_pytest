@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_coreference_is_resolved[指代-那个换成别的]  3.61s

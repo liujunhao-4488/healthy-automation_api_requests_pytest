@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1382 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:24:12 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:24:11",
+      "id": 7449,
+      "text": "这个程序为什么跑不起来"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:24:12",
+      "ragUsed": false,
+      "id": 7450,
+      "text": "这个问题超出了我的职责范围。我只负责饮食与健康相关的问题，比如食材替换、食谱分析、三餐搭配、营养与热量估算、控油控糖控钠、慢病饮食注意事项、运动体重管理、保健品常识等。程序跑不起来属于编程或技术排查，我没法给出可靠判断，建议你查看报错信息，或向相关的技术社区、同事求助。\n\n如果你有饮食或健康方面的问题，随时可以问我。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3510,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "这个问题超出了我的职责范围。我只负责饮食与健康相关的问题，比如食材替换、食谱分析、三餐搭配、营养与热量估算、控油控糖控钠、慢病饮食注意事项、运动体重管理、保健品常识等。程序跑不起来属于编程或技术排查，我没法给出可靠判断，建议你查看报错信息…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:24:12.866349082",
+      "createTime": "2026-10-28T22:24:11",
+      "updateTime": "2026-10-28T22:24:11",
+      "id": 3510,
+      "title": "这个程序为什么跑不起来"
+    }
+  },
+  "message": "发送消息成功"
+}

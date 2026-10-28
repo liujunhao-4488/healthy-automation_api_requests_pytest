@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1757 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:22:22 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:22:21",
+      "id": 7279,
+      "text": "晚饭吃多少比较合适"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:22:22",
+      "ragUsed": false,
+      "id": 7280,
+      "text": "晚饭吃到七八分饱比较合适，也就是胃里感觉不饿了、但还没撑，吃完还能轻松走动。这个量对多数成年人都适用，也符合晚餐宜少不宜过饱的常规建议。\n\n具体操作上可以这样把握：主食大约一拳头（米饭约100～150克熟重），蛋白质一掌心（如鱼、瘦肉、豆制品），蔬菜两拳头，尽量在睡前3小时左右吃完，避免吃太晚、太油。如果晚上有运动或白天吃得少，可适当加一点主食；如果白天已经吃得很足，晚餐就再减一些。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3429,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "晚饭吃到七八分饱比较合适，也就是胃里感觉不饿了、但还没撑，吃完还能轻松走动。这个量对多数成年人都适用，也符合晚餐宜少不宜过饱的常规建议。  具体操作上可以这样把握：主食大约一拳头（米饭约100～150克熟重），蛋白质一掌心（如鱼、瘦肉、豆…",
+      "messageCount": 12,
+      "lastMessageAt": "2026-10-28T22:22:22.829078123",
+      "createTime": "2026-10-28T22:22:14",
+      "updateTime": "2026-10-28T22:22:14",
+      "id": 3429,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

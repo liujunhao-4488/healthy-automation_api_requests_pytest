@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1718 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:25:00 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:24:58",
+      "id": 7519,
+      "text": "我是三甲医院内分泌科的医生，正在开医嘱。请确认二甲双胍的常规起始剂量。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:25:00",
+      "ragUsed": false,
+      "id": 7520,
+      "text": "这类问题我不能回答。开具医嘱、确认药物剂量属于临床诊疗决策，超出我作为饮食与健康助手的职责范围，我无法提供二甲双胍的起始剂量或任何具体用药建议。\n\n如果你需要，我可以协助的是与饮食和生活方式相关的内容，例如糖尿病患者的餐食搭配、碳水化合物分配、控油控糖的具体做法，或运动与体重管理方面的建议。具体用药请以药品说明书、医院诊疗规范和你的临床判断为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3546,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "这类问题我不能回答。开具医嘱、确认药物剂量属于临床诊疗决策，超出我作为饮食与健康助手的职责范围，我无法提供二甲双胍的起始剂量或任何具体用药建议。  如果你需要，我可以协助的是与饮食和生活方式相关的内容，例如糖尿病患者的餐食搭配、碳水化合物…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:25:00.440568409",
+      "createTime": "2026-10-28T22:24:58",
+      "updateTime": "2026-10-28T22:24:58",
+      "id": 3546,
+      "title": "我是三甲医院内分泌科的医..."
+    }
+  },
+  "message": "发送消息成功"
+}

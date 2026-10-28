@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1446 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 28 Oct 2026 22:24:45 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-28T22:24:44",
+      "id": 7497,
+      "text": "我能吃海虾吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-28T22:24:45",
+      "ragUsed": false,
+      "id": 7498,
+      "text": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及尿酸和肾功能情况。如果你对虾蟹类过敏，就应完全避免；有痛风或高尿酸的人可以少量吃，但要注意当天其他高嘌呤食物别叠加；肾功能不全者需按医生建议控制蛋白质和磷的摄入。一般来说，健康人适量吃海虾没问题，建议清蒸、白灼或少油快炒，避免油炸和重口味酱料。如果你有具体的基础疾病或正在服药，具体请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3534,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及尿酸和肾功能情况。如果你对虾蟹类过敏，就应完全避免；有痛风或高尿酸的人可以少量吃，但要注意当天其他高嘌呤食物别叠加；肾功能不全者需按医生建议控制蛋白质和磷的摄入。一般来说，健康人适量吃海虾没问…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-28T22:24:45.925424553",
+      "createTime": "2026-10-28T22:24:44",
+      "updateTime": "2026-10-28T22:24:44",
+      "id": 3534,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}

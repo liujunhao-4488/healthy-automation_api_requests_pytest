@@ -1,0 +1,5 @@
+22:22:41 I → POST /assistant/chat    200   2375ms
+22:22:41 I · AI    问「我想换个口味，有什么建议」  → 你的档案里没有记录过敏/忌口和慢性病，所以换口味可以从几个方向挑： - 换蛋白来源：把常吃的鸡胸、鸡蛋换成鱼虾、瘦牛肉、豆腐或豆制品，风味差别大，蛋白质照样够。 - 换主食：白米饭换成糙米、燕麦、荞麦…
+22:22:41 I → DELETE /assistant/conversations/3444 200      8ms
+22:22:41 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3444,) | affected=2 | 3.2ms
+22:22:41 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3444,) | affected=1 | 1.0ms
