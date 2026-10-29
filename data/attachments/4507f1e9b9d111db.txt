@@ -1,0 +1,2 @@
+22:34:39 I → GET  /user/profile      200      6ms
+22:34:39 I → GET  /admin/overview    403     17ms  {"timestamp":"2026-10-30 06:34:39","status":403,"error":"Forbidden","path":"/api/admin/overview"}

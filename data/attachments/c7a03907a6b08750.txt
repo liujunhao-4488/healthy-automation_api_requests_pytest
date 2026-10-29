@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1488 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:35:25 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:35:24",
+      "id": 7287,
+      "text": "那个换成别的可以吗？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:35:25",
+      "ragUsed": false,
+      "id": 7288,
+      "text": "可以，鸡胸肉换成其他低脂高蛋白的食材完全没问题。\n\n比较合适的有：鱼虾类、瘦牛肉、鸡蛋、豆腐或豆制品、去皮鸡腿肉。它们的蛋白质含量都不低，脂肪相对可控，做法上同样建议蒸、煮、烤或少油煎。如果换的是鱼虾或豆制品，口感和风味会更不一样，也更容易坚持。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3430,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "可以，鸡胸肉换成其他低脂高蛋白的食材完全没问题。  比较合适的有：鱼虾类、瘦牛肉、鸡蛋、豆腐或豆制品、去皮鸡腿肉。它们的蛋白质含量都不低，脂肪相对可控，做法上同样建议蒸、煮、烤或少油煎。如果换的是鱼虾或豆制品，口感和风味会更不一样，也更容…",
+      "messageCount": 4,
+      "lastMessageAt": "2026-10-29T22:35:25.71910425",
+      "createTime": "2026-10-29T22:35:21",
+      "updateTime": "2026-10-29T22:35:21",
+      "id": 3430,
+      "title": "我最近在减脂，中午一般吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

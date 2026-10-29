@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2526 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:35:07 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:35:04",
+      "id": 7263,
+      "text": "减肥期间能吃主食吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:35:07",
+      "ragUsed": false,
+      "id": 7264,
+      "text": "能吃，而且减肥期间不建议完全不吃主食。\n\n原因很简单：主食是血糖和大脑供能的主要来源，长期断碳水容易出现乏力、注意力下降、情绪波动，还往往因为饿得厉害而在后面暴食，反而不利于坚持。你目前BMI约22.8，属于正常范围，减脂更多是优化体成分，不需要用极端方式砍掉一整类营养素。\n\n对你来说，比较合适的做法是：每天主食生重控制在150–200克左右（约合熟米饭400–500克，可按活动量微调），优先选糙米、燕麦、全麦、杂豆、薯类这类升糖慢、饱腹感强的，把白米饭、白面、甜点、含糖饮料的比例压低。同时保证每餐有足量蛋白质（瘦肉、蛋、奶、豆制品）和蔬菜，主食放在正餐吃、别集中到晚上一大碗。\n\n你档案里没有慢病和过敏忌口信息，所以按一般健康减脂原则安排即可；如果后续有血糖、血脂方面的检查结果，主食的种类和量可以再针对性调整。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3427,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "能吃，而且减肥期间不建议完全不吃主食。  原因很简单：主食是血糖和大脑供能的主要来源，长期断碳水容易出现乏力、注意力下降、情绪波动，还往往因为饿得厉害而在后面暴食，反而不利于坚持。你目前BMI约22.8，属于正常范围，减脂更多是优化体成分…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:35:07.483527335",
+      "createTime": "2026-10-29T22:35:04",
+      "updateTime": "2026-10-29T22:35:04",
+      "id": 3427,
+      "title": "减肥期间能吃主食吗"
+    }
+  },
+  "message": "发送消息成功"
+}

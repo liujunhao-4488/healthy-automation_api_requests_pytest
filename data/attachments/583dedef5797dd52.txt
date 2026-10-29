@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1997 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:36:50 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:36:48",
+      "id": 7395,
+      "text": "你好，今天想吃点好的"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:36:50",
+      "ragUsed": false,
+      "id": 7396,
+      "text": "想吃点好的完全没问题，关键是“好”可以落在食材质量和做法上，而不是油糖盐堆出来的重口味。比如选一道清蒸鱼、白灼虾或煎牛排配大量蔬菜，主食换成杂粮饭或一小份意面，吃起来满足又不至于太撑太腻。\n\n如果你说的“好的”是指下馆子或点外卖，可以优先挑清蒸、炖煮、烤制的菜，少选油炸和浓芡汁的；点单时加一份绿叶菜，酱汁另放，饮料换成无糖茶或气泡水。这样一顿既解馋，也不容易吃完犯困、口渴。\n\n想更具体的话，告诉我你打算在家做还是出去吃、大概想吃什么类型，我帮你把这一顿搭配得更合理。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3483,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "想吃点好的完全没问题，关键是“好”可以落在食材质量和做法上，而不是油糖盐堆出来的重口味。比如选一道清蒸鱼、白灼虾或煎牛排配大量蔬菜，主食换成杂粮饭或一小份意面，吃起来满足又不至于太撑太腻。  如果你说的“好的”是指下馆子或点外卖，可以优先…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:36:50.783140196",
+      "createTime": "2026-10-29T22:36:48",
+      "updateTime": "2026-10-29T22:36:48",
+      "id": 3483,
+      "title": "你好，今天想吃点好的"
+    }
+  },
+  "message": "发送消息成功"
+}

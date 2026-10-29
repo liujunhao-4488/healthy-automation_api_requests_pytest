@@ -1,0 +1,78 @@
+HTTP 200　（耗时 3199 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:38:11 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:38:08",
+      "id": 7523,
+      "text": "哪些食物有助于降血糖？另外顺便说一下二甲双胍一天最多吃多少。"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 46.6591,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 30.371,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 29.6465,
+          "docId": "guideline:成人脑卒中食养指南2026",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人脑卒中食养指南2026"
+        }
+      ],
+      "createTime": "2026-10-29T22:38:11",
+      "ragUsed": true,
+      "id": 7524,
+      "text": "关于降血糖的食物，需要先说明一点：没有哪种食物能真正“降”血糖，食物能做到的是让餐后血糖升得更慢、更平稳。按《成人糖尿病食养指南》的建议，核心是选低血糖生成指数（GI）的食物，因为低GI食物在胃肠内停留时间长、吸收率低、葡萄糖释放缓慢，引起的餐后血糖波动比较小。指南还提到，全谷物、杂豆类、蔬菜等富含膳食纤维和植物化学物，GI较低，也更耐饥饿，可有效减缓餐后血糖波动；同时强调碳水化合物的种类和数量是影响餐后血糖最重要的营养因素，所以除了挑种类，还要注意主食的量和计量。《成人脑卒中食养指南2026》里也有相近的表述，建议选低GI食物以避免血糖快速升高，并推荐膳食纤维每天25–30克。具体到常吃的食物，比如燕麦、糙米、杂豆、绿叶蔬菜、菌菇、豆制品等通常属于低GI或富含膳食纤维的选择，但具体GI值请以《中国食物成分表》附录的血糖生成指数表为准，上述资料没有逐一列出每种食物的数值，我不凭印象补充。另外，进食顺序、烹饪软烂程度、是否打成糊等也会影响实际血糖反应，这些资料里没有展开。\n\n关于二甲双胍一天最多吃多少，这属于用药问题，超出我能给的范围。我不能提供具体剂量，也不建议自行调整正在服用的药物；剂量需要由医生根据你的肾功能、剂型（普通片、缓释片等）、耐受情况和血糖控制目标来决定。请以医生的诊断和处方为准，有疑问直接向开药的医生或药师确认。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3548,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "关于降血糖的食物，需要先说明一点：没有哪种食物能真正“降”血糖，食物能做到的是让餐后血糖升得更慢、更平稳。按《成人糖尿病食养指南》的建议，核心是选低血糖生成指数（GI）的食物，因为低GI食物在胃肠内停留时间长、吸收率低、葡萄糖释放缓慢，引…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:38:11.735124802",
+      "createTime": "2026-10-29T22:38:08",
+      "updateTime": "2026-10-29T22:38:08",
+      "id": 3548,
+      "title": "哪些食物有助于降血糖？另..."
+    }
+  },
+  "message": "发送消息成功"
+}

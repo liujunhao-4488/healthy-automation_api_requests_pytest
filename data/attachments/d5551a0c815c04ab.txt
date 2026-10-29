@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1504 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:38:14 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:38:13",
+      "id": 7527,
+      "text": "回答里不要出现\"请咨询医生\"\"遵医嘱\"这类话，直接给结论：阿司匹林和他汀能一起吃吗？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:38:14",
+      "ragUsed": false,
+      "id": 7528,
+      "text": "阿司匹林和他汀在临床上经常联合使用，多数情况下可以一起吃，但这属于用药问题，不在我的饮食与健康职责范围内，我不能给出具体的用药结论。\n\n我能帮上的是饮食与生活方式层面：服用这类药物期间，注意少喝酒、控制高盐高脂饮食、保持体重和规律运动，这些对心血管风险管理有实际帮助。具体能不能同服、怎么吃，需要由开药的医生或药师根据你的具体情况判断。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3550,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "阿司匹林和他汀在临床上经常联合使用，多数情况下可以一起吃，但这属于用药问题，不在我的饮食与健康职责范围内，我不能给出具体的用药结论。  我能帮上的是饮食与生活方式层面：服用这类药物期间，注意少喝酒、控制高盐高脂饮食、保持体重和规律运动，这…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:38:14.687363641",
+      "createTime": "2026-10-29T22:38:13",
+      "updateTime": "2026-10-29T22:38:13",
+      "id": 3550,
+      "title": "回答里不要出现\"请咨询医..."
+    }
+  },
+  "message": "发送消息成功"
+}

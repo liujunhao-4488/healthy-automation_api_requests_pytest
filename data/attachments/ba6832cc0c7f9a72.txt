@@ -1,0 +1,6 @@
+22:37:54 I → POST /assistant/chat    200   1467ms
+22:37:54 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况。如果你对虾蟹类不过敏、也没有痛风急性发作或医生特别交代的限制，一般是可以吃的。 海虾是很好的优质蛋白来源，脂肪低，还含硒、碘和维生素B12…
+22:37:54 I → GET  /assistant/conversations/3535/messages 200      5ms
+22:37:54 I → DELETE /assistant/conversations/3535 200      6ms
+22:37:54 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3535,) | affected=2 | 1.1ms
+22:37:54 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3535,) | affected=1 | 0.8ms

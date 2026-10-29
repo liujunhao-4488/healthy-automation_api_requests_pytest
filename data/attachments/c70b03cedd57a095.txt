@@ -1,0 +1,11 @@
+22:34:52 I → POST /assistant/chat    200   3151ms
+22:34:52 I · AI    问「高血压怎么吃」     → 高血压饮食的核心是**减钠增钾、饮食清淡**，同时做到合理膳食、控制体重、戒烟限酒、规律监测血压。以下依据《成人高血压食养指南》说明。 **第一，减钠。** 指南建议每人每日食盐摄入量逐步降至 5g …
+22:34:56 I → POST /assistant/chat    200   3397ms
+22:34:56 I · AI    问「高血压怎么吃」     → 高血压饮食的核心是**减钠增钾、饮食清淡**，同时做到合理膳食、吃动平衡、戒烟限酒、规律监测血压。依据《成人高血压食养指南》，具体可以这样落实： **1. 控盐是第一位的** 每人每日食盐摄入量逐步降…
+22:34:58 I → POST /assistant/chat    200   2350ms
+22:34:58 I · AI    问「高血压怎么吃」     → 高血压饮食的核心是**减钠增钾、饮食清淡**，同时做到合理膳食、控制体重。依据《成人高血压食养指南》，具体可以这样吃： **1. 严格控盐，这是第一位** 每人每日食盐摄入量逐步降到 5 克以下。除了…
+22:34:58 I → DELETE /assistant/conversations/3421 200      8ms
+22:34:58 I → DELETE /assistant/conversations/3422 200      7ms
+22:34:58 I → DELETE /assistant/conversations/3423 200      8ms
+22:34:58 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s,%s,%s) | args=(3421, 3422, 3423) | affected=6 | 1.4ms
+22:34:58 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s,%s,%s) | args=(3421, 3422, 3423) | affected=3 | 0.8ms

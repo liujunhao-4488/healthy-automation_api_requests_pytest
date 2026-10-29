@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1556 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:35:18 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:35:17",
+      "id": 7279,
+      "text": "晚饭吃多少比较合适"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:35:18",
+      "ragUsed": false,
+      "id": 7280,
+      "text": "晚饭吃到七八分饱比较合适，也就是不饿了、但还没完全撑的状态，大约是你午餐食量的八九成。\n\n具体可以按结构来分：主食约一个拳头大小（米饭约 100～150 克熟重），蛋白质一掌心（鱼、瘦肉、豆腐等），蔬菜占盘子一半左右。晚上活动量少的话，主食可以稍减、蛋白质和蔬菜别少，这样不容易饿，也不影响睡眠。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3429,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "晚饭吃到七八分饱比较合适，也就是不饿了、但还没完全撑的状态，大约是你午餐食量的八九成。  具体可以按结构来分：主食约一个拳头大小（米饭约 100～150 克熟重），蛋白质一掌心（鱼、瘦肉、豆腐等），蔬菜占盘子一半左右。晚上活动量少的话，主…",
+      "messageCount": 12,
+      "lastMessageAt": "2026-10-29T22:35:18.828455028",
+      "createTime": "2026-10-29T22:35:10",
+      "updateTime": "2026-10-29T22:35:10",
+      "id": 3429,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

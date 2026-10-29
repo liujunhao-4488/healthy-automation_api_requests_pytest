@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1261 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:35:17 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:35:16",
+      "id": 7277,
+      "text": "牛肉和鸡胸肉哪个蛋白质更高"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:35:17",
+      "ragUsed": false,
+      "id": 7278,
+      "text": "按常见瘦牛肉（如牛里脊）和生鸡胸肉相比，鸡胸肉的蛋白质略高一些：鸡胸肉约 31 克/100 克，瘦牛肉约 26 克/100 克。不过牛肉的脂肪和铁含量通常更高，两者各有优势，按你的口味和烹调方式选就行。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3429,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "按常见瘦牛肉（如牛里脊）和生鸡胸肉相比，鸡胸肉的蛋白质略高一些：鸡胸肉约 31 克/100 克，瘦牛肉约 26 克/100 克。不过牛肉的脂肪和铁含量通常更高，两者各有优势，按你的口味和烹调方式选就行。",
+      "messageCount": 10,
+      "lastMessageAt": "2026-10-29T22:35:17.270238918",
+      "createTime": "2026-10-29T22:35:10",
+      "updateTime": "2026-10-29T22:35:10",
+      "id": 3429,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

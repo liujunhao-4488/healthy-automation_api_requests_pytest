@@ -1,0 +1,16 @@
+HTTP 200　（耗时 1 ms）
+
+【响应头】
+Server: Werkzeug/3.1.9 Python/3.11.17
+Date: Thu, 29 Oct 2026 22:34:40 GMT
+Content-Type: application/json
+Content-Length: 79
+Access-Control-Allow-Origin: *
+Connection: close
+
+【响应体】
+{
+  "code": 400,
+  "data": [],
+  "message": "query 不能为空"
+}

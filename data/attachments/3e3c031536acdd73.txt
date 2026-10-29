@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_admin_api_requires_login[用户列表]  0.01s

@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_login[邮箱格式错]               0.00s
+                                                                         [ 65%]
+test_cases/auth/test_login_契约.py 

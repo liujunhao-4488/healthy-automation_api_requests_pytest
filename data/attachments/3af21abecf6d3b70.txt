@@ -1,0 +1,5 @@
+22:35:33 I → POST /assistant/chat    200     15ms
+22:35:33 I · AI    问「卧槽你这也太离谱了吧」  → 请文明交流哦～我会尽力帮你解答饮食与健康相关的问题，比如食材替代、三餐搭配、热量营养估算等。
+22:35:33 I → DELETE /assistant/conversations/3435 200      7ms
+22:35:33 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3435,) | affected=2 | 1.2ms
+22:35:33 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3435,) | affected=1 | 0.9ms

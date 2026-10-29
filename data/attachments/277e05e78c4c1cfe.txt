@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_each_hit_carries_traceable_fields  0.01s

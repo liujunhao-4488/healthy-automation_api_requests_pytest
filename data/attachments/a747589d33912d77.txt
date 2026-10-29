@@ -1,0 +1,5 @@
+22:36:59 I → POST /assistant/chat    200   1469ms
+22:36:59 I · AI    问「我不吃香菜，有什么能换成它」  → 可以用葱花、芹菜碎或罗勒来替代香菜。葱花最接近日常用法，出锅前撒上就有清香；喜欢气味更冲一点的可以用芹菜叶碎；做凉拌或东南亚风味时，罗勒或薄荷更合适。如果只是讨厌香菜的气味，很多菜其实不放也行，靠蒜末…
+22:36:59 I → DELETE /assistant/conversations/3490 200      6ms
+22:36:59 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3490,) | affected=2 | 1.3ms
+22:36:59 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3490,) | affected=1 | 1.0ms

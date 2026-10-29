@@ -1,1 +1,0 @@
-10:52:25 I → GET  /admin/overview    403      7ms  {"timestamp":"2026-10-29 18:52:25","status":403,"error":"Forbidden","path":"/api/admin/overview"}

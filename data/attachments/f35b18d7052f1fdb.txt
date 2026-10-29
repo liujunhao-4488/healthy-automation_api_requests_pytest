@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3144 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:36:27 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:36:24",
+      "id": 7367,
+      "text": "最近老犯困，怎么吃能改善"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:36:27",
+      "ragUsed": false,
+      "id": 7368,
+      "text": "白天犯困，饮食上最常见的几个原因和对应调整方向是：一是精制碳水（白米饭、白面条、甜点、含糖饮料）吃得多、吃得快，血糖先冲高再回落，容易在饭后一两小时犯困；二是蛋白质和膳食纤维不足，饱腹感短，血糖波动大；三是喝水太少或咖啡因依赖后反弹；四是早餐质量差或干脆不吃。可以先从这几点改：主食一半换成杂粮杂豆或薯类，每餐先吃菜和蛋白质再吃主食，午餐别吃太撑（七八分饱），蛋白质每餐都安排上（鸡蛋、鱼虾、瘦肉、豆制品、奶），上午和下午各补一次水，咖啡放在上午、下午两点后不喝。\n\n你的BMI 22.8属于正常范围，没有慢性病，基础代谢约1729 kcal、中度活动，全天大概在2400–2600 kcal左右比较合适，不需要靠节食来提神，重点是让三餐的碳水和蛋白质搭配更平稳。比如早餐别只吃面包或粥，加个鸡蛋加一杯奶；午餐主食减到一小碗并掺一半杂粮，配一掌心蛋白质和两拳蔬菜；下午犯困时先喝水、走动几分钟，比再来一杯咖啡或甜食更管用。\n\n另外提醒一句：如果犯困持续好几周、睡够8小时仍明显嗜睡，或伴随体重变化、怕冷、心慌、打鼾严重等情况，就不只是吃的问题了，建议去医院查一下血常规、甲状腺功能和血糖，具体以医生的诊断为准。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3469,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "白天犯困，饮食上最常见的几个原因和对应调整方向是：一是精制碳水（白米饭、白面条、甜点、含糖饮料）吃得多、吃得快，血糖先冲高再回落，容易在饭后一两小时犯困；二是蛋白质和膳食纤维不足，饱腹感短，血糖波动大；三是喝水太少或咖啡因依赖后反弹；四是…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:36:27.376568259",
+      "createTime": "2026-10-29T22:36:24",
+      "updateTime": "2026-10-29T22:36:24",
+      "id": 3469,
+      "title": "最近老犯困，怎么吃能改善"
+    }
+  },
+  "message": "发送消息成功"
+}

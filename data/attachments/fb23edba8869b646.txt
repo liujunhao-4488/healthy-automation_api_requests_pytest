@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_update_username_success         0.01s
-
-[清理] 已回查确认删除靶子账号 pf_43253b5f7d@example.com（userId=101386）

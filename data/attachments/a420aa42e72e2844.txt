@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2330 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:36:24 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:36:21",
+      "id": 7365,
+      "text": "我该吃多少鸡胸肉"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:36:24",
+      "ragUsed": false,
+      "id": 7366,
+      "text": "按你目前的档案（25岁男性、70.2kg、中度活动、无慢病），如果鸡胸肉作为一天中的主要蛋白来源之一，建议每次吃生重约100–150g，一天总量控制在150–200g左右比较合适。\n\n原因是：你每天蛋白质需求大致在110–140g（约1.6–2.0g/kg体重），鸡胸肉每100g生重约含22–23g蛋白质、110–120kcal，100–150g能提供20–35g优质蛋白，正好填补一餐的蛋白缺口，又不会挤占其他食物（鱼、蛋、奶、豆制品）的空间，宏量营养素搭配更均衡。你BMI 22.8属正常范围，没有慢病和忌口信息，所以不需要特别限制，重点是烹饪方式——少油煎、蒸、煮、烤优于油炸和重酱汁，避免额外油盐糖。\n\n如果你当餐还有其他蛋白来源（比如鸡蛋、牛奶、豆制品），单次可以降到80–100g。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3468,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "按你目前的档案（25岁男性、70.2kg、中度活动、无慢病），如果鸡胸肉作为一天中的主要蛋白来源之一，建议每次吃生重约100–150g，一天总量控制在150–200g左右比较合适。  原因是：你每天蛋白质需求大致在110–140g（约1.…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:36:24.216511299",
+      "createTime": "2026-10-29T22:36:21",
+      "updateTime": "2026-10-29T22:36:21",
+      "id": 3468,
+      "title": "我该吃多少鸡胸肉"
+    }
+  },
+  "message": "发送消息成功"
+}

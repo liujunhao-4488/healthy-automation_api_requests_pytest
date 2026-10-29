@@ -1,0 +1,5 @@
+22:36:24 I → POST /assistant/chat    200   2330ms
+22:36:24 I · AI    问「我该吃多少鸡胸肉」  → 按你目前的档案（25岁男性、70.2kg、中度活动、无慢病），如果鸡胸肉作为一天中的主要蛋白来源之一，建议每次吃生重约100–150g，一天总量控制在150–200g左右比较合适。 原因是：你每天蛋白…
+22:36:24 I → DELETE /assistant/conversations/3468 200      7ms
+22:36:24 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3468,) | affected=2 | 1.0ms
+22:36:24 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3468,) | affected=1 | 1.0ms

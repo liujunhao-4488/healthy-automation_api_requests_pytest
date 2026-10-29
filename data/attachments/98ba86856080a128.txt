@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_update_profile_keeps_the_same_shape  0.02s
+                                                                         [ 95%]
+test_cases/user/test_user_profile.py 

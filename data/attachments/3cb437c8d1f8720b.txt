@@ -1,0 +1,5 @@
+22:36:32 I → POST /assistant/chat    200   1682ms
+22:36:32 I · AI    问「刚吃了碗牛肉面」   → 牛肉面本身是一顿挺均衡的主食：面提供碳水，牛肉提供蛋白质和铁，汤和配菜补充水分与少量蔬菜。如果这碗面汤喝得比较多，钠摄入会偏高，下一餐可以清淡一些，多配点绿叶菜，少放盐和酱油。 如果你想知道这碗面大概…
+22:36:32 I → DELETE /assistant/conversations/3474 200      7ms
+22:36:32 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3474,) | affected=2 | 1.2ms
+22:36:32 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3474,) | affected=1 | 1.0ms

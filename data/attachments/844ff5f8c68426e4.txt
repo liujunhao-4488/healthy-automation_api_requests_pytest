@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2171 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:35:38 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:35:35",
+      "id": 7317,
+      "text": "我想换个口味，有什么建议"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:35:38",
+      "ragUsed": false,
+      "id": 7318,
+      "text": "换口味可以从“换蛋白源、换主食、换调味风格”三个方向入手，不用大改结构。比如把常吃的鸡胸换成三文鱼、虾或牛里脊，主食在米饭之外穿插藜麦、玉米、红薯，调味从中式咸鲜换成番茄酸香、黑椒、孜然或柠檬香草，同样的食材吃起来感觉会完全不同。\n\n你目前BMI 22.8属于正常范围，没有慢病，中度活动量下每天大致需要2300～2500kcal，所以换口味时不必刻意压低热量，重点是保证每餐有优质蛋白（约一掌心的肉蛋豆制品）、足量蔬菜和适量主食，这样换着吃也不会打乱营养结构。你的档案里没有记录过敏或忌口，如果实际有海鲜、乳制品等不耐受，选新口味时避开对应食材即可。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3444,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "换口味可以从“换蛋白源、换主食、换调味风格”三个方向入手，不用大改结构。比如把常吃的鸡胸换成三文鱼、虾或牛里脊，主食在米饭之外穿插藜麦、玉米、红薯，调味从中式咸鲜换成番茄酸香、黑椒、孜然或柠檬香草，同样的食材吃起来感觉会完全不同。  你目…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:35:38.045155438",
+      "createTime": "2026-10-29T22:35:35",
+      "updateTime": "2026-10-29T22:35:35",
+      "id": 3444,
+      "title": "我想换个口味，有什么建议"
+    }
+  },
+  "message": "发送消息成功"
+}

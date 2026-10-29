@@ -1,0 +1,44 @@
+HTTP 200　（耗时 8 ms）
+
+【响应头】
+Server: Werkzeug/3.1.9 Python/3.11.17
+Date: Thu, 29 Oct 2026 22:34:40 GMT
+Content-Type: application/json
+Content-Length: 4150
+Access-Control-Allow-Origin: *
+Connection: close
+
+【响应体】
+{
+  "code": 200,
+  "data": [
+    {
+      "docId": "guideline:成人慢性肾脏病食养指南",
+      "docType": "guideline",
+      "score": 53.8688,
+      "section": "二、慢性肾脏病分期营养管理原则",
+      "snippet": "二、慢性肾脏病分期营养管理原则 根据肾小球滤过率将慢性肾脏病分为1～5 期，慢性肾脏 病不同分期的营养管理原则不同，本指南根据国内外指南和 共识，形成不同分期的营养管理原则（表 5.2），使用者可参 考以下原则选择食物，设计食谱。 表5.2 慢性肾脏病分期营养管理原则 分期 CKD1～2 期 CKD3～5 期（非透析） CKD5（透析期） 能量 （kcal/kgIBW·d ）和体重（kg） 30～",
+      "sourceType": "authority",
+      "title": "成人慢性肾脏病食养指南"
+    },
+    {
+      "docId": "guideline:成人慢性肾脏病食养指南",
+      "docType": "guideline",
+      "score": 46.4639,
+      "section": "二、不同证型食药物质举例",
+      "snippet": "雪里蕻、腌萝卜干等 腐乳 17 1 400 84 74 红腐乳、白腐乳、臭腐乳等 附录 3 不同地区食谱示例 不同地区、不同季节的慢性肾脏病患者适用的全天膳食 食谱（以可食部生重计算）， 按照成人慢性肾脏病食养指南 的基本原则和慢性肾脏病不同分期营养管理的原则，根据各 地食物资源和人群膳食特点进行设计。食谱由有经验的临床 营养师编制，并经过营养成分计算和评估。食谱以轻体力活 动、理想体重 60kg",
+      "sourceType": "authority",
+      "title": "成人慢性肾脏病食养指南"
+    },
+    {
+      "docId": "guideline:成人慢性肾脏病食养指南",
+      "docType": "guideline",
+      "score": 41.5679,
+      "section": "二、疾病特点、分期和分型",
+      "snippet": "73m ），4 期肾功能为严 重下降（肾小球滤过率为 15～29mL/min/1.73m ），5 期又称 为终末期肾病或尿毒症期，肾功能为严重衰竭（肾小球滤过 率<15mL/min/1.73m ），多需要进行透析治疗或肾移植。慢 性肾脏病 3～5 期又称为慢性肾功能不全期。本指南中的食 养原则和食谱示例均按照慢性肾脏病分期营养管理原则来 进行推荐和设计，具体内容见附录。 （二）中医对慢性肾脏病的认",
+      "sourceType": "authority",
+      "title": "成人慢性肾脏病食养指南"
+    }
+  ],
+  "message": "success"
+}

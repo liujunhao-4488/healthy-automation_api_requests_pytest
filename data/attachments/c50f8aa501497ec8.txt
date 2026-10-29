@@ -1,0 +1,5 @@
+22:36:27 I → POST /assistant/chat    200   3144ms
+22:36:27 I · AI    问「最近老犯困，怎么吃能改善」  → 白天犯困，饮食上最常见的几个原因和对应调整方向是：一是精制碳水（白米饭、白面条、甜点、含糖饮料）吃得多、吃得快，血糖先冲高再回落，容易在饭后一两小时犯困；二是蛋白质和膳食纤维不足，饱腹感短，血糖波动大…
+22:36:27 I → DELETE /assistant/conversations/3469 200      7ms
+22:36:27 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3469,) | affected=2 | 1.1ms
+22:36:27 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3469,) | affected=1 | 0.8ms

@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_get_profile_with_bad_token      0.00s
+
+[清理] 已回查确认删除靶子账号 pf_b86fb53ed3@example.com（userId=101384）

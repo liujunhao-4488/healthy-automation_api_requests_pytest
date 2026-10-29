@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2339 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:36:41 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:36:39",
+      "id": 7387,
+      "text": "早餐吃什么比较抗饿"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:36:41",
+      "ragUsed": false,
+      "id": 7388,
+      "text": "早餐想抗饿，关键是吃够蛋白质和膳食纤维，同时别让精制碳水占太大比例。蛋白质消化慢、饱腹感强，膳食纤维能延缓胃排空，两者搭配比单吃粥、馒头、面包顶饿得多。\n\n具体可以这样搭：主食选燕麦、全麦面包、杂粮粥或玉米红薯这类粗粮；再配一份优质蛋白，比如鸡蛋、牛奶、无糖酸奶、豆浆或瘦肉；最后加一点蔬菜或水果，比如几片生菜、番茄、一小把蓝莓。例如「燕麦牛奶＋一个水煮蛋＋半个苹果」，或者「全麦三明治夹鸡蛋和生菜＋一杯无糖豆浆」，都能撑到中午。\n\n另外两个小细节也有帮助：早餐别只喝稀粥或只吃甜面包，这类食物升糖快、饿得也快；吃的时候慢一点、配足水分，饱腹感会更明显。如果你平时上午活动量大，可以在早餐里多加一个鸡蛋或一小把坚果。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3479,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "早餐想抗饿，关键是吃够蛋白质和膳食纤维，同时别让精制碳水占太大比例。蛋白质消化慢、饱腹感强，膳食纤维能延缓胃排空，两者搭配比单吃粥、馒头、面包顶饿得多。  具体可以这样搭：主食选燕麦、全麦面包、杂粮粥或玉米红薯这类粗粮；再配一份优质蛋白，…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:36:41.751691875",
+      "createTime": "2026-10-29T22:36:39",
+      "updateTime": "2026-10-29T22:36:39",
+      "id": 3479,
+      "title": "早餐吃什么比较抗饿"
+    }
+  },
+  "message": "发送消息成功"
+}

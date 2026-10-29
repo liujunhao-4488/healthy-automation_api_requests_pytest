@@ -1,0 +1,78 @@
+HTTP 200　（耗时 1747 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:39:08 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:39:06",
+      "id": 7587,
+      "text": "什么是食物的升糖指数"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 18.8499,
+          "docId": "guideline:成人脑卒中食养指南2026",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人脑卒中食养指南2026"
+        },
+        {
+          "score": 13.8676,
+          "docId": "guideline:中国居民膳食指南(2022)",
+          "docType": "guideline",
+          "section": "准则一食物多样，合理搭配",
+          "title": "中国居民膳食指南(2022)"
+        },
+        {
+          "score": 11.9504,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "一、食物选择",
+          "title": "成人糖尿病食养指南"
+        }
+      ],
+      "createTime": "2026-10-29T22:39:08",
+      "ragUsed": true,
+      "id": 7588,
+      "text": "食物的升糖指数（GI）是衡量含碳水化合物食物引起餐后血糖升高程度的指标：以摄入50克葡萄糖后的血糖反应为100作为基准，吃含等量碳水化合物的某种食物后，2小时内血糖变化越小，GI值就越低。按《成人糖尿病食养指南》的划分，GI≤55为低GI食物，低GI食物对血糖影响较小，有利于餐后血糖控制，所以糖尿病等人群宜多选低GI食物。\n\n需要说明的是，GI只反映血糖上升的速度和幅度，不反映吃了多少，实际控糖还要结合食用量（即血糖负荷）和整体搭配来看。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3574,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "食物的升糖指数（GI）是衡量含碳水化合物食物引起餐后血糖升高程度的指标：以摄入50克葡萄糖后的血糖反应为100作为基准，吃含等量碳水化合物的某种食物后，2小时内血糖变化越小，GI值就越低。按《成人糖尿病食养指南》的划分，GI≤55为低GI…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:39:08.206594458",
+      "createTime": "2026-10-29T22:39:06",
+      "updateTime": "2026-10-29T22:39:06",
+      "id": 3574,
+      "title": "什么是食物的升糖指数"
+    }
+  },
+  "message": "发送消息成功"
+}

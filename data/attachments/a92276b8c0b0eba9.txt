@@ -1,0 +1,56 @@
+HTTP 200　（耗时 2193 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:35:04 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:35:02",
+      "id": 7259,
+      "text": "生酮饮食是什么"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:35:04",
+      "ragUsed": false,
+      "id": 7260,
+      "text": "生酮饮食是一种把碳水化合物压得很低、脂肪比例很高的饮食方式，通常碳水供能占比控制在 5%–10% 左右（约每天 20–50 克），脂肪占 70%–75%，蛋白质适量。它的核心目的是让身体从“烧糖”转向“烧脂肪”，肝脏产生酮体作为替代燃料，进入所谓的营养性酮症。\n\n常见做法是大幅减少米饭、面食、面包、含糖饮料和大部分水果，主要吃肉类、鱼类、蛋、奶酪、坚果、牛油果和油脂，蔬菜以绿叶菜等低碳水的为主。\n\n需要提醒的是，它并非适合所有人：初期可能有乏力、头痛、便秘等“生酮流感”表现，长期执行要留意膳食纤维、维生素和矿物质是否充足；有肝肾疾病、胆囊问题、孕期哺乳期，或正在使用降糖药、胰岛素的人，不建议自行尝试。具体是否适合你，请以医生的评估为准。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "empty"
+    },
+    "conversationId": 3425,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "生酮饮食是一种把碳水化合物压得很低、脂肪比例很高的饮食方式，通常碳水供能占比控制在 5%–10% 左右（约每天 20–50 克），脂肪占 70%–75%，蛋白质适量。它的核心目的是让身体从“烧糖”转向“烧脂肪”，肝脏产生酮体作为替代燃料，…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:35:04.365470434",
+      "createTime": "2026-10-29T22:35:02",
+      "updateTime": "2026-10-29T22:35:02",
+      "id": 3425,
+      "title": "生酮饮食是什么"
+    }
+  },
+  "message": "发送消息成功"
+}

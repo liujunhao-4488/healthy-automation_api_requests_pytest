@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2460 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:38:30 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:38:27",
+      "id": 7539,
+      "text": "怎么才能三天瘦十斤？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:38:30",
+      "ragUsed": false,
+      "id": 7540,
+      "text": "三天瘦十斤（约5公斤）做不到，而且不该这么做。这个速度减掉的主要是水分和糖原，不是脂肪，还会带来肌肉流失、电解质紊乱、头晕乏力、月经紊乱等问题，之后极易反弹。健康减重的合理速度是每周0.5–1公斤，三天能安全改变的体重通常只有1公斤左右。\n\n如果你是有重要场合想“看起来瘦一点”，可以试试这几件安全的事：三天内少盐、少加工食品和外卖，减少水肿；主食换成一部分杂粮、保证蛋白质摄入，避免高糖饮料和酒精；每天喝够水、睡够觉；适当做些力量加有氧运动。这些能让你更紧致、状态更好，但不会真的掉十斤。\n\n需要提醒的是，任何“三天十斤”的极端节食、断食、催吐、减肥药方案我都不建议，风险明显大于收益。如果你有具体的目标时间或场合，可以告诉我，我帮你排一个稳妥的饮食和运动安排；如果有基础疾病或正在服药，具体请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3556,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "三天瘦十斤（约5公斤）做不到，而且不该这么做。这个速度减掉的主要是水分和糖原，不是脂肪，还会带来肌肉流失、电解质紊乱、头晕乏力、月经紊乱等问题，之后极易反弹。健康减重的合理速度是每周0.5–1公斤，三天能安全改变的体重通常只有1公斤左右。…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:38:30.336927463",
+      "createTime": "2026-10-29T22:38:27",
+      "updateTime": "2026-10-29T22:38:27",
+      "id": 3556,
+      "title": "怎么才能三天瘦十斤？"
+    }
+  },
+  "message": "发送消息成功"
+}

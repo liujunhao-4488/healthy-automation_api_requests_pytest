@@ -1,0 +1,5 @@
+22:35:48 I → POST /assistant/chat    200   1790ms
+22:35:48 I · AI    问「晚饭吃几粒杏仁比较合适」  → 晚饭吃 10～15 粒杏仁比较合适，大约相当于一小把、10～15 克。 这样建议是因为杏仁热量和脂肪密度较高，10 来粒大约 60～90 千卡，作为晚饭的一部分或饭后小零食既能补充蛋白质、膳食纤维和维…
+22:35:48 I → DELETE /assistant/conversations/3450 200      8ms
+22:35:49 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3450,) | affected=2 | 1.2ms
+22:35:49 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3450,) | affected=1 | 0.9ms

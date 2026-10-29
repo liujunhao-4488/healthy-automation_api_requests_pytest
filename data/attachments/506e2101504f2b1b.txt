@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_rag_empty_recall_is_observable  2.20s

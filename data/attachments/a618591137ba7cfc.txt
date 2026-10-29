@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_register_fail[用户名已存在]     0.00s

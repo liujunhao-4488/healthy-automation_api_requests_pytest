@@ -1,0 +1,22 @@
+22:39:24 I → POST /auth/register     200    158ms
+22:39:24 I → PUT  /user/profile      200      7ms
+22:39:24 I · READ  SELECT username, email, phone, avatar FROM `user` WHERE email = %s | args=('pf_968a377dcd@example.com',) | rows=1 | 0.5ms
+22:39:24 I · READ  SELECT COUNT(*) AS n FROM `user` WHERE `id` = %s | args=(101390,) | rows=1 | 0.4ms
+22:39:24 W ! WRITE DELETE FROM `assistant_message` WHERE `user_id` = %s OR `conversation_id` IN (SELECT `id` FROM `assistant_conversation` WHERE `user_id` = %s) | args=(101390, 101390) | affected=0 | 0.4ms
+22:39:24 W ! WRITE DELETE FROM `diet_record_detail` WHERE `record_id` IN (SELECT `id` FROM `diet_record` WHERE `user_id` = %s) | args=(101390,) | affected=0 | 0.4ms
+22:39:24 W ! WRITE DELETE FROM `recipe_ingredient` WHERE `recipe_id` IN (SELECT `id` FROM `recipe` WHERE `creator_id` = %s) | args=(101390,) | affected=0 | 0.3ms
+22:39:24 W ! WRITE DELETE FROM `assistant_conversation` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.3ms
+22:39:24 W ! WRITE DELETE FROM `health_info_history` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.2ms
+22:39:24 W ! WRITE DELETE FROM `health_info` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.2ms
+22:39:24 W ! WRITE DELETE FROM `diet_record` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.3ms
+22:39:24 W ! WRITE DELETE FROM `diet_goal` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.2ms
+22:39:24 W ! WRITE DELETE FROM `user_diet_preference` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.2ms
+22:39:24 W ! WRITE DELETE FROM `user_article_collect` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.2ms
+22:39:24 W ! WRITE DELETE FROM `user_article_like` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.2ms
+22:39:24 W ! WRITE DELETE FROM `user_read_record` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.3ms
+22:39:24 W ! WRITE DELETE FROM `user_recipe_collect` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.3ms
+22:39:24 W ! WRITE DELETE FROM `article_comment` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.2ms
+22:39:24 W ! WRITE DELETE FROM `notification` WHERE `user_id` = %s | args=(101390,) | affected=0 | 0.3ms
+22:39:24 W ! WRITE DELETE FROM `recipe` WHERE `creator_id` = %s | args=(101390,) | affected=0 | 0.2ms
+22:39:24 W ! WRITE DELETE FROM `user` WHERE `id` = %s | args=(101390,) | affected=1 | 0.9ms
+22:39:24 I · READ  SELECT COUNT(*) AS n FROM `user` WHERE `id` = %s | args=(101390,) | rows=1 | 0.4ms

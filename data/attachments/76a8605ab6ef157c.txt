@@ -1,5 +1,0 @@
-10:52:36 I → POST /assistant/chat    200   2346ms
-10:52:36 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，主要取决于你的身体情况，光凭这一句我没法替你判断。一般来说，对虾类不过敏、没有痛风急性发作、肾功能正常的人，海虾是可以吃的，它是优质蛋白，脂肪低，还含硒、碘和维生素B12。 需要留意几种…
-10:52:36 I → DELETE /assistant/conversations/3430 200      9ms
-10:52:36 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3430,) | affected=2 | 1.2ms
-10:52:36 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3430,) | affected=1 | 0.8ms

@@ -1,0 +1,5 @@
+22:36:39 I → POST /assistant/chat    200   2007ms
+22:36:39 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，取决于你的身体情况，我这边没有你的过敏史和健康状况信息，所以只能给一般性判断。 对绝大多数人来说，海虾是可以吃的，而且是很好的优质蛋白来源，脂肪低、富含硒和维生素B12。需要注意的主要是…
+22:36:39 I → DELETE /assistant/conversations/3478 200      7ms
+22:36:39 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3478,) | affected=2 | 1.2ms
+22:36:39 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3478,) | affected=1 | 1.0ms

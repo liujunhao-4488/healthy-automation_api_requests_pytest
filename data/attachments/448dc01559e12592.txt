@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1842 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:35:50 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:35:49",
+      "id": 7331,
+      "text": "今天天气冷了，适合喝什么汤"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:35:50",
+      "ragUsed": false,
+      "id": 7332,
+      "text": "天冷适合喝温热、少油少盐的汤，比如萝卜排骨汤、番茄牛肉汤、菌菇鸡汤、山药玉米汤，或者豆腐白菜汤这类清淡的蔬菜汤。这些汤能暖身补水，食材也容易搭配主食和蔬菜，作为一餐的一部分比较合适。\n\n如果想喝得更健康些，可以注意几点：汤面浮油撇掉，盐少放，用葱姜、胡椒、香菇提味；肉汤里肉和菜都要吃，别只喝汤；痛风或尿酸高的人少喝浓肉汤、老火汤，具体请以医生的建议为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3451,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "天冷适合喝温热、少油少盐的汤，比如萝卜排骨汤、番茄牛肉汤、菌菇鸡汤、山药玉米汤，或者豆腐白菜汤这类清淡的蔬菜汤。这些汤能暖身补水，食材也容易搭配主食和蔬菜，作为一餐的一部分比较合适。  如果想喝得更健康些，可以注意几点：汤面浮油撇掉，盐少…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:35:50.845795577",
+      "createTime": "2026-10-29T22:35:49",
+      "updateTime": "2026-10-29T22:35:49",
+      "id": 3451,
+      "title": "今天天气冷了，适合喝什么..."
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,5 @@
+22:35:54 I → POST /assistant/chat    200   2652ms
+22:35:54 I · AI    问「我草莓过敏，还能吃什么水果」  → 草莓过敏并不代表要避开所有水果，多数常见水果你都可以正常吃，关键是避开草莓本身以及可能引起交叉反应的水果。 草莓过敏通常是对草莓中的某些蛋白过敏，部分人会对蔷薇科或桦树花粉相关的水果也敏感，比如树莓、…
+22:35:54 I → DELETE /assistant/conversations/3453 200      7ms
+22:35:54 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3453,) | affected=2 | 1.2ms
+22:35:54 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3453,) | affected=1 | 0.8ms

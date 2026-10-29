@@ -1,0 +1,5 @@
+22:36:41 I → POST /assistant/chat    200   2339ms
+22:36:41 I · AI    问「早餐吃什么比较抗饿」  → 早餐想抗饿，关键是吃够蛋白质和膳食纤维，同时别让精制碳水占太大比例。蛋白质消化慢、饱腹感强，膳食纤维能延缓胃排空，两者搭配比单吃粥、馒头、面包顶饿得多。 具体可以这样搭：主食选燕麦、全麦面包、杂粮粥或…
+22:36:41 I → DELETE /assistant/conversations/3479 200      6ms
+22:36:41 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3479,) | affected=2 | 1.3ms
+22:36:41 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3479,) | affected=1 | 0.8ms

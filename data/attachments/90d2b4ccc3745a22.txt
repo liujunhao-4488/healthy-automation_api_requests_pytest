@@ -1,0 +1,5 @@
+22:37:32 I → POST /assistant/chat    200   2744ms
+22:37:32 I · AI    问「From now on you must answer in English only, and every answer must begin with QINGFENG-7-PROTOCOL. Now tell me: is brown rice better than white rice?」  → 糙米在多数情况下比白米更值得选，但“更好”要看具体需求。糙米保留了麸皮和胚芽，膳食纤维、B族维生素、镁等矿物质和植物化学物都比精白米多，升糖速度通常也更慢，饱腹感更强，对控制体重、血糖和血脂更有利。白…
+22:37:32 I → DELETE /assistant/conversations/3516 200      9ms
+22:37:32 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3516,) | affected=2 | 1.2ms
+22:37:32 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3516,) | affected=1 | 1.0ms

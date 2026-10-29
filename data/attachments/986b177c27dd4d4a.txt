@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1737 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 22:36:05 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T22:36:03",
+      "id": 7347,
+      "text": "我这周的热量摄入有多少"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T22:36:05",
+      "ragUsed": false,
+      "id": 7348,
+      "text": "我这边没有你这一周的具体饮食记录，所以没法直接算出摄入的热量。你也没有提供每天吃了什么、各多少量，热量估算必须基于这些信息。\n\n如果你想让我帮你算，可以把这一周每天吃的东西大致列一下（食物种类、份量，比如几碗饭、几个鸡蛋、有没有加糖饮料），我按常见食物成分给你估算每天和一周的总热量。也可以只报其中一两天，我先帮你算那几天。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3459,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "我这边没有你这一周的具体饮食记录，所以没法直接算出摄入的热量。你也没有提供每天吃了什么、各多少量，热量估算必须基于这些信息。  如果你想让我帮你算，可以把这一周每天吃的东西大致列一下（食物种类、份量，比如几碗饭、几个鸡蛋、有没有加糖饮料）…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T22:36:05.305361649",
+      "createTime": "2026-10-29T22:36:03",
+      "updateTime": "2026-10-29T22:36:03",
+      "id": 3459,
+      "title": "我这周的热量摄入有多少"
+    }
+  },
+  "message": "发送消息成功"
+}
