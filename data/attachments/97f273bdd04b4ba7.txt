@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_section[骨质疏松每天要补多少钙]  0.03s

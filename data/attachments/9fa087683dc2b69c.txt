@@ -1,0 +1,3 @@
+10:52:24 I → POST /auth/login        200     86ms
+10:52:24 I → GET  /user/profile      200     42ms
+10:52:24 I → GET  /admin/overview    401      7ms

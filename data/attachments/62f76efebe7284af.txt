@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_irrelevant_question_returns_nothing[阿司匹林饭前吃还是饭后吃]  0.00s

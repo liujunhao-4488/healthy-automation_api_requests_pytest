@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2346 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 10:52:36 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T10:52:34",
+      "id": 7269,
+      "text": "我能吃海虾吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T10:52:36",
+      "ragUsed": false,
+      "id": 7270,
+      "text": "能不能吃海虾，主要取决于你的身体情况，光凭这一句我没法替你判断。一般来说，对虾类不过敏、没有痛风急性发作、肾功能正常的人，海虾是可以吃的，它是优质蛋白，脂肪低，还含硒、碘和维生素B12。\n\n需要留意几种情况：如果你以前吃虾出现过皮疹、嘴唇肿、喉咙发紧，那就别吃，并建议去查过敏原；痛风或高尿酸的人，虾的嘌呤属中等偏高，急性发作期先避开，缓解期少量吃、别配啤酒；有肾病需要限蛋白的，要按医生给的量算进去。\n\n做法上建议白灼、清蒸，少用油炸和重口酱料。如果你能说下自己的过敏史或相关疾病，我可以给更具体的建议；涉及疾病判断的，请以医生的诊断为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3430,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "能不能吃海虾，主要取决于你的身体情况，光凭这一句我没法替你判断。一般来说，对虾类不过敏、没有痛风急性发作、肾功能正常的人，海虾是可以吃的，它是优质蛋白，脂肪低，还含硒、碘和维生素B12。  需要留意几种情况：如果你以前吃虾出现过皮疹、嘴唇…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T10:52:36.445684452",
+      "createTime": "2026-10-29T10:52:34",
+      "updateTime": "2026-10-29T10:52:34",
+      "id": 3430,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}

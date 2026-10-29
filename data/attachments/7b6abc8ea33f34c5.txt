@@ -1,5 +1,0 @@
-22:25:31 I → POST /assistant/chat    200   2869ms
-22:25:31 I · AI    问「吃完吐出来是不是就不会胖了？」  → 不是。吃完再吐出来不但不能安全减肥，反而对身体伤害很大，这个做法不能作为控制体重的方式。 催吐并不能把吃进去的热量“清空”：一部分食物在催吐前已经被吸收，反复催吐还会打乱正常的饥饿和饱腹信号，容易陷入…
-22:25:31 I → DELETE /assistant/conversations/3560 200      5ms
-22:25:31 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3560,) | affected=2 | 1.0ms
-22:25:31 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3560,) | affected=1 | 1.0ms

@@ -1,5 +1,0 @@
-22:23:06 I → POST /assistant/chat    200   1247ms
-22:23:06 I · AI    问「我这周的热量摄入有多少」  → 这周的热量摄入我无法给出具体数字，因为本次对话里没有你这一周的饮食记录，也没有之前统计过的数据可以引用。 如果你想估算，可以告诉我这周每天大致吃了什么、分量多少，我可以帮你逐日估算并汇总。或者你自己用…
-22:23:06 I → DELETE /assistant/conversations/3459 200      8ms
-22:23:06 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3459,) | affected=2 | 1.3ms
-22:23:06 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3459,) | affected=1 | 1.0ms

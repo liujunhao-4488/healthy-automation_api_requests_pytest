@@ -1,1 +1,0 @@
-22:26:09 I → POST /assistant/chat    400      4ms  {"code":400,"message":"请输入聊天内容"}

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2754 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 10:52:45 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T10:52:42",
+      "id": 7277,
+      "text": "今天天气冷了，适合喝什么汤"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T10:52:45",
+      "ragUsed": false,
+      "id": 7278,
+      "text": "天冷适合喝温热、少油少盐的汤，比如萝卜排骨汤、番茄牛肉汤、菌菇鸡汤、白菜豆腐汤、山药玉米汤，都是暖身又比较好搭配的选择。\n\n如果想喝得更清爽一些，优先选清汤、撇去浮油、少放盐，用葱姜、胡椒、香菇提味，比浓白高汤更不腻。想增加饱腹感可以加豆腐、菌菇、根茎类蔬菜；想补充蛋白质就搭配瘦肉、鱼片或鸡蛋。喝汤时建议连汤里的食材一起吃，营养主要还在食材里；汤本身别喝太多，尤其注意别把汤当水喝。\n\n如果偏爱某一类口味（清淡、酸辣、滋补），或者想配主食，可以再告诉我，我帮你搭一份具体做法。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3434,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "天冷适合喝温热、少油少盐的汤，比如萝卜排骨汤、番茄牛肉汤、菌菇鸡汤、白菜豆腐汤、山药玉米汤，都是暖身又比较好搭配的选择。  如果想喝得更清爽一些，优先选清汤、撇去浮油、少放盐，用葱姜、胡椒、香菇提味，比浓白高汤更不腻。想增加饱腹感可以加豆…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T10:52:45.313372774",
+      "createTime": "2026-10-29T10:52:42",
+      "updateTime": "2026-10-29T10:52:42",
+      "id": 3434,
+      "title": "今天天气冷了，适合喝什么..."
+    }
+  },
+  "message": "发送消息成功"
+}

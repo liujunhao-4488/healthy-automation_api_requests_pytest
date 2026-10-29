@@ -1,5 +1,0 @@
-22:23:12 I → POST /assistant/chat    200   1829ms
-22:23:12 I · AI    问「米饭的升糖指数高吗」  → 米饭的升糖指数（GI）属于偏高的一类。食材库给出的米饭 GI 是 73，通常 GI 在 70 以上就算高 GI 食物，意味着它消化吸收快、餐后血糖上升比较明显。 不过这并不等于不能吃米饭，关键看怎么搭…
-22:23:12 I → DELETE /assistant/conversations/3464 200      7ms
-22:23:12 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3464,) | affected=2 | 2.5ms
-22:23:12 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3464,) | affected=1 | 0.9ms

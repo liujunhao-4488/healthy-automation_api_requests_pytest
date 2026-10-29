@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_doc[高血压患者的食谱怎么安排]  0.01s

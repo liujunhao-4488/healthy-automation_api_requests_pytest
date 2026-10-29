@@ -1,0 +1,78 @@
+HTTP 200　（耗时 1595 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 10:52:46 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T10:52:45",
+      "id": 7279,
+      "text": "帮我翻译一下这个营养成分表"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 16.8781,
+          "docId": "guideline:中国居民膳食指南(2022)",
+          "docType": "guideline",
+          "section": "准则七会烹会选，会看标签",
+          "title": "中国居民膳食指南(2022)"
+        },
+        {
+          "score": 11.7182,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 11.3172,
+          "docId": "guideline:成人慢性肾脏病食养指南",
+          "docType": "guideline",
+          "section": "一、食物选择",
+          "title": "成人慢性肾脏病食养指南"
+        }
+      ],
+      "createTime": "2026-10-29T10:52:46",
+      "ragUsed": true,
+      "id": 7280,
+      "text": "你还没有把营养成分表的内容发过来。请把表里的项目（比如能量、蛋白质、脂肪、碳水化合物、钠等）和对应数值贴给我，或者直接发图片里的文字，我来帮你逐项翻译和解读。\n\n另外说明一下：翻译营养成分表属于饮食健康范围内的解读，我可以帮你把英文或外文标签译成中文，并说明各项含义；如果是其他类型的文件翻译，就不在我的职责范围内了。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3435,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你还没有把营养成分表的内容发过来。请把表里的项目（比如能量、蛋白质、脂肪、碳水化合物、钠等）和对应数值贴给我，或者直接发图片里的文字，我来帮你逐项翻译和解读。  另外说明一下：翻译营养成分表属于饮食健康范围内的解读，我可以帮你把英文或外文…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T10:52:46.927021487",
+      "createTime": "2026-10-29T10:52:45",
+      "updateTime": "2026-10-29T10:52:45",
+      "id": 3435,
+      "title": "帮我翻译一下这个营养成分..."
+    }
+  },
+  "message": "发送消息成功"
+}

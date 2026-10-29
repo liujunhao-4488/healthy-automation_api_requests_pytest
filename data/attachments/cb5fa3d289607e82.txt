@@ -1,2 +1,0 @@
-
-└─ ✘ FAILED  test_all_scope_covers_both_sources   0.01s  assert 0 > 0

@@ -1,0 +1,37 @@
+HTTP 200　（耗时 9 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 10:53:07 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": [
+    {
+      "id": 277,
+      "userId": 101347,
+      "type": "system",
+      "title": "A 的私有通知",
+      "content": "越权用例靶子",
+      "relatedId": null,
+      "relatedType": null,
+      "isRead": 0,
+      "isDeleted": 0,
+      "readTime": null,
+      "sendTime": "2026-10-29T10:53:07",
+      "createTime": "2026-10-29T10:53:07"
+    }
+  ],
+  "message": "获取消息成功"
+}

@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_chat_persists_both_messages     2.23s

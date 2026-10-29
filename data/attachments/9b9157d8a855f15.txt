@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2145 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 29 Oct 2026 10:52:31 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-29T10:52:29",
+      "id": 7263,
+      "text": "我想换个口味，有什么建议"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-29T10:52:31",
+      "ragUsed": false,
+      "id": 7264,
+      "text": "换口味可以从「换蛋白、换主食、换调味」三个方向入手，不必大改结构。比如把常吃的鸡胸换成鱼虾、瘦牛肉、鸡蛋或豆制品轮换；主食在米饭之外加入燕麦、玉米、红薯、荞麦面；调味上用柠檬汁、黑胡椒、孜然、咖喱粉、香草、醋来代替重油重盐的做法，口味变化会很明显。\n\n你目前BMI约22.8，属于正常范围，没有慢病记录，中度活动水平下每天总消耗大约在2600kcal上下，所以换口味时不用刻意压低热量，重点是保持蛋白质充足、少油少糖。如果你有具体的过敏或忌口食材，或者想换的是某一餐（早餐/午餐/晚餐），可以告诉我，我再给更贴合的搭配。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3427,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "换口味可以从「换蛋白、换主食、换调味」三个方向入手，不必大改结构。比如把常吃的鸡胸换成鱼虾、瘦牛肉、鸡蛋或豆制品轮换；主食在米饭之外加入燕麦、玉米、红薯、荞麦面；调味上用柠檬汁、黑胡椒、孜然、咖喱粉、香草、醋来代替重油重盐的做法，口味变化…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-29T10:52:31.440335666",
+      "createTime": "2026-10-29T10:52:29",
+      "updateTime": "2026-10-29T10:52:29",
+      "id": 3427,
+      "title": "我想换个口味，有什么建议"
+    }
+  },
+  "message": "发送消息成功"
+}

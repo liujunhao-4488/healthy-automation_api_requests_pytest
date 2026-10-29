@@ -1,6 +1,0 @@
-22:24:51 I → POST /assistant/conversations 200      9ms
-22:24:51 I → GET  /assistant/conversations 200      5ms
-22:24:51 I → DELETE /assistant/conversations/3538 200      6ms
-22:24:51 I → GET  /assistant/conversations 200      3ms
-22:24:51 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3538,) | affected=0 | 0.4ms
-22:24:51 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3538,) | affected=1 | 1.0ms

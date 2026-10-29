@@ -1,5 +1,0 @@
-22:23:42 I → POST /assistant/chat    200   2099ms
-22:23:42 I · AI    问「我每天该喝多少水」  → 健康成年人每天饮水（白水、淡茶等无糖饮品）一般建议在 1500～1700 毫升左右，大约 7～8 杯。这是指额外喝进去的水，不包括食物里的水分。 为什么是这个量：中国居民膳食指南给出的成年人推荐量是男…
-22:23:42 I → DELETE /assistant/conversations/3480 200      9ms
-22:23:42 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3480,) | affected=2 | 1.2ms
-22:23:42 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3480,) | affected=1 | 0.8ms

@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_citation_present_rate           9.40s

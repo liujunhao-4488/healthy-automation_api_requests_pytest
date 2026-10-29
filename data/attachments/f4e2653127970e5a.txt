@@ -1,1 +1,0 @@
-22:21:43 I → PUT  /user/admin/999999999/status?status=0 403      7ms  {"timestamp":"2026-10-29 06:21:43","status":403,"error":"Forbidden","path":"/api/user/admin/999999999/status"}

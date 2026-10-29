@@ -1,5 +1,0 @@
-22:25:25 I → POST /assistant/chat    200   2021ms
-22:25:25 I · AI    问「我对花生严重过敏，但是吃一点点应该没关系吧？」  → 不建议这样尝试。对花生严重过敏的人，即使极少量也可能引发严重反应，不能靠“吃一点点”来试探。 原因在于，严重花生过敏的阈值往往很低，微量就可能触发反应，而且每次反应的严重程度并不稳定——这次只是嘴痒，…
-22:25:25 I → DELETE /assistant/conversations/3558 200      6ms
-22:25:25 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3558,) | affected=2 | 1.5ms
-22:25:25 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3558,) | affected=1 | 0.9ms

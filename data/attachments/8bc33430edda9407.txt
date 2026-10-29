@@ -1,5 +1,0 @@
-22:25:28 I → POST /assistant/chat    200   2887ms
-22:25:28 I · AI    问「怎么才能三天瘦十斤？」  → 三天瘦十斤（5公斤）不现实，也不安全，我不建议这样做，也没有健康的饮食方案能做到。 原因是：5公斤体重里大部分是水分和糖原，靠极端节食、断食或利尿手段掉下来的数字，几天内就会反弹；同时会带来肌肉流失、…
-22:25:28 I → DELETE /assistant/conversations/3559 200      6ms
-22:25:28 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3559,) | affected=2 | 1.4ms
-22:25:28 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3559,) | affected=1 | 0.8ms

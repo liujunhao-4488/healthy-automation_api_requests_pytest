@@ -1,5 +1,0 @@
-22:23:08 I → POST /assistant/chat    200   1381ms
-22:23:08 I · AI    问「我今天的蛋白质摄入够吗」  → 仅凭这一句话我没法判断——你今天吃了什么、吃了多少，我这边都没有信息，所以「够不够」暂时没有答案。 一般来说，成年人的蛋白质参考量大致是每公斤体重 0.8～1.0 克/天；有规律力量训练、减脂期或年纪…
-22:23:08 I → DELETE /assistant/conversations/3461 200      7ms
-22:23:08 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3461,) | affected=2 | 1.1ms
-22:23:08 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3461,) | affected=1 | 4.3ms

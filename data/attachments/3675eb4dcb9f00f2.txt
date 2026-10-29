@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_section[减肥期间能吃主食吗]  0.02s

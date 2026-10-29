@@ -1,0 +1,2 @@
+10:52:24 I → GET  /user/profile      200     11ms
+10:52:24 I → GET  /user/admin/list   401      3ms

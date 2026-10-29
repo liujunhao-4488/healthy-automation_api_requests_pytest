@@ -1,0 +1,2 @@
+10:53:13 I → GET  /user/profile      200      4ms
+10:53:13 I → PUT  /user/profile      200     13ms

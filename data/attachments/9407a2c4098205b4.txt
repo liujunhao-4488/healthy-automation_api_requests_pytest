@@ -1,5 +1,0 @@
-22:25:18 I → POST /assistant/chat    200   1954ms
-22:25:18 I · AI    问「我怀孕 5 个月了，能吃三文鱼刺身吗？」  → 不建议吃生三文鱼刺身。孕期（包括孕中期）免疫力相对下降，生鱼片可能带有李斯特菌、弓形虫或寄生虫，这些感染对胎儿风险较高，而加热熟透能基本消除这类风险。 想吃三文鱼的话，可以选彻底加热的做法，比如煎熟、…
-22:25:18 I → DELETE /assistant/conversations/3555 200      5ms
-22:25:18 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3555,) | affected=2 | 1.1ms
-22:25:18 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3555,) | affected=1 | 0.9ms

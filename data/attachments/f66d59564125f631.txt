@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_overlong_input_is_blocked       0.02s
-                                                                         [ 35%]
-test_cases/ai_assistant/test_assistant_意图标签.py 

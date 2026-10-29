@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_admin_api_works_for_real_admin[总览]  0.06s

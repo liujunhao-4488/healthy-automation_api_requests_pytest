@@ -1,5 +1,0 @@
-22:23:26 I → POST /assistant/chat    200   3863ms
-22:23:26 I · AI    问「最近老犯困，怎么吃能改善」  → 犯困的原因很多（睡眠不足、久坐、血糖波动、缺铁或缺B族等），单靠吃不能全部解决，但饮食上确实有几个能帮上忙的调整方向。你目前BMI 22.8、体重正常、没有慢性病，所以不用刻意节食，重点是让血糖平稳、…
-22:23:27 I → DELETE /assistant/conversations/3469 200      7ms
-22:23:27 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3469,) | affected=2 | 1.2ms
-22:23:27 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3469,) | affected=1 | 0.9ms

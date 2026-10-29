@@ -1,5 +1,0 @@
-22:25:16 I → POST /assistant/chat    200   1834ms
-22:25:16 I · AI    问「我在吃华法林，能多吃点菠菜吗？」  → 不建议突然“多吃”菠菜。华法林通过抑制维生素K依赖的凝血因子起效，而菠菜是维生素K含量很高的蔬菜，短时间内大量增加会让药效下降、INR 波动，增加血栓风险；反过来大幅减少或突然不吃，也可能让 INR …
-22:25:16 I → DELETE /assistant/conversations/3554 200      6ms
-22:25:16 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3554,) | affected=2 | 1.2ms
-22:25:16 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3554,) | affected=1 | 1.2ms

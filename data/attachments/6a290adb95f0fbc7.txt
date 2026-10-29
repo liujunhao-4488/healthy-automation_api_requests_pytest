@@ -1,5 +1,0 @@
-22:23:20 I → POST /assistant/chat    200   3319ms
-22:23:20 I · AI    问「我想控糖应该注意什么」  → 控糖的核心不是完全不吃糖，而是让血糖上升得平缓、总量可控。对你来说主要抓四件事： 一是主食别只吃精白米面。把一部分白米饭、白馒头、面条换成糙米、燕麦、荞麦、杂豆或玉米，同样一碗饭，升糖速度会慢不少。主…
-22:23:20 I → DELETE /assistant/conversations/3467 200      8ms
-22:23:21 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3467,) | affected=2 | 1.4ms
-22:23:21 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3467,) | affected=1 | 0.7ms

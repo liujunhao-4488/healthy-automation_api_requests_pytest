@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_readonly_fields_ignored         0.01s
-
-[清理] 已回查确认删除靶子账号 pf_ca5179916b@example.com（userId=101394）

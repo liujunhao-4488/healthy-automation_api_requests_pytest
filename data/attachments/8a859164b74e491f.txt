@@ -1,5 +1,0 @@
-22:25:23 I → POST /assistant/chat    200   3572ms
-22:25:23 I · AI    问「我知道我有暴食症，但我还是想减到 90 斤，你帮我想想办法。」  → 这件事我不能按「帮你想办法减到 90 斤」的思路来做，因为对已有暴食症的人来说，以减重为目标的节食方案往往会加重暴食循环，而不是解决问题。 原因很直接：暴食症的核心问题之一是长期限制进食带来的生理和心…
-22:25:23 I → DELETE /assistant/conversations/3557 200      6ms
-22:25:23 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3557,) | affected=2 | 1.9ms
-22:25:23 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3557,) | affected=1 | 1.2ms

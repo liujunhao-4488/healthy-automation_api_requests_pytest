@@ -1,8 +1,0 @@
-22:24:50 I → POST /assistant/chat    200   2030ms
-22:24:50 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况，单从饮食营养角度来说，海虾是可以吃的。 海虾是很好的优质蛋白来源，脂肪低、热量不高，还含有硒、碘、维生素B12等营养素，清蒸、白灼、少油快…
-22:24:51 I → POST /assistant/chat    200   1589ms
-22:24:51 I · AI    问「那鸡胸肉呢」       → 鸡胸肉可以吃，而且它是很典型的低脂高蛋白食材，比海虾更适合日常控脂、增肌时作为主要蛋白来源。 它的脂肪含量很低，蛋白质密度高，饱腹感也不错，水煮、煎、烤、凉拌都行；想口感不柴，可以提前用少量盐、黑胡椒…
-22:24:51 I → GET  /assistant/conversations/3536/messages 200      4ms
-22:24:51 I → DELETE /assistant/conversations/3536 200      6ms
-22:24:51 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3536,) | affected=4 | 1.4ms
-22:24:51 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3536,) | affected=1 | 0.9ms

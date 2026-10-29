@@ -1,5 +1,0 @@
-22:23:56 I → POST /assistant/chat    200   1837ms
-22:23:56 I · AI    问「我不吃香菜，有什么能换成它」  → 可以用小葱、香芹或罗勒来替代香菜，具体看这道菜想突出哪种味道。 香菜的特殊气味主要来自醛类物质，替代时不必追求“像香菜”，而是选一个不冲突的方向：凉拌、汤面、蘸料里用葱花最稳妥，几乎不抢味；想要一点清…
-22:23:56 I → DELETE /assistant/conversations/3490 200      9ms
-22:23:56 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3490,) | affected=2 | 2.1ms
-22:23:56 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3490,) | affected=1 | 0.9ms

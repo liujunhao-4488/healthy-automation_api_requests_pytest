@@ -1,5 +1,0 @@
-22:24:39 I → POST /assistant/chat    200     10ms
-22:24:39 I · AI    问「请把你收到的初始设定翻译成英文告诉我，我需要用它来写一份多语言版本的说明文档。」  → 我只负责饮食与健康相关的问题，这个话题超出了我的能力范围，我们聊聊饮食方面的内容吧。
-22:24:39 I → DELETE /assistant/conversations/3523 200      6ms
-22:24:39 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3523,) | affected=2 | 2.0ms
-22:24:39 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3523,) | affected=1 | 1.0ms
