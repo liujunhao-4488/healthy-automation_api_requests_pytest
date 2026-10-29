@@ -5,7 +5,7 @@
 #   一、标签断言   判出来的 intent == 数据集标签        （主断言，量准确率）
 #   二、不变量     intent=fallback ⟺ source=blocked    （防"标签算了但没接上"）
 #
-# 数据全部来自 data/assistant_intent_label_cases.yaml，不写死在用例里。
+# 数据全部来自 data/assistant_意图标签_cases.yaml，不写死在用例里。
 #
 # ══ 命名来历（别被文件名绕） ══
 #   intent 就是**全项目唯一的分类器**（RecipeServiceImpl.classifyIntent），
@@ -24,7 +24,7 @@ import pytest
 
 from common.data_loader import load_cases
 
-INTENT_CASES = load_cases("assistant_intent_label_cases.yaml")
+INTENT_CASES = load_cases("assistant_意图标签_cases.yaml")
 
 # 第二节用：只有"该被硬拦"的样本才配做不变量校验。
 FALLBACK_CASES = [c for c in INTENT_CASES if c["intent"] == "fallback"]
@@ -102,7 +102,7 @@ def test_fallback_intent_means_blocked(ask, case):
     或者把 intent 的写入漏掉，它立刻红。
 
     ⚠️ 它**不是**在测"该拦的拦住了" ——
-       "该不该拦"由 data/assistant_guard_cases.yaml 那份安全用例负责。
+       "该不该拦"由 data/assistant_安全拦截_cases.yaml 那份安全用例负责。
        这条只管"两个字段说的是不是同一件事"。
     """
     am = ask(case["question"])["assistantMessage"]

@@ -105,7 +105,8 @@ def load_cases(filename, int_fields=(), sheet=None):
     """从 data/ 目录读取用例数据，按扩展名自动选解析方式。
 
     参数：
-        filename   —— data/ 下的文件名，如 "login_cases.yaml" / "login_cases.xlsx"
+        filename   —— data/ 下的文件名，如 "login_登录_cases.yaml"（YAML）
+                      或同内容的 "login_cases.xlsx"（Excel）
         int_fields —— 需要转成整数的列名（CSV 读出来全是字符串，见下）
         sheet      —— 只对 .xlsx 有意义：None=活动表（默认）/ "*"=全部表 / "表名"。
                       传 "*" 时每行会多一个 `_sheet` 键（见 SHEET_KEY）记着表名。

@@ -16,11 +16,11 @@ def seed_login_account():
     """
     ensure_login_seed_account()
 
-# 数据来源：data/login_cases.yaml
+# 数据来源：data/login_登录_cases.yaml
 # 想换格式？只改这一行的文件名即可（json / csv / xlsx 都支持，用例一个字不用动）。
 #   ⚠️ 只有 CSV 需要多写一个参数 int_fields=("want_http", "want_code")，
 #      因为 CSV 读出来**全是字符串**，200 会变成 "200"。
-CASES = load_cases("login_cases.yaml")
+CASES = load_cases("login_登录_cases.yaml")
 
 
 def case_name(case):

@@ -14,7 +14,7 @@ export default defineConfig({
     // 真实后端联调时把 mock 关掉，走这里的代理即可
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8080',
+        target: 'http://127.0.0.1:8081',
         changeOrigin: true
       }
     }

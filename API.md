@@ -6,9 +6,9 @@
 
 | 项目 | 说明 |
 | --- | --- |
-| 服务地址 | `http://127.0.0.1:8080` |
+| 服务地址 | `http://127.0.0.1:8081` |
 | Context Path | `/api` |
-| 完整接口前缀 | `http://127.0.0.1:8080/api` |
+| 完整接口前缀 | `http://127.0.0.1:8081/api` |
 | 数据格式 | `application/json;charset=UTF-8` |
 | 认证方式 | JWT，请求头 `Authorization: Bearer <token>` |
 | 时间格式 | `yyyy-MM-dd HH:mm:ss`，日期一般使用 `yyyy-MM-dd` |

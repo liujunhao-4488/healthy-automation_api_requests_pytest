@@ -97,7 +97,7 @@
 | `api/__init__.py`                                   | 挂载 `api.assistant`                           |
 | `../test_cases/ai_assistant/conftest.py`            | **新建** —— `ask` / `conversation` 夹具（跑完自动删会话） |
 | `../test_cases/ai_assistant/test_assistant_结构鉴权.py` | **新建** —— 14 条用例                             |
-| `data/assistant_intent_cases.yaml`                  | **新建** —— 意图用例数据                             |
+| `data/assistant_意图识别_cases.yaml`                  | **新建** —— 意图用例数据                             |
 | `common/logger.py`                                  | 新增 `log_qa()` —— 把 "问什么答什么" 记成一行             |
 
 **用例分层**：
@@ -634,7 +634,7 @@
 
 **建议**：迭代 2 做意图路由时，顺便把 `intent` 回传出来（或在 `saveAssistantReply` 旁打一行日志）。
 
-那一天，`data/assistant_intent_cases.yaml` 里已经标好的 `intent` 标签就能直接用来算**准确率**
+那一天，`data/assistant_意图识别_cases.yaml` 里已经标好的 `intent` 标签就能直接用来算**准确率**
 
 （迭代 4 要的 "先量化误判率"）。
 
@@ -956,7 +956,7 @@
 
 ### 7.4 实测
 
-- 新增 `data/assistant_guard_cases.yaml`（24 条：9 该拦 + 14 该放行 + 1 超长）  
+- 新增 `data/assistant_安全拦截_cases.yaml`（24 条：9 该拦 + 14 该放行 + 1 超长）  
   \+ `test_cases/ai_assistant/test_assistant_安全拦截.py`
 - **第一版 23/24** —— 唯一那条红是「我妈妈的饮食建议是少吃油」被判辱骂（就是上表②那个坑），修完 **24/24**
 - 全量：**122 条 → 108 passed / 5 failed / 8 skipped / 1 xfailed**
@@ -1261,7 +1261,7 @@ DeepSeek 现在原生支持图片输入了。但这一条引入的是**一整条
 | 文件 | 改了什么 |
 | --- | --- |
 | `RecipeServiceImpl.java` | 兜底出口的值 `diet_qa` → `other`（**空输入**与**末尾兜底**两处）+ 相关注释 |
-| `data/assistant_intent_cases.yaml` | **6 条** `intent: diet_qa` → `other`（4 条"饮食-*" + 2 条"难点-*"）；头部标签说明 + 新增改名段落 |
+| `data/assistant_意图识别_cases.yaml` | **6 条** `intent: diet_qa` → `other`（4 条"饮食-*" + 2 条"难点-*"）；头部标签说明 + 新增改名段落 |
 | `test_cases/ai_assistant/test_assistant_意图识别.py` | 一处注释 |
 | `docs/AI助手-判断与拦截机制.md` | 四类意图表 + 相关文字；新增 4.4 节讲 `other` 的身份 |
 
@@ -1363,7 +1363,7 @@ route 跑稳、方向确认之后，再单独把 `intent` 退休（那是一次�
 
 **新增的第二个断言**（不变量）：`route=fallback` ⟺ `source=blocked`。  
 这两个值在实现上**是同一个判断的两面**（`classifyRoute` 里就是复用它），所以它们不一致，一定是代码被改坏了。
-它管的不是"该不该拦"（那是 `assistant_guard_cases.yaml` 的职责），只管**两个字段说的是不是同一件事**。
+它管的不是"该不该拦"（那是 `assistant_安全拦截_cases.yaml` 的职责），只管**两个字段说的是不是同一件事**。
 
 ### 11.5 ⚠️ 仍然只算不派
 
@@ -1397,7 +1397,7 @@ route 跑稳、方向确认之后，再单独把 `intent` 退休（那是一次�
 补上硬拦模式后它会变 XPASS(strict) 报红，提醒摘标记。
 
 > ⚠️ 待拍板：**要不要给硬拦表补一条"求治愈"模式**。这属安全闸门改动，可能影响
-> `assistant_guard_cases.yaml` 的 24 条，是**独立的一次改动**，不在本轮做。
+> `assistant_安全拦截_cases.yaml` 的 24 条，是**独立的一次改动**，不在本轮做。
 
 ### 11.8 一件如实记录、不是 bug 的现象
 
@@ -1453,10 +1453,10 @@ route 跑稳、方向确认之后，再单独把 `intent` 退休（那是一次�
 
 | 原来 | 现在 |
 | --- | --- |
-| `test_assistant_路由.py` + `assistant_route_cases.yaml` | **改名** `test_assistant_意图标签.py` + `assistant_intent_label_cases.yaml`（断标签准确率） |
+| `test_assistant_路由.py` + `assistant_route_cases.yaml` | **改名** `test_assistant_意图标签.py` + `assistant_意图标签_cases.yaml`（断标签准确率） |
 | `test_assistant_意图识别.py` 第四节（断旧四类标签） | **退休**；标签断言并入上面那份 |
 | `test_assistant_意图识别.py` 其余四节 | 保留，定位明确为"**行为观测**"（断模型 / 硬拦的行为，不碰标签） |
-| `assistant_intent_cases.yaml` | 删掉 `intent:` 机器标签字段（已无消费方）；只保留有行为观测点的 10 条 |
+| `assistant_意图识别_cases.yaml` | 删掉 `intent:` 机器标签字段（已无消费方）；只保留有行为观测点的 10 条 |
 
 原第四节里那 9 条"只挂标签、没有行为观测点"的样本，**逐条真打后端**后补进标签数据集 ——
 期望值来自实测，不照抄旧标签：
@@ -2228,7 +2228,7 @@ golden set 里正确文档经常排在 2~4 位，被 `topK=3` 截断；更严重
   - 结果新增 `docType`（`guideline` / `summary` / `article`），`sourceType` 语义不变，Java 侧多一个字段无影响。
 - `algorithm/kb_data/query_aliases.json`（新增）：12 组疾病实体、9 组内容同义词、2 组意图词。
 - `algorithm/ingest_authority.py`：入库时写入 `docType`；已有 JSON 由标题约定兜底，不必立刻重跑。
-- `automation_api_requests_pytest/data/kb_golden_cases.yaml`：6 条 `known_defect` 全部摘标（strict xfail 下修好会 XPASS），并将「减肥主食」「糖尿病三餐分配」两条从只判文档级加强为**同时判章节级**。
+- `automation_api_requests_pytest/data/kb_检索金标_cases.yaml`：6 条 `known_defect` 全部摘标（strict xfail 下修好会 XPASS），并将「减肥主食」「糖尿病三餐分配」两条从只判文档级加强为**同时判章节级**。
 
 ### 19.4 实测
 

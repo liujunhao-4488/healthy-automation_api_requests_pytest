@@ -32,7 +32,7 @@ tools/
 | 脚本 | 干什么 | 产物 |
 |---|---|---|
 | `run_tests.py` + `eval_record.py` | pytest 跑的时候把每次问答的真实观测留痕（旁路，不影响断言） | `eval/eval_results.json` |
-| `eval/eval_runner.py` | 读留痕 JSON，离线算混淆矩阵 / 每类 P·R·F1 / 漏拦·误拦 / 分桶攻破率 | 控制台 + `--md` 指定的报告 |
+| `eval/eval_runner.py` | 读留痕 JSON，离线算混淆矩阵 / 每类 P·R·F1 / 漏拦·误拦 / 分桶攻破率 | 控制台 + `--md` 指定的报告 + **Allure 附件** |
 | `eval/collect_judge_samples.py` | 采「问题 + 检索资料 + 回答」样本给人工盲标，**不含判断** | 项目根 `eval/judge_calibration/` |
 | `eval/judge_faithfulness.py` | 用 judge prompt 逐条判 faithful / hallucinated，和人工标签算一致率 | 同上目录 |
 
@@ -43,6 +43,12 @@ tools/
 ```
 
 ⚠️ `eval_results.json` 每次覆盖，且只认串行跑（并行 worker 之间不合并）。
+
+**指标也会进 Allure 报告**：`test_cases/ai_assistant/test_assistant_指标汇总.py` 是本模块的
+最后一条用例（排序由 `conftest.py` 的 `_move_summary_last` 保证），它调本目录 `eval_runner`
+的 `compute_metrics()` + `render_allure()`，把「总览」「明细」两张附件贴到当前用例上。
+口径只有一份：命令行导出 Markdown 和 Allure 附件走的是同一套计算函数。
+它在 `-n` 并行下只看到自己 worker 的观测，要完整数字请串行。
 
 ## maintenance/ · 维护
 

@@ -1,4 +1,4 @@
-# data/health_info_cases.yaml
+# data/health_健康档案_cases.yaml
 # 【数据驱动】POST /health/info 的校验失败场景。
 #
 # 字段说明（用例按这套读）：

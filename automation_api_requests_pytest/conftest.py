@@ -1108,6 +1108,31 @@ def _has_allure_label(item, label_type):
                for mark in item.iter_markers(name="allure_label"))
 
 
+# ==================== 指标汇总用例必须排在最后 ====================
+# test_assistant_指标汇总.py 要把本轮所有 AI 用例的观测汇总成 Allure 附件 ——
+# 跑到一半就汇总，等于报半个分母。它自己的业务断言为零，所以**晚跑没有副作用**。
+#
+# 为什么在这里挪、而不在用例里用名字排序（test_zz_…）：
+#   文件名/函数名排序是隐式约定，谁重命名一下就静默失效；这里是一次显式的、
+#   有注释的动作。只动**同一模块内**的顺序：跨模块挪会打乱报告里按目录分组的结构。
+#
+# ⚠️ 只在"它确实被收集到了"时才算（-k/-m 过滤后可能没有它）。
+_SUMMARY_FILE = "test_assistant_指标汇总.py"
+
+
+def _move_summary_last(items):
+    """把汇总用例挪到它所在模块的末尾；其余用例的相对顺序保持不变。"""
+    summary = [it for it in items if it.nodeid.split("::")[0].endswith(_SUMMARY_FILE)]
+    if not summary:
+        return items
+    rest = [it for it in items if it not in summary]
+
+    # 放到"该文件本该出现的位置"的末端：即最后一组同目录模块之后。
+    # 实现上简单可靠的做法是整体追加到末尾 —— 汇总用例本身不涉及任何模块的统计，
+    # 放在整场最后（含健康档案等非 AI 模块之后）也不影响正确性。
+    return rest + summary
+
+
 @pytest.hookimpl(trylast=True)
 def pytest_collection_modifyitems(items):
     """收集完、开跑前：打 Allure 层级标签 + 按 AUTOTEST_REQUIRE_DB 跳过 DB 用例。
@@ -1123,6 +1148,9 @@ def pytest_collection_modifyitems(items):
 
     trylast：必须等 health/ai_assistant 的 conftest 先把 requires_db 标上，
     这里才能按标记加 skip。否则顺序反过来会"一条都没跳过"。
+
+    ⚠️ 原地排序（items[:] = ...）而不是 return：pytest 对
+       pytest_collection_modifyitems 的返回值是**忽略**的，返回新列表等于什么都没做。
     """
     if allure_helper.available():
         for item in items:
@@ -1134,3 +1162,4 @@ def pytest_collection_modifyitems(items):
                     item.add_marker(pytest.mark.allure_label(value, label_type=label_type))
 
     _apply_requires_db_skip(items)
+    items[:] = _move_summary_last(items)

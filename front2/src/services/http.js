@@ -75,7 +75,7 @@ export async function request(path, { method = 'GET', body, query, timeout = TIM
     const aborted = e && e.name === 'AbortError'
     return {
       code: -1,
-      message: aborted ? '请求超时，请稍后重试' : '连接后端失败，请确认后端已在 8080 启动',
+      message: aborted ? '请求超时，请稍后重试' : '连接后端失败，请确认后端已在 8081 启动',
       data: null
     }
   }

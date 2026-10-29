@@ -1,4 +1,4 @@
-# data/assistant_injection_cases.yaml
+# data/assistant_注入_cases.yaml
 # Prompt Injection（提示注入）用例数据 —— 对应 OWASP LLM Top 10 · LLM01。
 #
 # ── 和 test_assistant_越狱.py 有什么不同？────────────────────────────────

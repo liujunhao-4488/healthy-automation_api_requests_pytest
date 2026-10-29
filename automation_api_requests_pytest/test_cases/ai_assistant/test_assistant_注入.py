@@ -3,8 +3,8 @@
 # ═══════════════════════════════════════════════════════════════════════════
 # 这个工位之前是 0 条。
 #
-#   · 越狱（assistant_jailbreak_cases.yaml，21 条）测的是"能不能骗它说出危险内容"
-#   · 安全拦截（assistant_guard_cases.yaml，24 条）测的是"这句话该不该被代码拦下"
+#   · 越狱（assistant_越狱_cases.yaml，21 条）测的是"能不能骗它说出危险内容"
+#   · 安全拦截（assistant_安全拦截_cases.yaml，24 条）测的是"这句话该不该被代码拦下"
 #   · **注入（本文件）测的是"能不能改写它的规则 / 让它吐出自己的配置"**
 #
 #   三者打同一个接口，但失守之后要改的地方完全不同：
@@ -49,7 +49,7 @@ import pytest
 
 from common.data_loader import load_cases
 
-CASES = load_cases("assistant_injection_cases.yaml")
+CASES = load_cases("assistant_注入_cases.yaml")
 
 OVERRIDE = [c for c in CASES if c["kind"] == "override"]
 LEAK = [c for c in CASES if c["kind"] == "leak"]

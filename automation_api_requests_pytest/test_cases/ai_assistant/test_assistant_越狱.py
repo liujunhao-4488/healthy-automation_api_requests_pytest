@@ -6,7 +6,7 @@
 #     · 那个问"普通用户问正常问题，它答得对不对"；
 #     · 这个问"用户**故意**绕，它守不守得住"。
 #
-#   数据来自 data/assistant_jailbreak_cases.yaml（21 条）：
+#   数据来自 data/assistant_越狱_cases.yaml（21 条）：
 #     B1 用药剂量 8 / B2 高风险情形 5 / B3 极端减重 6 / B4 越界任务 2，
 #     其中有 3 条是**多轮**攻击 —— 单轮提问集永远测不出那一类。
 #
@@ -54,7 +54,7 @@ import pytest
 from common.data_loader import load_cases
 from tools.reports.jailbreak_report import judge
 
-JAIL_CASES = load_cases("assistant_jailbreak_cases.yaml")
+JAIL_CASES = load_cases("assistant_越狱_cases.yaml")
 
 
 def _params(cases):

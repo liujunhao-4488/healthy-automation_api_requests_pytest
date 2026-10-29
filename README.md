@@ -17,7 +17,7 @@
              │  /api
              ▼
 ┌──────────────────────────┐        ┌─────────────────────┐
-│  后端 Spring Boot :8080  │───────▶│  MySQL :3306         │
+│  后端 Spring Boot :8081  │───────▶│  MySQL :3306         │
 │  /api                    │        │  health_diet         │
 │  JWT / 业务 / 数据组装    │        │  health_diet_test    │
 └────────────┬─────────────┘        └─────────────────────┘
@@ -31,7 +31,7 @@
              │  接口自动化（346 条）
 ┌────────────┴─────────────┐
 │  automation_api_requests │  pytest + requests + Allure
-│  _pytest                 │  依赖 MySQL / 8080 / 5000
+│  _pytest                 │  依赖 MySQL / 8081 / 5000
 └──────────────────────────┘
 ```
 
@@ -46,7 +46,7 @@
 | `frontend/` | Web 前端（Vue 3 + Element Plus + ECharts + Pinia），端口 5173 |
 | `front2/` | 另一版 Web 前端（Vue 3 + Vite 5），端口 5174 |
 | `app/` | uni-app 移动端（“智能饮食推荐”），用 HBuilderX 运行 |
-| `backend/` | Spring Boot 2.7 / Java 21 + MyBatis-Plus + Spring Security(JWT)，端口 8080，前缀 `/api` |
+| `backend/` | Spring Boot 2.7 / Java 21 + MyBatis-Plus + Spring Security(JWT)，端口 8081，前缀 `/api` |
 | `algorithm/` | Flask 算法服务：食谱推荐 + RAG 知识库检索，端口 5000 |
 | `database/` | 开发库全量 dump、测试库表结构 / 种子 / 一键重建脚本 |
 | `automation_api_requests_pytest/` | 接口自动化：346 条 pytest 用例、接口封装、契约、Allure、评测工具 |
@@ -138,7 +138,7 @@ python app.py
 > ⚠️ 跑自动化时算法服务也要连测试库：`set DB_NAME=health_diet_test`
 > （它从 `DB_USERNAME / DB_PASSWORD / DB_NAME` 读连接参数）。
 
-### 5.3 后端（Spring Boot，8080）
+### 5.3 后端（Spring Boot，8081）
 
 ```bash
 cd backend
@@ -148,7 +148,7 @@ set DEEPSEEK_API_KEY=你的key       # AI 助手需要；没有会退化为本�
 start-backend.bat
 ```
 
-- 地址：`http://127.0.0.1:8080/api`
+- 地址：`http://127.0.0.1:8081/api`
 - `start-backend.bat` 会清掉宿主注入的 `SERVER__PORT`，并从 `HKCU\Environment` 读取 `DEEPSEEK_API_KEY`，避免环境变量不生效。
 - 没有 `DEEPSEEK_API_KEY` 时，AI 助手仍能启动，但会返回固定错误文案（不调模型）；`p1` 那批依赖真实模型的用例会被 CI 排除。
 
@@ -163,7 +163,7 @@ npm run dev
 或双击 `frontend/start-frontend.bat`。
 
 - 地址：`http://localhost:5173`
-- Vite 已把 `/api` 代理到 `http://localhost:8080`，前端不需要单独配跨域。
+- Vite 已把 `/api` 代理到 `http://localhost:8081`，前端不需要单独配跨域。
 
 `front2/` 是另一版前端（端口 5174）：
 
@@ -178,7 +178,7 @@ npm run dev
 ### 5.5 启动顺序
 
 ```
-MySQL(3306) → 算法服务(5000) → 后端(8080) → 前端(5173) → 自动化测试
+MySQL(3306) → 算法服务(5000) → 后端(8081) → 前端(5173) → 自动化测试
 ```
 
 ---
@@ -214,7 +214,7 @@ cd automation_api_requests_pytest
 # 2) 后端必须连测试库
 set DB_NAME=health_diet_test
 
-# 3) 确认 8080 / 5000 / 3306 都在
+# 3) 确认 8081 / 5000 / 3306 都在
 ```
 
 环境预检（MySQL → 后端 → 算法服务）缺一个就打印逐项 ✔/✘ 并中止，**不会产生几百条失败**。
@@ -288,7 +288,7 @@ MySQL 8.0（service 容器）→ 编译后端 → 启动 Flask → 启动后端 
 | `DB_USERNAME` | 算法服务数据库账号（注意不是 `DB_USER`） | `root` |
 | `DEEPSEEK_API_KEY` | AI 助手模型密钥 | 空（AI 助手返回固定错误文案） |
 | `DEEPSEEK_BASE_URL` | 模型服务地址 | `https://api.deepseek.com` |
-| `AUTOTEST_BASE_URL` | 自动化打的后端地址 | `http://127.0.0.1:8080/api` |
+| `AUTOTEST_BASE_URL` | 自动化打的后端地址 | `http://127.0.0.1:8081/api` |
 | `AUTOTEST_KB_BASE_URL` | 自动化打的算法服务地址 | `http://127.0.0.1:5000` |
 | `AUTOTEST_DB_*` | 自动化直连测试库参数 | 与 `DB_*` 对应，库名 `health_diet_test` |
 | `AUTOTEST_REQUIRE_DB` | `0` 时跳过直接访问 MySQL 的用例 | `1` |
@@ -319,7 +319,7 @@ MySQL 8.0（service 容器）→ 编译后端 → 启动 Flask → 启动后端 
 按启动顺序检查：
 
 1. MySQL 3306 是否在跑；
-2. 后端 8080 是否启动，且 `DB_NAME=health_diet_test`；
+2. 后端 8081 是否启动，且 `DB_NAME=health_diet_test`；
 3. 算法服务 5000 是否启动，`GET /api/kb/stats` 是否 200。
 
 预检会逐项打印 ✔/✘ 和启动命令，不会让你猜。
@@ -357,6 +357,6 @@ database\rebuild_test_db.bat
 
 ### 6. 前端请求 404 / 跨域
 
-- 确认后端在 8080；
+- 确认后端在 8081；
 - `frontend` 的 Vite 已代理 `/api`；
-- `front2` 使用 5174，代理配置同样指向 8080。
+- `front2` 使用 5174，代理配置同样指向 8081。

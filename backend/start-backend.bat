@@ -6,7 +6,7 @@ set SERVER__PORT=
 
 echo ==========================================================
 echo   health-diet backend
-echo   http://127.0.0.1:8080/api
+echo   http://127.0.0.1:8081/api
 echo   logs are printed below; close this window to stop
 echo ==========================================================
 echo.
@@ -27,7 +27,7 @@ if defined DEEPSEEK_API_KEY (
 )
 echo.
 
-java -jar target\health-diet-backend-1.0-SNAPSHOT.jar --server.port=8080
+java -jar target\health-diet-backend-1.0-SNAPSHOT.jar --server.port=8081
 
 echo.
 echo [backend stopped]

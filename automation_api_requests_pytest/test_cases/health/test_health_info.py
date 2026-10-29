@@ -13,8 +13,8 @@ import pytest
 from common import db
 from common.data_loader import load_cases
 
-# 数据来源：data/health_info_cases.yaml（13 类校验失败场景）
-CASES = load_cases("health_info_cases.yaml")
+# 数据来源：data/health_健康档案_cases.yaml（13 类校验失败场景）
+CASES = load_cases("health_健康档案_cases.yaml")
 
 # 一份合法的基础档案，供成功用例复用。
 VALID_INFO = {"age": 30, "gender": "male", "height": 175.0, "weight": 70.0}

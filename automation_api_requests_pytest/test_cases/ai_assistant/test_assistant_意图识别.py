@@ -20,14 +20,14 @@
 #      fallback / chat），标签断言统一并入 test_assistant_意图标签.py ——
 #      一个观测点只留一份断言，不再两处并存。
 #
-# 数据全部来自 data/assistant_intent_cases.yaml，不写死在用例里。
+# 数据全部来自 data/assistant_意图识别_cases.yaml，不写死在用例里。
 
 import pytest
 
 from common.data_loader import load_cases
 from common.logger import log, pad
 
-INTENT_CASES = load_cases("assistant_intent_cases.yaml")
+INTENT_CASES = load_cases("assistant_意图识别_cases.yaml")
 
 # 按"这条样本的观测点是什么"把数据集切开 —— 切法直接对应文件头那段说明。
 # 四个集合**互不重叠**：一条样本只归一个观测点，免得同一个缺陷被算两遍、
@@ -51,7 +51,7 @@ OOS_MENTION_CASES = [c for c in OOS_SENTINEL_CASES if c["oos_sentinel"] == "ment
 #    的那些条）**已删除**。它存在的唯一理由是"给第四节断意图提供样本"；
 #    第四节退休后这个集合就没有消费方了，留着只是一段没人读的死代码。
 #    原来落在这个集合里的 9 条（替代-还能吃什么 / 寒暄×2 / 饮食×4 / 难点×2）已挪去
-#    assistant_intent_label_cases.yaml，由 test_assistant_意图标签.py 断标签 ——
+#    assistant_意图标签_cases.yaml，由 test_assistant_意图标签.py 断标签 ——
 #    一个观测点只留一份断言。
 
 # "断言从不发生"的那类用例，同一个问题要重复问几次。

@@ -53,7 +53,7 @@ from api.kb_api import KbApi
 from common.data_loader import load_cases
 
 
-CASES = load_cases("rag_generation_cases.yaml")
+CASES = load_cases("rag_生成评测_cases.yaml")
 
 
 # ══ 工具：数值与单位的归一化 ═══════════════════════════════════════

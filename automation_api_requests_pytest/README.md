@@ -142,7 +142,8 @@ automation_api_requests_pytest/
 │   │   ├── test_assistant_越权.py                5
 │   │   ├── test_assistant_通用问题不追问档案.py   3
 │   │   ├── test_assistant_RAG召回.py             80
-│   │   └── test_assistant_RAG生成.py             9
+│   │   ├── test_assistant_RAG生成.py             9
+│   │   └── test_assistant_指标汇总.py            1（把本轮指标贴进 Allure，必排在最后）
 │   ├── assistant/       ← /assistant/* 契约（只验形状）              7 条
 │   │   └── test_assistant_契约.py                7
 │   ├── auth/            ← /auth/*                                  ★ 已覆盖（19 条）
@@ -189,9 +190,14 @@ automation_api_requests_pytest/
 └── data/                ← 外部数据文件（同一份 6 行登录数据的 4 个孪生版本）
     ├── login_cases.json
     ├── login_cases.csv
-    ├── login_cases.yaml
+    ├── login_登录_cases.yaml     ← 命名规范：{模块}_{中文说明}_cases.yaml
     └── login_cases.xlsx
 ```
+
+> **数据文件命名**：`.`yaml` 用例数据统一按 `{模块}_{中文说明}_cases.yaml` 命名
+> （如 `assistant_意图识别_cases.yaml`、`kb_检索金标_cases.yaml`），一眼能看出测什么；
+> 同一份登录数据另有 3 个英文名的孪生版本（`.json` / `.csv` / `.xlsx`），
+> 专供 `data_loader` 的四种格式读取演示，未改名。
 
 > **用例 vs 报告**：`test_cases/` 产出红绿，用来守门；`tools/` 产出数字，用来做决策。
 > 混在一起的典型错法是把"耗时不超过 3 秒"写成 assert —— 它会随机变红。

@@ -21,7 +21,8 @@ def _env_int(name, default):
 
 
 # 后端地址。注意 API.md 里说前缀是 /api，所以 BASE_URL 已经带上了。
-BASE_URL = _env("AUTOTEST_BASE_URL", "http://127.0.0.1:8080/api")
+# 2026-10-29 后端端口 8080 → 8081（8080 被别的程序占用），默认值同步改。
+BASE_URL = _env("AUTOTEST_BASE_URL", "http://127.0.0.1:8081/api")
 
 # 算法服务（Flask）地址。
 # 它和 Java 后端是**两个进程、两个端口**，而且没有 /api 之外的统一前缀约定：
@@ -48,7 +49,7 @@ TEST_USER = {
 #   如果补建也用同一个名字，开发库空库自动补建时就会“碰巧对上”，检查失效。
 TEST_USERNAME = _env("AUTOTEST_USERNAME", "autotest_primary_auto")
 
-# 登录/注册数据驱动用例依赖的"库里已存在账号"（data/login_cases.yaml）。
+# 登录/注册数据驱动用例依赖的"库里已存在账号"（data/login_登录_cases.yaml）。
 # 它由 database/seed_test.sql 创建；如果没跑种子，conftest 也会自动补建。
 SEED_LOGIN_USER = {
     "username": "autotest_login",

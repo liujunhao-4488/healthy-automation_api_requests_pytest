@@ -1,4 +1,4 @@
-# data/assistant_guard_cases.yaml
+# data/assistant_安全拦截_cases.yaml
 # 输入安全拦截（代码硬拦）用例数据。
 #
 # 每条 = 一句用户输入 + **期望被拦成什么类型**。

@@ -20,8 +20,8 @@ from config.config import TEST_USER
 # 本模块会直接查库对账/清理；数据库不可用时由根 conftest 跳过。
 pytestmark = pytest.mark.requires_db
 
-# 数据来源：data/user_profile_cases.yaml（6 类失败场景）
-CASES = load_cases("user_profile_cases.yaml")
+# 数据来源：data/user_用户资料_cases.yaml（6 类失败场景）
+CASES = load_cases("user_用户资料_cases.yaml")
 
 
 def case_name(case):

@@ -21,7 +21,10 @@ mybatis-plus:
     map-underscore-to-camel-case: true
 
 server:
-  port: 8080
+  # 2026-10-29 端口从 8080 改为 8081（8080 被其他程序占用）。
+  # 前端两个项目的 vite 代理、backend/start-backend.bat、自动化测试 config.py
+  # 都指向这里，改端口时这几处要一起改，否则前端会 502 / 测试连不上。
+  port: 8081
   servlet:
 
     address: 0.0.0.0

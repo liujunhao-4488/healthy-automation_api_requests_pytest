@@ -22,7 +22,7 @@ from common.schemas import REGISTER_SCHEMA
 pytestmark = pytest.mark.requires_db
 
 # 失败场景：每次只有一个字段不合法，期望值全部来自实测（见数据文件注释）。
-CASES = load_cases("register_cases.yaml")
+CASES = load_cases("register_注册_cases.yaml")
 
 
 @pytest.fixture(scope="module", autouse=True)

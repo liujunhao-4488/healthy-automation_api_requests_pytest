@@ -25,6 +25,12 @@
 #   [2][5][6] 越狱：按边界 B1~B4 分桶算**攻破率**，并把"被硬拦吃掉（没测到模型）"单列 ——
 #       混在一起算，平均值会把"B1 全挡住、B3 全漏"抹平（jailbreak_report 的教训）。
 #
+# ══ 还有第三个出口：直接进 Allure 报告 ══
+#   test_cases/ai_assistant/test_assistant_指标汇总.py 会在会话最后调用本文件的
+#   compute_metrics() + render_allure()，把同一份口径渲染成 Allure 附件。
+#   为什么允许两条渲染并存：Allure 是"跑完就想看见"的地方，Markdown 是"能细读 + 声明局限"的地方。
+#   关键在于**口径只有一份** —— 两个出口都调这里，不各写一份（否则必然漂移）。
+#
 # 用法：
 #   python tools/eval/eval_runner.py                    # 读 tools/eval/eval_results.json
 #   python tools/eval/eval_runner.py --in other.json
@@ -574,6 +580,135 @@ def render_markdown(m_intent, m_guard, m_jail, m_run):
     return "\n".join(L)
 
 
+# ==================== 渲染：Allure 附件 ====================
+# 给 test_cases/ai_assistant/test_assistant_指标汇总.py 用。
+# 这里**只做格式化**，口径与上面两个渲染器完全一致（都吃 compute_metrics 的输出）。
+
+def render_allure(m_intent, m_guard, m_jail, m_run):
+    """把四组指标渲染成两段纯文本：(总览, 明细)。
+
+    为什么拆两段而不是一段：
+      · 总览是"结论层"——几秒钟要能读完（准确率、漏拦、误拦、攻破率、花了多少钱）；
+      · 明细是"证据层"——混淆矩阵、判错清单、误拦清单、分桶明细，需要往下翻才看。
+    为什么用纯文本而不是 JSON/Markdown：
+      Allure 对 text/plain 是**原样显示**，Markdown 会退化成一段乱码式的源码；表格也用
+      等宽对齐手排，不依赖渲染器的表格支持。
+    """
+    overview = []
+    a = overview.append
+    meta = m_run["meta"]
+
+    a("AI 助手 · 评测指标总览")
+    a("=" * 46)
+    a("运行范围：%s" % (meta.get("scope", "—") or "—"))
+    a("")
+    a("[1] 意图识别      准确率 %s（%d/%d）%s" % (
+        pct(m_intent["accuracy"]), m_intent["correct"], m_intent["total"],
+        warn(m_intent["total"] < MIN_N)))
+    a("[2] 输入安全      漏拦率 %s（%d/%d）  误拦率 %s（%d/%d）%s" % (
+        pct(m_guard["miss_rate"]), len(m_guard["missed"]), len(m_guard["should_block"]),
+        pct(m_guard["false_alarm_rate"]), len(m_guard["false_alarm"]),
+        len(m_guard["should_pass"]), warn(len(m_guard["should_pass"]) < MIN_N)))
+    a("[2][5][6] 红队    攻破率 %s（%d/%d 已测）；%d 条被硬拦吃掉、测不到模型" % (
+        pct(m_jail["breach_rate"]), m_jail["broke"], m_jail["tested"],
+        m_jail["not_tested"]))
+    a("[成本] 用例 %d 条，模型调用 %d 次，被硬拦 %d 次（未花钱）" % (
+        m_run["cases"], m_run["calls_model"], m_run["calls_blocked"]))
+    a("")
+    a("⚠️ 小样本（标 ⚠️ 的桶 < %d 条）的百分比没有统计意义，只能当方向参考。" % MIN_N)
+    a("⚠️ 攻破率是**一次运行**的快照；「没测到模型」的样本不计入攻破率。")
+    a("完整口径与局限：「明细」附件末尾，或 python tools/eval/eval_runner.py --md。")
+
+    detail = []
+    d = detail.append
+
+    # ---- 混淆矩阵 ----
+    d("【[1] 意图识别】准确率 %s（%d/%d）" % (
+        pct(m_intent["accuracy"]), m_intent["correct"], m_intent["total"]))
+    if m_intent["rows"]:
+        d("")
+        d("混淆矩阵（行=期望，列=实际）：")
+        mw = [16, 9, 9, 9, 9, 9, 8]
+        d(_line("", "query", "knowl", "advice", "fallb", "chat", "合计", widths=mw))
+        for e in LABELS:
+            cells = [str(m_intent["matrix"].get((e, x), 0)) for x in LABELS]
+            total = sum(m_intent["matrix"].get((e, x), 0) for x in LABELS)
+            d(_line("%s %s" % (e, LABEL_CN[e]), *cells, total, widths=mw))
+        d("")
+        d("每类指标（P=精确率 R=召回率 F1）：")
+        w = [16, 8, 8, 8, 8, 8]
+        d(_line("类别", "样本", "P", "R", "F1", "备注", widths=w))
+        for lb in LABELS:
+            pc = m_intent["per_class"][lb]
+            if pc["support"] == 0 and pc["fp"] == 0:
+                continue
+            d(_line("%s %s" % (lb, LABEL_CN[lb]), pc["support"],
+                    fnum(pc["precision"]), fnum(pc["recall"]), fnum(pc["f1"]),
+                    warn(pc["support"] < MIN_N), widths=w))
+        errs = [r for r in m_intent["rows"] if r["expect"] != r["actual"]]
+        d("")
+        d("判错 %d 条：" % len(errs))
+        for r in errs:
+            d("  · %s  期望=%s 实际=%s%s" % (
+                r["name"], r["expect"], r["actual"],
+                "  [已知缺陷]" if r["known_defect"] else ""))
+        if not errs:
+            d("  无")
+
+    # ---- 输入安全 ----
+    d("")
+    d("【[2] 输入安全】漏拦率 %s（%d/%d）  误拦率 %s（%d/%d）" % (
+        pct(m_guard["miss_rate"]), len(m_guard["missed"]), len(m_guard["should_block"]),
+        pct(m_guard["false_alarm_rate"]), len(m_guard["false_alarm"]),
+        len(m_guard["should_pass"])))
+    d("  漏拦 = 该拦没拦（危险问题进了模型）；误拦 = 正常问题被挡在门外。两个必须一起看。")
+    if m_guard["by_type"]:
+        d("")
+        w = [18, 8, 8, 10, 24]
+        d(_line("拦截类型", "样本", "召回", "漏拦数", "漏拦明细", widths=w))
+        for t, g in m_guard["by_type"].items():
+            missed = [r["name"] for r in m_guard["missed"] if r["expect"] == t]
+            d(_line("%s %s" % (t, BLOCK_CN.get(t, "")), g["n"], fnum(g["recall"]),
+                    g["missed"], "、".join(missed) or "无", widths=w))
+    d("")
+    if m_guard["false_alarm"]:
+        d("被误拦的正常问题 %d 条：" % len(m_guard["false_alarm"]))
+        for r in m_guard["false_alarm"]:
+            d("  · %s  被拦成=%s" % (r["name"], r["actual"]))
+    else:
+        d("被误拦的正常问题：无（本次全部放行）")
+
+    # ---- 红队 ----
+    d("")
+    d("【[2][5][6] 红队对抗】攻破率 %s（%d/%d 已测）；%d 条被硬拦吃掉、测不到模型" % (
+        pct(m_jail["breach_rate"]), m_jail["broke"], m_jail["tested"],
+        m_jail["not_tested"]))
+    if m_jail["by_boundary"]:
+        w = [18, 8, 8, 8, 10, 12, 10]
+        d(_line("边界", "样本", "已测", "被攻破", "攻破率", "没测到模型", "已知缺陷",
+                widths=w))
+        for b, j in m_jail["by_boundary"].items():
+            d(_line("%s %s" % (b, BOUNDARY_CN.get(b, "")), j["n"], j["tested"],
+                    j["broke"], pct(j["breach_rate"]), j["not_tested"], j["known"],
+                    widths=w))
+    broke = [r["name"] for r in m_jail["rows"] if r["verdict"] == "疑似被攻破"]
+    xp = [r["name"] for r in m_jail["rows"] if r["verdict"] == "标记待复核"]
+    d("")
+    d("疑似被攻破：%s" % ("、".join(broke) or "无"))
+    d("标记待复核（XPASS，缺陷本次未复现）：%s" % ("、".join(xp) or "无"))
+
+    # ---- 口径与局限（和 Markdown 报告同一份声明）----
+    d("")
+    d("【口径与局限】")
+    d("1. 小样本 < %d 条时百分比没有统计意义（带 ⚠️ 的桶）。" % MIN_N)
+    d("2. 攻破率是一次运行快照；没写 repeat 的样本绿了 = 这次没发现破，不等于防线稳。")
+    d("3. 意图样本与分类器关键词同源，高分不能外推为「任意问法都能判对」。")
+    d("4. 越狱判据是词表，误报率高于普通断言；「疑似被攻破」需人眼复核。")
+    d("5. 结构鉴权 / 流式等工程层用例不计入任何工位指标。")
+
+    return "\n".join(overview), "\n".join(detail)
+
+
 # ==================== 自测（不读文件、不调模型） ====================
 
 def _obs(file, func, case_id, **kw):
@@ -669,6 +804,24 @@ def _force_utf8():
             pass
 
 
+def compute_metrics(payload):
+    """从留痕 payload 算出四组指标 —— **唯一的计算入口**。
+
+    为什么要抽出来：Allure 汇总用例（test_assistant_指标汇总.py）和本脚本文档出口
+    必须用**同一份口径**。各写一遍的话，两边数字迟早对不上，而"两个地方数字不一样"
+    比"只有一个地方有数字"更糟 —— 没人知道该信哪一个。
+    """
+    obs = payload.get("observations", [])
+    outcomes = payload.get("outcomes", [])
+    return {
+        "run": run_metrics(payload),
+        "intent": intent_metrics(obs, outcomes, load_cases("assistant_意图标签_cases.yaml")),
+        "guard": guard_metrics(obs, outcomes, load_cases("assistant_安全拦截_cases.yaml")),
+        "jail": jailbreak_metrics(obs, outcomes, load_cases("assistant_越狱_cases.yaml")),
+        "obs": obs,
+    }
+
+
 def main(argv=None):
     _force_utf8()
     ap = argparse.ArgumentParser(description="AI 助手评测指标运行器")
@@ -690,17 +843,9 @@ def main(argv=None):
         return 2
 
     payload = json.loads(src.read_text(encoding="utf-8"))
-    intents = load_cases("assistant_intent_label_cases.yaml")
-    guards = load_cases("assistant_guard_cases.yaml")
-    jails = load_cases("assistant_jailbreak_cases.yaml")
-
-    obs = payload.get("observations", [])
-    outcomes = payload.get("outcomes", [])
-
-    m_run = run_metrics(payload)
-    m_intent = intent_metrics(obs, outcomes, intents)
-    m_guard = guard_metrics(obs, outcomes, guards)
-    m_jail = jailbreak_metrics(obs, outcomes, jails)
+    m = compute_metrics(payload)
+    m_run, m_intent, m_guard, m_jail = m["run"], m["intent"], m["guard"], m["jail"]
+    obs = m["obs"]
 
     print(render_console(m_intent, m_guard, m_jail, m_run))
 

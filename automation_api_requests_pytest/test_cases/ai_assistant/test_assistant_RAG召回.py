@@ -8,7 +8,7 @@
 #   四、结果契约     每条结果带没带 docId / sourceType / 分数
 #   五、确定性       同一个问题问两次，结果是否一个字不差
 #
-# 数据全部来自 data/kb_golden_cases.yaml，不写死在用例里。
+# 数据全部来自 data/kb_检索金标_cases.yaml，不写死在用例里。
 #
 # ══ 这份用例和别的那几份的关系（别搞混）══
 #   别的 AI 助手用例都打 **Java 后端 8080 的 /assistant/chat**，测的是"助手怎么答"；
@@ -41,7 +41,7 @@ import requests
 from api.kb_api import KbApi
 from common.data_loader import load_cases
 
-KB_CASES = load_cases("kb_golden_cases.yaml")
+KB_CASES = load_cases("kb_检索金标_cases.yaml")
 POSITIVE_CASES = [c for c in KB_CASES if c["kind"] == "positive"]
 NEGATIVE_CASES = [c for c in KB_CASES if c["kind"] == "negative"]
 

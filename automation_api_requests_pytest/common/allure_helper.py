@@ -290,6 +290,7 @@ STORY_LABELS = {
     "test_assistant_RAG召回": "RAG 召回（直连 5000）",
     "test_assistant_RAG生成": "RAG 生成（经 8080）",
     "test_assistant_通用问题不追问档案": "通用问题不追问档案",
+    "test_assistant_指标汇总": "评测指标汇总",
 }
 
 EPIC_NAME = "健康饮食后端 · 接口自动化"

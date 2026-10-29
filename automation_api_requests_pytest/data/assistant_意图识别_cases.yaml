@@ -1,8 +1,8 @@
-# data/assistant_intent_cases.yaml
+# data/assistant_意图识别_cases.yaml
 # 行为观测用例集：每条 = 一个提问 + 它**下游该有的行为**（回答里有无某类词）。
 #
 # ⚠️ 这个文件**不再管分类标签**（intent 该判成什么）——
-#    标签断言已整体挪到 assistant_intent_label_cases.yaml，由 test_assistant_意图标签.py 负责。
+#    标签断言已整体挪到 assistant_意图标签_cases.yaml，由 test_assistant_意图标签.py 负责。
 #    本文件只放"有行为观测点"的样本，观测点有四种：
 #      topic        回答里该出现某个词（确认它确实在聊这件事）
 #      refusal      回答里该出现拒绝 / 说明边界的词
@@ -34,7 +34,7 @@
 #    旧四类（greeting / out_of_scope / substitute / other）整体退休，
 #    intent 换成 5 个动作类（query / knowledge / advice / fallback / chat）。
 #    随之做了两件事：
-#      · 本文件里**只挂标签、没有行为观测点**的 9 条，已挪去 assistant_intent_label_cases.yaml
+#      · 本文件里**只挂标签、没有行为观测点**的 9 条，已挪去 assistant_意图标签_cases.yaml
 #        （替代-还能吃什么 / 寒暄×2 / 饮食×4 / 难点×2）；
 #      · 剩下的 10 条**只保留行为观测**，`intent:` 机器标签字段**删掉**（它已无消费方，
 #        留着只会误导 —— 它记的是旧四类，而 intent 现在指别的东西）。
@@ -100,7 +100,7 @@
   # ⚠️ 2026-10-14 已知红：这条被**硬拦**接住，回答是固定文案
   #    「……这个话题**超出了**我的能力范围……」，而下面 refusal 词表写的是"我无法 / 没法 /
   #    不在我的能力范围 / 没办法 / 抱歉" —— **一个都没命中**。这是既有的两条红之一，
-  #    修法与归属待拍板（多半该把它交回 data/assistant_guard_cases.yaml 那份安全用例）。
+  #    修法与归属待拍板（多半该把它交回 data/assistant_安全拦截_cases.yaml 那份安全用例）。
   refusal: [我无法, 没法, 不在我的能力范围, 没办法, 抱歉]
   note: |
     实测（19:18）：「抱歉，我没办法帮你订机票，这不在我的能力范围内。

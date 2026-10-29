@@ -1,7 +1,7 @@
-# data/health_goal_cases.yaml
+# data/health_饮食目标_cases.yaml
 # 【数据驱动】POST /health/goal 的校验失败场景。
 #
-# 字段同 health_info_cases.yaml：name / body / want_http / want_code / want_msg。
+# 字段同 health_健康档案_cases.yaml：name / body / want_http / want_code / want_msg。
 #
 # 【关键设计】同 info —— 每条只犯一个错，报错才唯一确定。
 #   实测 {} 空体报的是"开始日期不能为空"（三个必填都缺时只报一条，顺序不定），

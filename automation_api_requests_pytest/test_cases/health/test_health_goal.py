@@ -10,8 +10,8 @@ import pytest
 from common import db
 from common.data_loader import load_cases
 
-# 数据来源：data/health_goal_cases.yaml（5 类校验失败场景）
-CASES = load_cases("health_goal_cases.yaml")
+# 数据来源：data/health_饮食目标_cases.yaml（5 类校验失败场景）
+CASES = load_cases("health_饮食目标_cases.yaml")
 
 # 一份合法的目标，供成功用例复用。
 VALID_GOAL = {

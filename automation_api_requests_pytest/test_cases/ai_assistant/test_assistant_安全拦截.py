@@ -25,7 +25,7 @@
 #    **两层是叠加的，不是替代的**：这里断"没递给模型"，那边断"递过去了它也不照做"。
 #
 # ── 数据从哪来？──────────────────────────────────────────────────
-# data/assistant_guard_cases.yaml，**期望值全部来自实测**，不是照抄规则：
+# data/assistant_安全拦截_cases.yaml，**期望值全部来自实测**，不是照抄规则：
 # 先在 2026-10-12 拿探针把同一份规则（当时写在前端）跑了一遍 24 条，
 # 名字里带「误伤回归-*」的那批就是当时"期望放过、实际被拦"的样本。
 # 规则修好后它们转正成回归用例 —— 以后谁把正则改松/改紧，这里立刻红。
@@ -34,7 +34,7 @@ import pytest
 
 from common.data_loader import load_cases
 
-GUARD_CASES = load_cases("assistant_guard_cases.yaml")
+GUARD_CASES = load_cases("assistant_安全拦截_cases.yaml")
 
 # 按"期望被拦 / 期望放过"切开。两类的观测点不同，断言方向也不同：
 # 上者断"拦得对不对、是谁拦的"，下者断"**绝不该**被拦"。

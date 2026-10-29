@@ -39,10 +39,10 @@ GitHub Actions 编排 MySQL + Flask + Spring Boot 三服务并做就绪探活，
 
 | 说法 | 真实来源 | 备注 |
 |---|---|---|
-| 27 条意图标签集 | `data/assistant_intent_label_cases.yaml` | 早期 31 条，已收敛 |
-| 10 条行为观测集 | `data/assistant_intent_cases.yaml` | 只管下游行为，不管标签 |
+| 27 条意图标签集 | `data/assistant_意图标签_cases.yaml` | 早期 31 条，已收敛 |
+| 10 条行为观测集 | `data/assistant_意图识别_cases.yaml` | 只管下游行为，不管标签 |
 | 21 / 23 / 13 | 越狱 / 拦截 / 注入数据集 | 越狱 21、拦截 23、注入 13 |
-| 40 条 golden set | `data/kb_golden_cases.yaml` | 14+12+8+6 分层 |
+| 40 条 golden set | `data/kb_检索金标_cases.yaml` | 14+12+8+6 分层 |
 | 8.0 / 0.3 | `kb_retriever.py` MIN_SCORE / COVERAGE_MIN | 阈值非拍脑袋，有分布依据 |
 | 118 / 149 / 346 | `.github/workflows/api-tests.yml` | smoke / p0 / regression |
 | 94 次调用 | `tools/_last_test_run.txt` | 全量 134 条中真正打到模型的次数 |

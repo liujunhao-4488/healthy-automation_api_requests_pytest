@@ -135,6 +135,6 @@ def test_sheet_arg_on_non_excel_is_rejected():
     调用方以为按表过滤了，实际上读到了全量数据。
     """
     with pytest.raises(ValueError) as exc:
-        load_cases("assistant_intent_cases.yaml", sheet=ALL_SHEETS)
+        load_cases("assistant_意图识别_cases.yaml", sheet=ALL_SHEETS)
 
     assert "只对 .xlsx 有意义" in str(exc.value)

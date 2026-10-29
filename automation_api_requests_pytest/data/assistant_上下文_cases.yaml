@@ -1,4 +1,4 @@
-# data/assistant_context_cases.yaml
+# data/assistant_上下文_cases.yaml
 # 上下文集（[3] 工位）用例数据 —— "模型记不记得住、看不看得懂指代、串不串会话"
 #
 # 为什么单独一个文件：这份数据测的不是"答得对不对"（那是 [4] 准确性集的活），

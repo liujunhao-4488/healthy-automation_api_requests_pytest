@@ -26,7 +26,7 @@ import pytest
 
 from common.data_loader import load_cases
 
-CASES = load_cases("assistant_context_cases.yaml")
+CASES = load_cases("assistant_上下文_cases.yaml")
 
 RECALL = [c for c in CASES if c["kind"] == "recall"]
 RECALL_LONG = [c for c in CASES if c["kind"] == "recall_long"]

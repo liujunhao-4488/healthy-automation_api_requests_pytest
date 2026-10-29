@@ -50,7 +50,7 @@
 
 **✅ 已做到**
 
-- 5 类意图（`query / knowledge / advice / fallback / chat`）每类都有样本，期望值写在 `assistant_intent_label_cases.yaml`（27 条），样本与判据分离。
+- 5 类意图（`query / knowledge / advice / fallback / chat`）每类都有样本，期望值写在 `assistant_意图标签_cases.yaml`（27 条），样本与判据分离。
 - **完整分类指标**：5×5 混淆矩阵、准确率、每类 P/R/F1 —— 由 `tools/eval/eval_runner.py` 离线算。
 - 期望值靠 **nodeid join**（参数 id = 数据集 `name`），不靠问题文本匹配 → 不会串台。
 - 另一条不变量：`intent=fallback ⟺ source=blocked`，防止"标签算了但没接上"。
@@ -129,7 +129,7 @@
 | 资产 | 条数 | 状态 |
 |---|---|---|
 | `test_assistant_RAG生成.py` | 9 | 2 条样本 × 引用边界/数值追溯 + 引用出现率 + RAG 生效 + 空召回 + 非 RAG 路由 |
-| `data/kb_golden_cases.yaml` | 40 | 检索金标：34 正 + 6 负；文档级 + 章节级 |
+| `data/kb_检索金标_cases.yaml` | 40 | 检索金标：34 正 + 6 负；文档级 + 章节级 |
 | `eval/judge_calibration/` | 10 | 人工标注 + judge 校准实验（一致率 50%） |
 
 **✅ 已做到**
