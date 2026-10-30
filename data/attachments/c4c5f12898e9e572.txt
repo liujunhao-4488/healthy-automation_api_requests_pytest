@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3040 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 06:23:51 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T06:23:48",
+      "id": 7261,
+      "text": "鸡胸肉有什么替代品"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T06:23:51",
+      "ragUsed": false,
+      "id": 7262,
+      "text": "鸡胸肉的替代品主要看你想替代它的哪一点——高蛋白低脂、口感清淡、做法方便。\n\n**想保持高蛋白低脂**：鸡腿肉去皮、火鸡胸、虾、鳕鱼、龙利鱼、瘦猪里脊、瘦牛肉、鸡蛋、豆腐、低脂希腊酸奶都可以。鱼虾和鸡腿肉口感更嫩，适合不爱鸡胸肉发柴的人。\n\n**想找植物性替代**：北豆腐、豆干、毛豆、鹰嘴豆、天贝、面筋，蛋白质也不低，但豆制品和面筋的脂肪或碳水比鸡胸肉高一些，控脂的人要注意份量。\n\n**想省事**：即食鸡胸、水浸金枪鱼罐头、低脂奶酪、鸡蛋都是随手可用的。\n\n替换时按蛋白质大致换算：100克鸡胸肉约含蛋白质22–24克，可换成约100克鱼虾、120克去皮鸡腿肉、2个鸡蛋、150克北豆腐或120克豆干。注意加工肉制品（火腿、香肠、鸡排）虽然方便，但钠和添加剂偏高，不建议当作日常主力。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3426,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉的替代品主要看你想替代它的哪一点——高蛋白低脂、口感清淡、做法方便。  **想保持高蛋白低脂**：鸡腿肉去皮、火鸡胸、虾、鳕鱼、龙利鱼、瘦猪里脊、瘦牛肉、鸡蛋、豆腐、低脂希腊酸奶都可以。鱼虾和鸡腿肉口感更嫩，适合不爱鸡胸肉发柴的人。…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T06:23:51.848178526",
+      "createTime": "2026-10-30T06:23:48",
+      "updateTime": "2026-10-30T06:23:48",
+      "id": 3426,
+      "title": "鸡胸肉有什么替代品"
+    }
+  },
+  "message": "发送消息成功"
+}

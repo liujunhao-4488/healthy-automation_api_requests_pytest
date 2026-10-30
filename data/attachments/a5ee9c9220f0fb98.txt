@@ -1,0 +1,1 @@
+06:24:25 I → POST /auth/register     400      5ms  {"code":400,"message":"邮箱已被注册"}

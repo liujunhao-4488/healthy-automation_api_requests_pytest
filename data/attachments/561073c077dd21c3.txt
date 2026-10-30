@@ -1,5 +1,0 @@
-22:36:17 I → POST /assistant/chat    200   3070ms
-22:36:17 I · AI    问「减脂晚餐怎么吃」   → 减脂晚餐的核心思路是：控制总热量但不挨饿，蛋白质给足、主食减量且选粗粮、蔬菜占一半盘子、少油少盐。对你来说，BMI 22.8 属于正常范围，减脂目标更适合“缓慢降脂、保住肌肉”，而不是大幅节食。 具体…
-22:36:17 I → DELETE /assistant/conversations/3466 200      7ms
-22:36:17 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3466,) | affected=2 | 1.4ms
-22:36:17 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3466,) | affected=1 | 1.0ms

@@ -1,5 +1,0 @@
-22:36:00 I → POST /assistant/chat    200   2557ms
-22:36:00 I · AI    问「吃药期间能吃柚子吗」  → 不能一概而论，要看具体吃的是什么药——有些药期间确实要避开柚子（尤其是西柚/葡萄柚），有些则影响不大。 需要特别注意的是西柚（葡萄柚）及其果汁。它含有的呋喃香豆素会抑制肠道里一种叫 CYP3A4 的代…
-22:36:00 I → DELETE /assistant/conversations/3455 200      8ms
-22:36:00 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3455,) | affected=2 | 1.4ms
-22:36:00 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3455,) | affected=1 | 0.9ms

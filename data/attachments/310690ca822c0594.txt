@@ -1,8 +1,0 @@
-22:37:56 I → POST /assistant/chat    200   2008ms
-22:37:56 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，主要取决于你有没有对虾类过敏，以及目前的健康状况。如果你对虾或甲壳类海鲜过敏，就应完全避免海虾及虾酱、虾皮等制品，因为这类过敏反应可能较重。如果没有过敏史，一般人群适量吃海虾是没问题的，…
-22:37:58 I → POST /assistant/chat    200   1572ms
-22:37:58 I · AI    问「那鸡胸肉呢」       → 鸡胸肉一般是可以吃的，它属于低脂高蛋白的肉类，嘌呤含量也比海虾低不少，痛风或高尿酸人群在非急性期适量吃通常问题不大。 需要注意的只是做法：尽量少油炸、少用重口味酱料，清蒸、水煮、少油煎都可以。如果你有…
-22:37:58 I → GET  /assistant/conversations/3536/messages 200      5ms
-22:37:58 I → DELETE /assistant/conversations/3536 200      6ms
-22:37:58 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3536,) | affected=4 | 1.1ms
-22:37:58 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3536,) | affected=1 | 0.9ms

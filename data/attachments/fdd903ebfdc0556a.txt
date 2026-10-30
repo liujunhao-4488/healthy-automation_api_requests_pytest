@@ -1,9 +1,0 @@
-22:38:43 I → POST /assistant/chat    200   1648ms
-22:38:43 I · AI    问「二甲双胍是治疗什么病的药？」  → 二甲双胍是治疗2型糖尿病的常用口服降糖药，主要用于改善胰岛素抵抗、降低血糖，也常用于多囊卵巢综合征等与胰岛素抵抗相关的情况。 它属于处方药，具体是否适用、怎么用、用多大剂量，需要由医生根据病情和肾功能…
-22:38:44 I → POST /assistant/chat    200   1246ms
-22:38:44 I · AI    问「它一般在饭前还是饭后吃？」  → 二甲双胍通常建议随餐或饭后服用，普通片多在餐中或餐后吃，以减少恶心、腹泻等胃肠道不适；缓释片一般随晚餐服用。具体服用时间以医生或药师的交代和药品说明书为准。
-22:38:44 I → POST /assistant/chat    200      8ms
-22:38:44 I · AI    问「那我 60 公斤，一次该吃几片？」  → 用药剂量、停药换药、极端节食或过速减重等问题关系到人身安全，请以医生的诊断和处方为准，我无法提供这类建议。
-22:38:44 I → DELETE /assistant/conversations/3563 200      6ms
-22:38:44 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3563,) | affected=6 | 1.3ms
-22:38:44 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3563,) | affected=1 | 0.7ms

@@ -1,5 +1,0 @@
-22:37:17 I → POST /assistant/chat    200   1476ms
-22:37:17 I · AI    问「这个程序为什么跑不起来」  → 这个问题超出了我负责的范围，我主要回答饮食与健康相关的问题，比如食材替换、食谱分析、三餐搭配、营养与热量估算、控油控糖控钠、慢病饮食注意事项、运动体重管理、保健品常识等。程序跑不起来属于编程或技术排查…
-22:37:17 I → DELETE /assistant/conversations/3510 200      6ms
-22:37:17 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3510,) | affected=2 | 1.0ms
-22:37:17 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3510,) | affected=1 | 0.9ms

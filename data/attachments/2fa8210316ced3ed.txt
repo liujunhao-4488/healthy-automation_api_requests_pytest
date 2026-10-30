@@ -1,5 +1,0 @@
-22:36:48 I → POST /assistant/chat    200   2896ms
-22:36:48 I · AI    问「我想换个口味，有什么建议」  → 换口味可以从两个方向入手：一是换食材，二是换风味做法。以你的情况（25岁男性、BMI 22.8、无慢病、中度活动），每天总热量大概在 2400～2600 kcal 左右，蛋白质建议 100～120 g…
-22:36:48 I → DELETE /assistant/conversations/3482 200      7ms
-22:36:48 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3482,) | affected=2 | 1.2ms
-22:36:48 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3482,) | affected=1 | 0.8ms

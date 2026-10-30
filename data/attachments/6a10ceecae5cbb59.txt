@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_intent_matches_dataset_label[闲聊-陈述吃了什么]  1.68s

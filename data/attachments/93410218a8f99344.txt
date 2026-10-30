@@ -1,4 +1,0 @@
-
-└─ ⊘ XFAIL   test_update_profile_refreshes_update_time   已知缺陷：PUT /user/profile 不刷新 update_time
-                                                                         [ 99%]
-test_cases/ai_assistant/test_assistant_指标汇总.py 

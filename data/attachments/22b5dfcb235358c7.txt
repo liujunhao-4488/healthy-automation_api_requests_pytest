@@ -1,5 +1,0 @@
-22:37:45 I → POST /assistant/chat/stream 200     13ms
-22:37:46 I · AI    问「鸡胸肉多少卡」     → 鸡胸肉每 100 克是 165 千卡。这个热量下蛋白质有 31 克、脂肪 3.6 克，属于高蛋白低脂的肉类，日常按生重称量来估算比较准确。
-22:37:46 I → DELETE /assistant/conversations/3524 200      6ms
-22:37:46 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3524,) | affected=2 | 0.9ms
-22:37:46 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3524,) | affected=1 | 1.0ms

@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_intent_matches_dataset_label[建议-减脂晚餐]  3.07s

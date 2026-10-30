@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_intent_matches_dataset_label[补录-每日饮水量]  2.22s

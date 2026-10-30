@@ -1,2 +1,0 @@
-22:34:39 I → GET  /user/profile      200      8ms
-22:34:39 I → PUT  /user/admin/1/status?status=0 403      6ms  {"timestamp":"2026-10-30 06:34:39","status":403,"error":"Forbidden","path":"/api/user/admin/1/status"}

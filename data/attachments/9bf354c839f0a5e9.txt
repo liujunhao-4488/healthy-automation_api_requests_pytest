@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_deltas_reconstruct_done_message[走模型]  0.65s

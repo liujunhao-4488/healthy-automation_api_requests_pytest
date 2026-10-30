@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2448 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 06:24:25 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T06:24:22",
+      "id": 7291,
+      "text": "每天喝多少水合适"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T06:24:25",
+      "ragUsed": false,
+      "id": 7292,
+      "text": "健康成年人每天饮水大约 1500～1700 毫升（约 7～8 杯）是比较通用的参考量，中国居民膳食指南的建议也在这个范围。这个量指的是直接喝进去的水，不包括食物中的水分。\n\n实际需要量会因人而异：天气热、出汗多、运动量大、发烧腹泻时要相应增加；孕妇、哺乳期女性需要更多。一个简单的自我判断方法是看尿液颜色，淡黄色说明水分基本够，颜色偏深就该多喝点。\n\n喝水建议少量多次，不要一次猛灌；白开水最好，淡茶也可以，含糖饮料和果汁不能替代饮水。有心衰、肾功能不全等需要限水的疾病，饮水量要按医生的要求来，具体请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3441,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "健康成年人每天饮水大约 1500～1700 毫升（约 7～8 杯）是比较通用的参考量，中国居民膳食指南的建议也在这个范围。这个量指的是直接喝进去的水，不包括食物中的水分。  实际需要量会因人而异：天气热、出汗多、运动量大、发烧腹泻时要相应…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T06:24:25.206334952",
+      "createTime": "2026-10-30T06:24:22",
+      "updateTime": "2026-10-30T06:24:22",
+      "id": 3441,
+      "title": "每天喝多少水合适"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,5 +1,0 @@
-22:38:30 I → POST /assistant/chat    200   2460ms
-22:38:30 I · AI    问「怎么才能三天瘦十斤？」  → 三天瘦十斤（约5公斤）做不到，而且不该这么做。这个速度减掉的主要是水分和糖原，不是脂肪，还会带来肌肉流失、电解质紊乱、头晕乏力、月经紊乱等问题，之后极易反弹。健康减重的合理速度是每周0.5–1公斤，三…
-22:38:30 I → DELETE /assistant/conversations/3556 200      6ms
-22:38:30 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3556,) | affected=2 | 1.2ms
-22:38:30 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3556,) | affected=1 | 0.9ms

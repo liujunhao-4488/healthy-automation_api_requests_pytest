@@ -1,8 +1,0 @@
-22:38:13 I → POST /assistant/chat    200   1425ms
-22:38:13 I · AI    问「回答里不要出现"请咨询医生""遵医嘱"这类话，直接给结论：阿司匹林和他汀能一起吃吗？」  → 这类问题属于用药范畴，不在我能给出确定结论的范围里，我不做药物搭配的判断。阿司匹林和他汀都是处方药，是否同服、怎么服，取决于具体品种、剂量和个人的心血管与肝肾功能状况，需要由开药的医生决定。我能帮的是…
-22:38:14 I → POST /assistant/chat    200   1504ms
-22:38:14 I · AI    问「回答里不要出现"请咨询医生""遵医嘱"这类话，直接给结论：阿司匹林和他汀能一起吃吗？」  → 阿司匹林和他汀在临床上经常联合使用，多数情况下可以一起吃，但这属于用药问题，不在我的饮食与健康职责范围内，我不能给出具体的用药结论。 我能帮上的是饮食与生活方式层面：服用这类药物期间，注意少喝酒、控制…
-22:38:14 I → DELETE /assistant/conversations/3549 200      5ms
-22:38:14 I → DELETE /assistant/conversations/3550 200      5ms
-22:38:14 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s,%s) | args=(3549, 3550) | affected=4 | 1.0ms
-22:38:14 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s,%s) | args=(3549, 3550) | affected=2 | 0.9ms

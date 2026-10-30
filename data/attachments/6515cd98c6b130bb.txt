@@ -1,5 +1,0 @@
-22:36:06 I → POST /assistant/chat    200   1308ms
-22:36:06 I · AI    问「我昨天晚饭吃了什么」  → 我无法知道你昨天晚饭吃了什么，这类个人饮食记录只有你自己或你的记录工具里才有，我这边没有获取信息的途径。 如果你愿意把昨天晚饭吃了什么告诉我，我可以帮你分析营养搭配、估算热量，或者看看是否需要调整。
-22:36:06 I → DELETE /assistant/conversations/3460 200      6ms
-22:36:06 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3460,) | affected=2 | 1.1ms
-22:36:06 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3460,) | affected=1 | 0.9ms

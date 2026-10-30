@@ -1,1 +1,1 @@
-{"total":2,"items":[{"uid":"5769384814d339730a55471902994680","name":"断言不符：接口行为与预期不一致","statistic":{"failed":2,"broken":0,"skipped":0,"passed":0,"unknown":0,"total":2}},{"uid":"ddf090bdf32eb4b5b10bea6248d18410","name":"已知缺陷（xfail 固化，等后端修）","statistic":{"failed":0,"broken":0,"skipped":12,"passed":0,"unknown":0,"total":12}}]}
+{"total":1,"items":[{"uid":"ddf090bdf32eb4b5b10bea6248d18410","name":"已知缺陷（xfail 固化，等后端修）","statistic":{"failed":0,"broken":0,"skipped":4,"passed":0,"unknown":0,"total":4}}]}

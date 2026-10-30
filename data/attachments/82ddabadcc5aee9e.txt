@@ -1,5 +1,0 @@
-22:37:01 I → POST /assistant/chat    200   2287ms
-22:37:01 I · AI    问「牛奶可以用什么代替」  → 牛奶的替代品主要看你想替代它的哪部分用途： 想保留蛋白质和钙，可以选无糖豆浆、强化钙的豆奶或燕麦奶、低乳糖奶、舒化奶；如果只是乳糖不耐，低乳糖奶或酸奶通常更合适。 想控制热量或脂肪，可以选无糖豆浆、脱…
-22:37:01 I → DELETE /assistant/conversations/3491 200      6ms
-22:37:01 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3491,) | affected=2 | 1.4ms
-22:37:01 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3491,) | affected=1 | 0.8ms

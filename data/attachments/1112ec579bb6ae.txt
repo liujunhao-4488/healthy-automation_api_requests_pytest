@@ -1,2 +1,0 @@
-22:34:40 I → GET  /user/profile      200      5ms
-22:34:40 I → GET  /article/admin/collect-stats 200     15ms

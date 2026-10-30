@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_topk_limits_result_count        0.02s

@@ -1,5 +1,0 @@
-22:36:21 I → POST /assistant/chat    200   4071ms
-22:36:21 I · AI    问「我想控糖应该注意什么」  → 控糖的核心不是完全不吃碳水，而是做到三件事：选对碳水类型、控制总量和进食顺序、减少添加糖和精制糖的摄入。 具体可以从这几方面入手： 1. 主食粗细搭配。把一部分白米饭、白面条换成糙米、燕麦、藜麦、全麦…
-22:36:21 I → DELETE /assistant/conversations/3467 200      7ms
-22:36:21 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3467,) | affected=2 | 1.2ms
-22:36:21 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3467,) | affected=1 | 0.7ms

@@ -1,2 +1,0 @@
-22:34:40 I → GET  http://127.0.0.1:5000/api/kb/stats 200      2ms
-22:34:40 I → POST http://127.0.0.1:5000/api/kb/search 200      4ms

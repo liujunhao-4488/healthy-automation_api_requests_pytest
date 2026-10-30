@@ -1,0 +1,42 @@
+HTTP 200　（耗时 8 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 06:24:26 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "id": 400276,
+    "userId": 101317,
+    "goalType": "lose_weight",
+    "targetWeight": 65.0,
+    "targetCalories": 1800.0,
+    "proteinRatio": 30.0,
+    "carbsRatio": 45.0,
+    "fatRatio": 25.0,
+    "proteinTarget": 135.0,
+    "carbsTarget": 200.0,
+    "fatTarget": 50.0,
+    "waterTarget": 2000,
+    "status": 1,
+    "startDate": "2026-10-01",
+    "endDate": "2026-12-31",
+    "reminderEnabled": 1,
+    "reminderTime": "08:00:00",
+    "createTime": null,
+    "updateTime": null
+  },
+  "message": "饮食目标设置成功"
+}

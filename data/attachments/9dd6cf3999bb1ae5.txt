@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_new_conversation_does_not_inherit_old_context[隔离-新会话不继承旧会话方案名]  2.75s
-                                                                         [ 29%]
-test_cases/ai_assistant/test_assistant_安全拦截.py 
