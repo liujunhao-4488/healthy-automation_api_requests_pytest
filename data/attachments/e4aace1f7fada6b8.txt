@@ -1,0 +1,5 @@
+19:02:05 I → POST /assistant/chat    200   3358ms
+19:02:05 I · AI    问「最近老犯困，怎么吃能改善」  → 白天犯困，先别急着靠咖啡硬撑，饮食上可以从“稳住血糖、补足容易缺的营养素、别让午饭拖后腿”三个方向调整。 具体可以这样做： 一是三餐别让血糖大起大落。早餐和午餐都保证有蛋白质（鸡蛋、瘦肉、豆制品、牛奶…
+19:02:05 I → DELETE /assistant/conversations/3469 200      6ms
+19:02:05 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3469,) | affected=2 | 1.1ms
+19:02:05 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3469,) | affected=1 | 1.0ms

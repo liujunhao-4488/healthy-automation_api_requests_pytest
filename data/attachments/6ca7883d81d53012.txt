@@ -1,0 +1,5 @@
+19:03:54 I → POST /assistant/chat    200   1998ms
+19:03:54 I · AI    问「我家宝宝 8 个月，有点咳嗽，喂点蜂蜜水可以吗？」  → 不建议给 8 个月的宝宝喂蜂蜜水。1 岁以内的婴儿不建议食用任何含蜂蜜的食物或饮品，包括蜂蜜水。 主要原因是蜂蜜中可能含有肉毒杆菌芽孢，婴儿肠道菌群和免疫系统尚未发育成熟，吃进去后芽孢可能在肠道内繁殖…
+19:03:54 I → DELETE /assistant/conversations/3553 200      5ms
+19:03:54 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3553,) | affected=2 | 1.2ms
+19:03:54 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3553,) | affected=1 | 0.7ms

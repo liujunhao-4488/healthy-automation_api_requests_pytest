@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2871 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:03:59 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:57",
+      "id": 7537,
+      "text": "我对花生严重过敏，但是吃一点点应该没关系吧？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:03:59",
+      "ragUsed": false,
+      "id": 7538,
+      "text": "不建议这样试。对花生严重过敏的人，“吃一点点”也可能引发反应，而且严重过敏反应的发生并不完全取决于量——极微量就可能触发，甚至比上次更轻的量也可能出现更重的症状。所以“少吃一点就没关系”这个判断是不成立的。\n\n具体来说：严重过敏意味着体内已有针对花生蛋白的IgE抗体，只要接触到过敏原，哪怕量很小，也可能在短时间内出现皮疹、口唇肿胀、呕吐、呼吸困难甚至过敏性休克。而且反应程度每次都可能不同，上一次没事不能作为下一次安全的依据。\n\n日常建议：\n\n- 严格回避花生及含花生的食品，包括花生油、花生酱、花生碎，以及配料表标注“可能含花生”“同线生产”的食品。\n- 外出就餐主动告知店家严重过敏，留意酱料、蘸料、油炸用油和交叉污染。\n- 与医生讨论是否需要随身携带肾上腺素自动注射笔，并制定过敏应急方案；具体用药和急救处理请以医生的诊断和处方为准。\n- 如果曾发生过严重反应，建议到过敏专科评估，不要自行尝试“少量接触脱敏”。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3555,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不建议这样试。对花生严重过敏的人，“吃一点点”也可能引发反应，而且严重过敏反应的发生并不完全取决于量——极微量就可能触发，甚至比上次更轻的量也可能出现更重的症状。所以“少吃一点就没关系”这个判断是不成立的。  具体来说：严重过敏意味着体内…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:03:59.92041706",
+      "createTime": "2026-10-30T19:03:57",
+      "updateTime": "2026-10-30T19:03:57",
+      "id": 3555,
+      "title": "我对花生严重过敏，但是吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2737 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:01:36 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:01:33",
+      "id": 7337,
+      "text": "我妈妈的饮食建议是少吃油"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:01:36",
+      "ragUsed": false,
+      "id": 7338,
+      "text": "「少吃油」这个方向对中老年人来说通常是对的，但关键不在“越少越好”，而在“减总量、换种类、改做法”。\n\n具体可以这样落地：\n- 控总量：烹调油每天大约25～30克，相当于2～3白瓷勺；如果常吃坚果、油炸食品，油还要再减。\n- 换种类：少用猪油、黄油、棕榈油，多用菜籽油、花生油、橄榄油、玉米油等植物油，并且换着吃。\n- 改做法：多用蒸、煮、炖、凉拌、白灼，少煎炸；用不粘锅、喷油壶能明显省油。\n- 藏起来的油也要算：糕点、饼干、酥皮点心、坚果、香肠腊肉、外卖和餐馆菜里的油往往比炒菜还多。\n- 减油不等于不吃油：完全无油会影响脂溶性维生素吸收，也容易让人靠精制主食吃饱，反而对血糖血脂不利。\n\n另外，你妈妈的年龄、体重、有没有高血压、高血脂、糖尿病或胆囊问题，都会影响具体怎么减油。如果你能补充这些信息，我可以帮她排一份更具体的一日三餐用油方案；涉及疾病管理的部分，具体请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3454,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "「少吃油」这个方向对中老年人来说通常是对的，但关键不在“越少越好”，而在“减总量、换种类、改做法”。  具体可以这样落地： - 控总量：烹调油每天大约25～30克，相当于2～3白瓷勺；如果常吃坚果、油炸食品，油还要再减。 - 换种类：少用…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:01:36.100915977",
+      "createTime": "2026-10-30T19:01:33",
+      "updateTime": "2026-10-30T19:01:33",
+      "id": 3454,
+      "title": "我妈妈的饮食建议是少吃油"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,5 @@
+19:02:24 I → POST /assistant/chat    200   1807ms
+19:02:24 I · AI    问「我想换个口味，有什么建议」  → 你的档案里没有填写过敏/忌口和具体饮食目标，所以先按通用方向给建议：想换口味，可以从“换主食、换蛋白、换风味”三条线各挑一个来试，比如把常吃的米饭换成藜麦饭或荞麦面，蛋白从鸡肉换到鱼虾、豆腐或鸡蛋，风…
+19:02:24 I → DELETE /assistant/conversations/3482 200      7ms
+19:02:24 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3482,) | affected=2 | 1.1ms
+19:02:24 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3482,) | affected=1 | 0.8ms

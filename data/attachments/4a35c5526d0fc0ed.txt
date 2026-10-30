@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2078 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:00:58 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:00:56",
+      "id": 7281,
+      "text": "每天喝水有什么讲究"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:00:58",
+      "ragUsed": false,
+      "id": 7282,
+      "text": "每天喝水主要讲究总量、节奏和时机三点。\n\n总量上，普通成年人每天约 1500–1700 毫升（约 7–8 杯）是常见参考，天气热、运动多、出汗多时要相应增加。别等口渴才喝，口渴时身体已经轻度缺水了，可以分散到全天，每隔一两个小时喝一小杯。\n\n节奏上，一次别猛灌大量水，分次小口喝更利于吸收；早起一杯、两餐之间、运动前后各补一些比较实用。饭前大量喝水会稀释胃液、影响消化，饭后马上灌水也不太好。\n\n时机和选择上，白开水最合适，淡茶也可以；含糖饮料、果汁不能算作“喝水”。睡前一两小时少喝，避免起夜。特殊人群要注意：心衰、肾功能不全、需要限水的人，喝多少要听医生的，不能照搬普通标准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3429,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "每天喝水主要讲究总量、节奏和时机三点。  总量上，普通成年人每天约 1500–1700 毫升（约 7–8 杯）是常见参考，天气热、运动多、出汗多时要相应增加。别等口渴才喝，口渴时身体已经轻度缺水了，可以分散到全天，每隔一两个小时喝一小杯。…",
+      "messageCount": 14,
+      "lastMessageAt": "2026-10-30T19:00:58.98696725",
+      "createTime": "2026-10-30T19:00:46",
+      "updateTime": "2026-10-30T19:00:46",
+      "id": 3429,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

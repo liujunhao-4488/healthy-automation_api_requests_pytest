@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_user_message_must_not_have_assistant_only_fields  0.02s

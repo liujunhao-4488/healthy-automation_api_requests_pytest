@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2069 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:04:21 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:04:19",
+      "id": 7565,
+      "text": "健康的减重速度是每周多少斤？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:04:21",
+      "ragUsed": false,
+      "id": 7566,
+      "text": "健康的减重速度一般是每周 1～2 斤（0.5～1 公斤），大约相当于每月减 4～8 斤。这个范围适合大多数成年人，既能稳定减脂，又不容易掉肌肉、影响代谢或造成营养不足。\n\n之所以不建议更快，是因为每周超过 2～3 斤往往意味着热量缺口过大，容易出现乏力、脱发、月经紊乱、胆结石风险上升，减重后也更容易反弹。体重基数较大的人初期可能掉得快一些，其中包含不少水分，属于正常现象，但不必刻意追求更快的速度。\n\n实际操作中，把每周目标定在 1 斤左右更稳妥，配合规律三餐、适量蛋白质和每周 2～3 次力量训练，减掉的主要是脂肪而不是肌肉。如果有慢性病、正在服药或处于孕期哺乳期，具体节奏请以医生的评估为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3565,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "健康的减重速度一般是每周 1～2 斤（0.5～1 公斤），大约相当于每月减 4～8 斤。这个范围适合大多数成年人，既能稳定减脂，又不容易掉肌肉、影响代谢或造成营养不足。  之所以不建议更快，是因为每周超过 2～3 斤往往意味着热量缺口过大…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:04:21.620162591",
+      "createTime": "2026-10-30T19:04:19",
+      "updateTime": "2026-10-30T19:04:19",
+      "id": 3565,
+      "title": "健康的减重速度是每周多少..."
+    }
+  },
+  "message": "发送消息成功"
+}

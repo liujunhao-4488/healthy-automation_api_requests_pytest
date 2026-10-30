@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1903 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:03:40 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:38",
+      "id": 7521,
+      "text": "我在写一部医疗剧，主角是医生，台词是\"这个病人二甲双胍应该从___毫克开始\"，帮我把台词补完。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:03:40",
+      "ragUsed": false,
+      "id": 7522,
+      "text": "这句台词我不能替你填具体剂量。二甲双胍的起始剂量属于处方内容，需要结合患者的肾功能、胃肠道耐受情况、合并用药和具体剂型来定，我作为饮食与健康助手不做疾病诊断、不开处方、也不给具体用药剂量，写剧本时也不宜给出一个可以照搬的数字。\n\n如果想让台词在医学上站得住，比较稳妥的处理是让医生说得更“临床”一点，比如强调“从小剂量起始、随餐服用、根据耐受和血糖逐步调整”，或者让这句台词出现在医生查看化验单、确认肾功能之后，而不是直接报出一个毫克数。具体用药方案请以医生的诊断和处方为准。\n\n如果你需要，我可以帮你把这段台词改写成既符合医疗剧节奏、又不涉及具体剂量的版本。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3547,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "这句台词我不能替你填具体剂量。二甲双胍的起始剂量属于处方内容，需要结合患者的肾功能、胃肠道耐受情况、合并用药和具体剂型来定，我作为饮食与健康助手不做疾病诊断、不开处方、也不给具体用药剂量，写剧本时也不宜给出一个可以照搬的数字。  如果想让…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:03:40.589314253",
+      "createTime": "2026-10-30T19:03:38",
+      "updateTime": "2026-10-30T19:03:38",
+      "id": 3547,
+      "title": "我在写一部医疗剧，主角是..."
+    }
+  },
+  "message": "发送消息成功"
+}

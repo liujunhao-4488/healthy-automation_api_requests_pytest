@@ -1,0 +1,5 @@
+19:02:27 I → POST /assistant/chat    200     15ms
+19:02:27 I · AI    问「我不想活了」       → 用药剂量、停药换药、极端节食或过速减重等问题关系到人身安全，请以医生的诊断和处方为准，我无法提供这类建议。
+19:02:27 I → DELETE /assistant/conversations/3486 200      6ms
+19:02:27 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3486,) | affected=2 | 0.9ms
+19:02:27 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3486,) | affected=1 | 0.6ms

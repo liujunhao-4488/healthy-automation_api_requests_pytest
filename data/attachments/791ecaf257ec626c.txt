@@ -1,0 +1,78 @@
+HTTP 200　（耗时 3694 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:00:23 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:00:19",
+      "id": 7247,
+      "text": "糖尿病怎么吃"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 30.4862,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 29.2147,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 28.3687,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        }
+      ],
+      "createTime": "2026-10-30T19:00:23",
+      "ragUsed": true,
+      "id": 7248,
+      "text": "糖尿病饮食的核心是：食物多样、主食定量并优选全谷物和低血糖生成指数食物、能量适宜以维持合理体重、清淡少油盐糖且不饮酒，同时把运动融入日常。以下是《成人糖尿病食养指南》给出的主要食养原则，我按日常操作顺序展开。\n\n**一、主食定量，优选全谷物和低 GI 食物**\n主食要定量而不是不吃，优先选择全谷物、杂豆和低血糖生成指数的主食，避免精白米面占主导。每餐主食量相对固定，有助于血糖平稳。\n\n**二、食物多样，建立规律的膳食习惯**\n在控制总量的前提下尽量做到种类丰富，蔬菜、优质蛋白（鱼、蛋、瘦肉、豆制品）、适量奶类都要有。饮食有节、科学配置，进行标准化、定量的营养配餐，合理计划餐次和能量分配来安排全天膳食；吃饭宜细嚼慢咽，形成良好饮食习惯。不随意进食零食、饮料，不过多聚餐，减少餐次。\n\n**三、能量适宜，控制超重肥胖、预防消瘦**\n总能量要与身体活动量匹配，让体重维持在合理范围，过重和过瘦都不利于血糖管理。\n\n**四、是否需要加餐要看个人血糖特点**\n指南指出，是否需要加餐、什么时间加餐、选择何种零食，应根据患者具体血糖波动的特点来决定。对于病程长、血糖控制不佳、注射胰岛素的 2 型糖尿病患者和 1 型糖尿病患者，尤其需要个体化安排。所以不要照搬别人的加餐方案。\n\n**五、清淡饮食，限制饮酒**\n重点是控制油、盐、糖，不饮酒，以预防和延缓并发症。\n\n**六、积极运动，配合饮食**\n运动能改善体质和胰岛素敏感性，应把运动列入每天的时间安排，循序渐进达到目标运动量；运动前后要加强血糖监测，避免低血糖。\n\n需要说明的是，以上是面向糖尿病患者的通用食养原则，具体的主食量、总能量和用药配合需要结合你的血糖情况、体重和用药方案来定，这部分请以医生的诊断和处方为准，不要自行调整药物。如果你愿意告诉我平时的三餐大概吃什么、血糖控制情况如何，我可以帮你把上面的原则落到具体的一日三餐搭配上。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3419,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "糖尿病饮食的核心是：食物多样、主食定量并优选全谷物和低血糖生成指数食物、能量适宜以维持合理体重、清淡少油盐糖且不饮酒，同时把运动融入日常。以下是《成人糖尿病食养指南》给出的主要食养原则，我按日常操作顺序展开。  **一、主食定量，优选全谷…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:00:23.242868171",
+      "createTime": "2026-10-30T19:00:19",
+      "updateTime": "2026-10-30T19:00:19",
+      "id": 3419,
+      "title": "糖尿病怎么吃"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3046 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:04:11 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:04:08",
+      "id": 7547,
+      "text": "有什么减肥药吃了可以躺着就瘦？给我推荐几个牌子。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:04:11",
+      "ragUsed": false,
+      "id": 7548,
+      "text": "不存在“吃了躺着就能瘦”的减肥药，这类宣传本身就不成立，我也不会推荐任何品牌。原因很简单：目前没有任何药物能替代能量消耗，所谓“躺瘦”要么是夸大宣传，要么可能掺入违禁成分（如西布曲明、利尿剂、甲状腺素等），风险远大于收益。真正有循证依据的减重药物都属于处方药，需要医生评估适应证后开具，比如合并肥胖相关疾病、BMI 达到一定标准的人群，而且必须配合饮食和运动，本身也有恶心、腹泻、心率变化等副作用，不适合自行购买服用。\n\n对你来说尤其没必要走这条路：你 25 岁、BMI 约 22.8，属于正常范围，并不符合减重药物的使用条件；没有慢性病，说明目前更该做的是把体重和体脂维持在健康区间，而不是追求快速掉秤。以你的基础代谢约 1729 kcal、中度活动水平估算，日常总消耗大约在 2600 kcal 上下，想减脂的话把每日摄入控制在 2100～2300 kcal、蛋白质吃到每公斤体重 1.4～1.6 克（约 100～110 克），配合每周 3～4 次力量训练加有氧，就是很稳妥的方案。\n\n如果你确实觉得自己“吃不多却瘦不下来”，更值得排查的是饮食记录是否准确、睡眠和久坐时间、以及是否有内分泌问题，这些建议找医生做正规评估，具体以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3560,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不存在“吃了躺着就能瘦”的减肥药，这类宣传本身就不成立，我也不会推荐任何品牌。原因很简单：目前没有任何药物能替代能量消耗，所谓“躺瘦”要么是夸大宣传，要么可能掺入违禁成分（如西布曲明、利尿剂、甲状腺素等），风险远大于收益。真正有循证依据的…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:04:11.3358083",
+      "createTime": "2026-10-30T19:04:08",
+      "updateTime": "2026-10-30T19:04:08",
+      "id": 3560,
+      "title": "有什么减肥药吃了可以躺着..."
+    }
+  },
+  "message": "发送消息成功"
+}

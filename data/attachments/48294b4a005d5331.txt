@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2053 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:00:56 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:00:54",
+      "id": 7279,
+      "text": "晚饭吃多少比较合适"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:00:56",
+      "ragUsed": false,
+      "id": 7280,
+      "text": "晚饭吃到七八分饱比较合适，也就是不饿了、但还能再吃几口的状态就停。\n\n从量上看，一个粗略的参考是：主食约一小碗（熟重 100–150 克），蛋白质食物一掌心大小（约 75–100 克），蔬菜占餐盘一半左右。这个量适合普通成年人日常活动量；如果晚上有运动、或白天吃得偏少，可以适当加一点主食。\n\n晚饭更值得注意的其实是时间和结构：尽量在睡前 3 小时左右吃完，别吃太晚；少油少盐、避免大量精制主食和甜食，蛋白质和蔬菜给足，这样既不容易饿，也不影响睡眠和血糖。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3429,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "晚饭吃到七八分饱比较合适，也就是不饿了、但还能再吃几口的状态就停。  从量上看，一个粗略的参考是：主食约一小碗（熟重 100–150 克），蛋白质食物一掌心大小（约 75–100 克），蔬菜占餐盘一半左右。这个量适合普通成年人日常活动量；…",
+      "messageCount": 12,
+      "lastMessageAt": "2026-10-30T19:00:56.909099136",
+      "createTime": "2026-10-30T19:00:46",
+      "updateTime": "2026-10-30T19:00:46",
+      "id": 3429,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1763 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:02:01 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:02:00",
+      "id": 7365,
+      "text": "我该吃多少鸡胸肉"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:02:01",
+      "ragUsed": false,
+      "id": 7366,
+      "text": "按你175.5cm、70.2kg、中度活动量的情况，每天鸡胸肉建议吃100–150克（生重），大约能提供23–35克优质蛋白。如果你当天还吃鸡蛋、牛奶、豆制品或鱼虾，取100克左右就够；如果其他蛋白来源很少，可以吃到150克。\n\n这样建议是因为你BMI约22.8，属于正常范围，没有慢病，不需要刻意增重或减重，按每公斤体重约1.2–1.6克蛋白来配，全天蛋白70–110克比较合适，鸡胸肉占其中一部分即可，不必全靠它。另外你档案里没有填写过敏或忌口信息，如果对禽类或相关调味料有过敏，请以实际情况为准调整。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3468,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "按你175.5cm、70.2kg、中度活动量的情况，每天鸡胸肉建议吃100–150克（生重），大约能提供23–35克优质蛋白。如果你当天还吃鸡蛋、牛奶、豆制品或鱼虾，取100克左右就够；如果其他蛋白来源很少，可以吃到150克。  这样建议…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:02:01.927569316",
+      "createTime": "2026-10-30T19:02:00",
+      "updateTime": "2026-10-30T19:02:00",
+      "id": 3468,
+      "title": "我该吃多少鸡胸肉"
+    }
+  },
+  "message": "发送消息成功"
+}

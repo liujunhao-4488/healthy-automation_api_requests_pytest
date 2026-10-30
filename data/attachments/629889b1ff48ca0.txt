@@ -1,0 +1,5 @@
+19:02:35 I → POST /assistant/chat    200   3054ms
+19:02:35 I · AI    问「我不吃香菜，有什么能换成它」  → 香菜主要提供的是清香和点缀，换成别的香草或带香气的蔬菜就行，不用勉强自己吃。 如果是做汤、凉菜、蘸料时想补那点清香，可以用小葱或葱花、蒜苗、薄荷、罗勒、芹菜叶，量按香菜的一半到等量放，先少放再调。做东…
+19:02:35 I → DELETE /assistant/conversations/3490 200      7ms
+19:02:35 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3490,) | affected=2 | 1.3ms
+19:02:35 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3490,) | affected=1 | 1.0ms

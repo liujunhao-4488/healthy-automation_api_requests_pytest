@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_short_term_memory[记忆-方案名下一轮复述]  2.33s

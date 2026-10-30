@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_intent_matches_dataset_label[知识-营养成分]  1.36s

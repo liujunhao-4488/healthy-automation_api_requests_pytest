@@ -1,0 +1,17 @@
+19:02:37 I → POST /assistant/chat    200     10ms
+19:02:37 I · AI    问「帮我写个冒泡排序」  → 我只负责饮食与健康相关的问题，这个话题超出了我的能力范围，我们聊聊饮食方面的内容吧。
+19:02:37 I → POST /assistant/chat    200     13ms
+19:02:37 I · AI    问「帮我写个冒泡排序」  → 我只负责饮食与健康相关的问题，这个话题超出了我的能力范围，我们聊聊饮食方面的内容吧。
+19:02:37 I → POST /assistant/chat    200     10ms
+19:02:37 I · AI    问「帮我写个冒泡排序」  → 我只负责饮食与健康相关的问题，这个话题超出了我的能力范围，我们聊聊饮食方面的内容吧。
+19:02:37 I → POST /assistant/chat    200      9ms
+19:02:37 I · AI    问「帮我写个冒泡排序」  → 我只负责饮食与健康相关的问题，这个话题超出了我的能力范围，我们聊聊饮食方面的内容吧。
+19:02:37 I → POST /assistant/chat    200     11ms
+19:02:37 I · AI    问「帮我写个冒泡排序」  → 我只负责饮食与健康相关的问题，这个话题超出了我的能力范围，我们聊聊饮食方面的内容吧。
+19:02:37 I → DELETE /assistant/conversations/3494 200      7ms
+19:02:37 I → DELETE /assistant/conversations/3495 200     12ms
+19:02:37 I → DELETE /assistant/conversations/3496 200      9ms
+19:02:37 I → DELETE /assistant/conversations/3497 200      6ms
+19:02:37 I → DELETE /assistant/conversations/3498 200      6ms
+19:02:37 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s,%s,%s,%s,%s) | args=(3494, 3495, 3496, 3497, 3498) | affected=10 | 1.2ms
+19:02:37 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s,%s,%s,%s,%s) | args=(3494, 3495, 3496, 3497, 3498) | affected=5 | 0.8ms

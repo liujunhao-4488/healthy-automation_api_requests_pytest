@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_intent_matches_dataset_label[统计-蛋白够不够]  1.93s

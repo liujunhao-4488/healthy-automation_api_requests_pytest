@@ -1,0 +1,55 @@
+HTTP 200　（耗时 5 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:03:30 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": [
+    {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:26",
+      "id": 7501,
+      "text": "我能吃海虾吗"
+    },
+    {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:28",
+      "id": 7502,
+      "text": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及身体状况如何。如果你对虾蟹等甲壳类海鲜过敏，或者以前吃虾出现过皮肤瘙痒、起疹、嘴唇肿、喉咙发紧、喘不上气等情况，那就不要吃，而且这类过敏往往比较严重，需要严格避开，具体请以医生的诊断为准。如果你没有过敏史，平时吃虾也没问题，那一般是可以吃的。\n\n在正常食用的情况下，海虾是很好的优质蛋白来源，脂肪低，还含有硒、碘、维生素B12等营养素。需要注意两点：一是要彻底煮熟，避免生食或半生食带来的寄生虫和细菌风险；二是虾的胆固醇和钠含量不算低，如果你有高血脂、高血压或痛风，建议控制份量，以清蒸、白灼为主，少用油炸和重口味酱料。痛风急性发作期要谨慎，具体请遵医嘱。\n\n如果你有过敏史、正在孕期哺乳期，或有肾病、痛风等慢性病，具体能不能吃、吃多少，请以医生的诊断和处方为准。"
+    },
+    {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:28",
+      "id": 7503,
+      "text": "那鸡胸肉呢"
+    },
+    {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:30",
+      "id": 7504,
+      "text": "鸡胸肉一般是可以吃的，而且它是很常见的优质蛋白来源：脂肪低、蛋白质含量高，做法也灵活。\n\n需要注意的是别把它做得太干太柴，用蒸、煮、煎或少油烤都可以；调味上少放盐和浓酱，避免把低脂的优势抵消掉。如果你有肾病需要限制蛋白质，具体能吃多少请以医生的建议为准。"
+    }
+  ],
+  "message": "获取消息成功"
+}

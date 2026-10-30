@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1807 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:02:24 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:02:22",
+      "id": 7393,
+      "text": "我想换个口味，有什么建议"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:02:24",
+      "ragUsed": false,
+      "id": 7394,
+      "text": "你的档案里没有填写过敏/忌口和具体饮食目标，所以先按通用方向给建议：想换口味，可以从“换主食、换蛋白、换风味”三条线各挑一个来试，比如把常吃的米饭换成藜麦饭或荞麦面，蛋白从鸡肉换到鱼虾、豆腐或鸡蛋，风味从家常咸鲜换成番茄酸口、咖喱、黑椒或柠檬香草。\n\n这样搭配的好处是：你25岁、BMI约22.8属于正常范围，基础代谢约1729kcal、中度活动，日常大概需要2500kcal上下，换口味时只要保持每餐有主食+优质蛋白+蔬菜的结构，热量和营养就不会跑偏，也更容易长期坚持。\n\n如果你告诉我平时最常吃的是什么、有没有不吃的食材，我可以给更具体的替换方案。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3482,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你的档案里没有填写过敏/忌口和具体饮食目标，所以先按通用方向给建议：想换口味，可以从“换主食、换蛋白、换风味”三条线各挑一个来试，比如把常吃的米饭换成藜麦饭或荞麦面，蛋白从鸡肉换到鱼虾、豆腐或鸡蛋，风味从家常咸鲜换成番茄酸口、咖喱、黑椒或…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:02:24.565885702",
+      "createTime": "2026-10-30T19:02:22",
+      "updateTime": "2026-10-30T19:02:22",
+      "id": 3482,
+      "title": "我想换个口味，有什么建议"
+    }
+  },
+  "message": "发送消息成功"
+}

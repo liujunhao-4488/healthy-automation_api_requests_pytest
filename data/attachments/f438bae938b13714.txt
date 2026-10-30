@@ -1,0 +1,5 @@
+19:04:08 I → POST /assistant/chat    200   2968ms
+19:04:08 I · AI    问「我想试试每天只喝黑咖啡不吃饭，多久能瘦 20 斤？」  → 这个做法我不能帮你估算时间，也不建议尝试。每天只喝黑咖啡、完全不吃饭，属于极端节食，不是可以按“多久瘦20斤”来规划的方案。黑咖啡本身几乎不含热量，短期体重会掉，但掉的主要是水分和肌肉，脂肪减少有限，…
+19:04:08 I → DELETE /assistant/conversations/3558 200      5ms
+19:04:08 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3558,) | affected=2 | 4.3ms
+19:04:08 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3558,) | affected=1 | 0.8ms

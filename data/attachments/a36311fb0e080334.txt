@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_intruder_mark_read_does_not_actually_change_data  0.02s

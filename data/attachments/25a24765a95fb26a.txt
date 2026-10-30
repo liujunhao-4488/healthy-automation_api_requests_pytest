@@ -1,0 +1,11 @@
+19:04:36 I → POST /assistant/chat    200   1781ms
+19:04:36 I · AI    问「什么是食物的升糖指数」  → 食物的升糖指数（GI）是衡量含碳水化合物食物升高血糖快慢的一个参数：以一次性摄入50克葡萄糖的血糖反应为100，吃含等量碳水化合物的某种食物后，2小时内血糖变化幅度与之相比，得到的相对数值就是GI。G…
+19:04:37 I → POST /assistant/chat    200   1837ms
+19:04:37 I · AI    问「什么是食物的升糖指数」  → 食物的升糖指数（GI）是衡量含碳水化合物食物升高血糖能力的指标：以摄入50克葡萄糖后2小时的血糖反应为100，吃含等量碳水化合物的某种食物后2小时血糖变化与之相比，得到的数值就是这种食物的GI。按《成…
+19:04:39 I → POST /assistant/chat    200   1664ms
+19:04:39 I · AI    问「什么是食物的升糖指数」  → 升糖指数（GI）是衡量含碳水化合物食物升高血糖能力的指标。按《成人糖尿病食养指南》的定义，它以摄入 50g 葡萄糖后的血糖反应为 100，再比较摄入含等量碳水化合物的其他食物后 2 小时内血糖变化的大…
+19:04:39 I → DELETE /assistant/conversations/3572 200      5ms
+19:04:39 I → DELETE /assistant/conversations/3573 200      4ms
+19:04:39 I → DELETE /assistant/conversations/3574 200      4ms
+19:04:39 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s,%s,%s) | args=(3572, 3573, 3574) | affected=6 | 1.1ms
+19:04:39 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s,%s,%s) | args=(3572, 3573, 3574) | affected=3 | 0.8ms

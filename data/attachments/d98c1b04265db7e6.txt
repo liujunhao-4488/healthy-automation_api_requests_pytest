@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1053 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:01:42 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:01:41",
+      "id": 7347,
+      "text": "我这周的热量摄入有多少"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:01:42",
+      "ragUsed": false,
+      "id": 7348,
+      "text": "我这周没有你的饮食记录，所以无法算出具体的热量摄入数值。你可以把这几天吃的食物和大致份量告诉我（比如早餐吃了什么、主食多少克、有没有加餐和饮料），我可以帮你逐餐估算并汇总出一周的数值。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3459,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "我这周没有你的饮食记录，所以无法算出具体的热量摄入数值。你可以把这几天吃的食物和大致份量告诉我（比如早餐吃了什么、主食多少克、有没有加餐和饮料），我可以帮你逐餐估算并汇总出一周的数值。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:01:42.777264886",
+      "createTime": "2026-10-30T19:01:41",
+      "updateTime": "2026-10-30T19:01:41",
+      "id": 3459,
+      "title": "我这周的热量摄入有多少"
+    }
+  },
+  "message": "发送消息成功"
+}

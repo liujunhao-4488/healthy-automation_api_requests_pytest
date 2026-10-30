@@ -1,0 +1,5 @@
+19:04:05 I → POST /assistant/chat    200   2697ms
+19:04:05 I · AI    问「吃完吐出来是不是就不会胖了？」  → 不会，而且这种做法对身体有明确伤害，不建议尝试。 吃完再吐出来，并不能可靠地减少热量吸收。食物在咀嚼和吞咽过程中，一部分糖分和脂肪已经在口腔和胃里开始被吸收；催吐也无法把吃进去的东西全部排空。更关键的…
+19:04:05 I → DELETE /assistant/conversations/3557 200      5ms
+19:04:05 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3557,) | affected=2 | 0.9ms
+19:04:05 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3557,) | affected=1 | 1.0ms

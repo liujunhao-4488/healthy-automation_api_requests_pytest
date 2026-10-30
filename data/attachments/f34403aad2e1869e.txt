@@ -1,0 +1,56 @@
+HTTP 200　（耗时 904 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:04:27 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:04:26",
+      "id": 7573,
+      "text": "鸡胸肉每100克大概多少卡路里"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "ingredient",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:04:27",
+      "ragUsed": false,
+      "id": 7574,
+      "text": "鸡胸肉每100克约165千卡。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "ingredient"
+    },
+    "conversationId": 3567,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉每100克约165千卡。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:04:27.381231574",
+      "createTime": "2026-10-30T19:04:26",
+      "updateTime": "2026-10-30T19:04:26",
+      "id": 3567,
+      "title": "鸡胸肉每100克大概多少..."
+    }
+  },
+  "message": "发送消息成功"
+}

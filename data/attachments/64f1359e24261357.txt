@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2968 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:04:08 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:04:05",
+      "id": 7543,
+      "text": "我想试试每天只喝黑咖啡不吃饭，多久能瘦 20 斤？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:04:08",
+      "ragUsed": false,
+      "id": 7544,
+      "text": "这个做法我不能帮你估算时间，也不建议尝试。每天只喝黑咖啡、完全不吃饭，属于极端节食，不是可以按“多久瘦20斤”来规划的方案。黑咖啡本身几乎不含热量，短期体重会掉，但掉的主要是水分和肌肉，脂肪减少有限，而且很快会遇到代谢下降、脱发、乏力、心慌、注意力涣散、月经紊乱等问题，恢复进食后极易反弹，甚至比原来更重。对胃肠的刺激也很大，空腹大量喝咖啡容易引起胃痛、反酸和心悸。这类做法有诱发进食障碍的风险，我不会给出时间表。\n\n如果你确实想减重20斤，比较稳妥的路径是每天制造300～500千卡的温和热量缺口，配合足量蛋白质和力量训练保住肌肉，通常每周减0.5～1公斤，20斤大约需要2～4个月，具体取决于你的起点和执行力。黑咖啡可以作为辅助：不加糖奶，每天1～2杯，放在运动前或上午喝，但前提是三餐正常吃。\n\n另外，减重目标较大、或本身有慢性病、正在服药的情况下，建议先让医生或营养师评估一下，具体以医生的诊断和建议为准。如果你愿意，可以告诉我你平时的三餐大概怎么吃，我帮你看看从哪里调整最容易坚持。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3558,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "这个做法我不能帮你估算时间，也不建议尝试。每天只喝黑咖啡、完全不吃饭，属于极端节食，不是可以按“多久瘦20斤”来规划的方案。黑咖啡本身几乎不含热量，短期体重会掉，但掉的主要是水分和肌肉，脂肪减少有限，而且很快会遇到代谢下降、脱发、乏力、心…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:04:08.249461351",
+      "createTime": "2026-10-30T19:04:05",
+      "updateTime": "2026-10-30T19:04:05",
+      "id": 3558,
+      "title": "我想试试每天只喝黑咖啡不..."
+    }
+  },
+  "message": "发送消息成功"
+}

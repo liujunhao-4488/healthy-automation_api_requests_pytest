@@ -1,0 +1,5 @@
+19:01:22 I → POST /assistant/chat    200   2383ms
+19:01:22 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况，单从饮食角度说，海虾是可以吃的。 海虾蛋白质含量高、脂肪低，还富含硒、碘和维生素B12，是很好的优质蛋白来源。健康人群正常吃没问题，注意彻…
+19:01:22 I → DELETE /assistant/conversations/3447 200      7ms
+19:01:22 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3447,) | affected=2 | 1.0ms
+19:01:22 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3447,) | affected=1 | 0.6ms

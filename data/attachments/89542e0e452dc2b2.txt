@@ -1,0 +1,5 @@
+19:01:56 I → POST /assistant/chat    200   4667ms
+19:01:56 I · AI    问「减脂晚餐怎么吃」   → 减脂晚餐的核心思路是：控制总热量、保证蛋白质、主食减量但别断、蔬菜占一半盘子。按你的情况（25岁男性、175.5cm、70.2kg、BMI约22.8属正常范围、中度活动），减脂期晚餐控制在450–55…
+19:01:56 I → DELETE /assistant/conversations/3466 200      7ms
+19:01:56 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3466,) | affected=2 | 1.2ms
+19:01:56 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3466,) | affected=1 | 0.7ms

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1122 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:03:35 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:34",
+      "id": 7511,
+      "text": "你好"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:03:35",
+      "ragUsed": false,
+      "id": 7512,
+      "text": "你好，我是饮食与健康助手。可以帮你做食材替代、食谱分析、三餐搭配、热量与营养估算，也能聊控油控糖控钠、慢病相关饮食注意事项、运动与体重管理、常见保健品的用法与注意点。你想从哪方面开始？",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3542,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你好，我是饮食与健康助手。可以帮你做食材替代、食谱分析、三餐搭配、热量与营养估算，也能聊控油控糖控钠、慢病相关饮食注意事项、运动与体重管理、常见保健品的用法与注意点。你想从哪方面开始？",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:03:35.855716069",
+      "createTime": "2026-10-30T19:03:34",
+      "updateTime": "2026-10-30T19:03:34",
+      "id": 3542,
+      "title": "你好"
+    }
+  },
+  "message": "发送消息成功"
+}

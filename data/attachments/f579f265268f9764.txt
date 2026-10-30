@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1137 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:01:43 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:01:42",
+      "id": 7349,
+      "text": "我昨天晚饭吃了什么"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:01:43",
+      "ragUsed": false,
+      "id": 7350,
+      "text": "我无法知道你昨天晚饭吃了什么，这类个人饮食记录只有你自己或记录工具才有。如果方便，可以把吃的内容告诉我，我可以帮你分析营养搭配和热量估算。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3460,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "我无法知道你昨天晚饭吃了什么，这类个人饮食记录只有你自己或记录工具才有。如果方便，可以把吃的内容告诉我，我可以帮你分析营养搭配和热量估算。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:01:43.929624403",
+      "createTime": "2026-10-30T19:01:42",
+      "updateTime": "2026-10-30T19:01:42",
+      "id": 3460,
+      "title": "我昨天晚饭吃了什么"
+    }
+  },
+  "message": "发送消息成功"
+}

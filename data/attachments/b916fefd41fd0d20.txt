@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1432 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:03:30 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:28",
+      "id": 7503,
+      "text": "那鸡胸肉呢"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:03:30",
+      "ragUsed": false,
+      "id": 7504,
+      "text": "鸡胸肉一般是可以吃的，而且它是很常见的优质蛋白来源：脂肪低、蛋白质含量高，做法也灵活。\n\n需要注意的是别把它做得太干太柴，用蒸、煮、煎或少油烤都可以；调味上少放盐和浓酱，避免把低脂的优势抵消掉。如果你有肾病需要限制蛋白质，具体能吃多少请以医生的建议为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3536,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉一般是可以吃的，而且它是很常见的优质蛋白来源：脂肪低、蛋白质含量高，做法也灵活。  需要注意的是别把它做得太干太柴，用蒸、煮、煎或少油烤都可以；调味上少放盐和浓酱，避免把低脂的优势抵消掉。如果你有肾病需要限制蛋白质，具体能吃多少请以…",
+      "messageCount": 4,
+      "lastMessageAt": "2026-10-30T19:03:30.028497579",
+      "createTime": "2026-10-30T19:03:26",
+      "updateTime": "2026-10-30T19:03:26",
+      "id": 3536,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}

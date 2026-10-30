@@ -1,0 +1,5 @@
+19:02:11 I → POST /assistant/chat    200   1008ms
+19:02:11 I · AI    问「谢谢你」           → 不客气，有饮食或健康方面的问题随时来问就好。
+19:02:11 I → DELETE /assistant/conversations/3476 200      7ms
+19:02:11 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3476,) | affected=2 | 1.1ms
+19:02:11 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3476,) | affected=1 | 0.7ms

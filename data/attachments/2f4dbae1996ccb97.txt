@@ -1,5 +1,0 @@
-06:24:17 I → POST /assistant/chat    200   3040ms
-06:24:17 I · AI    问「我妈妈的饮食建议是少吃油」  → 「少吃油」这个方向对，但更准确的说法是「控制总量、换好油」，而不是一味无油。你妈妈这个年纪，完全不吃油反而可能影响脂溶性维生素吸收和必需脂肪酸摄入。 具体可以这样落地：烹调油每天控制在 25 克左右（…
-06:24:17 I → DELETE /assistant/conversations/3437 200      8ms
-06:24:17 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3437,) | affected=2 | 1.2ms
-06:24:17 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3437,) | affected=1 | 0.9ms

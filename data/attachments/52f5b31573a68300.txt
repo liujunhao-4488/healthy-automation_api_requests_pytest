@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2006 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:01:24 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:01:22",
+      "id": 7325,
+      "text": "减脂期蛋白质吃多少克"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:01:24",
+      "ragUsed": false,
+      "id": 7326,
+      "text": "减脂期按你目前 70.2kg 的体重，蛋白质建议每天约 110–140g，也就是每公斤体重 1.6–2.0g；如果训练强度一般、以稳步减脂为主，取 1.6–1.8g/kg（约 112–126g/天）就够用，训练量大或想更好保留肌肉时可以靠近 2.0g（约 140g）。\n\n这样建议适合你，是因为你 BMI 22.8 属正常范围、无慢性病，减脂期热量会有缺口，蛋白质给足能帮助保住肌肉、也更抗饿；同时你活动水平中等，不需要冲到更高的量。分配上可以每餐 30–40g，早餐别只吃碳水，鸡蛋、牛奶、豆制品都算进去。具体疾病或特殊情况请以医生意见为准。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3448,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "减脂期按你目前 70.2kg 的体重，蛋白质建议每天约 110–140g，也就是每公斤体重 1.6–2.0g；如果训练强度一般、以稳步减脂为主，取 1.6–1.8g/kg（约 112–126g/天）就够用，训练量大或想更好保留肌肉时可以靠…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:01:24.030372478",
+      "createTime": "2026-10-30T19:01:22",
+      "updateTime": "2026-10-30T19:01:22",
+      "id": 3448,
+      "title": "减脂期蛋白质吃多少克"
+    }
+  },
+  "message": "发送消息成功"
+}

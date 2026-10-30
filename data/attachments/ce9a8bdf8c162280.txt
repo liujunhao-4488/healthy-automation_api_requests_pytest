@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_update_profile_fail[手机号空]   0.01s
-
-[清理] 已回查确认删除靶子账号 pf_a2f1e230c4@example.com（userId=101383）

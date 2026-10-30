@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_non_rag_routes_are_labeled[意图未进-knowledge]  2.34s
+                                                                         [ 28%]
+test_cases/ai_assistant/test_assistant_上下文.py 

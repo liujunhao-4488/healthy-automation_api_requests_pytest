@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1455 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:04:41 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:04:39",
+      "id": 7589,
+      "text": "每天喝多少水合适"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:04:41",
+      "ragUsed": false,
+      "id": 7590,
+      "text": "一般成年人每天喝水1500～1700毫升比较合适，大约相当于7～8杯水。这是《中国居民膳食指南》给出的推荐量，指的是白水或淡茶，不包括含糖饮料。\n\n具体可以按情况调整：天气热、出汗多、运动量大时要多喝一些；如果肾功能或心脏功能有问题、医生要求限制饮水，则要按医嘱控制。判断喝水够不够，最简单的方法是看尿液颜色，淡黄色说明基本合适，颜色偏深说明需要补水。喝水以少量多次为宜，不要一次猛灌。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3575,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "一般成年人每天喝水1500～1700毫升比较合适，大约相当于7～8杯水。这是《中国居民膳食指南》给出的推荐量，指的是白水或淡茶，不包括含糖饮料。  具体可以按情况调整：天气热、出汗多、运动量大时要多喝一些；如果肾功能或心脏功能有问题、医生…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:04:41.005311018",
+      "createTime": "2026-10-30T19:04:39",
+      "updateTime": "2026-10-30T19:04:39",
+      "id": 3575,
+      "title": "每天喝多少水合适"
+    }
+  },
+  "message": "发送消息成功"
+}

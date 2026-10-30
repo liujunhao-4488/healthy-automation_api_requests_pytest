@@ -1,5 +1,0 @@
-06:24:11 I → POST /assistant/chat    200   2272ms
-06:24:11 I · AI    问「帮我翻译一下这个营养成分表」  → 翻译营养成分表属于饮食健康范围内的事，但我这边没有收到表格内容——你的消息里只有“帮我翻译一下这个营养成分表”这句话，没有附上具体的项目、数值或图片文字。 请把表格内容贴出来（比如项目名和对应数值，中…
-06:24:11 I → DELETE /assistant/conversations/3435 200      8ms
-06:24:11 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3435,) | affected=2 | 1.1ms
-06:24:11 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3435,) | affected=1 | 0.9ms

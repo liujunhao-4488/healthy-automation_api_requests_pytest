@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1048 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:01:19 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:01:18",
+      "id": 7321,
+      "text": "谢谢"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:01:19",
+      "ragUsed": false,
+      "id": 7322,
+      "text": "不客气，有饮食或健康方面的问题随时来问。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3446,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不客气，有饮食或健康方面的问题随时来问。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:01:19.612463025",
+      "createTime": "2026-10-30T19:01:18",
+      "updateTime": "2026-10-30T19:01:18",
+      "id": 3446,
+      "title": "谢谢"
+    }
+  },
+  "message": "发送消息成功"
+}

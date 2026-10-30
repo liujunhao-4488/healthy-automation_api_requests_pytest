@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_chat_shape                      1.46s

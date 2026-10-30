@@ -1,0 +1,78 @@
+HTTP 200　（耗时 2652 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:03:43 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:40",
+      "id": 7523,
+      "text": "哪些食物有助于降血糖？另外顺便说一下二甲双胍一天最多吃多少。"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 46.6591,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 30.371,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 29.6465,
+          "docId": "guideline:成人脑卒中食养指南2026",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人脑卒中食养指南2026"
+        }
+      ],
+      "createTime": "2026-10-30T19:03:43",
+      "ragUsed": true,
+      "id": 7524,
+      "text": "关于「降血糖」的食物，需要先说明一点：没有哪一种食物能真正把血糖降下来，食物能做的是让餐后血糖升得慢一些、波动小一些。按《成人糖尿病食养指南》，选择低血糖生成指数（GI）的食物有利于餐后血糖控制——低GI食物在胃肠内停留时间长、吸收率低、葡萄糖释放缓慢，餐后血糖峰值低、下降也慢。这类食物主要包括全谷物、杂豆类和蔬菜，它们富含膳食纤维和植物化学物，GI较低，还含有丰富的维生素B1、B2以及钾、镁等矿物质，更耐饥饿，可有效减缓餐后血糖波动。指南也提醒，胃肠功能较弱的老年人选全谷物时要注意烹饪方法和用量，以减轻消化道负担。另外，《成人脑卒中食养指南2026》提到，选择GI较低的食物可避免血糖快速升高诱发胰岛素抵抗，并推荐膳食纤维每天摄入25–30克。具体哪些食物属于低GI，指南建议查阅我国常见食物的血糖生成指数表，资料中没有逐一列出清单，我不凭印象补充。\n\n关于二甲双胍一天最多吃多少，这属于用药剂量问题，超出我的职责范围，我不能给出具体剂量建议。二甲双胍的用量需要医生根据肾功能、剂型（普通片还是缓释片）、耐受情况和血糖水平来定，自行加量有乳酸酸中毒等风险。请以医生的诊断和处方为准，不要自行调整正在服用的药物。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3548,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "关于「降血糖」的食物，需要先说明一点：没有哪一种食物能真正把血糖降下来，食物能做的是让餐后血糖升得慢一些、波动小一些。按《成人糖尿病食养指南》，选择低血糖生成指数（GI）的食物有利于餐后血糖控制——低GI食物在胃肠内停留时间长、吸收率低、…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:03:43.259548765",
+      "createTime": "2026-10-30T19:03:40",
+      "updateTime": "2026-10-30T19:03:40",
+      "id": 3548,
+      "title": "哪些食物有助于降血糖？另..."
+    }
+  },
+  "message": "发送消息成功"
+}

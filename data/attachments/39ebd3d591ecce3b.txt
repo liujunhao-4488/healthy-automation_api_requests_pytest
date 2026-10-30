@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2154 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:01:33 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:01:31",
+      "id": 7335,
+      "text": "我草莓过敏，还能吃什么水果"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:01:33",
+      "ragUsed": false,
+      "id": 7336,
+      "text": "草莓过敏通常只是对草莓这一种水果敏感，绝大多数其他水果都可以正常吃。可以优先选择苹果、梨、香蕉、橙子、猕猴桃、葡萄、蓝莓、西瓜、桃、芒果等常见水果，轮换着吃，种类越丰富越好。\n\n需要注意的是，草莓属于蔷薇科植物，少数对草莓过敏的人可能对同科的树莓、黑莓、樱桃、桃、杏、李子也有交叉反应。第一次尝试这些水果时，先少量吃一点，观察有没有口唇发痒、皮疹等不适；如果没有问题，就可以正常食用。另外，市面上的混合果汁、果酱、酸奶果粒和甜品配料里常含草莓成分，购买前记得看配料表。\n\n如果吃草莓后曾出现嘴唇肿胀、喉咙发紧、呼吸困难等较重的反应，建议到变态反应科做过敏原检测，具体以医生的诊断为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3453,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "草莓过敏通常只是对草莓这一种水果敏感，绝大多数其他水果都可以正常吃。可以优先选择苹果、梨、香蕉、橙子、猕猴桃、葡萄、蓝莓、西瓜、桃、芒果等常见水果，轮换着吃，种类越丰富越好。  需要注意的是，草莓属于蔷薇科植物，少数对草莓过敏的人可能对同…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:01:33.349393209",
+      "createTime": "2026-10-30T19:01:31",
+      "updateTime": "2026-10-30T19:01:31",
+      "id": 3453,
+      "title": "我草莓过敏，还能吃什么水..."
+    }
+  },
+  "message": "发送消息成功"
+}

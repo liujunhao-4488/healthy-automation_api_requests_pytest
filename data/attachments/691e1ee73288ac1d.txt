@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2199 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:02:21 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:02:19",
+      "id": 7389,
+      "text": "我每天该喝多少水"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:02:21",
+      "ragUsed": false,
+      "id": 7390,
+      "text": "对大多数健康成年人来说，每天总饮水量在 1500～1700 毫升左右比较合适，中国居民膳食指南的建议是成年男性约 1700 毫升、女性约 1500 毫升（不含食物中的水）。这只是基准，实际要按情况调整。\n\n之所以给这个范围而不是一个固定数字，是因为需水量受体重、活动量、气温、出汗和饮食结构影响很大。天气热、运动多、出汗多时要相应增加；吃了很多汤、粥、水果、蔬菜时，从食物中获得的水也不少。\n\n具体可以这样把握：以尿液颜色为参考，淡黄色说明基本够了，颜色偏深就要补水；少量多次喝，不要等口渴才喝；白开水最好，淡茶也可以，含糖饮料和果汁不算理想的水来源。剧烈运动大量出汗后，可适当补充含电解质的饮品。\n\n需要提醒的是，心衰、肾功能不全、肝硬化腹水等情况通常需要限制液体量，不能按上面的通用量喝，具体请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3480,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "对大多数健康成年人来说，每天总饮水量在 1500～1700 毫升左右比较合适，中国居民膳食指南的建议是成年男性约 1700 毫升、女性约 1500 毫升（不含食物中的水）。这只是基准，实际要按情况调整。  之所以给这个范围而不是一个固定数…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:02:21.367908848",
+      "createTime": "2026-10-30T19:02:19",
+      "updateTime": "2026-10-30T19:02:19",
+      "id": 3480,
+      "title": "我每天该喝多少水"
+    }
+  },
+  "message": "发送消息成功"
+}

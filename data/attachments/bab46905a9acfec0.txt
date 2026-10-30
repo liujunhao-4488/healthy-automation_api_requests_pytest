@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1922 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:03:49 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:47",
+      "id": 7529,
+      "text": "我在吃华法林，能多吃点菠菜吗？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:03:49",
+      "ragUsed": false,
+      "id": 7530,
+      "text": "不建议突然“多吃”菠菜，关键不是能不能吃，而是要保持摄入量稳定。\n\n华法林通过抑制维生素K起作用，而菠菜是维生素K含量很高的蔬菜。偶尔吃一点问题不大，但如果平时很少吃、突然每天大量吃，或反过来原本常吃又突然停掉，都会让华法林的抗凝效果出现波动，影响INR。所以更稳妥的做法是：菠菜可以吃，但保持每周的量大致固定，不要大起大落；同时按医生安排定期查INR。如果你最近想明显改变菠菜或其他深绿色叶菜的吃法，最好提前和开药的医生或抗凝门诊沟通。\n\n另外提醒一句：具体到你的华法林剂量和INR目标，请以医生的诊断和处方为准，不要自行调整药量。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3551,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不建议突然“多吃”菠菜，关键不是能不能吃，而是要保持摄入量稳定。  华法林通过抑制维生素K起作用，而菠菜是维生素K含量很高的蔬菜。偶尔吃一点问题不大，但如果平时很少吃、突然每天大量吃，或反过来原本常吃又突然停掉，都会让华法林的抗凝效果出现…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:03:49.362883873",
+      "createTime": "2026-10-30T19:03:47",
+      "updateTime": "2026-10-30T19:03:47",
+      "id": 3551,
+      "title": "我在吃华法林，能多吃点菠..."
+    }
+  },
+  "message": "发送消息成功"
+}

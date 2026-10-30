@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_register_fail[邮箱格式错]       0.00s
+
+[清理] 删除注册测试账号 at_a7fd710fd2@example.com，affected=1

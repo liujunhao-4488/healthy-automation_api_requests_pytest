@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2348 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:01:02 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:00:59",
+      "id": 7285,
+      "text": "我最近在减脂，中午一般吃鸡胸肉。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:01:02",
+      "ragUsed": false,
+      "id": 7286,
+      "text": "鸡胸肉作为减脂期的午餐主蛋白来源是合适的：脂肪低、蛋白质密度高，饱腹感强，也方便控制总热量。\n\n不过单靠鸡胸肉还不够，午餐建议搭配一份主食和足量蔬菜，比如杂粮饭或玉米、红薯，再加一大份绿叶菜或菌菇。这样血糖更平稳，下午不容易饿，也能减少后面加餐的冲动。\n\n另外，鸡胸肉的做法对热量影响很大。水煮、蒸、少油煎、烤都可以；如果常吃油炸或重酱汁的做法，减脂效果会打折扣。也可以和鱼虾、瘦牛肉、鸡蛋、豆制品轮换着吃，营养更全面，也不容易吃腻。\n\n如果想让我帮你估算这顿午餐的热量和蛋白质，可以告诉我大概的分量和做法。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3430,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉作为减脂期的午餐主蛋白来源是合适的：脂肪低、蛋白质密度高，饱腹感强，也方便控制总热量。  不过单靠鸡胸肉还不够，午餐建议搭配一份主食和足量蔬菜，比如杂粮饭或玉米、红薯，再加一大份绿叶菜或菌菇。这样血糖更平稳，下午不容易饿，也能减少后…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:01:02.323475596",
+      "createTime": "2026-10-30T19:00:59",
+      "updateTime": "2026-10-30T19:00:59",
+      "id": 3430,
+      "title": "我最近在减脂，中午一般吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

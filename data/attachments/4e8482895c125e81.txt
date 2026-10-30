@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_admin_api_requires_login[发布通知]  0.01s

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2073 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:02:17 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:02:15",
+      "id": 7385,
+      "text": "我能吃海虾吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:02:17",
+      "ragUsed": false,
+      "id": 7386,
+      "text": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况，仅凭这一句我还判断不了。\n\n如果你对虾蟹等甲壳类海鲜过敏，那就不要吃，而且要注意虾酱、虾皮、海鲜调味料这类隐藏来源；如果以前吃过没有问题，一般健康人群适量吃海虾是可以的，它是优质蛋白，脂肪低，但嘌呤和钠含量不算低。痛风急性发作期、尿酸控制不佳，或需要严格限钠的人，要控制份量、少用盐和酱料。另外一定要彻底煮熟，避免生腌。\n\n如果你能告诉我是否有海鲜过敏史，或者是否有痛风、肾病等情况，我可以给更具体的建议。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3478,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况，仅凭这一句我还判断不了。  如果你对虾蟹等甲壳类海鲜过敏，那就不要吃，而且要注意虾酱、虾皮、海鲜调味料这类隐藏来源；如果以前吃过没有问题，一般健康人群适量吃海虾是可以的，它是优…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:02:17.149657153",
+      "createTime": "2026-10-30T19:02:15",
+      "updateTime": "2026-10-30T19:02:15",
+      "id": 3478,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}

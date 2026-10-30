@@ -1,0 +1,6 @@
+19:00:19 I → POST http://127.0.0.1:5000/api/kb/search 200      8ms
+19:00:23 I → POST /assistant/chat    200   3694ms
+19:00:23 I · AI    问「糖尿病怎么吃」     → 糖尿病饮食的核心是：食物多样、主食定量并优选全谷物和低血糖生成指数食物、能量适宜以维持合理体重、清淡少油盐糖且不饮酒，同时把运动融入日常。以下是《成人糖尿病食养指南》给出的主要食养原则，我按日常操作顺…
+19:00:23 I → DELETE /assistant/conversations/3419 200     10ms
+19:00:23 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3419,) | affected=2 | 1.0ms
+19:00:23 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3419,) | affected=1 | 0.9ms

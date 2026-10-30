@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2687 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:01:17 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:01:14",
+      "id": 7317,
+      "text": "我想换个口味，有什么建议"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:01:17",
+      "ragUsed": false,
+      "id": 7318,
+      "text": "换口味可以从两个方向入手：一是换食材，二是换做法和风味体系。\n\n食材上，你现在体重和BMI都在正常范围，没有慢病，可以放心把蛋白质来源轮换起来：鸡胸肉换成去皮鸡腿、虾、龙利鱼、瘦牛肉、鸡蛋或豆制品，主食把白米白面部分换成糙米、燕麦、荞麦面、红薯、玉米。这样既能换口感，也能顺带提高膳食纤维和微量营养素。\n\n风味上，不用改热量结构，只换调味思路就能明显“换口味”：比如清蒸换成柠檬胡椒烤、红烧换成番茄炖、水煮换成泰式酸辣凉拌（用柠檬汁、小米辣、鱼露少量代替高油高盐酱料）。这样在保持你中度活动水平下每日约2300–2500kcal、蛋白质约110–130g的框架内，口味变化不会带来额外热量负担。\n\n如果你告诉我平时最常吃哪几样、想换掉的是哪一餐，我可以给一份具体的替换清单。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3444,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "换口味可以从两个方向入手：一是换食材，二是换做法和风味体系。  食材上，你现在体重和BMI都在正常范围，没有慢病，可以放心把蛋白质来源轮换起来：鸡胸肉换成去皮鸡腿、虾、龙利鱼、瘦牛肉、鸡蛋或豆制品，主食把白米白面部分换成糙米、燕麦、荞麦面…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:01:17.054601965",
+      "createTime": "2026-10-30T19:01:14",
+      "updateTime": "2026-10-30T19:01:14",
+      "id": 3444,
+      "title": "我想换个口味，有什么建议"
+    }
+  },
+  "message": "发送消息成功"
+}

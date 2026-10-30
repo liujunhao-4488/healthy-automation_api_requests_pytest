@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_update_avatar_then_clear        0.02s
-
-[清理] 已回查确认删除靶子账号 pf_978ae2f4e7@example.com（userId=101388）

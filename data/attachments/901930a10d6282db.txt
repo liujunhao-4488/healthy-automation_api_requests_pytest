@@ -1,0 +1,16 @@
+HTTP 200　（耗时 2 ms）
+
+【响应头】
+Server: Werkzeug/3.1.9 Python/3.11.17
+Date: Fri, 30 Oct 2026 19:00:38 GMT
+Content-Type: application/json
+Content-Length: 56
+Access-Control-Allow-Origin: *
+Connection: close
+
+【响应体】
+{
+  "code": 200,
+  "data": [],
+  "message": "success"
+}

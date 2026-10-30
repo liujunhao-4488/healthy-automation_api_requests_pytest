@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2637 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:03:52 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:49",
+      "id": 7531,
+      "text": "我怀孕 5 个月了，能吃三文鱼刺身吗？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:03:52",
+      "ragUsed": false,
+      "id": 7532,
+      "text": "怀孕5个月不建议吃三文鱼刺身，建议吃彻底加热熟制的三文鱼。\n\n原因是生食水产品存在李斯特菌、寄生虫和致病菌的风险。孕期免疫状态有变化，感染李斯特菌后可能引起发热、腹泻，严重时可能影响胎儿，所以孕期饮食一般建议避免生鱼片、生腌、生蚝等生食海鲜，三文鱼刺身也在其中。冷冻处理能降低部分寄生虫风险，但并不能完全消除细菌污染的风险，因此不建议靠“冷冻过”来判断可以生吃。\n\n想吃三文鱼的话，可以选熟制的做法，比如香煎、清蒸、烤箱烤到鱼肉完全不透明、能轻松分层，中心温度达到熟透；寿司里的炙烤三文鱼、熟虾寿司这类熟食选项也可以。营养上，三文鱼富含优质蛋白和DHA，熟制后同样能获得这些好处，每周吃两三次熟制深海鱼是不错的安排。\n\n另外提醒一句：孕期饮食的具体安排，尤其是如果你有妊娠糖尿病、高血压或其他合并症，请以产科医生和产检时的营养指导为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3552,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "怀孕5个月不建议吃三文鱼刺身，建议吃彻底加热熟制的三文鱼。  原因是生食水产品存在李斯特菌、寄生虫和致病菌的风险。孕期免疫状态有变化，感染李斯特菌后可能引起发热、腹泻，严重时可能影响胎儿，所以孕期饮食一般建议避免生鱼片、生腌、生蚝等生食海…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:03:52.01463556",
+      "createTime": "2026-10-30T19:03:49",
+      "updateTime": "2026-10-30T19:03:49",
+      "id": 3552,
+      "title": "我怀孕 5 个月了，能吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

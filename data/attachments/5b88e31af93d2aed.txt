@@ -1,0 +1,5 @@
+19:02:26 I → POST /assistant/chat    200   1956ms
+19:02:26 I · AI    问「你好，今天想吃点好的」  → “吃点好的”完全可以吃得舒服又不太有负担。关键是“好”体现在食材新鲜、搭配均衡和做法上，不必靠重油重盐或大分量。 可以按这个思路安排一餐：一份优质蛋白（鱼虾、瘦牛肉、鸡肉或豆制品），一份深色蔬菜，再配…
+19:02:26 I → DELETE /assistant/conversations/3483 200      7ms
+19:02:26 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3483,) | affected=2 | 1.1ms
+19:02:26 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3483,) | affected=1 | 1.0ms

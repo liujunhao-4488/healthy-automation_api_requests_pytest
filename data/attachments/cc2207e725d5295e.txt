@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_article_filter_returns_only_article  0.00s

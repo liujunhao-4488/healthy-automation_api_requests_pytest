@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1087 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:02:09 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:02:08",
+      "id": 7377,
+      "text": "刚吃了碗牛肉面"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:02:09",
+      "ragUsed": false,
+      "id": 7378,
+      "text": "一碗牛肉面作为一餐，主要提供碳水（面条）和蛋白质（牛肉），但蔬菜偏少、汤底往往钠含量较高。如果这是正餐，可以留意两点：一是汤尽量少喝，钠主要溶在汤里；二是当天其他餐次补点蔬菜，平衡一下。想更具体地估算热量或调整搭配，可以告诉我面的分量和汤喝了多少。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3474,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "一碗牛肉面作为一餐，主要提供碳水（面条）和蛋白质（牛肉），但蔬菜偏少、汤底往往钠含量较高。如果这是正餐，可以留意两点：一是汤尽量少喝，钠主要溶在汤里；二是当天其他餐次补点蔬菜，平衡一下。想更具体地估算热量或调整搭配，可以告诉我面的分量和汤…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:02:09.360864019",
+      "createTime": "2026-10-30T19:02:08",
+      "updateTime": "2026-10-30T19:02:08",
+      "id": 3474,
+      "title": "刚吃了碗牛肉面"
+    }
+  },
+  "message": "发送消息成功"
+}

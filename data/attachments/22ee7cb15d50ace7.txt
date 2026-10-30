@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2338 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:04:23 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:04:21",
+      "id": 7567,
+      "text": "那如果我想更快一点呢，最快能多快？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:04:23",
+      "ragUsed": false,
+      "id": 7568,
+      "text": "在保证安全和可持续的前提下，一般不建议超过每周 2 斤（1 公斤），这基本就是“健康上限”了。再快通常要付出代价：肌肉流失、代谢下降、乏力脱发、女性月经紊乱、胆结石风险上升，而且反弹概率明显更高。\n\n如果体重基数较大，初期一周掉 2～3 斤有可能出现，但其中相当一部分是水分和糖原，不代表脂肪减得快，也不必把它当成目标去追。\n\n想尽量靠近这个上限，可以做的是：把热量缺口控制在合理范围而不是极端节食，保证蛋白质摄入，减少精制糖和油炸食物，每周加入 2～3 次力量训练保住肌肉，并保证睡眠。这些能让你在安全区间内跑得快一些。\n\n不建议用禁食、催吐、减肥药或极低热量代餐去换速度。如果有慢性病、正在服药，或处于孕期哺乳期，具体节奏请以医生的评估为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3565,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "在保证安全和可持续的前提下，一般不建议超过每周 2 斤（1 公斤），这基本就是“健康上限”了。再快通常要付出代价：肌肉流失、代谢下降、乏力脱发、女性月经紊乱、胆结石风险上升，而且反弹概率明显更高。  如果体重基数较大，初期一周掉 2～3 …",
+      "messageCount": 4,
+      "lastMessageAt": "2026-10-30T19:04:23.945934346",
+      "createTime": "2026-10-30T19:04:19",
+      "updateTime": "2026-10-30T19:04:19",
+      "id": 3565,
+      "title": "健康的减重速度是每周多少..."
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1925 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:01:45 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:01:43",
+      "id": 7351,
+      "text": "我今天的蛋白质摄入够吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:01:45",
+      "ragUsed": false,
+      "id": 7352,
+      "text": "仅凭「今天的蛋白质摄入够吗」这一句，我没法判断——我这边没有你今天的饮食记录，也不知道你的体重、活动量和健康目标，所以无法给出「够」或「不够」的结论。\n\n一般来说，成年人每天每公斤体重约 0.8～1.0 克蛋白质可以满足基本需要；有规律力量训练、减脂期或中老年人群，常会用到 1.2～1.6 克/公斤体重。你可以把今天吃的东西大致报给我（比如早餐鸡蛋牛奶、午餐米饭配什么菜、有没有豆制品或肉类、份量大概多少），我帮你估算一下总量，再判断是否达标、差多少、怎么补。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3461,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "仅凭「今天的蛋白质摄入够吗」这一句，我没法判断——我这边没有你今天的饮食记录，也不知道你的体重、活动量和健康目标，所以无法给出「够」或「不够」的结论。  一般来说，成年人每天每公斤体重约 0.8～1.0 克蛋白质可以满足基本需要；有规律力…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:01:45.868630988",
+      "createTime": "2026-10-30T19:01:43",
+      "updateTime": "2026-10-30T19:01:43",
+      "id": 3461,
+      "title": "我今天的蛋白质摄入够吗"
+    }
+  },
+  "message": "发送消息成功"
+}

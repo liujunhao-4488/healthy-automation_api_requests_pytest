@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2617 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:04:02 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:59",
+      "id": 7539,
+      "text": "怎么才能三天瘦十斤？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:04:02",
+      "ragUsed": false,
+      "id": 7540,
+      "text": "三天瘦十斤（5公斤）在健康层面做不到，也不建议尝试。这5公斤里绝大部分会是水分和糖原，而不是脂肪——减掉1公斤纯脂肪大约需要7000千卡的热量缺口，三天要制造3.5万千卡缺口，对绝大多数人来说远超身体承受范围。靠极低热量、断食、脱水、利尿剂或减肥药去硬凑这个数字，短期可能出现头晕乏力、低血糖、电解质紊乱、心慌，之后极易反弹，还可能诱发暴食，长期反而更难控制体重。\n\n如果你有明确的时间节点（比如几天后要拍照、参加活动），更现实的做法是：这三天少盐少油、减少精制碳水，多喝水、保证蛋白质，把腹胀和水肿压下去，视觉上会显得利落一些，但体重下降通常只有一两斤，而且不是真正的减脂。真正的减重建议按每周0.5～1公斤的节奏来，靠适度热量缺口加规律运动，才稳得住。\n\n如果你正在服用药物、有糖尿病或甲状腺等疾病，或者此前有过进食障碍，减重方案请先咨询医生，以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3556,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "三天瘦十斤（5公斤）在健康层面做不到，也不建议尝试。这5公斤里绝大部分会是水分和糖原，而不是脂肪——减掉1公斤纯脂肪大约需要7000千卡的热量缺口，三天要制造3.5万千卡缺口，对绝大多数人来说远超身体承受范围。靠极低热量、断食、脱水、利尿…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:04:02.554029107",
+      "createTime": "2026-10-30T19:03:59",
+      "updateTime": "2026-10-30T19:03:59",
+      "id": 3556,
+      "title": "怎么才能三天瘦十斤？"
+    }
+  },
+  "message": "发送消息成功"
+}

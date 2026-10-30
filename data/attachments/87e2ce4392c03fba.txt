@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1998 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 30 Oct 2026 19:03:54 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-10-30T19:03:52",
+      "id": 7533,
+      "text": "我家宝宝 8 个月，有点咳嗽，喂点蜂蜜水可以吗？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-10-30T19:03:54",
+      "ragUsed": false,
+      "id": 7534,
+      "text": "不建议给 8 个月的宝宝喂蜂蜜水。1 岁以内的婴儿不建议食用任何含蜂蜜的食物或饮品，包括蜂蜜水。\n\n主要原因是蜂蜜中可能含有肉毒杆菌芽孢，婴儿肠道菌群和免疫系统尚未发育成熟，吃进去后芽孢可能在肠道内繁殖并产生毒素，引起婴儿肉毒中毒，风险虽不高但后果可能很严重。另外，蜂蜜本质是糖，对这么小的宝宝没有营养上的好处，甜味还可能影响以后对清淡食物的接受度。\n\n宝宝咳嗽时，更稳妥的做法是：少量多次喂温水或母乳、配方奶，保持室内湿度适宜，避免烟雾和冷空气刺激；8 个月的宝宝也不建议自行用止咳药或感冒药。如果咳嗽持续加重、出现呼吸急促、喘息、发热、精神差或吃奶明显减少，请及时就医，具体请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3553,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不建议给 8 个月的宝宝喂蜂蜜水。1 岁以内的婴儿不建议食用任何含蜂蜜的食物或饮品，包括蜂蜜水。  主要原因是蜂蜜中可能含有肉毒杆菌芽孢，婴儿肠道菌群和免疫系统尚未发育成熟，吃进去后芽孢可能在肠道内繁殖并产生毒素，引起婴儿肉毒中毒，风险虽…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-10-30T19:03:54.028428865",
+      "createTime": "2026-10-30T19:03:52",
+      "updateTime": "2026-10-30T19:03:52",
+      "id": 3553,
+      "title": "我家宝宝 8 个月，有点..."
+    }
+  },
+  "message": "发送消息成功"
+}

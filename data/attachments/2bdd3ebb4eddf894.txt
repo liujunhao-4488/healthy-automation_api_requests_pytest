@@ -1,0 +1,5 @@
+19:02:19 I → POST /assistant/chat    200   1984ms
+19:02:19 I · AI    问「早餐吃什么比较抗饿」  → 早餐想更抗饿，关键是让蛋白质和膳食纤维够、主食选得“慢”一点，别只吃精制碳水。 具体可以这样搭：主食优先选燕麦、全麦面包、杂粮粥、玉米、红薯这类，比白粥白馒头消化慢；再配一份优质蛋白，比如鸡蛋、牛奶、…
+19:02:19 I → DELETE /assistant/conversations/3479 200      7ms
+19:02:19 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3479,) | affected=2 | 1.0ms
+19:02:19 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3479,) | affected=1 | 0.8ms

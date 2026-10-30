@@ -1,1 +1,0 @@
-06:24:31 I → GET  /health/goal       200      5ms
