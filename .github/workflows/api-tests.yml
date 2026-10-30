@@ -13,7 +13,7 @@
 #  分层策略（标记由 conftest.py 自动挂，这里只管选）：
 #    pull_request   → smoke  （118 条，不调模型，目标 1 分钟内）
 #    push main      → p0     （149 条，阻断级，仍不调模型）
-#    schedule       → regression（346 条；没配模型密钥时自动排除 p1）
+#    schedule       → regression（346 条；每周五 22:00 跑，没配模型密钥时自动排除 p1）
 #    手动触发        → 自选 smoke / p0 / p1 / regression
 #
 #  ⚠️ GitHub Actions 只在 GitHub 仓库上运行（Gitee 侧不会触发），
@@ -42,8 +42,11 @@ on:
       - "database/**"
       - ".github/workflows/api-tests.yml"
   schedule:
-    # UTC 18:00 = 北京时间次日 02:00，每天跑一次全量回归
-    - cron: "0 18 * * *"
+    # 每周五跑一次全量回归（原为每天一次，频率过高）
+    # UTC 14:00 = 北京时间周五 22:00
+    #   注：GitHub cron 用 UTC，且周几也按 UTC 算，改写时两边都要换算
+    #   （要改成北京周五凌晨 02:00 的话，得写 UTC 周四 18:00 → "0 18 * * 4"）
+    - cron: "0 14 * * 5"
   workflow_dispatch:
     inputs:
       layer:
