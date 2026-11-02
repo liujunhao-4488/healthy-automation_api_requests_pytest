@@ -1,6 +1,7 @@
 package com.health.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.health.entity.DietRecord;
 import com.health.entity.HealthArticle;
 import com.health.entity.Ingredient;
@@ -18,13 +19,20 @@ import com.health.mapper.RecipeMapper;
 import com.health.mapper.UserArticleCollectMapper;
 import com.health.mapper.UserReadRecordMapper;
 import com.health.mapper.UserRecipeCollectMapper;
+import com.health.service.HealthArticleService;
+import com.health.service.RecipeService;
 import com.health.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
@@ -77,6 +85,14 @@ public class AdminOverviewController {
 
     @Autowired
     private UserReadRecordMapper userReadRecordMapper;
+
+    @Autowired
+    private RecipeService recipeService;
+
+    @Autowired
+    private HealthArticleService healthArticleService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @GetMapping("/overview")
     public ResponseEntity<?> getOverview(Principal principal) {
@@ -536,7 +552,458 @@ public class AdminOverviewController {
         return date != null ? date : toLocalDate(fallbackDateTime);
     }
 
-    private void requireAdmin(Principal principal) {
+    @GetMapping("/{type}/list")
+    public ResponseEntity<?> listContent(
+        @PathVariable String type,
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) String cat,
+        @RequestParam(required = false) String status,
+        Principal principal
+    ) {
+        try {
+            requireAdmin(principal);
+
+            String kw = keyword == null ? "" : keyword.trim().toLowerCase();
+            boolean onlyOn = "on".equals(status);
+            boolean onlyOff = "off".equals(status);
+            List<Object> rows = new ArrayList<>();
+
+            if ("recipe".equals(type)) {
+                List<Recipe> recipes = recipeMapper.selectList(new QueryWrapper<Recipe>().orderByDesc("create_time"));
+                for (Recipe recipe : recipes) {
+                    if (!matchesText(kw, recipe.getName(), recipe.getDescription())) {
+                        continue;
+                    }
+                    if (cat != null && !cat.isBlank() && !cat.equals(recipe.getCategory())) {
+                        continue;
+                    }
+                    if ((onlyOn && Integer.valueOf(0).equals(recipe.getStatus()))
+                        || (onlyOff && !Integer.valueOf(0).equals(recipe.getStatus()))) {
+                        continue;
+                    }
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("id", recipe.getId());
+                    row.put("name", recipe.getName());
+                    row.put("description", recipe.getDescription());
+                    row.put("category", recipe.getCategory());
+                    row.put("cuisineType", recipe.getCuisineType());
+                    row.put("cookingTime", recipe.getCookingTime());
+                    row.put("difficulty", recipe.getDifficulty());
+                    row.put("servings", recipe.getServings());
+                    row.put("totalCalories", recipe.getTotalCalories());
+                    row.put("caloriesPerServing", recipe.getCaloriesPerServing());
+                    row.put("protein", recipe.getProtein());
+                    row.put("carbs", recipe.getCarbs());
+                    row.put("fat", recipe.getFat());
+                    row.put("fiber", recipe.getFiber());
+                    row.put("suitableFor", recipe.getSuitableFor());
+                    row.put("tips", recipe.getTips());
+                    row.put("instructions", recipe.getInstructions());
+                    row.put("imageUrl", recipe.getImageUrl());
+                    row.put("status", recipe.getStatus() == null ? 1 : recipe.getStatus());
+                    rows.add(row);
+                }
+            } else if ("article".equals(type)) {
+                List<HealthArticle> articles = healthArticleMapper.selectList(
+                    new QueryWrapper<HealthArticle>().orderByDesc("create_time")
+                );
+                for (HealthArticle article : articles) {
+                    if (!matchesText(kw, article.getTitle(), article.getSummary())) {
+                        continue;
+                    }
+                    if (cat != null && !cat.isBlank() && !cat.equals(article.getCategory())) {
+                        continue;
+                    }
+                    if ((onlyOn && Integer.valueOf(0).equals(article.getStatus()))
+                        || (onlyOff && !Integer.valueOf(0).equals(article.getStatus()))) {
+                        continue;
+                    }
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("id", String.valueOf(article.getId()));
+                    row.put("title", article.getTitle());
+                    row.put("summary", article.getSummary());
+                    row.put("content", article.getContent());
+                    row.put("category", article.getCategory());
+                    row.put("tags", article.getTags());
+                    row.put("author", article.getAuthor());
+                    row.put("readCount", article.getReadCount());
+                    row.put("likeCount", article.getLikeCount());
+                    row.put("commentCount", article.getCommentCount());
+                    row.put("publishDate", article.getPublishDate());
+                    row.put("status", article.getStatus() == null ? 1 : article.getStatus());
+                    rows.add(row);
+                }
+            } else if ("ingredient".equals(type)) {
+                List<Ingredient> ingredients = ingredientMapper.selectList(
+                    new QueryWrapper<Ingredient>().orderByDesc("create_time")
+                );
+                for (Ingredient ingredient : ingredients) {
+                    if (!matchesText(kw, ingredient.getName(), ingredient.getDescription())) {
+                        continue;
+                    }
+                    if (cat != null && !cat.isBlank() && !cat.equals(ingredient.getCategory())) {
+                        continue;
+                    }
+                    if ((onlyOn && Integer.valueOf(0).equals(ingredient.getStatus()))
+                        || (onlyOff && !Integer.valueOf(0).equals(ingredient.getStatus()))) {
+                        continue;
+                    }
+                    rows.add(ingredient);
+                }
+            } else {
+                return badRequestResponse("不支持的内容类型");
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("list", rows);
+            data.put("total", rows.size());
+            return successResponse("获取内容列表成功", data);
+        } catch (Exception e) {
+            log.error("获取后台内容列表失败: {}", e.getMessage());
+            return badRequestResponse(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{type}/{id}/status")
+    public ResponseEntity<?> updateContentStatus(
+        @PathVariable String type,
+        @PathVariable Long id,
+        @RequestParam Integer status,
+        Principal principal
+    ) {
+        try {
+            requireAdmin(principal);
+
+            boolean updated;
+            if ("recipe".equals(type)) {
+                Recipe recipe = recipeMapper.selectById(id);
+                updated = recipe != null;
+                if (updated) {
+                    recipe.setStatus(status);
+                    recipeMapper.updateById(recipe);
+                }
+            } else if ("article".equals(type)) {
+                HealthArticle article = healthArticleMapper.selectById(id);
+                updated = article != null;
+                if (updated) {
+                    article.setStatus(status);
+                    healthArticleMapper.updateById(article);
+                }
+            } else if ("ingredient".equals(type)) {
+                Ingredient ingredient = ingredientMapper.selectById(id);
+                updated = ingredient != null;
+                if (updated) {
+                    ingredient.setStatus(status);
+                    ingredientMapper.updateById(ingredient);
+                }
+            } else {
+                return badRequestResponse("不支持的内容类型");
+            }
+
+            if (!updated) {
+                return badRequestResponse("内容不存在");
+            }
+            return successResponse(status == 0 ? "已下架" : "已上架", true);
+        } catch (Exception e) {
+            log.error("更新内容状态失败: {}", e.getMessage());
+            return badRequestResponse(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{type}")
+    public ResponseEntity<?> createContent(
+        @PathVariable String type,
+        @RequestBody Map<String, Object> payload,
+        Principal principal
+    ) {
+        try {
+            User admin = requireAdmin(principal);
+
+            if ("recipe".equals(type)) {
+                Recipe recipe = new Recipe();
+                applyAdminRecipeFields(recipe, payload);
+                if (recipe.getName() == null || recipe.getName().isBlank()) {
+                    return badRequestResponse("请填写食谱名称");
+                }
+                recipe.setCreatorId(admin.getId());
+                recipe.setIsCustom(0);
+                if (recipe.getStatus() == null) {
+                    recipe.setStatus(1);
+                }
+                recipeService.saveRecipe(recipe, null);
+                return successResponse("新建食谱成功", true);
+            }
+            if ("article".equals(type)) {
+                HealthArticle article = new HealthArticle();
+                applyAdminArticleFields(article, payload);
+                if (article.getTitle() == null || article.getTitle().isBlank()) {
+                    return badRequestResponse("请填写文章标题");
+                }
+                if (article.getPublishDate() == null) {
+                    article.setPublishDate(new Date());
+                }
+                if (article.getStatus() == null) {
+                    article.setStatus(1);
+                }
+                healthArticleService.saveArticle(article);
+                return successResponse("新建文章成功", true);
+            }
+            if ("ingredient".equals(type)) {
+                Ingredient ingredient = new Ingredient();
+                applyAdminIngredientFields(ingredient, payload);
+                if (ingredient.getName() == null || ingredient.getName().isBlank()) {
+                    return badRequestResponse("请填写食材名称");
+                }
+                if (ingredient.getStatus() == null) {
+                    ingredient.setStatus(1);
+                }
+                ingredientMapper.insert(ingredient);
+                return successResponse("新建食材成功", true);
+            }
+            return badRequestResponse("不支持的内容类型");
+        } catch (Exception e) {
+            log.error("新建内容失败: {}", e.getMessage());
+            return badRequestResponse(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{type}/{id}")
+    public ResponseEntity<?> updateContent(
+        @PathVariable String type,
+        @PathVariable Long id,
+        @RequestBody Map<String, Object> payload,
+        Principal principal
+    ) {
+        try {
+            requireAdmin(principal);
+
+            if ("recipe".equals(type)) {
+                Recipe recipe = recipeMapper.selectById(id);
+                if (recipe == null) {
+                    return badRequestResponse("食谱不存在");
+                }
+                applyAdminRecipeFields(recipe, payload);
+                recipeService.updateRecipe(recipe, null);
+                return successResponse("更新食谱成功", true);
+            }
+            if ("article".equals(type)) {
+                HealthArticle article = healthArticleMapper.selectById(id);
+                if (article == null) {
+                    return badRequestResponse("文章不存在");
+                }
+                applyAdminArticleFields(article, payload);
+                healthArticleService.updateArticle(article);
+                return successResponse("更新文章成功", true);
+            }
+            if ("ingredient".equals(type)) {
+                Ingredient ingredient = ingredientMapper.selectById(id);
+                if (ingredient == null) {
+                    return badRequestResponse("食材不存在");
+                }
+                applyAdminIngredientFields(ingredient, payload);
+                ingredientMapper.updateById(ingredient);
+                return successResponse("更新食材成功", true);
+            }
+            return badRequestResponse("不支持的内容类型");
+        } catch (Exception e) {
+            log.error("更新内容失败: {}", e.getMessage());
+            return badRequestResponse(e.getMessage());
+        }
+    }
+
+    private void applyAdminRecipeFields(Recipe recipe, Map<String, Object> payload) {
+        if (payload.get("name") != null) {
+            recipe.setName(text(payload.get("name")));
+        }
+        if (payload.get("desc") != null) {
+            recipe.setDescription(text(payload.get("desc")));
+        }
+        if (payload.get("time") != null) {
+            recipe.setCookingTime(integerValue(payload.get("time")));
+        }
+        if (payload.get("level") != null) {
+            recipe.setDifficulty(text(payload.get("level")));
+        }
+        Object steps = payload.containsKey("steps") ? payload.get("steps") : payload.get("instructions");
+        if (steps != null) {
+            recipe.setInstructions(instructionsText(steps));
+        }
+        if (payload.get("img") != null) {
+            recipe.setImageUrl(text(payload.get("img")));
+        }
+        if (payload.get("mealType") != null) {
+            recipe.setCategory(text(payload.get("mealType")));
+        }
+        if (payload.get("cuisine") != null) {
+            recipe.setCuisineType(text(payload.get("cuisine")));
+        }
+        if (payload.get("servings") != null) {
+            recipe.setServings(integerValue(payload.get("servings")));
+        }
+        Object calories = payload.containsKey("kcal") ? payload.get("kcal") : payload.get("totalCalories");
+        if (calories != null) {
+            recipe.setTotalCalories(number(calories));
+        }
+        Object protein = payload.containsKey("p") ? payload.get("p") : payload.get("protein");
+        if (protein != null) {
+            recipe.setProtein(number(protein));
+        }
+        Object carbs = payload.containsKey("c") ? payload.get("c") : payload.get("carbs");
+        if (carbs != null) {
+            recipe.setCarbs(number(carbs));
+        }
+        Object fat = payload.containsKey("f") ? payload.get("f") : payload.get("fat");
+        if (fat != null) {
+            recipe.setFat(number(fat));
+        }
+        if (payload.get("fiber") != null) {
+            recipe.setFiber(number(payload.get("fiber")));
+        }
+        Object fit = payload.containsKey("fit") ? payload.get("fit") : payload.get("suitableFor");
+        if (fit != null) {
+            recipe.setSuitableFor(joinText(fit));
+        }
+        if (payload.get("tips") != null) {
+            recipe.setTips(text(payload.get("tips")));
+        }
+        if (payload.get("status") != null) {
+            recipe.setStatus(integerValue(payload.get("status")));
+        }
+    }
+
+    private void applyAdminArticleFields(HealthArticle article, Map<String, Object> payload) {
+        if (payload.get("title") != null) {
+            article.setTitle(text(payload.get("title")));
+        }
+        if (payload.get("summary") != null) {
+            article.setSummary(text(payload.get("summary")));
+        }
+        if (payload.get("cat") != null) {
+            article.setCategory(text(payload.get("cat")));
+        }
+        if (payload.get("author") != null) {
+            article.setAuthor(text(payload.get("author")));
+        }
+        if (payload.get("tags") != null) {
+            article.setTags(joinText(payload.get("tags")));
+        }
+        if (payload.get("body") != null) {
+            article.setContent(bodyText(payload.get("body")));
+        } else if (payload.get("content") != null) {
+            article.setContent(text(payload.get("content")));
+        }
+        if (payload.get("status") != null) {
+            article.setStatus(integerValue(payload.get("status")));
+        }
+    }
+
+    private void applyAdminIngredientFields(Ingredient ingredient, Map<String, Object> payload) {
+        if (payload.get("name") != null) {
+            ingredient.setName(text(payload.get("name")));
+        }
+        if (payload.get("cat") != null) {
+            ingredient.setCategory(text(payload.get("cat")));
+        }
+        if (payload.get("desc") != null) {
+            ingredient.setDescription(text(payload.get("desc")));
+        }
+        Object calories = payload.containsKey("kcal") ? payload.get("kcal") : payload.get("caloriesPer100g");
+        if (calories != null) {
+            ingredient.setCaloriesPer100g(number(calories));
+        }
+        Object protein = payload.containsKey("p") ? payload.get("p") : payload.get("proteinPer100g");
+        if (protein != null) {
+            ingredient.setProteinPer100g(number(protein));
+        }
+        Object carbs = payload.containsKey("c") ? payload.get("c") : payload.get("carbsPer100g");
+        if (carbs != null) {
+            ingredient.setCarbsPer100g(number(carbs));
+        }
+        Object fat = payload.containsKey("f") ? payload.get("f") : payload.get("fatPer100g");
+        if (fat != null) {
+            ingredient.setFatPer100g(number(fat));
+        }
+        if (payload.get("fiber") != null) {
+            ingredient.setFiberPer100g(number(payload.get("fiber")));
+        }
+        if (payload.get("status") != null) {
+            ingredient.setStatus(integerValue(payload.get("status")));
+        }
+    }
+
+    private String text(Object value) {
+        return value == null ? "" : String.valueOf(value);
+    }
+
+    private Double number(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        try {
+            return Double.parseDouble(String.valueOf(value).trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Integer integerValue(Object value) {
+        Double num = number(value);
+        return num == null ? null : num.intValue();
+    }
+
+    private String joinText(Object value) {
+        if (value instanceof List) {
+            return ((List<?>) value).stream()
+                .filter(item -> item != null && !String.valueOf(item).isBlank())
+                .map(String::valueOf)
+                .collect(Collectors.joining("、"));
+        }
+        return text(value);
+    }
+
+    private String instructionsText(Object value) {
+        if (value instanceof List) {
+            try {
+                return objectMapper.writeValueAsString(value);
+            } catch (Exception e) {
+                return "[]";
+            }
+        }
+        return text(value);
+    }
+
+    private String bodyText(Object value) {
+        if (value instanceof List) {
+            List<String> lines = new ArrayList<>();
+            for (Object item : (List<?>) value) {
+                if (item instanceof Map) {
+                    Object text = ((Map<?, ?>) item).get("text");
+                    if (text != null && !String.valueOf(text).isBlank()) {
+                        lines.add(String.valueOf(text));
+                    }
+                }
+            }
+            return String.join("\n\n", lines);
+        }
+        return text(value);
+    }
+
+    private boolean matchesText(String keyword, String... values) {
+        if (keyword == null || keyword.isBlank()) {
+            return true;
+        }
+        for (String value : values) {
+            if (value != null && value.toLowerCase().contains(keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private User requireAdmin(Principal principal) {
         if (principal == null) {
             throw new RuntimeException("未登录或登录已过期");
         }
@@ -544,6 +1011,7 @@ public class AdminOverviewController {
         if (!userService.isAdmin(currentUser)) {
             throw new RuntimeException("无权限执行该操作");
         }
+        return currentUser;
     }
 
     private ResponseEntity<?> successResponse(String message, Object data) {

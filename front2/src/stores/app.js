@@ -135,7 +135,7 @@ export const useAppStore = defineStore('app', () => {
   const articleCollectIds = ref(read(K.collectArticle, []))
   const articleLikeIds = ref(read(K.likeArticle, []))
   const articleReadList = ref(read(K.readArticle, []))
-  const notifState = ref(read(K.notif, { read: [], deleted: [] }))
+  const notifState = ref(read(K.notif, { read: [], deleted: [], remote: [], loaded: false }))
   const convos = ref(read(K.convos, DB.conversations))
   const waterCups = ref(read(K.water, 4))
 
@@ -429,14 +429,26 @@ export const useAppStore = defineStore('app', () => {
   }
 
   /* ================= 通知 ================= */
-  const notifications = computed(() =>
-    // extra 是后台「发布通知」当场推送的，排在种子数据前面
-    (notifState.value.extra || [])
-      .concat(DB.notifications)
-      .filter((n) => !notifState.value.deleted.includes(n.id))
-      .map((n) => Object.assign({}, n, { read: notifState.value.read.includes(n.id) }))
-  )
+  const notifications = computed(() => {
+    const st = notifState.value
+    // 已从后端拉过通知就用真实列表，否则保留种子数据供离线演示
+    const base = st.loaded ? st.remote || [] : DB.notifications
+    const deleted = st.deleted || []
+    const read = st.read || []
+    return (st.extra || [])
+      .concat(base)
+      .filter((n) => !deleted.includes(n.id))
+      .map((n) => Object.assign({}, n, { read: read.includes(n.id) || !!n.read }))
+  })
   const unreadCount = computed(() => notifications.value.filter((n) => !n.read).length)
+
+  /** 后端通知列表拉回来之后同步到 store */
+  function setNotifications(list) {
+    notifState.value = Object.assign({}, notifState.value, {
+      remote: Array.isArray(list) ? list : [],
+      loaded: true
+    })
+  }
 
   function markAllRead() {
     // 用推导后的列表而不是 DB，这样后台新发布的通知也能一起标记
@@ -566,6 +578,7 @@ export const useAppStore = defineStore('app', () => {
     markAllRead,
     markNotifRead,
     removeNotif,
+    setNotifications,
     publishNotif,
     conversation,
     saveConversation,

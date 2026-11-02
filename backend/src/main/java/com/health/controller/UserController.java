@@ -2,8 +2,12 @@ package com.health.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.health.dto.UserProfileUpdateDTO;
+import com.health.entity.DietGoal;
+import com.health.entity.DietRecord;
 import com.health.entity.User;
 import com.health.entity.UserDietPreference;
+import com.health.mapper.DietGoalMapper;
+import com.health.mapper.DietRecordMapper;
 import com.health.mapper.UserDietPreferenceMapper;
 import com.health.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +33,12 @@ public class UserController {
 
     @Autowired
     private UserDietPreferenceMapper userDietPreferenceMapper;
+
+    @Autowired
+    private DietGoalMapper dietGoalMapper;
+
+    @Autowired
+    private DietRecordMapper dietRecordMapper;
 
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(Principal principal) {
@@ -67,9 +77,32 @@ public class UserController {
     public ResponseEntity<?> listUsers(Principal principal) {
         try {
             requireAdmin(principal);
+
+            List<DietGoal> goals = dietGoalMapper.selectList(
+                new QueryWrapper<DietGoal>().orderByAsc("create_time")
+            );
+            Map<Long, String> goalMap = new HashMap<>();
+            for (DietGoal goal : goals) {
+                if (goal.getUserId() != null) {
+                    goalMap.put(goal.getUserId(), goal.getGoalType());
+                }
+            }
+
+            List<DietRecord> records = dietRecordMapper.selectList(
+                new QueryWrapper<DietRecord>().eq("is_deleted", 0)
+            );
+            Map<Long, Long> recordCountMap = records.stream()
+                .filter(record -> record.getUserId() != null)
+                .collect(Collectors.groupingBy(DietRecord::getUserId, Collectors.counting()));
+
             List<Map<String, Object>> users = userService.listUsers()
                 .stream()
-                .map(this::sanitizeUser)
+                .map(user -> {
+                    Map<String, Object> data = sanitizeUser(user);
+                    data.put("goalType", goalMap.getOrDefault(user.getId(), ""));
+                    data.put("recordCount", recordCountMap.getOrDefault(user.getId(), 0L));
+                    return data;
+                })
                 .collect(Collectors.toList());
             return successResponse("获取用户列表成功", users);
         } catch (Exception e) {

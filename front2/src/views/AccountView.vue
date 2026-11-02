@@ -11,8 +11,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import DB from '@/mock/db'
-import { recipesApi } from '@/services/api'
+import { recipesApi, articlesApi, userApi, notificationsApi } from '@/services/api'
 import { toast } from '@/composables/useToast'
 import { confirmDialog } from '@/composables/useConfirm'
 import SvgIcon from '@/components/SvgIcon.vue'
@@ -32,34 +31,78 @@ const tabs = [
 
 /* ---------------- 顶部资料 ---------------- */
 const profile = reactive({
-  username: store.session?.username || '林嘉禾',
-  email: store.session?.email || DB.user.email,
-  phone: ''
+  userId: null,
+  // 先用登录态里的值兜底，等 /user/profile 回来再覆盖，避免页面空一帧
+  username: store.session?.username || '',
+  email: store.session?.email || '',
+  phone: store.session?.phone || '',
+  joined: '',
+  status: 1,
+  updateTime: '',
+  role: store.session?.role || 'user'
 })
-const gender = ref('女')
+const savingProfile = ref(false)
+/** 后端手机号只支持修改、不支持解绑，这里记住载入时的值用于判断 */
+let loadedPhone = ''
 
-const roleText = '普通用户'
+const roleText = computed(() => (profile.role === 'admin' ? '管理员' : '普通用户'))
 
 const stats = computed(() => ({
-  recipes: store.recipeCollectIds.length,
-  articles: store.articleCollectIds.length,
+  recipes: favList.value.length,
+  articles: favArticles.value.length,
   records: store.recordList.length,
   streak: '5 天'
 }))
 
+/** 资料来自 GET /user/profile */
+async function loadProfile() {
+  const res = await userApi.profile()
+  if (res.code !== 200) {
+    toast(res.message, 'error')
+    return
+  }
+  Object.assign(profile, res.data)
+  loadedPhone = res.data.phone || ''
+}
+
 /* ---------------- 资料保存 ---------------- */
-function saveProfile() {
+async function saveProfile() {
   const n = profile.username.trim()
-  const em = profile.email.trim()
-  if (n.length < 2) {
-    toast('用户名至少 2 个字符', 'error')
+  const phone = profile.phone.trim()
+  if (!n) {
+    toast('用户名不能为空', 'error')
     return
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
-    toast('邮箱格式不正确', 'error')
+  if (n.length > 50) {
+    toast('用户名最多 50 个字符', 'error')
     return
   }
-  store.updateProfile({ username: n, email: em, phone: profile.phone.trim() })
+  if (phone && !/^1[3-9]\d{9}$/.test(phone)) {
+    toast('手机号格式不正确', 'error')
+    return
+  }
+  if (!phone && loadedPhone) {
+    toast('手机号暂不支持解绑', 'error')
+    return
+  }
+
+  // 邮箱没有修改接口；手机号为空时不提交，避免触发后端的格式校验
+  const patch = { username: n }
+  if (phone) patch.phone = phone
+
+  savingProfile.value = true
+  const res = await userApi.updateProfile(patch)
+  savingProfile.value = false
+  if (res.code !== 200) {
+    toast(res.message, 'error')
+    return
+  }
+  profile.username = res.data.username || profile.username
+  profile.phone = res.data.phone || profile.phone
+  profile.updateTime = res.data.updateTime || profile.updateTime
+  loadedPhone = profile.phone || ''
+  // 同步登录态，顶栏/侧栏的用户名立刻更新
+  store.updateProfile({ username: profile.username, email: profile.email, phone: profile.phone })
   toast('资料已更新')
 }
 
@@ -103,7 +146,7 @@ function savePwd() {
     return
   }
   pwdOpen.value = false
-  toast('密码已更新（演示环境不强制重新登录）')
+  toast('修改密码接口暂未开放，当前仍使用原密码登录')
 }
 
 /* ---------------- 饮食偏好 ---------------- */
@@ -112,14 +155,25 @@ const ALLERGENS = ['花生', '海鲜', '乳制品', '鸡蛋', '麸质', '坚果'
 const DISLIKES = ['香菜', '动物内脏', '苦瓜', '芹菜', '洋葱']
 const LIKES = ['鸡胸肉', '三文鱼', '蓝莓', '燕麦', '豆腐', '西兰花']
 
-const prefs = reactive({
-  diet: (store.preferences.dietType || []).slice(),
-  allergens: (store.preferences.allergens || []).slice(),
-  dislikes: (store.preferences.dislikes || []).slice(),
-  likes: (store.preferences.likes || []).slice()
-})
-const mealsPerDay = ref(+store.preferences.mealsPerDay || 3)
-const snackOn = ref(!!store.preferences.snack)
+const prefs = reactive({ diet: [], allergens: [], dislikes: [], likes: [] })
+const mealsPerDay = ref(3)
+const snackOn = ref(false)
+const savingPrefs = ref(false)
+
+/** 偏好来自 GET /user/diet-preference；后端用逗号串存，adapter 已转成数组 */
+async function loadPreference() {
+  const res = await userApi.preference()
+  if (res.code !== 200) {
+    toast(res.message, 'error')
+    return
+  }
+  prefs.diet = res.data.diet
+  prefs.allergens = res.data.allergens
+  prefs.dislikes = res.data.dislikes
+  prefs.likes = res.data.likes
+  mealsPerDay.value = res.data.mealsPerDay
+  snackOn.value = res.data.snack
+}
 
 const prefGroups = [
   { key: 'diet', label: '饮食类型（可多选）', options: DIET },
@@ -136,7 +190,23 @@ function togglePref(key, val) {
   prefs[key] = list
 }
 
-function savePrefs() {
+async function savePrefs() {
+  const payload = {
+    diet: prefs.diet,
+    allergens: prefs.allergens,
+    dislikes: prefs.dislikes,
+    likes: prefs.likes,
+    mealsPerDay: mealsPerDay.value,
+    snack: snackOn.value
+  }
+  savingPrefs.value = true
+  const res = await userApi.savePreference(payload)
+  savingPrefs.value = false
+  if (res.code !== 200) {
+    toast(res.message, 'error')
+    return
+  }
+  // 本地也存一份，健康档案/目标页的提示文案会读 store.preferences
   store.savePreferences({
     dietType: prefs.diet,
     allergens: prefs.allergens,
@@ -162,9 +232,18 @@ async function loadFavs() {
 const favRecipes = computed(() =>
   favList.value.filter((r) => store.recipeCollectIds.includes(r.id))
 )
-const favArticles = computed(() =>
-  store.articleCollectIds.map((id) => DB.articles.find((a) => a.id === +id)).filter(Boolean)
-)
+const favArticles = ref([])
+const reads = ref([])
+
+async function loadFavArticles() {
+  const res = await articlesApi.collected()
+  if (res.code === 200) favArticles.value = res.data
+}
+
+async function loadReads() {
+  const res = await articlesApi.history(20)
+  reads.value = res.code === 200 ? res.data : []
+}
 
 async function unfav(id) {
   const res = await recipesApi.collect(id)
@@ -178,14 +257,21 @@ async function unfav(id) {
   }
 }
 
-onMounted(loadFavs)
+onMounted(() => {
+  loadProfile()
+  loadPreference()
+  loadFavs()
+  loadFavArticles()
+  loadReads()
+  loadNotifications()
+})
 
-/* ---------------- 阅读历史 ---------------- */
-const reads = computed(() =>
-  store.articleReadList
-    .map((r) => ({ ...r, article: DB.articles.find((a) => a.id === r.id) }))
-    .filter((r) => r.article)
-)
+async function loadNotifications() {
+  const res = await notificationsApi.list()
+  if (res.code === 200) store.setNotifications(res.data)
+}
+
+/* ---------------- 阅读历史（/article/read/history） ---------------- */
 
 /* ---------------- 通知 ---------------- */
 const notifFilter = ref('all')
@@ -223,15 +309,31 @@ function notifLink(link) {
   return LINK_MAP[file] || '/'
 }
 
-function markRead(n) {
+async function markRead(n) {
+  const res = await notificationsApi.markRead(n.id)
+  if (res.code !== 200) {
+    toast(res.message || '标记已读失败')
+    return
+  }
   store.markNotifRead(n.id)
   toast('已标记为已读')
 }
-function delNotif(n) {
+async function delNotif(n) {
+  const res = await notificationsApi.remove(n.id)
+  if (res.code !== 200) {
+    toast(res.message || '删除失败')
+    return
+  }
   store.removeNotif(n.id)
   toast('通知已删除')
 }
-function markAll() {
+async function markAll() {
+  const unread = notifList.value.filter((n) => !n.read)
+  if (!unread.length) {
+    toast('没有未读通知')
+    return
+  }
+  await Promise.allSettled(unread.map((n) => notificationsApi.markRead(n.id)))
   store.markAllRead()
   toast('全部通知已标记为已读')
 }
@@ -261,9 +363,9 @@ function markAll() {
       <div class="row" style="gap: 10px">
         <h2 class="display" style="font-size: 24px; color: var(--green-950)">{{ profile.username }}</h2>
         <span class="badge"><SvgIcon name="shield" />{{ roleText }}</span>
-        <span class="badge gray">账号正常</span>
+        <span class="badge gray">{{ profile.status === 1 ? '账号正常' : '账号未启用' }}</span>
       </div>
-      <p class="small muted">{{ profile.email }} · 注册于 {{ DB.user.joined }}</p>
+      <p class="small muted">{{ profile.email }} · 注册于 {{ profile.joined || '—' }}</p>
       <div class="account-stat">
         <div>
           <div class="v num">{{ stats.recipes }}</div>
@@ -324,20 +426,12 @@ function markAll() {
               <input id="pfName" v-model="profile.username" class="input" type="text" />
             </label>
             <label class="field">
-              <span class="field-label">邮箱</span>
-              <input v-model="profile.email" class="input" type="email" />
+              <span class="field-label">邮箱（登录凭据，不可修改）</span>
+              <input v-model="profile.email" class="input" type="email" readonly />
             </label>
             <label class="field">
               <span class="field-label">手机号</span>
               <input v-model="profile.phone" class="input" type="tel" placeholder="选填" />
-            </label>
-            <label class="field">
-              <span class="field-label">性别</span>
-              <select v-model="gender" class="select">
-                <option>女</option>
-                <option>男</option>
-                <option>不便透露</option>
-              </select>
             </label>
             <div class="field" style="grid-column: 1/-1">
               <span class="field-label">当前目标</span>
@@ -348,8 +442,10 @@ function markAll() {
               </div>
             </div>
             <div style="grid-column: 1/-1" class="row">
-              <button class="btn btn-primary" type="submit">保存资料</button>
-              <span class="small muted">修改邮箱需重新验证，演示环境直接生效。</span>
+              <button class="btn btn-primary" type="submit" :disabled="savingProfile">
+                {{ savingProfile ? '保存中…' : '保存资料' }}
+              </button>
+              <span class="small muted">邮箱不支持修改；手机号暂不支持解绑。</span>
             </div>
           </form>
         </div>
@@ -362,16 +458,18 @@ function markAll() {
             <div class="row-between" style="padding: 10px 0; border-bottom: 1px dashed var(--border)">
               <div>
                 <strong style="font-size: 13px">登录密码</strong>
-                <p class="small muted">上次修改：30 天前</p>
+                <p class="small muted">
+                  最近更新：{{ profile.updateTime ? profile.updateTime.slice(0, 10) : '—' }}
+                </p>
               </div>
               <button class="btn btn-outline btn-sm" @click="openPwd">修改</button>
             </div>
             <div class="row-between" style="padding: 10px 0; border-bottom: 1px dashed var(--border)">
               <div>
-                <strong style="font-size: 13px">邮箱验证</strong>
-                <p class="small muted">{{ profile.email }} 已验证</p>
+                <strong style="font-size: 13px">登录邮箱</strong>
+                <p class="small muted">{{ profile.email || '未绑定' }} · 用于账号识别</p>
               </div>
-              <span class="badge"><SvgIcon name="check" />已验证</span>
+              <span class="badge gray">不可修改</span>
             </div>
             <div class="row-between" style="padding: 10px 0">
               <div>
@@ -388,7 +486,7 @@ function markAll() {
 
         <div class="alert-inline green">
           <SvgIcon name="info" />
-          <span>你的健康档案与饮食偏好只用于本机原型演示，不会上传到服务器。</span>
+          <span>资料与饮食偏好保存在服务器，仅用于你的账号识别与个性化推荐。</span>
         </div>
       </aside>
     </div>
@@ -440,7 +538,9 @@ function markAll() {
             </label>
           </div>
 
-          <button class="btn btn-primary mt-24" @click="savePrefs">保存偏好</button>
+          <button class="btn btn-primary mt-24" :disabled="savingPrefs" @click="savePrefs">
+            {{ savingPrefs ? '保存中…' : '保存偏好' }}
+          </button>
         </div>
       </article>
 
@@ -448,7 +548,7 @@ function markAll() {
         <article class="card card-pad">
           <p class="eyebrow" style="margin: 0">Preview · 偏好预览</p>
           <p class="small muted mt-8">
-            根据当前偏好，推荐会优先选择清淡、低脂的做法，并排除花生与香菜。
+            根据当前偏好，推荐会优先选择已勾选的饮食类型，并排除过敏原与不喜欢的食材。
           </p>
           <div class="mt-16">
             <div class="row wrap" style="gap: 6px">
@@ -612,7 +712,7 @@ function markAll() {
   </section>
 
   <p class="small muted mt-32" style="text-align: center">
-    账号相关操作均为本地模拟，不会产生真实短信或邮件。
+    账号资料、饮食偏好、收藏与通知均已同步到服务器。
   </p>
 
   <!-- 修改密码弹窗 -->
@@ -621,7 +721,7 @@ function markAll() {
       <div class="modal-hd">
         <div>
           <h3>修改密码</h3>
-          <p>新密码需 6–50 位，修改后需重新登录。</p>
+          <p>后端暂未提供修改密码接口，提交后会提示暂未开放。</p>
         </div>
         <button class="modal-close" @click="pwdOpen = false"><SvgIcon name="x" /></button>
       </div>
@@ -638,7 +738,7 @@ function markAll() {
           <span class="field-label">确认新密码</span>
           <input v-model="pwd.confirm" class="input" type="password" placeholder="再次输入" />
         </label>
-        <p class="small muted mt-12">演示环境：当前密码为 123456。</p>
+        <p class="small muted mt-12">如需重置密码，请联系管理员处理。</p>
       </div>
       <div class="modal-ft">
         <button class="btn btn-outline" @click="pwdOpen = false">取消</button>

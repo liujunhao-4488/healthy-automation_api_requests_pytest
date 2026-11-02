@@ -153,6 +153,10 @@ export function toRecipe(be, ingredients) {
     views: Number(r.viewCount) || 0,
     collects: Number(r.collectCount) || 0,
 
+    // 状态：1 上架 / 0 下架，后台列表要用
+    status: r.status == null ? 1 : Number(r.status),
+    isCustom: Number(r.isCustom) || 0,
+
     // 图片：后端 imageUrl 全为 null，一律给占位符；将来有图自动切换
     img: withFallbackImage(r.imageUrl),
 
@@ -219,4 +223,74 @@ export async function fetchCollectedRecipes() {
 export function clearRecipeCache() {
   cache = null
   cacheAt = 0
+}
+
+/* ---------------- 自定义食谱 ---------------- */
+
+/** 拉「我的食谱」，后端列表不带配料，逐条补详情 */
+export async function fetchCustomRecipes() {
+  const res = await http.get('/recipe/custom')
+  if (res.code !== 200) return res
+  const raw = Array.isArray(res.data) ? res.data : []
+  const list = raw.map((r) => toRecipe(r))
+
+  await Promise.all(
+    list.map(async (item) => {
+      const detail = await fetchRecipeDetail(item.id)
+      if (detail.code === 200 && detail.data) {
+        item.ingredients = detail.data.ingredients
+        item.steps = detail.data.steps
+        item.tips = detail.data.tips
+        item.img = detail.data.img
+      }
+    })
+  )
+
+  return { code: 200, message: res.message, data: list }
+}
+
+/** 前端表单 → 后端可识别的字段 */
+function toRecipePayload(payload) {
+  const p = payload || {}
+  return {
+    id: p.id,
+    name: p.name,
+    desc: p.desc,
+    mealType: p.mealType,
+    cuisine: p.cuisine,
+    level: p.level,
+    time: Number(p.time) || 20,
+    servings: Number(p.servings) || 1,
+    kcal: Number(p.kcal) || 0,
+    p: Number(p.p) || 0,
+    c: Number(p.c) || 0,
+    f: Number(p.f) || 0,
+    fiber: Number(p.fiber) || 0,
+    fit: p.fit || [],
+    steps: p.steps || [],
+    tips: p.tips || '',
+    status: 1,
+    ingredients: (p.ingredients || []).map((i) => ({
+      name: i.name,
+      amount: i.amount,
+      unit: i.unit || 'g'
+    }))
+  }
+}
+
+/** 新建 / 更新自定义食谱 */
+export async function saveCustomRecipe(payload) {
+  const body = toRecipePayload(payload)
+  const res = payload && payload.id
+    ? await http.put('/recipe/update', body)
+    : await http.post('/recipe/save', body)
+  if (res.code === 200) clearRecipeCache()
+  return res
+}
+
+/** 删除自定义食谱 */
+export async function removeCustomRecipe(id) {
+  const res = await http.del('/recipe/delete/' + id)
+  if (res.code === 200) clearRecipeCache()
+  return res
 }

@@ -11,7 +11,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { recipesApi } from '@/services/api'
+import { recipesApi, notificationsApi } from '@/services/api'
 import { confirmDialog } from '@/composables/useConfirm'
 import SvgIcon from './SvgIcon.vue'
 
@@ -31,6 +31,10 @@ onMounted(async () => {
   if (!store.isLoggedIn) return
   const res = await recipesApi.collected()
   if (res.code === 200) store.setCollectIds(res.data.map((r) => r.id))
+
+  // 通知角标也依赖真实列表，进站时同步一次
+  const notifRes = await notificationsApi.list()
+  if (notifRes.code === 200) store.setNotifications(notifRes.data)
 })
 
 /** 导航分组，照抄静态版结构 */

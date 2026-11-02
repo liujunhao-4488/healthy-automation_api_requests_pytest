@@ -23,7 +23,10 @@ import { request } from './http'
 import {
   fetchAllRecipes,
   fetchRecipeDetail,
-  fetchCollectedRecipes
+  fetchCollectedRecipes,
+  fetchCustomRecipes,
+  saveCustomRecipe,
+  removeCustomRecipe
 } from './adapters/recipe'
 import {
   toHealthInfo,
@@ -48,6 +51,37 @@ import {
   toSubstitutes
 } from './adapters/ingredient'
 import { toMealList } from './adapters/recommend'
+import {
+  fetchArticleList,
+  fetchArticleDetail,
+  fetchArticleComments,
+  postArticleComment,
+  fetchArticleRecommend,
+  fetchCollectedArticles,
+  fetchArticleReadHistory,
+  recordArticleRead,
+  setArticleLike,
+  setArticleCollect
+} from './adapters/article'
+import {
+  fetchConversations,
+  fetchConversationMessages,
+  deleteConversation,
+  chatStream as assistantChatStream
+} from './adapters/assistant'
+import {
+  fetchProfile,
+  saveProfile,
+  fetchDietPreference,
+  saveDietPreference,
+  toProfile as toUserProfile
+} from './adapters/user'
+import { toNotification } from './adapters/notification'
+import {
+  toAdminOverview,
+  toAdminUser,
+  toAdminContentRows
+} from './adapters/admin'
 
 /** 全局默认：没接后端的模块继续走 mock */
 export const USE_MOCK = true
@@ -70,20 +104,20 @@ export const INGREDIENT_USE_MOCK = false
 /** 推荐：已接真实后端（/recommend/recipes、/recommend/recipes/today）*/
 export const RECOMMEND_USE_MOCK = false
 
+/** 文章：已接真实后端（/article/list、detail、comment、like、collect、recommend、read）*/
+export const ARTICLE_USE_MOCK = false
+
+/** AI 助手：已接真实后端（/assistant/conversations、messages、chat/stream、删除会话）*/
+export const ASSISTANT_USE_MOCK = false
+
+/** 个人资料 / 饮食偏好：已接真实后端（/user/profile、/user/diet-preference）*/
+export const USER_USE_MOCK = false
+
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 const ok = (data, message) => ({ code: 200, message: message || '操作成功', data })
 const fail = (code, message) => ({ code, message, data: null })
 
 const GOAL_LABEL = { 减脂: '减脂', 增肌: '增肌', 控糖: '控糖', 维持: '维持' }
-
-// 后台内容管理：食谱 / 文章 / 食材共用的数据源与文案
-const CONTENT_LABEL = { recipe: '食谱', article: '文章', ingredient: '食材' }
-function contentOf(type) {
-  if (type === 'recipe') return DB.recipes
-  if (type === 'article') return DB.articles
-  if (type === 'ingredient') return DB.ingredients
-  return null
-}
 
 /** 推荐匹配分：目标契合 + 热量贴近 + 蛋白/纤维 + 评分 */
 function matchScore(recipe, goal) {
@@ -153,6 +187,66 @@ export const authApi = {
     if (password.length < 6 || password.length > 50) return fail(400, '密码长度需在 6–50 位之间')
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(400, '邮箱格式不正确')
     return ok({ token: 'mock-jwt', userId: DB.user.userId, username, role: 'user' }, '注册成功')
+  }
+}
+
+/* ---------------- 个人资料 / 饮食偏好 ---------------- */
+export const userApi = {
+  // GET /user/profile
+  async profile() {
+    if (!USER_USE_MOCK) return fetchProfile()
+    await delay(220)
+    const s = useAppStore().session || {}
+    return ok(
+      toUserProfile({
+        userId: DB.user.userId,
+        username: s.username || DB.user.username,
+        email: s.email || DB.user.email,
+        phone: s.phone || '',
+        avatar: '',
+        status: 1,
+        role: s.role || 'user',
+        createTime: '',
+        updateTime: ''
+      })
+    )
+  },
+
+  // PUT /user/profile（只支持用户名 / 手机号 / 头像，邮箱不可改）
+  async updateProfile(patch) {
+    if (!USER_USE_MOCK) return saveProfile(patch)
+    await delay(260)
+    return ok(useAppStore().updateProfile(patch), '资料已更新')
+  },
+
+  // GET /user/diet-preference
+  async preference() {
+    if (!USER_USE_MOCK) return fetchDietPreference()
+    await delay(200)
+    const p = useAppStore().preferences || {}
+    return ok({
+      diet: p.dietType || [],
+      allergens: p.allergens || [],
+      dislikes: p.dislikes || [],
+      likes: p.likes || [],
+      mealsPerDay: p.mealsPerDay || 3,
+      snack: !!p.snack
+    })
+  },
+
+  // PUT /user/diet-preference
+  async savePreference(prefs) {
+    if (!USER_USE_MOCK) return saveDietPreference(prefs)
+    await delay(260)
+    useAppStore().savePreferences({
+      dietType: prefs.diet,
+      allergens: prefs.allergens,
+      dislikes: prefs.dislikes,
+      likes: prefs.likes,
+      mealsPerDay: prefs.mealsPerDay,
+      snack: prefs.snack
+    })
+    return ok(prefs, '偏好已保存')
   }
 }
 
@@ -607,22 +701,29 @@ export const recipesApi = {
   },
   // GET /recipe/custom 本人创建的自定义食谱
   async custom() {
+    if (!RECIPE_USE_MOCK) return fetchCustomRecipes()
+
     await delay(240)
     const store = useAppStore()
     return ok(store.customRecipeList.slice())
   },
-  // POST /recipe/save · PUT /recipe/update/{id}
+  // POST /recipe/save · PUT /recipe/update
   async save(payload) {
-    await delay(480)
     if (!payload.name || !payload.name.trim()) return fail(400, '请填写食谱名称')
     if (!payload.mealType) return fail(400, '请选择餐次')
     if (!(+payload.kcal > 0)) return fail(400, '请填写大于 0 的热量')
     if (!payload.steps || !payload.steps.length) return fail(400, '请至少填写一个制作步骤')
+
+    if (!RECIPE_USE_MOCK) return saveCustomRecipe(payload)
+
+    await delay(480)
     const saved = useAppStore().saveCustomRecipe(payload)
     return ok(saved, payload.id ? '自定义食谱已更新' : '自定义食谱已保存')
   },
   // DELETE /recipe/delete/{id}
   async remove(id) {
+    if (!RECIPE_USE_MOCK) return removeCustomRecipe(id)
+
     await delay(320)
     const store = useAppStore()
     if (!store.getCustomRecipe(id)) return fail(404, '自定义食谱不存在')
@@ -633,8 +734,19 @@ export const recipesApi = {
 
 /* ---------------- 文章 FR-ARTICLE ---------------- */
 export const articlesApi = {
-  // GET /article/list?category=&tag=&keyword=&page=
-  async list({ cat, tag, keyword, page = 1, pageSize = 5 } = {}) {
+  // GET /article/list?category=&tag=&keyword=&page=&sort=
+  async list({ cat, tag, keyword, page = 1, pageSize = 5, sort = 'recommend' } = {}) {
+    if (!ARTICLE_USE_MOCK) {
+      return fetchArticleList({
+        category: cat && cat !== '全部' ? cat : undefined,
+        tag,
+        keyword,
+        page,
+        pageSize,
+        sort
+      })
+    }
+
     await delay(480)
     let list = DB.articles.filter((a) => a.status !== 0)
     if (cat && cat !== '全部') list = list.filter((a) => a.cat === cat)
@@ -646,16 +758,74 @@ export const articlesApi = {
   },
   // GET /article/detail/{id}
   async get(id) {
+    if (!ARTICLE_USE_MOCK) return fetchArticleDetail(id)
+
     await delay(420)
     const a = DB.articles.find((x) => x.id === +id)
     if (!a || a.status === 0) return fail(404, '文章不存在或已下架')
     return ok(a)
   },
-  // POST /article/comment
-  async comment({ articleId, content }) {
+  // GET /article/recommend?excludeId=
+  async recommend({ excludeId, page = 1, pageSize = 3 } = {}) {
+    if (!ARTICLE_USE_MOCK) return fetchArticleRecommend({ excludeId, page, pageSize })
+
+    const list = DB.articles.filter((a) => a.status !== 0 && a.id !== +excludeId)
+    return ok({ list: list.slice(0, pageSize), total: list.length })
+  },
+  // GET /article/comment/list/{articleId}
+  async comments(articleId) {
+    if (!ARTICLE_USE_MOCK) {
+      return fetchArticleComments(articleId, useAppStore().session?.userId)
+    }
+    return ok([])
+  },
+  // POST /article/comment/{articleId}
+  async comment({ articleId, content, parentId }) {
+    if (!ARTICLE_USE_MOCK) return postArticleComment(articleId, content, parentId)
+
     await delay(500)
     if (!content || content.trim().length < 2) return fail(400, '评论内容太短')
     return ok({ id: 'c-' + Date.now(), content: content.trim(), time: '刚刚' }, '评论已发布')
+  },
+  // POST / DELETE /article/like/{articleId}
+  async toggleLike(articleId, next) {
+    if (!ARTICLE_USE_MOCK) return setArticleLike(articleId, next)
+
+    return ok({ liked: next, likeCount: 0 }, next ? '点赞成功' : '已取消点赞')
+  },
+  // POST / DELETE /article/collect/{articleId}
+  async toggleCollect(articleId, next) {
+    if (!ARTICLE_USE_MOCK) return setArticleCollect(articleId, next)
+
+    return ok({ collected: next, collectCount: 0 }, next ? '已收藏' : '已取消收藏')
+  },
+  // GET /article/collect/list
+  async collected() {
+    if (!ARTICLE_USE_MOCK) return fetchCollectedArticles()
+
+    const store = useAppStore()
+    return ok(DB.articles.filter((a) => store.articleCollectIds.includes(a.id)))
+  },
+  // GET /article/read/history
+  async history(limit = 20) {
+    if (!ARTICLE_USE_MOCK) return fetchArticleReadHistory(limit)
+
+    const store = useAppStore()
+    return ok(
+      store.articleReadList
+        .map((r) => ({
+          id: r.id,
+          date: r.date,
+          duration: r.duration,
+          article: DB.articles.find((a) => a.id === r.id)
+        }))
+        .filter((r) => r.article)
+    )
+  },
+  // POST /article/read/{articleId}
+  async read(articleId, payload) {
+    if (!ARTICLE_USE_MOCK) return recordArticleRead(articleId, payload)
+    return ok(true)
   }
 }
 
@@ -663,23 +833,44 @@ export const articlesApi = {
 export const assistantApi = {
   // GET /assistant/conversations
   async conversations() {
+    if (!ASSISTANT_USE_MOCK) return fetchConversations()
     await delay(220)
     return ok(useAppStore().convos)
   },
 
+  // GET /assistant/conversations/{id}/messages
+  async messages(conversationId) {
+    if (!ASSISTANT_USE_MOCK) return fetchConversationMessages(conversationId)
+    await delay(160)
+    const conv = useAppStore().conversation(conversationId)
+    return ok(conv ? conv.messages || [] : [])
+  },
+
+  // DELETE /assistant/conversations/{id}
+  async remove(conversationId) {
+    if (!ASSISTANT_USE_MOCK) return deleteConversation(conversationId)
+    await delay(180)
+    return ok({ id: conversationId }, '会话已删除')
+  },
+
   /**
-   * POST /assistant/chat（SSE 流式）
-   * 真实实现：fetch + ReadableStream 读取 event-stream，逐段回调 onChunk
+   * POST /assistant/chat/stream（SSE）
+   * 真实实现见 adapters/assistant.js：逐事件回调 onStart / onChunk，
+   * 流结束后把结果放在统一信封里返回（text / intent / source / blocked / cards）。
    */
-  async chatStream(prompt, { onStart, onChunk, onDone } = {}) {
+  async chatStream(prompt, { conversationId, onStart, onChunk } = {}) {
+    if (!ASSISTANT_USE_MOCK) {
+      return assistantChatStream(prompt, { conversationId, onStart, onChunk })
+    }
+
+    // ---- mock：本地规则桩，按原来的打字机节奏输出 ----
     const text = (prompt || '').trim()
     const result = buildReply(text)
-    if (onStart) onStart()
+    if (onStart) onStart({ conversationId: conversationId || null, conversation: null })
 
     if (result.blocked) {
       await delay(420)
-      if (onDone) onDone(result)
-      return result
+      return ok(result)
     }
 
     await delay(360)
@@ -693,8 +884,7 @@ export const assistantApi = {
       if (onChunk) onChunk(shown, result)
       await delay(16)
     }
-    if (onDone) onDone(result)
-    return result
+    return ok(result)
   }
 }
 
@@ -702,15 +892,34 @@ export const assistantApi = {
 export const notificationsApi = {
   // GET /notification/list
   async list() {
-    await delay(240)
-    return ok(useAppStore().notifications)
+    const res = await request('/notification/list')
+    if (res.code !== 200) return res
+    const raw = Array.isArray(res.data) ? res.data : []
+    return { code: 200, message: res.message, data: raw.map(toNotification) }
+  },
+  // PUT /notification/read/{id}
+  async markRead(id) {
+    return request('/notification/read/' + id, { method: 'PUT' })
+  },
+  // PUT /notification/delete/{id}
+  async remove(id) {
+    return request('/notification/delete/' + id, { method: 'PUT' })
   },
   // POST /notification/admin/publish
   async publish({ type, title, content, userId, all }) {
-    await delay(620)
     if (!title || !content) return fail(400, '标题与内容不能为空')
+    const res = await request('/notification/admin/publish', {
+      method: 'POST',
+      body: {
+        type,
+        title,
+        content,
+        userId: all ? null : Number(userId)
+      }
+    })
+    if (res.code !== 200) return res
     const target = all ? '全部启用用户' : '用户 #' + (userId || '—')
-    return ok({ type, title, target }, '通知已发布至' + target)
+    return { code: 200, message: '通知已发布至' + target, data: res.data }
   }
 }
 
@@ -718,66 +927,47 @@ export const notificationsApi = {
 export const adminApi = {
   // GET /admin/overview
   async overview() {
-    await delay(560)
-    return ok({
-      stats: DB.admin.overview,
-      trend: DB.admin.trend7,
-      activities: DB.admin.activities,
-      topRecipes: DB.recipes.slice().sort((a, b) => b.views - a.views).slice(0, 5),
-      topArticles: DB.articles.slice().sort((a, b) => b.views - a.views).slice(0, 5)
-    })
+    const res = await request('/admin/overview')
+    if (res.code !== 200) return res
+    return { code: 200, message: res.message, data: toAdminOverview(res.data) }
   },
   // GET /user/admin/list
   async users({ keyword } = {}) {
-    await delay(380)
-    let list = DB.admin.users.slice()
-    if (keyword) list = list.filter((u) => u.name.includes(keyword) || u.email.includes(keyword))
-    return ok({ list, total: list.length })
+    const res = await request('/user/admin/list')
+    if (res.code !== 200) return res
+    let list = (Array.isArray(res.data) ? res.data : []).map(toAdminUser)
+    if (keyword) {
+      list = list.filter((u) => u.name.includes(keyword) || u.email.includes(keyword))
+    }
+    return { code: 200, message: res.message, data: { list, total: list.length } }
   },
   // PUT /user/admin/{userId}/status?status=0
   async toggleUser(id, status) {
-    await delay(320)
-    const u = DB.admin.users.find((x) => x.id === +id)
-    if (u) u.status = status
-    return ok({ id, status }, status ? '用户已启用' : '用户已禁用')
+    return request('/user/admin/' + id + '/status', { method: 'PUT', query: { status } })
   },
   // GET /admin/{type}/list  type: recipe | article | ingredient
   async contentList(type, { keyword, cat, status } = {}) {
-    await delay(340)
-    const list = contentOf(type)
-    if (!list) return fail(404, '未知的内容类型')
-    let out = list.slice()
-    if (keyword) out = out.filter((x) => (x.name || x.title || '').indexOf(keyword) > -1)
-    if (cat) out = out.filter((x) => (x.mealType || x.cat) === cat)
-    if (status === 'on') out = out.filter((x) => x.status !== 0)
-    if (status === 'off') out = out.filter((x) => x.status === 0)
-    return ok({ list: out, total: out.length })
+    const res = await request('/admin/' + type + '/list', {
+      query: { keyword, cat, status }
+    })
+    if (res.code !== 200) return res
+    const raw = res.data && Array.isArray(res.data.list) ? res.data.list : []
+    const list = toAdminContentRows(type, raw)
+    return { code: 200, message: res.message, data: { list, total: list.length } }
   },
-  // POST /admin/{type}/create · PUT /admin/{type}/{id}
+  // POST /admin/{type} · PUT /admin/{type}/{id}
   async contentSave(type, payload) {
-    await delay(420)
-    const list = contentOf(type)
-    if (!list) return fail(404, '未知的内容类型')
-    const label = CONTENT_LABEL[type]
     if (!payload.name && !payload.title) return fail(400, '名称 / 标题不能为空')
-    if (payload.id) {
-      const item = list.find((x) => x.id === +payload.id)
-      if (!item) return fail(404, '内容不存在')
-      Object.assign(item, payload, { id: item.id })
-      return ok({ id: item.id }, label + '已更新')
-    }
-    const id = list.reduce((m, x) => Math.max(m, x.id), 0) + 1
-    list.unshift(Object.assign({ status: 1 }, payload, { id }))
-    return ok({ id }, label + '已创建')
+    return payload.id
+      ? request('/admin/' + type + '/' + payload.id, { method: 'PUT', body: payload })
+      : request('/admin/' + type, { method: 'POST', body: payload })
   },
   // PUT /admin/{type}/{id}/status?status=0
   async contentToggle(type, id, status) {
-    await delay(300)
-    const list = contentOf(type)
-    if (!list) return fail(404, '未知的内容类型')
-    const item = list.find((x) => x.id === +id)
-    if (item) item.status = status
-    return ok({ id, status }, CONTENT_LABEL[type] + (status ? '已上架' : '已下架'))
+    return request('/admin/' + type + '/' + id + '/status', {
+      method: 'PUT',
+      query: { status }
+    })
   }
 }
 

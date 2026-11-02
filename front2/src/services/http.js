@@ -114,10 +114,103 @@ export async function request(path, { method = 'GET', body, query, timeout = TIM
   return json
 }
 
+/** 解析一块 SSE 文本：把 event:/data: 拆出来，data 是 JSON 就解析成对象 */
+function dispatchSseBlock(block, onEvent) {
+  if (!block || !onEvent) return
+  let name = 'message'
+  const data = []
+  block.split('\n').forEach((line) => {
+    if (line.indexOf('event:') === 0) name = line.slice(6).trim()
+    else if (line.indexOf('data:') === 0) data.push(line.slice(5).replace(/^ /, ''))
+  })
+  const raw = data.join('\n')
+  if (!raw) return
+  let payload = raw
+  try {
+    payload = JSON.parse(raw)
+  } catch (e) {
+    /* 不是 JSON 就原样交回去 */
+  }
+  onEvent(name, payload)
+}
+
+/**
+ * 流式请求（SSE）。目前只有 AI 助手 /assistant/chat/stream 用到。
+ *
+ * 和 request 的差别：不一次性读完整的 body，而是边读边把每个事件交给 onEvent。
+ * 事件名（event:）由后端定义，助手这边是 start / delta / done / error。
+ *
+ * @returns {Promise<{code:number, message:string, data:null}>}
+ *          流正常结束 code=200；连接失败 / 401 / 其他 HTTP 错误照常返回信封
+ */
+export async function requestStream(path, { body, onEvent } = {}) {
+  const headers = { Accept: 'text/event-stream' }
+  if (body !== undefined) headers['Content-Type'] = 'application/json'
+  const token = readToken(path)
+  if (token) headers.Authorization = 'Bearer ' + token
+
+  let res
+  try {
+    res = await fetch(BASE + path, {
+      method: 'POST',
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body)
+    })
+  } catch (e) {
+    return { code: -1, message: '连接后端失败，请确认后端已在 8081 启动', data: null }
+  }
+
+  if (res.status === 401) {
+    return { code: 401, message: '登录已过期，请重新登录', data: null }
+  }
+  if (!res.ok) {
+    let json = null
+    try {
+      json = await res.json()
+    } catch (e) {
+      json = null
+    }
+    return {
+      code: (json && json.code) || res.status,
+      message: (json && json.message) || '请求失败（HTTP ' + res.status + '）',
+      data: null
+    }
+  }
+  if (!res.body || !res.body.getReader) {
+    return { code: -2, message: '当前浏览器不支持流式响应', data: null }
+  }
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder('utf-8')
+  let buf = ''
+  try {
+    for (;;) {
+      const { value, done } = await reader.read()
+      if (done) break
+      buf += decoder.decode(value, { stream: true })
+      buf = buf.replace(/\r\n/g, '\n')
+      let idx
+      // 一个事件以空行结束；拆出来的块逐块分发
+      while ((idx = buf.indexOf('\n\n')) > -1) {
+        const block = buf.slice(0, idx)
+        buf = buf.slice(idx + 2)
+        dispatchSseBlock(block, onEvent)
+      }
+    }
+    // 收尾：个别实现最后一条事件不带结尾空行
+    if (buf.trim()) dispatchSseBlock(buf, onEvent)
+  } catch (e) {
+    return { code: -1, message: '回答生成中断，请稍后重试', data: null }
+  }
+  return { code: 200, message: 'ok', data: null }
+}
+
 /** 便捷方法，语义更清楚一点 */
 export const http = {
   get: (path, query) => request(path, { method: 'GET', query }),
   post: (path, body) => request(path, { method: 'POST', body }),
   put: (path, body) => request(path, { method: 'PUT', body }),
-  del: (path, query) => request(path, { method: 'DELETE', query })
+  del: (path, query) => request(path, { method: 'DELETE', query }),
+  /** stream: (path, body, onEvent) => Promise<信封>，AI 助手流式聊天专用 */
+  stream: (path, body, onEvent) => requestStream(path, { body, onEvent })
 }

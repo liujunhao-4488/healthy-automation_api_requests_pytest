@@ -435,11 +435,15 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     public Recipe saveRecipe(Recipe recipe, List<RecipeIngredient> ingredients) {
         recipeMapper.insert(recipe);
-        for (RecipeIngredient ingredient : ingredients) {
-            ingredient.setRecipeId(recipe.getId());
-            recipeIngredientMapper.insert(ingredient);
+        if (ingredients != null) {
+            for (RecipeIngredient ingredient : ingredients) {
+                ingredient.setRecipeId(recipe.getId());
+                recipeIngredientMapper.insert(ingredient);
+            }
         }
-        calculateRecipeNutrition(recipe);
+        if (recipe.getTotalCalories() == null && ingredients != null) {
+            calculateRecipeNutrition(recipe);
+        }
         return sanitizeRecipeForDisplay(recipeMapper.selectById(recipe.getId()));
     }
 
@@ -448,16 +452,20 @@ public class RecipeServiceImpl implements RecipeService {
     public Recipe updateRecipe(Recipe recipe, List<RecipeIngredient> ingredients) {
         recipeMapper.updateById(recipe);
 
-        QueryWrapper<RecipeIngredient> wrapper = new QueryWrapper<>();
-        wrapper.eq("recipe_id", recipe.getId());
-        recipeIngredientMapper.delete(wrapper);
+        if (ingredients != null) {
+            QueryWrapper<RecipeIngredient> wrapper = new QueryWrapper<>();
+            wrapper.eq("recipe_id", recipe.getId());
+            recipeIngredientMapper.delete(wrapper);
 
-        for (RecipeIngredient ingredient : ingredients) {
-            ingredient.setRecipeId(recipe.getId());
-            recipeIngredientMapper.insert(ingredient);
+            for (RecipeIngredient ingredient : ingredients) {
+                ingredient.setRecipeId(recipe.getId());
+                recipeIngredientMapper.insert(ingredient);
+            }
         }
 
-        calculateRecipeNutrition(recipe);
+        if (recipe.getTotalCalories() == null && ingredients != null) {
+            calculateRecipeNutrition(recipe);
+        }
         return sanitizeRecipeForDisplay(recipeMapper.selectById(recipe.getId()));
     }
 
@@ -2840,6 +2848,10 @@ public class RecipeServiceImpl implements RecipeService {
 
     private void applyRecipeHealthMetrics(Recipe recipe) {
         if (recipe == null || recipe.getId() == null) {
+            return;
+        }
+        // 自定义食谱的营养数据由用户手工填写，不用配料库反算覆盖
+        if (Integer.valueOf(1).equals(recipe.getIsCustom())) {
             return;
         }
         Map<String, Double> metrics = calculateRecipeHealthMetrics(recipe.getId());

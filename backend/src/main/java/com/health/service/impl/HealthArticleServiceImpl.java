@@ -111,7 +111,19 @@ public class HealthArticleServiceImpl implements HealthArticleService {
 
     @Override
     public HealthArticle updateArticle(HealthArticle article) {
-        prepareArticle(article);
+        HealthArticle existing = article.getId() == null ? null : healthArticleMapper.selectById(article.getId());
+        if (existing != null) {
+            if (article.getPublishDate() == null) {
+                article.setPublishDate(existing.getPublishDate());
+            }
+            if (article.getStatus() == null) {
+                article.setStatus(existing.getStatus());
+            }
+        }
+        if ((article.getSummary() == null || article.getSummary().trim().isEmpty()) && article.getContent() != null) {
+            String content = article.getContent().trim().replaceAll("\\s+", " ");
+            article.setSummary(content.length() > 120 ? content.substring(0, 120) : content);
+        }
         healthArticleMapper.updateById(article);
         return healthArticleMapper.selectById(article.getId());
     }

@@ -1,6 +1,7 @@
 package com.health.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.health.entity.Ingredient;
 import com.health.entity.Recipe;
 import com.health.entity.RecipeIngredient;
@@ -43,6 +44,8 @@ public class RecipeController {
 
     @Autowired
     private IngredientMapper ingredientMapper;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @GetMapping("/list")
     public ResponseEntity<?> getAllRecipes() {
@@ -91,17 +94,18 @@ public class RecipeController {
     @PostMapping("/save")
     public ResponseEntity<?> saveRecipe(@RequestBody Map<String, Object> params, Principal principal) {
         try {
+            if (principal == null) {
+                return unauthorizedResponse();
+            }
             Long userId = Long.parseLong(principal.getName());
 
             Recipe recipe = new Recipe();
-            recipe.setName(String.valueOf(params.get("name")));
-            recipe.setDescription(String.valueOf(params.get("description")));
-            recipe.setCookingTime(Integer.parseInt(params.get("cookingTime").toString()));
-            recipe.setDifficulty(String.valueOf(params.get("difficulty")));
-            recipe.setInstructions(String.valueOf(params.get("instructions")));
-            recipe.setImageUrl(String.valueOf(params.getOrDefault("imageUrl", "")));
+            applyRecipeFields(recipe, params);
             recipe.setCreatorId(userId);
-            recipe.setIsCustom(1);
+            recipe.setIsCustom(userService.isAdmin(userService.findById(userId)) ? 0 : 1);
+            if (recipe.getStatus() == null) {
+                recipe.setStatus(1);
+            }
 
             return successResponse("保存食谱成功", recipeService.saveRecipe(recipe, buildIngredients(params)));
         } catch (Exception e) {
@@ -116,14 +120,11 @@ public class RecipeController {
             Long recipeId = Long.parseLong(params.get("id").toString());
             requireAdminOrRecipeOwner(principal, recipeId);
 
-            Recipe recipe = new Recipe();
-            recipe.setId(recipeId);
-            recipe.setName(String.valueOf(params.get("name")));
-            recipe.setDescription(String.valueOf(params.get("description")));
-            recipe.setCookingTime(Integer.parseInt(params.get("cookingTime").toString()));
-            recipe.setDifficulty(String.valueOf(params.get("difficulty")));
-            recipe.setInstructions(String.valueOf(params.get("instructions")));
-            recipe.setImageUrl(String.valueOf(params.getOrDefault("imageUrl", "")));
+            Recipe recipe = recipeMapper.selectById(recipeId);
+            if (recipe == null) {
+                return badRequestResponse("食谱不存在");
+            }
+            applyRecipeFields(recipe, params);
 
             return successResponse("更新食谱成功", recipeService.updateRecipe(recipe, buildIngredients(params)));
         } catch (Exception e) {
@@ -265,17 +266,204 @@ public class RecipeController {
         }
     }
 
+    private void applyRecipeFields(Recipe recipe, Map<String, Object> params) {
+        if (hasValue(params, "name")) {
+            recipe.setName(stringValue(params.get("name")));
+        }
+        Object desc = params.containsKey("desc") ? params.get("desc") : params.get("description");
+        if (desc != null) {
+            recipe.setDescription(stringValue(desc));
+        }
+        Object cookingTime = params.containsKey("time") ? params.get("time") : params.get("cookingTime");
+        if (cookingTime != null) {
+            recipe.setCookingTime(intValue(cookingTime));
+        }
+        Object difficulty = params.containsKey("level") ? params.get("level") : params.get("difficulty");
+        if (difficulty != null) {
+            recipe.setDifficulty(stringValue(difficulty));
+        }
+        Object instructions = params.containsKey("steps") ? params.get("steps") : params.get("instructions");
+        if (instructions != null) {
+            recipe.setInstructions(instructionsValue(instructions));
+        }
+        Object imageUrl = params.containsKey("img") ? params.get("img") : params.get("imageUrl");
+        if (imageUrl != null) {
+            recipe.setImageUrl(stringValue(imageUrl));
+        }
+        Object category = params.containsKey("mealType") ? params.get("mealType") : params.get("category");
+        if (category != null) {
+            recipe.setCategory(stringValue(category));
+        }
+        Object cuisine = params.containsKey("cuisine") ? params.get("cuisine") : params.get("cuisineType");
+        if (cuisine != null) {
+            recipe.setCuisineType(stringValue(cuisine));
+        }
+        if (params.get("servings") != null) {
+            recipe.setServings(intValue(params.get("servings")));
+        }
+        Object calories = params.containsKey("kcal") ? params.get("kcal") : params.get("totalCalories");
+        if (calories != null) {
+            Double value = doubleValue(calories);
+            recipe.setTotalCalories(value);
+            Integer servings = recipe.getServings();
+            if (value != null && servings != null && servings > 0) {
+                recipe.setCaloriesPerServing(round(value / servings));
+            }
+        }
+        Object protein = params.containsKey("p") ? params.get("p") : params.get("protein");
+        if (protein != null) {
+            recipe.setProtein(doubleValue(protein));
+        }
+        Object carbs = params.containsKey("c") ? params.get("c") : params.get("carbs");
+        if (carbs != null) {
+            recipe.setCarbs(doubleValue(carbs));
+        }
+        Object fat = params.containsKey("f") ? params.get("f") : params.get("fat");
+        if (fat != null) {
+            recipe.setFat(doubleValue(fat));
+        }
+        if (params.get("fiber") != null) {
+            recipe.setFiber(doubleValue(params.get("fiber")));
+        }
+        Object suitableFor = params.containsKey("fit") ? params.get("fit") : params.get("suitableFor");
+        if (suitableFor != null) {
+            recipe.setSuitableFor(joinValues(suitableFor));
+        }
+        if (params.get("tips") != null) {
+            recipe.setTips(stringValue(params.get("tips")));
+        }
+        if (params.get("status") != null) {
+            recipe.setStatus(intValue(params.get("status")));
+        }
+    }
+
+    private boolean hasValue(Map<String, Object> params, String key) {
+        return params.get(key) != null && !String.valueOf(params.get(key)).isBlank();
+    }
+
+    private String stringValue(Object value) {
+        return value == null ? "" : String.valueOf(value);
+    }
+
+    private Integer intValue(Object value) {
+        Double number = doubleValue(value);
+        return number == null ? null : number.intValue();
+    }
+
+    private Double doubleValue(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        try {
+            return Double.parseDouble(String.valueOf(value).trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private double round(double value) {
+        return Math.round(value * 10.0) / 10.0;
+    }
+
+    private String joinValues(Object value) {
+        if (value instanceof List) {
+            return ((List<?>) value).stream()
+                .filter(item -> item != null && !String.valueOf(item).isBlank())
+                .map(String::valueOf)
+                .collect(Collectors.joining("、"));
+        }
+        return stringValue(value);
+    }
+
+    private String instructionsValue(Object value) {
+        if (value instanceof List) {
+            try {
+                return objectMapper.writeValueAsString(value);
+            } catch (Exception e) {
+                return "[]";
+            }
+        }
+        return stringValue(value);
+    }
+
     private List<RecipeIngredient> buildIngredients(Map<String, Object> params) {
-        List<Map<String, Object>> ingredientMaps = (List<Map<String, Object>>) params.get("ingredients");
+        Object rawIngredients = params.get("ingredients");
+        if (!(rawIngredients instanceof List)) {
+            return null;
+        }
+
+        List<?> ingredientMaps = (List<?>) rawIngredients;
         List<RecipeIngredient> ingredients = new ArrayList<>();
-        for (Map<String, Object> ingredientMap : ingredientMaps) {
+        for (Object rawItem : ingredientMaps) {
+            if (!(rawItem instanceof Map)) {
+                continue;
+            }
+            @SuppressWarnings("unchecked")
+            Map<String, Object> ingredientMap = (Map<String, Object>) rawItem;
+
+            Long ingredientId = ingredientMap.get("ingredientId") == null
+                ? null
+                : longValue(ingredientMap.get("ingredientId"));
+            String name = stringValue(ingredientMap.get("name")).trim();
+            if (ingredientId == null && !name.isEmpty() && !"待完善".equals(name)) {
+                Ingredient ingredient = ingredientMapper.selectOne(
+                    new QueryWrapper<Ingredient>().eq("name", name).last("LIMIT 1")
+                );
+                if (ingredient == null) {
+                    ingredient = new Ingredient();
+                    ingredient.setName(name);
+                    ingredient.setCategory("其他");
+                    ingredient.setCaloriesPer100g(0.0);
+                    ingredient.setProteinPer100g(0.0);
+                    ingredient.setCarbsPer100g(0.0);
+                    ingredient.setFatPer100g(0.0);
+                    ingredient.setFiberPer100g(0.0);
+                    ingredient.setStatus(1);
+                    ingredientMapper.insert(ingredient);
+                }
+                ingredientId = ingredient.getId();
+            }
+            if (ingredientId == null) {
+                continue;
+            }
+
+            Object quantityValue = ingredientMap.containsKey("amount")
+                ? ingredientMap.get("amount")
+                : ingredientMap.get("quantity");
             RecipeIngredient ingredient = new RecipeIngredient();
-            ingredient.setIngredientId(Long.parseLong(ingredientMap.get("ingredientId").toString()));
-            ingredient.setQuantity(Double.parseDouble(ingredientMap.get("quantity").toString()));
-            ingredient.setUnit(String.valueOf(ingredientMap.get("unit")));
+            ingredient.setIngredientId(ingredientId);
+            ingredient.setQuantity(parseQuantity(quantityValue));
+            ingredient.setUnit(stringValue(ingredientMap.getOrDefault("unit", "g")));
             ingredients.add(ingredient);
         }
         return ingredients;
+    }
+
+    private Long longValue(Object value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Long.parseLong(String.valueOf(value).trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private double parseQuantity(Object value) {
+        if (value == null) {
+            return 0.0;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+            .compile("(\\d+(?:\\.\\d+)?)")
+            .matcher(String.valueOf(value));
+        return matcher.find() ? Double.parseDouble(matcher.group(1)) : 0.0;
     }
 
     private List<Map<String, Object>> buildIngredientDetails(List<RecipeIngredient> recipeIngredients) {
