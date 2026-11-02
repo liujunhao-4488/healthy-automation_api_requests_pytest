@@ -1,0 +1,13 @@
+{
+  "name": "health-diet-database-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "健康饮食项目的数据维护脚本（食谱重建等）。不参与前端/后端构建，只用来跑一次性数据任务。",
+  "scripts": {
+    "rebuild:recipes:dry": "node rebuild_recipes.js --dry",
+    "rebuild:recipes": "node rebuild_recipes.js"
+  },
+  "dependencies": {
+    "mysql2": "^3.24.6"
+  }
+}

@@ -25,12 +25,50 @@ import {
   fetchRecipeDetail,
   fetchCollectedRecipes
 } from './adapters/recipe'
+import {
+  toHealthInfo,
+  toHealthDTO,
+  toHistoryList,
+  toGoalInfo,
+  toGoalDTO,
+  emptyHealth
+} from './adapters/health'
+import {
+  toSubmitDTO,
+  toRecord,
+  toRecordList,
+  toTrend,
+  last7Days
+} from './adapters/record'
+import {
+  toIngredientList,
+  filterIngredients,
+  toNutritionParams,
+  toNutrition,
+  toSubstitutes
+} from './adapters/ingredient'
+import { toMealList } from './adapters/recommend'
 
 /** 全局默认：没接后端的模块继续走 mock */
 export const USE_MOCK = true
 
 /** 食谱库：已接真实后端（列表 / 详情 / 营养）*/
 export const RECIPE_USE_MOCK = false
+
+/** 健康档案：已接真实后端（GET/POST /health/info、/health/history）*/
+export const HEALTH_USE_MOCK = false
+
+/** 饮食目标：已接真实后端（GET/POST /health/goal）*/
+export const GOAL_USE_MOCK = false
+
+/** 饮食记录：已接真实后端（/record/submit、list、analysis/trend、suggestions）*/
+export const RECORD_USE_MOCK = false
+
+/** 食材库：已接真实后端（/ingredient/list、nutrition、substitute）*/
+export const INGREDIENT_USE_MOCK = false
+
+/** 推荐：已接真实后端（/recommend/recipes、/recommend/recipes/today）*/
+export const RECOMMEND_USE_MOCK = false
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 const ok = (data, message) => ({ code: 200, message: message || '操作成功', data })
@@ -122,17 +160,48 @@ export const authApi = {
 export const healthApi = {
   // GET /health/info
   async get() {
+    if (!HEALTH_USE_MOCK) {
+      const res = await request('/health/info')
+      // 后端不支持 GET 时（或 token 失效）退回本地缓存，页面不至于白屏
+      if (res.code !== 200) {
+        if (res.code === 401) return res
+        return ok(emptyHealth(), res.message)
+      }
+      const store = useAppStore()
+      // 注意：analysis 在信封外面（res.analysis），不在 data 里
+      const info = toHealthInfo(res.data, store.healthInfo)
+      store.healthInfo = info
+      return ok(info, res.message || '获取健康信息成功')
+    }
+
     await delay(320)
     return ok(useAppStore().healthInfo)
   },
   // POST /health/info
   async save(patch) {
+    if (!HEALTH_USE_MOCK) {
+      const body = toHealthDTO(patch)
+      const res = await request('/health/info', { method: 'POST', body })
+      if (res.code !== 200) return res
+      const store = useAppStore()
+      // 用后端返回的实体回填（bmi 是后端算的），waist 等本地字段一并保留
+      const info = toHealthInfo(res.data, Object.assign({}, store.healthInfo, patch))
+      store.healthInfo = info
+      return ok(info, res.message || '健康档案已保存')
+    }
+
     await delay(560)
     if (!patch.height || !patch.weight) return fail(400, '身高与体重为必填项')
     return ok(useAppStore().saveHealth(patch), '健康档案已保存')
   },
   // GET /health/history
   async history() {
+    if (!HEALTH_USE_MOCK) {
+      const res = await request('/health/history')
+      if (res.code !== 200) return res
+      return ok(toHistoryList(res.data), res.message)
+    }
+
     await delay(280)
     return ok([
       { date: '09-01', weight: 71.2 },
@@ -148,14 +217,38 @@ export const healthApi = {
 export const goalApi = {
   // GET /health/goal
   async get() {
+    if (!GOAL_USE_MOCK) {
+      const res = await request('/health/goal')
+      if (res.code !== 200) {
+        if (res.code === 401) return res
+        return ok(useAppStore().goalInfo, res.message)
+      }
+      const store = useAppStore()
+      // 新用户后端返回 data:null，toGoalInfo 会补成完整默认形状
+      const goal = toGoalInfo(res.data, store.goalInfo)
+      store.goalInfo = goal
+      return ok(goal, res.message || '获取饮食目标成功')
+    }
+
     await delay(260)
     return ok(useAppStore().goalInfo)
   },
   // POST /health/goal
   async save(patch) {
-    await delay(540)
     const pct = (+patch.proteinPct || 0) + (+patch.carbPct || 0) + (+patch.fatPct || 0)
     if (Math.abs(pct - 100) > 2) return fail(400, '三大营养素占比之和需为 100%')
+
+    if (!GOAL_USE_MOCK) {
+      const body = toGoalDTO(Object.assign({}, useAppStore().goalInfo, patch))
+      const res = await request('/health/goal', { method: 'POST', body })
+      if (res.code !== 200) return res
+      const store = useAppStore()
+      const goal = toGoalInfo(res.data, Object.assign({}, store.goalInfo, patch))
+      store.goalInfo = goal
+      return ok(goal, res.message || '目标已更新')
+    }
+
+    await delay(540)
     return ok(useAppStore().saveGoal(patch), '目标已更新')
   }
 }
@@ -164,6 +257,23 @@ export const goalApi = {
 export const recordsApi = {
   // GET /record/list?page=&pageSize=&startDate=&endDate=
   async list({ date } = {}) {
+    if (!RECORD_USE_MOCK) {
+      const d = date || TODAY
+      /* 后端是分页的，前端要「某一天全部记录」，所以把 start/end 都钉死在那天，
+         并给一个足够大的 pageSize（一天最多也就十几餐）。
+         后端返回按时间倒序，页面自己按 mealType 分组和排序，不用重新排。 */
+      const res = await request('/record/list', {
+        query: { date: undefined, startDate: d, endDate: d, page: 1, pageSize: 100 }
+      })
+      if (res.code !== 200) return res
+      const list = toRecordList(res.data)
+      // 直接刷进 store，页面 recordsByDate() 就能读到
+      const store = useAppStore()
+      const others = store.recordList.filter((r) => r.date !== d)
+      store.recordList = others.concat(list)
+      return ok({ list, total: list.length, date: d }, res.message)
+    }
+
     await delay(340)
     const store = useAppStore()
     const d = date || TODAY
@@ -172,17 +282,45 @@ export const recordsApi = {
   },
   // POST /record/submit
   async submit(rec) {
-    await delay(520)
     if (!rec.items || !rec.items.length) return fail(400, '请至少添加一项食物')
+
+    if (!RECORD_USE_MOCK) {
+      const body = toSubmitDTO(rec)
+      const res = await request('/record/submit', { method: 'POST', body })
+      if (res.code !== 200) return res
+      /* submit 的响应里 details 是 null，拿不到明细，
+         所以再拉一次当天列表，保证页面和数据库一致（也能拿到后端生成的 id）。 */
+      const saved = toRecord(res.data)
+      await recordsApi.list({ date: saved.date })
+      return ok(saved, res.message || '记录已保存')
+    }
+
+    await delay(520)
     return ok(useAppStore().addRecord(rec), '记录已保存')
   },
-  // GET /record/analysis/trend
+  // GET /record/analysis/trend?startDate=&endDate=（两个参数都必填）
   async trend() {
+    if (!RECORD_USE_MOCK) {
+      const { startDate, endDate } = last7Days()
+      const res = await request('/record/analysis/trend', {
+        query: { startDate, endDate }
+      })
+      if (res.code !== 200) return res
+      return ok(toTrend(res.data, { days: 7 }), res.message)
+    }
+
     await delay(300)
     return ok(useAppStore().trend)
   },
   // GET /record/suggestions
   async suggestions() {
+    if (!RECORD_USE_MOCK) {
+      const res = await request('/record/suggestions')
+      if (res.code !== 200) return res
+      const list = Array.isArray(res.data) ? res.data : []
+      return ok(list, res.message)
+    }
+
     await delay(420)
     const store = useAppStore()
     const t = store.totals(TODAY)
@@ -199,6 +337,16 @@ export const recordsApi = {
   },
   // DELETE /record/{recordId}
   async remove(id) {
+    if (!RECORD_USE_MOCK) {
+      const target = useAppStore().recordList.find((r) => String(r.id) === String(id))
+      const res = await request('/record/' + id, { method: 'DELETE' })
+      if (res.code !== 200) return res
+      // 后端是软删除，本地同步移除，再拉一次当天列表对齐
+      useAppStore().removeRecord(id)
+      if (target) await recordsApi.list({ date: target.date })
+      return ok(null, res.message || '记录已删除')
+    }
+
     await delay(300)
     useAppStore().removeRecord(id)
     return ok(null, '记录已删除')
@@ -209,6 +357,20 @@ export const recordsApi = {
 export const recommendApi = {
   // GET /recommend/recipes?breakfastCount=&lunchCount=&dinnerCount=
   async daily() {
+    if (!RECOMMEND_USE_MOCK) {
+      /* 后端返回按餐次分组的对象 { breakfast, lunch, dinner }，
+         toMealList 负责拍平成页面要的一维数组。 */
+      const res = await request('/recommend/recipes', {
+        query: { breakfastCount: 3, lunchCount: 3, dinnerCount: 3 }
+      })
+      if (res.code !== 200) return res
+      const list = toMealList(res.data)
+      /* matchScore 取所有建议里的最高分代表整体匹配度；
+         后端没给 engine 字段，这里如实标注数据来源为后端推荐。 */
+      const top = list.reduce((m, x) => Math.max(m, x.score), 0)
+      return ok({ engine: 'v2', matchScore: top, list }, res.message)
+    }
+
     await delay(680)
     const goal = useAppStore().goalInfo
     const pick = (type) =>
@@ -226,6 +388,14 @@ export const recommendApi = {
   },
   // GET /recommend/recipes/today
   async today() {
+    if (!RECOMMEND_USE_MOCK) {
+      const res = await request('/recommend/recipes/today')
+      if (res.code !== 200) return res
+      const list = toMealList(res.data)
+      const top = list.reduce((m, x) => Math.max(m, x.score), 0)
+      return ok({ engine: 'v2', matchScore: top, list }, res.message)
+    }
+
     await delay(520)
     const goal = useAppStore().goalInfo
     const types = ['早餐', '午餐', '晚餐']
@@ -243,9 +413,39 @@ export const recommendApi = {
 }
 
 /* ---------------- 食材 FR-INGREDIENT ---------------- */
+
+/**
+ * 食材全量缓存。
+ * /ingredient/list 一次返回 125 条（45KB），而食材页会因筛选、输入关键字反复调用；
+ * RecipesView 那套「缓存全量 + 本地筛选」的做法在这里同样适用。
+ */
+let ingCache = null
+let ingCacheAt = 0
+const ING_TTL = 5 * 60 * 1000
+
+async function fetchAllIngredients({ force = false } = {}) {
+  const now = Date.now()
+  if (!force && ingCache && now - ingCacheAt < ING_TTL) {
+    return { code: 200, message: 'ok', data: ingCache }
+  }
+  const res = await request('/ingredient/list')
+  if (res.code !== 200) return res
+  ingCache = toIngredientList(res.data)
+  ingCacheAt = now
+  return { code: 200, message: res.message, data: ingCache }
+}
+
 export const ingredientsApi = {
   // GET /ingredient/list?category=&keyword=
   async list({ cat, keyword } = {}) {
+    if (!INGREDIENT_USE_MOCK) {
+      const res = await fetchAllIngredients()
+      if (res.code !== 200) return res
+      // 后端 list 是全量、不带筛选参数，筛选在本地做（与 mock 分支逐行一致）
+      const list = filterIngredients(res.data, { cat, keyword })
+      return ok({ list, total: list.length }, res.message)
+    }
+
     await delay(380)
     let list = DB.ingredients.filter((i) => i.status !== 0)
     if (cat && cat !== '全部') list = list.filter((i) => i.cat === cat)
@@ -254,6 +454,23 @@ export const ingredientsApi = {
   },
   // POST /recommend/ingredient/substitute
   async substitute({ name, prompt }) {
+    if (!INGREDIENT_USE_MOCK) {
+      if (!name) return fail(400, '请先选择需要替代的食材')
+      /* 后端按营养构成相似度真实计算（2026-11-02 修复，原先为硬编码假数据）。
+         返回每项已带营养字段，前端直接渲染即可。 */
+      const res = await request('/ingredient/substitute', {
+        method: 'POST',
+        body: { ingredientName: name, prompt: prompt || '', limit: 4 }
+      })
+      if (res.code !== 200) return res
+      const all = await fetchAllIngredients()
+      const pool = all.code === 200 ? all.data : []
+      return ok(
+        toSubstitutes(res.data, pool, { source: name, prompt }),
+        res.message || '已找到等价替代方案'
+      )
+    }
+
     await delay(760)
     if (!name) return fail(400, '请先选择需要替代的食材')
     const MAP = {
@@ -280,6 +497,20 @@ export const ingredientsApi = {
   },
   // POST /ingredient/nutrition
   async nutrition({ id, grams }) {
+    if (!INGREDIENT_USE_MOCK) {
+      const params = toNutritionParams({ id, grams })
+      const res = await request('/ingredient/nutrition', { method: 'POST', body: params })
+      if (res.code !== 200) return res
+      // 后端返回裸浮点（0.6000000000000001），toNutrition 会规整
+      const all = await fetchAllIngredients()
+      const pool = all.code === 200 ? all.data : []
+      const found = pool.find((x) => String(x.id) === String(id))
+      return ok(
+        toNutrition(res.data, { name: found ? found.name : '', grams: params.quantity }),
+        res.message
+      )
+    }
+
     await delay(240)
     const ing = DB.ingredients.find((i) => i.id === +id)
     if (!ing) return fail(404, '食材不存在')

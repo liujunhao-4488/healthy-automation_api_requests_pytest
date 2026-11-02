@@ -20,6 +20,7 @@ import recipeChickenImg from '@/assets/recipe-chicken.jpg'
 const PREFIX = 'sh_'
 const K = {
   session: PREFIX + 'session',
+  adminSession: PREFIX + 'admin_session',
   health: PREFIX + 'health',
   pref: PREFIX + 'pref',
   goal: PREFIX + 'goal',
@@ -123,7 +124,8 @@ seed()
 
 export const useAppStore = defineStore('app', () => {
   /* ================= 状态 ================= */
-  const session = ref(read(K.session, null)) // 登录态
+  const session = ref(read(K.session, null)) // 用户端登录态
+  const adminSession = ref(read(K.adminSession, null)) // 后台登录态，与用户端完全隔离
   const healthInfo = ref(read(K.health, DB.health)) // 健康档案
   const preferences = ref(read(K.pref, DB.preferences)) // 饮食偏好
   const goalInfo = ref(read(K.goal, DB.goal)) // 饮食目标
@@ -141,6 +143,7 @@ export const useAppStore = defineStore('app', () => {
      任一状态变化就写回 localStorage，省掉每处手工同步。 */
   const persisted = [
     [session, K.session],
+    [adminSession, K.adminSession],
     [healthInfo, K.health],
     [preferences, K.pref],
     [goalInfo, K.goal],
@@ -160,8 +163,12 @@ export const useAppStore = defineStore('app', () => {
 
   /* ================= 会话 ================= */
   const isLoggedIn = computed(() => !!session.value)
-  const isAdmin = computed(() => session.value?.role === 'admin')
   const displayName = computed(() => session.value?.username || '朋友')
+  /* 后台身份只看独立会话：用户端登录永远不会获得后台权限 */
+  const isAdminLoggedIn = computed(
+    () => !!adminSession.value && adminSession.value.role === 'admin'
+  )
+  const adminName = computed(() => adminSession.value?.username || '管理员')
 
   /**
    * 用接口返回的 data 建立会话 —— 登录和注册共用（后端注册成功会直接发 token）
@@ -204,6 +211,28 @@ export const useAppStore = defineStore('app', () => {
     session.value = null
     // 同 enter()：同步清盘，别让 http.js 还拿着上一个账号的 token 发请求
     write(K.session, null)
+  }
+
+  /**
+   * 建立后台会话。只接受 role=admin，普通账号在这里一律被拒。
+   * 后台会话存在 sh_admin_session 里，和用户端的 sh_session 互不覆盖，
+   * 所以同一个浏览器可以同时登录一个用户号和一个管理员号。
+   */
+  function enterAdmin(data) {
+    if (!data || data.role !== 'admin') return null
+    adminSession.value = {
+      userId: data.userId,
+      username: data.username,
+      email: data.email,
+      role: 'admin',
+      token: data.token
+    }
+    write(K.adminSession, adminSession.value)
+    return adminSession.value
+  }
+  function adminLogout() {
+    adminSession.value = null
+    write(K.adminSession, null)
   }
   function updateProfile(patch) {
     // TODO: 替换为 PUT /user/profile
@@ -488,6 +517,7 @@ export const useAppStore = defineStore('app', () => {
   return {
     // 状态
     session,
+    adminSession,
     healthInfo,
     preferences,
     goalInfo,
@@ -500,7 +530,8 @@ export const useAppStore = defineStore('app', () => {
     waterCups,
     // 推导
     isLoggedIn,
-    isAdmin,
+    isAdminLoggedIn,
+    adminName,
     displayName,
     notifications,
     unreadCount,
@@ -509,6 +540,8 @@ export const useAppStore = defineStore('app', () => {
     login,
     enter,
     logout,
+    enterAdmin,
+    adminLogout,
     updateProfile,
     saveHealth,
     savePreferences,

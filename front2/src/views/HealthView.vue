@@ -38,6 +38,9 @@ const form = reactive({
 })
 const chronic = ref((health.value.chronic || []).slice())
 
+/** 挂载时的表单快照：后端数据回来时，用它判断用户是否已经动过表单 */
+const healthBefore = reactive({ gender: '', age: '', height: '', weight: '' })
+
 /** 字段级错误，对应原来的 .has-error */
 const errs = reactive({
   age: false,
@@ -321,7 +324,44 @@ onMounted(() => {
     exerciseMin: h.exerciseMin,
     exerciseType: h.exerciseType || ''
   })
+  // 记录初始值，供 loadRemote() 判断用户是否已动手改过表单
+  Object.assign(healthBefore, {
+    gender: form.gender,
+    age: form.age,
+    height: form.height,
+    weight: form.weight
+  })
+  // 再从后端拉一次真数据（已接 GET /health/info）。
+  // 拿到后用返回值刷新 store 和表单；拿不到就沿用本地缓存，页面不闪也不报错。
+  loadRemote()
 })
+
+async function loadRemote() {
+  const res = await healthApi.get()
+  if (res.code !== 200 || !res.data) return
+  const h = res.data
+  const cur = form
+  // 用户可能在请求返回前就改了表单，这种情况不回填，避免把输入冲掉
+  const untouched =
+    cur.gender === healthBefore.gender &&
+    String(cur.age) === String(healthBefore.age) &&
+    String(cur.height) === String(healthBefore.height) &&
+    String(cur.weight) === String(healthBefore.weight)
+  if (!untouched) return
+
+  Object.assign(form, {
+    gender: h.gender,
+    age: h.age,
+    height: h.height,
+    weight: h.weight,
+    waist: h.waist,
+    activity: h.activity,
+    exerciseMin: h.exerciseMin,
+    exerciseType: h.exerciseType || ''
+  })
+  chronic.value = (h.chronic || []).slice()
+}
+
 </script>
 
 <template>

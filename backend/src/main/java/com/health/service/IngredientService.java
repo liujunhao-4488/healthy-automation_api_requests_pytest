@@ -64,4 +64,17 @@ public interface IngredientService {
      * @return 营养成分映射
      */
     java.util.Map<String, Double> calculateNutrition(Long ingredientId, Double quantity, String unit);
+
+    /**
+     * 食材替代推荐：按营养构成相似度，找出可以替换目标食材的候选。
+     *
+     * 2026-11-02 新增。此前 Controller 里是硬编码的「西兰花 / 花椰菜」两条假数据，
+     * 无论传什么食材都返回同样结果，ingredientName 参数完全没用上。
+     *
+     * @param ingredientName 目标食材名（前端可能传「白米饭」，而库里的名字是「米饭」，内部做宽松匹配）
+     * @param prompt         可选的目标描述，如「低脂、低 GI」，命中时会略微加权
+     * @param limit          返回条数上限
+     * @return 替代方案列表，每项含 name / similarity / reason 及营养字段
+     */
+    List<java.util.Map<String, Object>> getSubstitutes(String ingredientName, String prompt, Integer limit);
 }

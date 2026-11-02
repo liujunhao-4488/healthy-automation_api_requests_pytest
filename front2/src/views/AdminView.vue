@@ -892,16 +892,16 @@
    静态版靠 querySelector 逐个改 DOM；这里全部换成响应式状态，
    手风琴式「先 innerHTML 再 Icons.hydrate 再绑事件」的写法都不需要了。
    ============================================================ */
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { adminApi, notificationsApi } from '@/services/api'
-import { useAppStore } from '@/stores/app'
 import { toast } from '@/composables/useToast'
 import { confirmDialog } from '@/composables/useConfirm'
 import SvgIcon from '@/components/SvgIcon.vue'
 import recipeChicken from '@/assets/recipe-chicken.jpg'
 import articleVegetables from '@/assets/article-vegetables.jpg'
 
-const store = useAppStore()
+const route = useRoute()
 
 /* ---------------- 通用 ---------------- */
 /** 千分位，对应静态版 UI.num() */
@@ -1056,6 +1056,15 @@ function pickTab(key) {
   // 内容面板按需加载，和原版一致
   if (key !== 'users' && !content[key].loaded) loadContent(key)
 }
+
+/** 后台侧边栏用 /admin?tab=xxx 切页，这里把 query 映射到内部 tab */
+watch(
+  () => route.query.tab,
+  (key) => {
+    if (key && Object.prototype.hasOwnProperty.call(content, key)) pickTab(key)
+  },
+  { immediate: true }
+)
 
 function goPage(type, step) {
   const view = contentView.value[type]
@@ -1276,8 +1285,6 @@ async function confirmPublish() {
   publishing.value = false
   if (res.code !== 200) return toast(res.message, 'error')
 
-  // 原版直接 DB.notifications.unshift()，这里走 store 才响应式
-  store.publishNotif({ type: pub.type, title, content: text })
   publishOpen.value = false
   toast(res.message)
   pub.title = ''

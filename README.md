@@ -92,7 +92,33 @@
 
 ### 5.1 数据库
 
-**开发库** `health_diet`：用 `database/health_diet.sql` 手工导入（全量数据，含示例账号）。
+**开发库** `health_diet`：用 `database/health_diet.sql` 导入。
+
+```bash
+mysql -uroot -p < database/health_diet.sql
+```
+
+这份快照（2026-11-02 更新）包含：
+
+| 内容 | 说明 |
+|---|---|
+| 表结构 | 全部 19 张表 |
+| 食谱 | 125 道上架菜谱 + 128 道已下架（含 971 条配料关联）|
+| 食材 | 128 种，营养数据来自《中国食物成分表》|
+| 文章 | 133 篇 + 评论 |
+| 用户相关表 | **仅表结构，不含任何数据** |
+
+> ⚠️ 账号、饮食记录、聊天记录属于个人隐私，不进入公开仓库。
+> 首次使用需自行注册账号（`POST /api/auth/register`）。
+
+**更新快照**：本地数据改动后，重新导出：
+
+```bash
+cd database
+node export_health_diet.js
+```
+
+脚本会自动做隐私检查：用户表必须为空、真实人名会被脱敏，校验不通过则导出失败。
 
 **测试库** `health_diet_test`：不要复制开发库，直接一键重建：
 
@@ -112,6 +138,19 @@ database\rebuild_test_db.bat
 > 跑自动化时后端必须连测试库：
 > `set DB_NAME=health_diet_test`
 > 连错库时环境预检会用 `userId + username` 对账并直接中止。
+
+### 5.1.1 数据库维护脚本（database/）
+
+| 脚本 | 作用 |
+|---|---|
+| `export_health_diet.js` | 导出脱敏快照到 `health_diet.sql` |
+| `seed_extra_ingredients.js` | 补充基础食材（`--dry` 预演）|
+| `seed_extra_recipes.js` | 新增菜谱（`--dry` 预演，自动校验食材存在性）|
+| `dedupe_recipes.js` | 食谱去重，软删除重复项（`--dry` 预演）|
+| `rebuild_recipes.js` | 批量重建食谱内容（`--dry` 预演）|
+| `2026-11-02_add_detail_nutrition.sql` | 给 `diet_record_detail` 补 fiber/sugar/sodium/gi 四列 |
+
+这些脚本需要 `mysql2`，在 `database/` 下执行 `npm install` 后可用。
 
 ### 5.2 算法服务（Flask，5000）
 

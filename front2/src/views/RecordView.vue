@@ -15,7 +15,6 @@
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAppStore, TODAY } from '@/stores/app'
-import DB from '@/mock/db'
 import { recordsApi, ingredientsApi } from '@/services/api'
 import { toast } from '@/composables/useToast'
 import { confirmDialog } from '@/composables/useConfirm'
@@ -115,8 +114,12 @@ async function removeRecord(r) {
   loadSuggestions()
 }
 
-/* ---------------- 近 7 日趋势图 ---------------- */
-const trend = computed(() => store.trend)
+/* ---------------- 近 7 日趋势图 ----------------
+   趋势数据源：优先用后端 /record/analysis/trend 的结果（remoteTrend），
+   拿不到再退回 store.trend（本地假数据），保证图永远有东西可画。
+   注意必须先声明 trend 再被下面的 chart computed 引用。 */
+const remoteTrend = ref(null)
+const trend = computed(() => remoteTrend.value || store.trend)
 
 const chart = computed(() => {
   const data = trend.value
@@ -199,16 +202,26 @@ const staged = ref([])
 const note = ref('')
 const saving = ref(false)
 
-/* 食材搜索 */
+/* 食材搜索
+   数据源必须是**后端的食材库**，不能再用 DB.ingredients（本地 mock）：
+   选中食材后会拿它的 id 去调 POST /ingredient/nutrition，
+   而 mock 库的 id 和后端库的 id 完全对不上，查出来要么 404 要么营养值错乱。
+   这里在挂载时拉一次全量（ingredientsApi 内部有 5 分钟缓存），搜索在本地做。 */
+const ingPool = ref([])
 const keyword = ref('')
 const candOpen = ref(false)
 const candidates = computed(() => {
   const kw = keyword.value.trim()
   if (!kw) return []
-  return DB.ingredients
+  return ingPool.value
     .filter((i) => i.name.indexOf(kw) > -1 || i.cat.indexOf(kw) > -1)
     .slice(0, 8)
 })
+
+async function loadIngPool() {
+  const res = await ingredientsApi.list({ cat: '全部', keyword: '' })
+  if (res.code === 200 && res.data) ingPool.value = res.data.list || []
+}
 
 let searchTimer = null
 function onSearchInput() {
@@ -274,7 +287,21 @@ async function addItem() {
   }
   const d = res.data
   staged.value = staged.value.concat([
-    { name: d.name, amount: d.grams, unit: 'g', kcal: d.kcal, p: d.p, c: d.c, f: d.f }
+    {
+      name: d.name,
+      amount: d.grams,
+      unit: 'g',
+      kcal: d.kcal,
+      p: d.p,
+      c: d.c,
+      f: d.f,
+      // nutrition 接口已返回这三项，带上才能真正落库
+      fiber: d.fiber,
+      sugar: d.sugar,
+      sodium: d.sodium,
+      // 食材库 id：后端会据此校正营养并补算 GI
+      ingredientId: selectedIng.value.id
+    }
   ])
   selectedIng.value = null
   nutReq++
@@ -332,7 +359,13 @@ async function saveRecord() {
       kcal: it.kcal,
       p: it.p,
       c: it.c,
-      f: it.f
+      f: it.f,
+      // 这三项后端已支持落库（原先是 exist=false 被静默丢弃）
+      fiber: it.fiber,
+      sugar: it.sugar,
+      sodium: it.sodium,
+      // 带上食材库 id，后端会用库里的营养值校正并补算 GI
+      ingredientId: it.ingredientId
     }))
   })
   saving.value = false
@@ -379,6 +412,35 @@ onMounted(() => {
   setTimeout(() => {
     ringOffset.value = RING_C * (1 - Math.min(100, kcalPct.value) / 100)
   }, 80)
+  loadDay()
+  loadTrend()
+  loadIngPool()
+})
+
+/* ============================================================
+   真数据加载（已接 /record/list、/record/analysis/trend）
+   ============================================================ */
+
+/**
+ * 拉某一天的记录。
+ * 失败时不弹 toast 打扰用户：切日期是高频操作，网络抖一下就弹窗会很吵；
+ * 页面沿用 localStorage 里的旧数据，只是可能不完整。
+ */
+async function loadDay() {
+  return recordsApi.list({ date: currentDate.value })
+}
+
+/** 拉近 7 日趋势，写进 remoteTrend */
+async function loadTrend() {
+  const res = await recordsApi.trend()
+  if (res.code === 200 && Array.isArray(res.data) && res.data.length) {
+    remoteTrend.value = res.data
+  }
+}
+
+/* 切日期时重新拉当天数据 */
+watch(currentDate, () => {
+  loadDay()
 })
 </script>
 

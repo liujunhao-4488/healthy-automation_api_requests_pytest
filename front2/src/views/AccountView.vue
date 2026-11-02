@@ -38,7 +38,7 @@ const profile = reactive({
 })
 const gender = ref('女')
 
-const roleText = computed(() => (store.isAdmin ? '管理员' : '普通用户'))
+const roleText = '普通用户'
 
 const stats = computed(() => ({
   recipes: store.recipeCollectIds.length,

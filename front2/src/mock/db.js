@@ -20,7 +20,7 @@ const DB = {
       username: '林嘉禾',
       email: 'jiahe@example.com',
       phone: '138****6021',
-      role: 'admin',            // user | admin（体验账号按管理员展示，便于查看后台）
+      role: 'user',             // 用户端体验账号是普通用户；管理员走独立后台登录
       status: 1,
       joined: '2026-08-12',
       avatarText: '禾'

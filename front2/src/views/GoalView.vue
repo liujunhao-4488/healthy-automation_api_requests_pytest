@@ -266,7 +266,53 @@ onMounted(() => {
   setTimeout(() => {
     ringOffset.value = RING_C * (1 - weightState.value.pct / 100)
   }, 80)
+  loadRemote()
 })
+
+/**
+ * 从后端拉饮食目标（已接 GET /health/goal）。
+ * 后端返回的值覆盖表单；后端没有（新用户 data:null）或请求失败时，
+ * 保留本地缓存的值，不阻塞页面。
+ */
+async function loadRemote() {
+  const before = {
+    goalType: form.goalType,
+    kcal: form.kcal,
+    targetWeight: form.targetWeight,
+    p: macros.p,
+    c: macros.c,
+    f: macros.f
+  }
+  const res = await goalApi.get()
+  if (res.code !== 200 || !res.data) return
+
+  // 请求返回前用户已经改过表单，就别覆盖他的输入
+  const untouched =
+    form.goalType === before.goalType &&
+    String(form.kcal) === String(before.kcal) &&
+    String(form.targetWeight) === String(before.targetWeight) &&
+    macros.p === before.p && macros.c === before.c && macros.f === before.f
+  if (!untouched) return
+
+  const g = res.data
+  Object.assign(form, {
+    goalType: g.goalType,
+    startWeight: g.startWeight || form.startWeight,
+    currentWeight: g.currentWeight || form.currentWeight,
+    targetWeight: g.targetWeight,
+    kcal: g.kcal,
+    water: g.water,
+    reminderTime: g.reminderTime || form.reminderTime,
+    meals: +g.meals || form.meals,
+    snack: !!g.snack,
+    reminderEnabled: !!g.reminderEnabled
+  })
+  Object.assign(macros, {
+    p: +g.proteinPct || 30,
+    c: +g.carbPct || 45,
+    f: +g.fatPct || 25
+  })
+}
 </script>
 
 <template>

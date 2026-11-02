@@ -63,6 +63,11 @@ async function onLogin() {
     toast(res.message, 'error')
     return
   }
+  // 严格分离：管理员账号不走用户端，避免同一账号跨两端
+  if (res.data?.role === 'admin') {
+    toast('该账号是管理员，请使用运营后台登录', 'error')
+    return
+  }
   store.enter(res.data)
   toast('登录成功，正在进入工作台')
   setTimeout(() => router.push('/'), 320)
@@ -77,6 +82,10 @@ async function onDemo() {
   busy.value = false
 
   if (res.code === 200) {
+    if (res.data?.role === 'admin') {
+      toast('体验账号已是管理员，请改用运营后台登录', 'error')
+      return
+    }
     store.enter(res.data)
     toast('已用体验账号登录')
   } else if (OFFLINE_CODES.includes(res.code)) {
@@ -239,8 +248,8 @@ onUnmounted(() => {
             </button>
 
             <div class="auth-note">
-              体验账号：<b>jiahe@example.com</b> / <b>123456</b>（管理员角色，可查看管理后台）。<br />
-              演示用的所有数据均为本地假数据，不会上传。
+              体验账号：<b>2311697186@qq.com</b> / <b>123456</b>（普通用户）。<br />
+              管理员请前往独立的运营后台登录页，用户端不接受管理员账号。
             </div>
           </form>
 

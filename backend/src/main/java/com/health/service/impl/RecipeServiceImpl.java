@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -1979,8 +1980,16 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     private List<Map<String, Object>> getLocalRecommendedRecipes(Long userId, String mealType, int limit) {
+        /*
+         * 只推荐上架食谱（status != 0）。
+         * 原查询是 selectList(无过滤)，会把已下架的食谱也推给用户 ——
+         * 2026-11-02 食谱去重后有 128 条 status=0 的重复项，
+         * 不加这个条件的话首页会推荐出已被"删除"的食谱。
+         */
         List<Recipe> allRecipes = sanitizeRecipesForDisplay(recipeMapper.selectList(
-            new QueryWrapper<Recipe>().orderByDesc("score").orderByDesc("collect_count").orderByDesc("view_count")
+            new QueryWrapper<Recipe>()
+                .ne("status", 0)
+                .orderByDesc("score").orderByDesc("collect_count").orderByDesc("view_count")
         ));
         if (allRecipes.isEmpty()) {
             return new ArrayList<>();
@@ -1994,18 +2003,45 @@ public class RecipeServiceImpl implements RecipeService {
         double mealTargetCalories = resolveMealTargetCalories(healthInfo, dietGoal, mealType);
         MacroProfile macroProfile = resolveMacroProfile(dietGoal);
 
+        /*
+         * 按餐次筛选候选。
+         *
+         * 原实现把「餐次匹配」放在 calculateRecipeScore.scoreMealFit() 里当加分项
+         * （命中关键词 +24、热量区间合适 +18），但它**只是加分不是过滤**，
+         * 于是实测出现：早餐推荐里给晚餐菜、同一道「番茄豆腐汤配全麦面包」
+         * 在早餐/午餐/晚餐三个位置同时排第一 —— 一顿饭吃三份同一道菜。
+         *
+         * 这里把餐次变成真正的过滤条件：
+         *   1) 优先只取 recipe.category 与餐次一致的（早餐/午餐/晚餐/加餐）；
+         *   2) 该类数量不足 limit 时，再从全部里按分数补齐，
+         *      避免某个餐次数据少时返回空列表。
+         */
+        List<Recipe> sameMeal = new ArrayList<>();
+        List<Recipe> others = new ArrayList<>();
+        String cnMeal = mealTypeCn(mealType);
+        for (Recipe r : allRecipes) {
+            String cat = r.getCategory() == null ? "" : r.getCategory().trim();
+            if (!cnMeal.isEmpty() && cnMeal.equals(cat)) {
+                sameMeal.add(r);
+            } else if (cat.isEmpty()) {
+                // 没有分类的老数据也算可用候选，但要排在同类之后
+                others.add(r);
+            } else {
+                others.add(r);
+            }
+        }
+
         List<Map<String, Object>> scoredRecipes = new ArrayList<>();
-        for (Recipe recipe : allRecipes) {
-            if (isExcludedByPreferences(recipe, healthInfo, preference)) {
-                continue;
-            }
+        Set<Object> pickedIds = new HashSet<>();
 
-            double matchScore = calculateRecipeScore(recipe, mealType, mealTargetCalories, macroProfile, healthInfo, dietGoal, preference);
-            if (matchScore <= 0) {
-                continue;
-            }
+        // 第一轮：只吃同类
+        scoreInto(scoredRecipes, sameMeal, mealType, mealTargetCalories, macroProfile,
+                  healthInfo, dietGoal, preference, pickedIds);
 
-            scoredRecipes.add(buildRecipePayload(recipe, mealType, mealTargetCalories, healthInfo, dietGoal, preference, matchScore));
+        // 第二轮：同类不够 limit 时，用其他餐次补齐（此时已经把餐次让给多样性了）
+        if (scoredRecipes.size() < limit) {
+            scoreInto(scoredRecipes, others, mealType, mealTargetCalories, macroProfile,
+                      healthInfo, dietGoal, preference, pickedIds);
         }
 
         Collections.sort(scoredRecipes, new Comparator<Map<String, Object>>() {
@@ -2017,10 +2053,67 @@ public class RecipeServiceImpl implements RecipeService {
             }
         });
 
+        /*
+         * 按「菜名」再去一次重。
+         *
+         * 库里 193 条食谱只有 65 个不同菜名（重建脚本用 38 个模板铺满 180 条，
+         * 同一道菜按不同份量存了 4~5 条，id 不同、营养略有差异）。
+         * 只按 id 去重的话，推荐列表会出现「虾仁豆腐饭 ×3」这种结果 ——
+         * 虽然 id 不同，但对用户来说就是同一道菜。
+         */
+        List<Map<String, Object>> unique = new ArrayList<>();
+        Set<String> seenNames = new java.util.HashSet<>();
+        for (Map<String, Object> item : scoredRecipes) {
+            String name = String.valueOf(item.get("name"));
+            if (seenNames.add(name)) {
+                unique.add(item);
+            }
+        }
+        scoredRecipes = unique;
+
         if (scoredRecipes.size() > limit) {
             return new ArrayList<>(scoredRecipes.subList(0, limit));
         }
         return scoredRecipes;
+    }
+
+    /** 英文餐次 → 库里 recipe.category 用的中文 */
+    private String mealTypeCn(String mealType) {
+        if (mealType == null) return "";
+        switch (mealType.toLowerCase()) {
+            case "breakfast": return "早餐";
+            case "lunch": return "午餐";
+            case "dinner": return "晚餐";
+            case "snack": return "加餐";
+            default:
+                // 已经是中文就直接用
+                return mealType;
+        }
+    }
+
+    /** 对一批食谱打分并填入结果集，pickedIds 用于跨轮去重 */
+    private void scoreInto(List<Map<String, Object>> out, List<Recipe> pool, String mealType,
+                           double mealTargetCalories, MacroProfile macroProfile,
+                           HealthInfo healthInfo, DietGoal dietGoal, UserDietPreference preference,
+                           Set<Object> pickedIds) {
+        for (Recipe recipe : pool) {
+            if (recipe.getId() != null && pickedIds.contains(recipe.getId())) {
+                continue; // 同一道菜不重复出现
+            }
+            if (isExcludedByPreferences(recipe, healthInfo, preference)) {
+                continue;
+            }
+            double matchScore = calculateRecipeScore(recipe, mealType, mealTargetCalories,
+                    macroProfile, healthInfo, dietGoal, preference);
+            if (matchScore <= 0) {
+                continue;
+            }
+            out.add(buildRecipePayload(recipe, mealType, mealTargetCalories, healthInfo, dietGoal,
+                    preference, matchScore));
+            if (recipe.getId() != null) {
+                pickedIds.add(recipe.getId());
+            }
+        }
     }
 
     private Map<String, Object> buildRecipePayload(
@@ -2122,8 +2215,11 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     private List<Map<String, Object>> buildAlgorithmCandidates() {
+        /* 候选池同样只放上架食谱，否则下架食谱会被算法服务选中返回 */
         List<Recipe> recipes = sanitizeRecipesForDisplay(recipeMapper.selectList(
-            new QueryWrapper<Recipe>().orderByDesc("score").orderByDesc("collect_count").orderByDesc("view_count")
+            new QueryWrapper<Recipe>()
+                .ne("status", 0)
+                .orderByDesc("score").orderByDesc("collect_count").orderByDesc("view_count")
         ));
         List<Map<String, Object>> candidates = new ArrayList<>();
         for (Recipe recipe : recipes) {
@@ -2161,15 +2257,58 @@ public class RecipeServiceImpl implements RecipeService {
         return (quantityText + unitText).trim();
     }
 
+    /**
+     * 把 recipe.instructions 拆成步骤数组。
+     *
+     * 库里 instructions 的格式是 **JSON 数组字符串**，例如：
+     *   ["藜麦煮熟备用","鸡胸肉煎熟切片","所有食材装碗后拌匀即可"]
+     * 13 条手写食谱和 180 条重建食谱都是这个格式（schema 里也注明「烹饪步骤(JSON数组)」）。
+     *
+     * 原实现只按「；/。/换行」切分，完全没考虑 JSON：JSON 文本被切成
+     *   ["藜麦煮熟备用
+     *   ","
+     *   鸡胸肉煎熟切片 ...
+     * 这种碎片，前端拿到后 v-for 渲染出来就是一堆残缺字符串。
+     * 手写数据句子短、不带句号，碰巧碎片不明显；重建后的食谱句末有「。」，
+     * 问题就彻底暴露了。
+     *
+     * 现在的顺序：
+     *   1) 先尝试按 JSON 数组解析 → 得到干净的步骤数组；
+     *   2) 解析失败（纯文本老数据）再退回按标点/换行切分；
+     *   3) 无论哪条路径，都去掉首尾空白与残留引号，过滤空串。
+     */
     private List<String> splitInstructions(String instructions) {
-        if (instructions == null || instructions.trim().isEmpty()) {
-            return new ArrayList<>();
+        List<String> steps = new ArrayList<>();
+        if (instructions == null) {
+            return steps;
+        }
+        String text = instructions.trim();
+        if (text.isEmpty()) {
+            return steps;
         }
 
-        String[] rawSteps = instructions.replace("；", "\n").replace("。", "\n").split("\\r?\\n");
-        List<String> steps = new ArrayList<>();
+        // ---- 1) 优先当 JSON 数组解析 ----
+        if (text.startsWith("[")) {
+            try {
+                List<?> parsed = objectMapper.readValue(text, List.class);
+                for (Object o : parsed) {
+                    if (o == null) continue;
+                    String s = String.valueOf(o).trim();
+                    if (!s.isEmpty()) steps.add(s);
+                }
+                if (!steps.isEmpty()) {
+                    return steps;
+                }
+            } catch (Exception ignored) {
+                // 不是合法 JSON，落到下面的纯文本分支
+            }
+        }
+
+        // ---- 2) 纯文本兜底：按中文分号/句号/换行切 ----
+        String[] rawSteps = text.replace("；", "\n").replace("。", "\n").split("\\r?\\n");
         for (String rawStep : rawSteps) {
-            String step = rawStep.trim();
+            // 去掉可能残留的 JSON 标点：引号、方括号、逗号
+            String step = rawStep.replaceAll("^[\"\\[\\s]+|[\"\\]\\s,]+$", "").trim();
             if (!step.isEmpty()) {
                 steps.add(step);
             }

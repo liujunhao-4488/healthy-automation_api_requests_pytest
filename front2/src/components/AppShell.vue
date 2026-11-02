@@ -56,14 +56,14 @@ const navGroups = [
   {
     label: '账户',
     items: [
-      { nav: 'account', to: '/account', icon: 'user', text: '个人中心', badge: true },
-      { nav: 'admin', to: '/admin', icon: 'settings', text: '管理后台' }
+      { nav: 'account', to: '/account', icon: 'user', text: '个人中心', badge: true }
     ]
   }
 ]
 
 const avatarText = computed(() => (store.displayName || '用')[0])
-const roleText = computed(() => (store.isAdmin ? '管理员 · 平台运营' : '普通用户'))
+/** 用户端只展示普通用户身份：管理员走独立后台，不在同一会话里混用 */
+const roleText = '普通用户'
 
 const isActive = (item) => route.meta.nav === item.nav
 

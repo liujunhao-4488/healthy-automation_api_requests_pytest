@@ -19,14 +19,21 @@
    所以还得专门写个 clearPersistedAuth 一起清）。
    ============================================================ */
 
+/** 后台会话单独存放：后台接口带后台 token，用户接口带用户 token */
 const BASE = '/api'
 const SESSION_KEY = 'sh_session'
+const ADMIN_SESSION_KEY = 'sh_admin_session'
 const TIMEOUT = 12000
 
+/** 路径里出现 /admin 段的就是后台接口（/admin/*、/user/admin/*、/notification/admin/*） */
+function isAdminPath(path) {
+  return path === '/admin' || path.indexOf('/admin/') > -1
+}
+
 /** 从已持久化的会话里取 token，页面刷新后依然有效 */
-function readToken() {
+function readToken(path) {
   try {
-    const raw = localStorage.getItem(SESSION_KEY)
+    const raw = localStorage.getItem(isAdminPath(path) ? ADMIN_SESSION_KEY : SESSION_KEY)
     if (!raw) return ''
     const s = JSON.parse(raw)
     return (s && s.token) || ''
@@ -59,7 +66,7 @@ export async function request(path, { method = 'GET', body, query, timeout = TIM
 
   const headers = { Accept: 'application/json' }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
-  const token = readToken()
+  const token = readToken(path)
   if (token) headers.Authorization = 'Bearer ' + token
 
   let res

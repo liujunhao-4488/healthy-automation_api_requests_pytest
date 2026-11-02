@@ -188,26 +188,40 @@ public class IngredientController {
     }
 
     // 食材替代查询
+    /*
+     * 2026-11-02 重写：原先这里返回硬编码的「西兰花 / 花椰菜」两条假数据，
+     * ingredientName 取出来后一次都没用，而且「花椰菜」在食材库里根本不存在。
+     * 现在改为按营养构成相似度真实计算，见 IngredientServiceImpl.getSubstitutes。
+     *
+     * 请求：{ "ingredientName": "鸡胸肉", "prompt": "低脂、低 GI", "limit": 4 }
+     * 全部字段除 ingredientName 外可选。
+     */
     @PostMapping("/substitute")
     public ResponseEntity<?> getIngredientSubstitute(@RequestBody Map<String, Object> params) {
         try {
-            String ingredientName = params.get("ingredientName").toString();
-            // 这里可以集成Python食材替代算法
-            // 暂时返回模拟数据
-            List<Map<String, Object>> substitutes = new ArrayList<>();
-            
-            Map<String, Object> substitute1 = new HashMap<>();
-            substitute1.put("name", "西兰花");
-            substitute1.put("similarity", 0.9);
-            substitute1.put("reason", "营养成分相似，富含维生素C和膳食纤维");
-            substitutes.add(substitute1);
-            
-            Map<String, Object> substitute2 = new HashMap<>();
-            substitute2.put("name", "花椰菜");
-            substitute2.put("similarity", 0.8);
-            substitute2.put("reason", "口感相似，营养成分接近");
-            substitutes.add(substitute2);
-            
+            Object nameObj = params.get("ingredientName");
+            if (nameObj == null || nameObj.toString().trim().isEmpty()) {
+                throw new RuntimeException("请先选择需要替代的食材");
+            }
+            String ingredientName = nameObj.toString();
+
+            String prompt = null;
+            if (params.get("prompt") != null) {
+                prompt = params.get("prompt").toString();
+            }
+
+            Integer limit = null;
+            if (params.get("limit") != null) {
+                try {
+                    limit = Integer.parseInt(params.get("limit").toString());
+                } catch (NumberFormatException ignored) {
+                    // 传了非法 limit 就按默认条数处理，不因此报错
+                }
+            }
+
+            List<Map<String, Object>> substitutes =
+                    ingredientService.getSubstitutes(ingredientName, prompt, limit);
+
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
             response.put("message", "获取食材替代建议成功");

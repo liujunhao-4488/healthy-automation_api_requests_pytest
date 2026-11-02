@@ -7,7 +7,6 @@
      2) 食材库：分类 / 关键词筛选 + 点卡片看营养详情
    ============================================================ */
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import DB from '@/mock/db'
 import { ingredientsApi } from '@/services/api'
 import { toast } from '@/composables/useToast'
 import SvgIcon from '@/components/SvgIcon.vue'
@@ -90,8 +89,11 @@ function closeIng() {
   modalOpen.value = false
 }
 
-/* ---------------- 替代工具 ---------------- */
-const BASE_OPTIONS = ['鸡胸肉', '白米饭', '牛奶']
+/* ---------------- 替代工具 ----------------
+   选项名必须与后端食材库一致：库里叫「米饭」不是「白米饭」，
+   名字对不上会让用户以为工具没反应（后端虽做了包含匹配兜底，
+   但下拉框显示一个库里不存在的名字本身就容易误导）。 */
+const BASE_OPTIONS = ['鸡胸肉', '米饭', '牛奶']
 /** 通过「作为替代方案」动态加进来的食材，追加到下拉框 */
 const extraOptions = ref([])
 const subOptions = computed(() => {
@@ -140,9 +142,30 @@ function useAsSubstitute() {
   toast('已填入替代工具：' + ing.name)
 }
 
-/** 每个替代方案对应的食材 id（有的话才能跳详情） */
-function ingOf(name) {
-  return DB.ingredients.find((x) => x.name === name)
+/**
+ * 替代方案 → 详情弹窗要的食材对象。
+ *
+ * 原先这里查的是本地 mock 库 DB.ingredients，和已接的后端食材库完全脱节：
+ * mock 库里的 id/营养值跟后端对不上，点「营养详情」会打开错误的食材。
+ * 现在后端替代接口已经直接返回 id 和营养字段，用它们即可。
+ */
+function ingOf(s) {
+  if (!s || !s.hasData) return null
+  return {
+    id: s.id,
+    name: s.name,
+    cat: s.cat || '',
+    kcal: s.kcal,
+    p: s.p,
+    c: s.c,
+    f: s.f,
+    fiber: s.fiber,
+    sugar: s.sugar,
+    sodium: s.sodium,
+    gi: s.gi,
+    desc: '',
+    tags: []
+  }
 }
 
 /* 弹窗打开时锁滚动 */
@@ -243,17 +266,22 @@ onMounted(() => {
           <strong style="font-size: 14.5px; color: var(--green-950)">{{ s.name }}</strong>
           <span class="badge">{{ s.tag }}</span>
         </div>
-        <div class="row mt-8" style="align-items: baseline; gap: 6px">
-          <span class="num" style="font-size: 26px; color: var(--green-900)">{{ s.kcal }}</span>
-          <span class="small muted">kcal / 100g</span>
-        </div>
-        <div class="ing-macros">
-          <span>蛋白 <b>{{ s.p }}</b>g</span><span>脂肪 <b>{{ s.f }}</b>g</span>
-        </div>
+        <!-- hasData 为 false 说明食材库里没有这个食材（后端替代接口返回的名字
+             不一定在库中），此时显示「暂无营养数据」，不把 0 当成真实数值 -->
+        <template v-if="s.hasData">
+          <div class="row mt-8" style="align-items: baseline; gap: 6px">
+            <span class="num" style="font-size: 26px; color: var(--green-900)">{{ s.kcal }}</span>
+            <span class="small muted">kcal / 100g</span>
+          </div>
+          <div class="ing-macros">
+            <span>蛋白 <b>{{ s.p }}</b>g</span><span>脂肪 <b>{{ s.f }}</b>g</span>
+          </div>
+        </template>
+        <p v-else class="small muted mt-8">暂无营养数据（该食材不在食材库中）</p>
         <p class="small muted mt-8" style="line-height: 1.7">{{ s.reason }}</p>
         <div class="row-between mt-12">
           <span class="small muted">等价替换</span>
-          <button v-if="ingOf(s.name)" class="link-btn" @click="openIng(ingOf(s.name))">
+          <button v-if="ingOf(s)" class="link-btn" @click="openIng(ingOf(s))">
             营养详情<SvgIcon name="chevron-right" />
           </button>
           <span v-else class="small muted">—</span>

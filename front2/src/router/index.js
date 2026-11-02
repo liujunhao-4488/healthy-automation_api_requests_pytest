@@ -12,6 +12,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import AppShell from '@/components/AppShell.vue'
+import AdminShell from '@/components/AdminShell.vue'
 
 const routes = [
   {
@@ -19,6 +20,26 @@ const routes = [
     name: 'login',
     component: () => import('@/views/LoginView.vue'),
     meta: { public: true, title: '登录 · 膳衡' }
+  },
+  /* ---------------- 后台端：独立布局 + 独立登录，不套用户端外壳 ---------------- */
+  {
+    path: '/admin/login',
+    name: 'admin-login',
+    component: () => import('@/views/AdminLoginView.vue'),
+    meta: { title: '运营后台登录 · 膳衡' }
+  },
+  {
+    path: '/admin',
+    component: AdminShell,
+    meta: { admin: true },
+    children: [
+      {
+        path: '',
+        name: 'admin',
+        component: () => import('@/views/AdminView.vue'),
+        meta: { admin: true, title: '运营后台 · 膳衡' }
+      }
+    ]
   },
   {
     path: '/',
@@ -89,12 +110,6 @@ const routes = [
         name: 'account',
         component: () => import('@/views/AccountView.vue'),
         meta: { nav: 'account', title: '个人中心 · 膳衡' }
-      },
-      {
-        path: 'admin',
-        name: 'admin',
-        component: () => import('@/views/AdminView.vue'),
-        meta: { nav: 'admin', title: '管理后台 · 膳衡' }
       }
     ]
   },
@@ -110,9 +125,33 @@ const router = createRouter({
   }
 })
 
-/* 登录守卫：替代静态版 App.boot() 里的 session 检查 */
+/* ============================================================
+   登录守卫：用户端与后台端各自独立
+   ------------------------------------------------------------
+   1) 后台路由只认「后台会话」（sh_admin_session），用户端登录拿不到权限；
+   2) 后台登录页只允许管理员，普通账号登录会被 AdminLoginView 拒绝；
+   3) 用户端登录页不再接受管理员账号，避免同一账号跨两端。
+   ============================================================ */
 router.beforeEach((to) => {
   const store = useAppStore()
+
+  // 后台端
+  if (to.meta.admin) {
+    if (!store.isAdminLoggedIn) {
+      return { name: 'admin-login', query: { redirect: to.fullPath } }
+    }
+    return
+  }
+  if (to.name === 'admin-login') {
+    if (store.isAdminLoggedIn) return { name: 'admin' }
+    return
+  }
+
+  // 用户端：清掉历史遗留的「管理员用户会话」，严格分离后不允许这种状态
+  if (store.isLoggedIn && store.session?.role === 'admin') {
+    store.logout()
+    return { name: 'login' }
+  }
   if (!to.meta.public && !store.isLoggedIn) return { name: 'login' }
   if (to.name === 'login' && store.isLoggedIn) return { name: 'home' }
 })
