@@ -75,6 +75,15 @@ export function toRecommendItem(be, fallbackMeal) {
     target: int0(r.targetCalories),
     reason: r.recommendationReason || '',
 
+    /* 份量个性化：Python 算法会把整份营养按 servingFactor 缩放，
+       但详情页读的是数据库里的原始食谱，所以必须把因子带到详情页，
+       否则会出现「推荐 500 kcal，详情/记录 400 kcal」的断层。
+       recommendedServings 是缩放过后的总份数（标准份数 × 因子）。 */
+    servingFactor: Number(r.servingFactor) || 1,
+    recommendedServings: Number(r.recommendedServings) || 0,
+    standardServings: Number(r.standardServings) || 0,
+    servingNote: r.servingNote || '',
+
     // fit 供页面渲染徽章；为空时给个兜底，避免 r.fit.join 报错
     fit: fit.length ? fit.slice(0, 3) : ['推荐'],
 
@@ -82,6 +91,41 @@ export function toRecommendItem(be, fallbackMeal) {
     ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
     _raw: r
   }
+}
+
+/**
+ * 推荐卡片 → 详情页地址。
+ * 带上 sf（份量因子）、rs（推荐总份数）以及卡片实际展示的 k/p/c/f，
+ * 详情页据此还原推荐份量的热量、营养和食材用量。
+ * 未调整份量时不加参数，保持普通食谱链接干净。
+ */
+export function toRecipeLink(item) {
+  const r = item || {}
+  const base = '/recipes/' + r.id
+  const query = new URLSearchParams()
+  const sf = Number(r.servingFactor)
+  if (Number.isFinite(sf) && sf > 0 && Math.abs(sf - 1) >= 0.01) {
+    query.set('sf', String(sf))
+  }
+  if (Number(r.recommendedServings) > 0) {
+    query.set('rs', String(r.recommendedServings))
+  }
+  /* 关键：把卡片上实际展示的营养值一起带过去。
+     只带 sf 时，一旦后端没有返回 servingFactor（本地降级算法、老版本接口），
+     详情页就会退回数据库原始热量，出现「外面 647、里面 479」。
+     带了 k/p/c/f，详情页以推荐值为准，和卡片逐字一致。 */
+  const fields = [
+    ['k', r.kcal],
+    ['p', r.p],
+    ['c', r.c],
+    ['f', r.f]
+  ]
+  for (const [key, value] of fields) {
+    const n = Number(value)
+    if (Number.isFinite(n) && n > 0) query.set(key, String(n))
+  }
+  const qs = query.toString()
+  return qs ? base + '?' + qs : base
 }
 
 /**

@@ -63,6 +63,8 @@ pnpm-debug.log*
 database/_backup_*/
 database/*.sql.bak_*
 database/*.tmp
+# 本地临时库备份（含个人数据、体积大），不进仓库
+/backup/
 
 # ------------------------------------------------------------
 # 4. Java / Maven（backend）

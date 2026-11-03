@@ -50,7 +50,7 @@ import {
   toNutrition,
   toSubstitutes
 } from './adapters/ingredient'
-import { toMealList } from './adapters/recommend'
+import { toMealList, toMealGroups } from './adapters/recommend'
 import {
   fetchArticleList,
   fetchArticleDetail,
@@ -479,6 +479,37 @@ export const recommendApi = {
       lunch: pick('午餐').slice(0, 3),
       dinner: pick('晚餐').slice(0, 3)
     })
+  },
+  // GET /recommend/recipes?breakfastCount=&lunchCount=&dinnerCount=
+  /* 配餐计划：counts 就是需要的天数，1/7/30 天各取对应数量后按天排列 */
+  async plan({ breakfastCount = 3, lunchCount = 3, dinnerCount = 3 } = {}) {
+    const buildLocalGroups = () => {
+      const goal = useAppStore().goalInfo
+      const pick = (type, count) =>
+        DB.recipes
+          .filter((r) => r.mealType === type && r.status !== 0)
+          .map((r) => Object.assign({ score: matchScore(r, goal) }, r))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, count)
+      return [
+        { key: 'breakfast', label: '早餐', list: pick('早餐', breakfastCount) },
+        { key: 'lunch', label: '午餐', list: pick('午餐', lunchCount) },
+        { key: 'dinner', label: '晚餐', list: pick('晚餐', dinnerCount) }
+      ]
+    }
+
+    if (!RECOMMEND_USE_MOCK) {
+      const res = await request('/recommend/recipes', {
+        query: { breakfastCount, lunchCount, dinnerCount }
+      })
+      if (res.code === 200) return ok({ groups: toMealGroups(res.data), offline: false }, res.message)
+      // 后端没起时仍给出可演示的清单，但明确标注来源是本地数据
+      if (![-1, -2].includes(res.code)) return res
+      return ok({ groups: buildLocalGroups(), offline: true }, '后端未连接，已使用本地演示食谱')
+    }
+
+    await delay(680)
+    return ok({ groups: buildLocalGroups(), offline: true }, '已使用本地演示食谱')
   },
   // GET /recommend/recipes/today
   async today() {

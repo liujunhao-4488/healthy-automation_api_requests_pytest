@@ -11,6 +11,7 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAppStore, TODAY } from '@/stores/app'
 import { recommendApi, recordsApi } from '@/services/api'
+import { toRecipeLink } from '@/services/adapters/recommend'
 import { toast } from '@/composables/useToast'
 import SvgIcon from '@/components/SvgIcon.vue'
 
@@ -333,7 +334,7 @@ const quickLinks = [
         </div>
         <div class="body">
           <h3>
-            <RouterLink :to="'/recipes/' + r.id" style="text-decoration: none; color: inherit">
+            <RouterLink :to="toRecipeLink(r)" style="text-decoration: none; color: inherit">
               {{ r.name }}
             </RouterLink>
           </h3>

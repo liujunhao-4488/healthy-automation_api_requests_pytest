@@ -17,6 +17,7 @@ import { recipesApi } from '@/services/api'
 import { toast } from '@/composables/useToast'
 import { confirmDialog } from '@/composables/useConfirm'
 import SvgIcon from '@/components/SvgIcon.vue'
+import MealPlanPanel from '@/components/MealPlanPanel.vue'
 import imgChicken from '@/assets/recipe-chicken.jpg'
 import imgSalmon from '@/assets/recipe-salmon.jpg'
 import imgOatmeal from '@/assets/recipe-oatmeal.jpg'
@@ -205,6 +206,25 @@ const savingCustom = ref(false)
 /* 两个视图：library = 平台食谱库，mine = 自建 + 收藏 */
 const TAB_KEY = 'sh_recipes_tab'
 const tab = ref('library')
+/* 食谱库内的两种模式：browse = 筛选浏览，plan = 智能配餐
+   模式要持久化：从配餐清单点进食谱详情再返回时，不能退回浏览页 */
+const MODE_KEY = 'sh_recipes_mode'
+const savedMode = (() => {
+  try {
+    return localStorage.getItem(MODE_KEY)
+  } catch (e) {
+    return null
+  }
+})()
+const libraryMode = ref(savedMode === 'plan' ? 'plan' : 'browse')
+function setLibraryMode(mode) {
+  libraryMode.value = mode
+  try {
+    localStorage.setItem(MODE_KEY, mode)
+  } catch (e) {
+    /* 隐私模式写不进去也不影响当前会话 */
+  }
+}
 
 function switchTab(next) {
   if (tab.value === next) return
@@ -363,11 +383,13 @@ onMounted(() => {
       <h1 class="page-title">{{ tab === 'library' ? '食谱库' : '我的食谱' }}</h1>
       <p class="page-sub">
         {{ tab === 'library'
-          ? '按餐次、目标与营养密度筛选，找到更贴合你的搭配。'
+          ? (libraryMode === 'plan'
+            ? '选择周期，一次生成早 / 中 / 晚的配餐清单，并可导出 Word、Excel 或 PDF。'
+            : '按餐次、目标与营养密度筛选，找到更贴合你的搭配。')
           : '自己创建的食谱与收藏的食谱，集中在这里管理。' }}
       </p>
     </div>
-    <div v-if="tab === 'library'" class="page-actions">
+    <div v-if="tab === 'library' && libraryMode === 'browse'" class="page-actions">
       <div class="search-box" style="min-width: 240px">
         <SvgIcon name="search" />
         <input
@@ -406,6 +428,18 @@ onMounted(() => {
 
   <!-- ========== 食谱库 ========== -->
   <div v-show="tab === 'library'">
+
+  <!-- 库内模式：筛选浏览 / 智能配餐 -->
+  <div class="seg recipe-mode reveal d1">
+    <button type="button" :class="{ on: libraryMode === 'browse' }" @click="setLibraryMode('browse')">
+      <SvgIcon name="book-open" />浏览食谱
+    </button>
+    <button type="button" :class="{ on: libraryMode === 'plan' }" @click="setLibraryMode('plan')">
+      <SvgIcon name="sparkles" />智能配餐
+    </button>
+  </div>
+
+  <template v-if="libraryMode === 'browse'">
 
   <div class="alert-inline green reveal d1" style="margin-bottom: 20px">
     <SvgIcon name="sparkles" />
@@ -562,6 +596,9 @@ onMounted(() => {
       </button>
     </div>
   </section>
+  </template>
+
+  <MealPlanPanel v-else />
   </div><!-- /食谱库 -->
 
   <!-- ========== 我的食谱 ========== -->
@@ -808,19 +845,22 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.recipe-tabs {
+.recipe-tabs,
+.recipe-mode {
   margin-bottom: 24px;
   width: 100%;
   max-width: 340px;
 }
-.recipe-tabs button {
+.recipe-tabs button,
+.recipe-mode button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
   flex: 1;
 }
-.recipe-tabs button :deep(.ic) {
+.recipe-tabs button :deep(.ic),
+.recipe-mode button :deep(.ic) {
   width: 15px;
   height: 15px;
 }

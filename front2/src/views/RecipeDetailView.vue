@@ -27,6 +27,77 @@ const pool = ref([])
 
 const goal = computed(() => store.goalInfo)
 
+/* ---------------- 推荐份量还原 ----------------
+   推荐卡片上的热量是算法缩放后的值，而 /recipe/detail/:id 返回数据库原始值。
+   链接里会带 sf（因子）、rs（推荐份数）以及卡片展示的 k/p/c/f。
+   以 k 为准反推实际倍数，这样即使后端没给 servingFactor，
+   也不会再出现「卡片 647、详情 479」的断层。 */
+const dec1 = (v) => Math.round((Number(v) || 0) * 10) / 10
+
+function queryNumber(key) {
+  const n = Number(route.query[key])
+  return Number.isFinite(n) && n >= 0 ? n : null
+}
+
+const servingFactor = computed(() => {
+  const sf = Number(route.query.sf)
+  if (!Number.isFinite(sf) || sf <= 0) return 1
+  return Math.min(1.5, Math.max(0.6, sf))
+})
+const recommendedServings = computed(() => {
+  const rs = Number(route.query.rs)
+  return Number.isFinite(rs) && rs > 0 ? rs : 0
+})
+const kcalOverride = computed(() => queryNumber('k'))
+
+/** 食材与营养的缩放倍数：优先按「推荐热量 / 原始热量」反推 */
+const effectiveFactor = computed(() => {
+  const baseKcal = Number(recipe.value?.kcal) || 0
+  const k = kcalOverride.value
+  if (k !== null && baseKcal > 0) {
+    return Math.min(1.5, Math.max(0.6, k / baseKcal))
+  }
+  return servingFactor.value
+})
+const hasScale = computed(() => {
+  const baseKcal = Number(recipe.value?.kcal) || 0
+  const k = kcalOverride.value
+  if (k !== null && baseKcal > 0 && Math.abs(k - baseKcal) >= 1) return true
+  return Math.abs(servingFactor.value - 1) >= 0.01
+})
+const scaleText = computed(() => String(Math.round(effectiveFactor.value * 100) / 100))
+
+/** 食材用量里的数字等比缩放，保留原单位写法（"100" → "125"） */
+function scaleAmount(amount, factor) {
+  const s = String(amount ?? '')
+  const m = s.match(/(\d+(?:\.\d+)?)/)
+  if (!m) return s
+  const scaled = Math.round(Number(m[1]) * factor * 10) / 10
+  return s.replace(m[1], String(scaled))
+}
+
+/** 页面展示用的食谱：未调整份量时就是原数据 */
+const view = computed(() => {
+  const r = recipe.value
+  if (!r) return null
+  const s = effectiveFactor.value
+  if (!hasScale.value) return r
+  return {
+    ...r,
+    // 卡片上的 k/p/c/f 是最终展示值，优先使用；缺失时再按倍数计算
+    kcal: kcalOverride.value !== null ? Math.round(kcalOverride.value) : Math.round(r.kcal * s),
+    p: queryNumber('p') ?? dec1(r.p * s),
+    c: queryNumber('c') ?? dec1(r.c * s),
+    f: queryNumber('f') ?? dec1(r.f * s),
+    fiber: dec1(r.fiber * s),
+    servings: recommendedServings.value || dec1(r.servings * s),
+    ingredients: (r.ingredients || []).map((it) => ({
+      ...it,
+      amount: scaleAmount(it.amount, s)
+    }))
+  }
+})
+
 async function loadPool() {
   const res = await recipesApi.list({ page: 1, pageSize: 999 })
   if (res.code === 200) pool.value = res.data.list
@@ -61,7 +132,7 @@ watch(
 
 /* ---------------- 营养占比 ---------------- */
 const nutrition = computed(() => {
-  const r = recipe.value
+  const r = view.value
   if (!r) return null
   const g = goal.value
   const pTarget = Math.round((g.kcal * g.proteinPct) / 100 / 4)
@@ -79,7 +150,7 @@ const nutrition = computed(() => {
 
 /** 「目标匹配」的三条进度条 */
 const matchBars = computed(() => {
-  const r = recipe.value
+  const r = view.value
   const n = nutrition.value
   if (!r || !n) return []
   return [
@@ -109,7 +180,7 @@ const similar = computed(() => {
 
 /* ---------------- 记入今日 ---------------- */
 const addHint = computed(() => {
-  const r = recipe.value
+  const r = view.value
   if (!r) return ''
   const t = store.totals(TODAY)
   const after = t.kcal + r.kcal
@@ -121,14 +192,26 @@ const addHint = computed(() => {
 })
 
 async function addToRecord() {
-  const r = recipe.value
-  if (!r) return
+  const v = view.value
+  if (!v) return
   saving.value = true
   const res = await recordsApi.submit({
-    mealType: r.mealType,
+    mealType: v.mealType,
     time: store.nowTime(),
-    note: '来自食谱「' + r.name + '」',
-    items: [{ name: r.name, amount: 1, unit: '份', kcal: r.kcal, p: r.p, c: r.c, f: r.f }]
+    note:
+      '来自食谱「' + v.name + '」' +
+      (hasScale.value ? '（推荐份量 ×' + scaleText.value + '）' : ''),
+    items: [
+      {
+        name: v.name,
+        amount: hasScale.value ? v.servings : 1,
+        unit: '份',
+        kcal: v.kcal,
+        p: v.p,
+        c: v.c,
+        f: v.f
+      }
+    ]
   })
   saving.value = false
   if (res.code !== 200) {
@@ -136,7 +219,7 @@ async function addToRecord() {
     return
   }
   added.value = true
-  toast('已记入今日' + r.mealType + '：' + r.name)
+  toast('已记入今日' + v.mealType + '：' + v.name)
 }
 
 async function toggleFav() {
@@ -155,7 +238,7 @@ async function toggleFav() {
     <RouterLink class="detail-link" to="/recipes">
       <SvgIcon name="arrow-left" />返回食谱库
     </RouterLink>
-    <span class="small muted">营养口径：每份 · 数据更新于 2026-10-18</span>
+    <span class="small muted">营养口径：{{ hasScale ? '推荐份量 ×' + scaleText : '原始整份' }} · 数据更新于 2026-10-18</span>
   </div>
 
   <!-- 加载骨架 -->
@@ -220,11 +303,12 @@ async function toggleFav() {
             {{ recipe.level }}
           </span>
           <span v-if="recipe.custom" class="badge amber">我的自定义</span>
+          <span v-if="hasScale" class="badge amber">推荐份量 ×{{ scaleText }}</span>
         </div>
         <h1>{{ recipe.name }}</h1>
         <div class="meta">
           <span><SvgIcon name="clock" /> {{ recipe.time }} 分钟</span>
-          <span><SvgIcon name="utensils" /> {{ recipe.servings }} 人份</span>
+          <span><SvgIcon name="utensils" /> {{ view.servings }} 人份</span>
           <span v-if="!recipe.custom"><SvgIcon name="star" /> {{ recipe.rating.toFixed(1) }} 分</span>
           <span v-if="recipe.custom"><SvgIcon name="star" /> 我创建的食谱</span>
           <span v-if="!recipe.custom"><SvgIcon name="eye" /> {{ recipe.views.toLocaleString('zh-CN') }} 次浏览</span>
@@ -243,48 +327,29 @@ async function toggleFav() {
 
     <p class="page-sub mt-16" style="max-width: 760px">{{ recipe.desc }}</p>
 
+    <div v-if="hasScale" class="alert-inline green mt-12">
+      <SvgIcon name="sparkles" />
+      <span>
+        <b>已按你的目标调整份量</b>：标准 {{ recipe.servings }} 份 → 推荐 {{ view.servings }} 份（×{{ scaleText }}）。
+        下方热量、三大营养素与食材用量都按推荐份量换算，记入饮食记录也用这一套数值。
+      </span>
+    </div>
+
     <section class="grid split mt-24 reveal d1">
       <div class="col" style="gap: 20px">
-        <!-- 营养概览 -->
-        <article class="card card-pad">
-          <div class="row-between">
-            <p class="eyebrow" style="margin: 0">Nutrition · 营养概览</p>
-            <span class="tag">整份 / {{ recipe.servings }} 人份</span>
-          </div>
-          <div class="grid g4 mt-16" style="gap: 12px">
-            <div class="kpi">
-              <span class="kpi-label">热量</span><span class="kpi-value">{{ recipe.kcal }}</span><span class="kpi-foot">kcal</span>
-            </div>
-            <div class="kpi">
-              <span class="kpi-label">蛋白质</span><span class="kpi-value">{{ recipe.p }}</span><span class="kpi-foot">g</span>
-            </div>
-            <div class="kpi">
-              <span class="kpi-label">碳水</span><span class="kpi-value">{{ recipe.c }}</span><span class="kpi-foot">g</span>
-            </div>
-            <div class="kpi">
-              <span class="kpi-label">脂肪</span><span class="kpi-value">{{ recipe.f }}</span><span class="kpi-foot">g</span>
-            </div>
-          </div>
-          <div class="row wrap mt-16" style="gap: 8px">
-            <span class="tag">膳食纤维 {{ recipe.fiber }} g</span>
-            <span class="tag">蛋白质供能 {{ nutrition.pShare }}%</span>
-            <span class="tag">脂肪供能 {{ nutrition.fShare }}%</span>
-          </div>
-        </article>
-
         <!-- 食材清单 -->
         <article class="card">
           <div class="card-hd">
             <h3>食材清单</h3>
-            <span class="badge">{{ recipe.ingredients.length }} 种食材</span>
+            <span class="badge">{{ view.ingredients.length }} 种食材</span>
           </div>
           <div class="card-bd">
             <div class="ing-list">
-              <div v-for="(it, i) in recipe.ingredients" :key="i" class="ing-row">
+              <div v-for="(it, i) in view.ingredients" :key="i" class="ing-row">
                 <span>{{ it.name }}</span>
                 <span class="amt">{{ it.amount }}{{ it.unit ? ' ' + it.unit : '' }}</span>
               </div>
-              <p v-if="!recipe.ingredients.length" class="small muted" style="padding: 6px 0">
+              <p v-if="!view.ingredients.length" class="small muted" style="padding: 6px 0; grid-column: 1 / -1">
                 还没有填写食材清单，可返回食谱库编辑补充。
               </p>
             </div>
@@ -311,21 +376,31 @@ async function toggleFav() {
       </div>
 
       <aside class="col" style="gap: 20px">
-        <!-- 份量说明 -->
+        <!-- 营养概览 -->
         <article class="card card-pad">
-          <p class="eyebrow" style="margin: 0">Serving · 份量说明</p>
-          <div class="row mt-12" style="align-items: baseline; gap: 8px">
-            <span class="num" style="font-size: 34px; color: var(--green-950)">{{ recipe.servings }}</span>
-            <span class="small muted">人份 / 整份</span>
+          <div class="row-between">
+            <p class="eyebrow" style="margin: 0">Nutrition · 营养概览</p>
+            <span class="tag">{{ hasScale ? '推荐份量' : '整份' }} / {{ view.servings }} 人份</span>
           </div>
-          <p class="small muted mt-8" style="line-height: 1.8">
-            营养数据按整份统计。若分成 2 次食用，请将热量与三大营养素各自减半；食材用量与步骤仍以整份为准。
-          </p>
-          <div class="row-between mt-12">
-            <span class="small muted">备餐时间</span><span class="small num">{{ recipe.time }} 分钟</span>
+          <div class="grid g2 mt-16" style="gap: 12px">
+            <div class="kpi">
+              <span class="kpi-label">热量</span><span class="kpi-value">{{ view.kcal }}</span><span class="kpi-foot">kcal</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi-label">蛋白质</span><span class="kpi-value">{{ view.p }}</span><span class="kpi-foot">g</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi-label">碳水</span><span class="kpi-value">{{ view.c }}</span><span class="kpi-foot">g</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi-label">脂肪</span><span class="kpi-value">{{ view.f }}</span><span class="kpi-foot">g</span>
+            </div>
           </div>
-          <div class="row-between mt-8">
-            <span class="small muted">难度</span><span class="small">{{ recipe.level }}</span>
+          <div class="row wrap mt-16" style="gap: 8px">
+            <span class="tag">{{ recipe.time }} 分钟 · {{ recipe.level }}</span>
+            <span class="tag">膳食纤维 {{ view.fiber }} g</span>
+            <span class="tag">蛋白质供能 {{ nutrition.pShare }}%</span>
+            <span class="tag">脂肪供能 {{ nutrition.fShare }}%</span>
           </div>
         </article>
 
@@ -437,7 +512,14 @@ async function toggleFav() {
   height: 15px;
 }
 .hero-detail {
-  aspect-ratio: 16 / 8;
+  height: clamp(250px, 30vw, 360px);
+  aspect-ratio: auto;
+}
+/* 食材两列排布，避免宽卡片里一行只放一个食材显得空 */
+.ing-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
 }
 .hero-fav {
   position: absolute;
@@ -468,7 +550,7 @@ async function toggleFav() {
 }
 @media (max-width: 720px) {
   .hero-detail {
-    aspect-ratio: 5 / 4;
+    height: clamp(230px, 62vw, 300px);
   }
   .hero-detail .overlay-text {
     padding: 20px 66px 20px 20px;
@@ -482,6 +564,9 @@ async function toggleFav() {
     bottom: 14px;
     width: 40px;
     height: 40px;
+  }
+  .ing-list {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 </style>
