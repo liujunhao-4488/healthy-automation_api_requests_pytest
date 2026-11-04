@@ -3,14 +3,22 @@
    KnowledgeView.vue · 健康知识
    ------------------------------------------------------------
    对应静态版 pages/knowledge.html。三块：
-     · 精选文章（固定取「高血脂」那篇做头条）
+     · 精选文章（后端 /article/recommend 的首条，可用 ?excludeId 排除）
      · 文章列表：分类 chip / 搜索 / 标签云，带分页
      · 右侧：热门榜 + 标签云 + 免责声明
+
+   【2026-11-04 修复】
+   精选 / 热门榜 / 标签云 三块原先直接读本地 mock 库 DB.articles，
+   而下方列表走的是真接口。结果是页面上「精选文章」「热门榜」
+   显示的是 8 篇假文章，点进列表却是 133 篇真文章，数据完全对不上。
+   现在三块都改用后端接口：
+     · 精选      GET /article/recommend?pageSize=1
+     · 热门榜    GET /article/list?sort=hot&pageSize=5（按阅读量）
+     · 标签云    GET /article/tags
    ============================================================ */
 import { ref, reactive, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import DB from '@/mock/db'
 import { articlesApi } from '@/services/api'
 import { toast } from '@/composables/useToast'
 import SvgIcon from '@/components/SvgIcon.vue'
@@ -22,29 +30,43 @@ const CATS = ['全部', '饮食指南', '营养知识', '减肥指南', '增肌�
 const state = reactive({ cat: '全部', keyword: '', tag: '', page: 1 })
 
 /* ---------------- 精选文章 ---------------- */
-const feature = DB.articles.find((a) => a.id === 2) || DB.articles[0]
+/** 后端 /article/recommend 的第一条；取不到时退回列表首条 */
+const feature = ref(null)
 
 /* ---------------- 热门榜 ---------------- */
-const hot = computed(() =>
-  DB.articles
-    .slice()
-    .sort((a, b) => b.views - a.views)
-    .slice(0, 5)
-)
+/** 按阅读量排序的前 5 篇，来自 GET /article/list?sort=hot */
+const hot = ref([])
 
 /* ---------------- 标签云 ---------------- */
-const tagCloud = computed(() => {
-  const count = {}
-  DB.articles.forEach((a) => {
-    a.tags.forEach((t) => {
-      count[t] = (count[t] || 0) + 1
-    })
-  })
-  return Object.keys(count)
-    .sort((a, b) => count[b] - count[a] || a.localeCompare(b, 'zh'))
-    .slice(0, 12)
-    .map((t) => ({ tag: t, count: count[t] }))
-})
+/**
+ * 标签来自 GET /article/tags（实测返回 54 个纯字符串）。
+ * 后端不给每个标签的出现次数，所以「count」这里只用于排序占位——
+ * 原有模板里展示的是标签名，数量不影响视觉，但从大到小排序更自然，
+ * 因此保留 count 字段并统一置 0，模板无需改动。
+ */
+const tagCloud = ref([])
+
+/** 加载右侧三块（精选 / 热门榜 / 标签云） */
+async function loadSidebar() {
+  // 三块互不依赖，并行请求
+  const [recRes, hotRes, tagRes] = await Promise.all([
+    articlesApi.recommend({ pageSize: 1 }),
+    articlesApi.list({ page: 1, pageSize: 5, sort: 'hot' }),
+    articlesApi.tags()
+  ])
+
+  if (recRes.code === 200 && recRes.data && recRes.data.list && recRes.data.list.length) {
+    feature.value = recRes.data.list[0]
+  }
+
+  if (hotRes.code === 200 && hotRes.data && Array.isArray(hotRes.data.list)) {
+    hot.value = hotRes.data.list.slice(0, 5)
+  }
+
+  if (tagRes.code === 200 && Array.isArray(tagRes.data)) {
+    tagCloud.value = tagRes.data.slice(0, 12).map((t) => ({ tag: t, count: 0 }))
+  }
+}
 
 /* ---------------- 列表 ---------------- */
 const list = ref([])
@@ -111,7 +133,10 @@ function goPage(delta) {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  loadSidebar()
+})
 </script>
 
 <template>
@@ -142,7 +167,8 @@ onMounted(load)
       <h2>精选文章</h2>
       <span class="small muted">编辑推荐 · 每周更新</span>
     </div>
-    <div class="feature-article">
+    <!-- feature 来自异步接口，未返回前为 null，用 v-if 包住避免访问空对象 -->
+    <div v-if="feature" class="feature-article">
       <img :src="feature.cover" :alt="feature.title" />
       <div class="inner">
         <span class="badge">{{ feature.cat }}</span>

@@ -57,6 +57,7 @@ import {
   fetchArticleComments,
   postArticleComment,
   fetchArticleRecommend,
+  fetchArticleTags,
   fetchCollectedArticles,
   fetchArticleReadHistory,
   recordArticleRead,
@@ -802,6 +803,15 @@ export const articlesApi = {
 
     const list = DB.articles.filter((a) => a.status !== 0 && a.id !== +excludeId)
     return ok({ list: list.slice(0, pageSize), total: list.length })
+  },
+  // GET /article/tags  全部标签（实测返回纯字符串数组，54 个）
+  async tags() {
+    if (!ARTICLE_USE_MOCK) return fetchArticleTags()
+
+    // mock：从本地文章里统计
+    const count = {}
+    DB.articles.forEach((a) => (a.tags || []).forEach((t) => { count[t] = (count[t] || 0) + 1 }))
+    return ok(Object.keys(count).sort((a, b) => count[b] - count[a]))
   },
   // GET /article/comment/list/{articleId}
   async comments(articleId) {

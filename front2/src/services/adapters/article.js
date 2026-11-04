@@ -242,6 +242,22 @@ export async function fetchArticleRecommend({ excludeId, page = 1, pageSize = 3 
   }
 }
 
+/**
+ * GET /article/tags
+ * 返回全部标签。实测 data 是纯字符串数组（54 个），例如
+ *   ["蛋白质","恢复","饮食管理","碳水","误区", ...]
+ * 这里统一转成去重、去空的字符串数组，页面直接渲染。
+ */
+export async function fetchArticleTags() {
+  const res = await http.get('/article/tags')
+  if (res.code !== 200) return res
+  const arr = Array.isArray(res.data) ? res.data : []
+  const tags = arr
+    .map((t) => (t == null ? '' : String(t).trim()))
+    .filter(Boolean)
+  return { code: 200, message: res.message, data: Array.from(new Set(tags)) }
+}
+
 /** GET /article/collect/list */
 export async function fetchCollectedArticles() {
   const res = await http.get('/article/collect/list')

@@ -12,7 +12,6 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import DB from '@/mock/db'
 import { articlesApi } from '@/services/api'
 import { toast } from '@/composables/useToast'
 import SvgIcon from '@/components/SvgIcon.vue'
@@ -39,6 +38,8 @@ async function load(id) {
   document.title = res.data.title + ' · 膳衡'
   store.markArticleRead(res.data.id)
   comments.value = SEEDS.map((c) => ({ ...c, liked: false }))
+  // 相关阅读依赖后端推荐，单独拉取，不阻塞正文渲染
+  loadRelated(res.data.id)
   await nextTick()
   spyToc()
 }
@@ -105,20 +106,23 @@ const author = computed(() => {
   }
 })
 
-/* ---------------- 相关阅读 ---------------- */
-const related = computed(() => {
-  const a = article.value
-  if (!a) return []
-  return DB.articles
-    .filter((x) => x.id !== a.id)
-    .map((x) => ({
-      x,
-      score: (x.cat === a.cat ? 2 : 0) + x.tags.filter((t) => a.tags.indexOf(t) > -1).length
-    }))
-    .sort((p, q) => q.score - p.score || q.x.views - p.x.views)
-    .slice(0, 3)
-    .map((p) => p.x)
-})
+/* ---------------- 相关阅读 ----------------
+   【2026-11-04 修复】原先从本地 mock 库 DB.articles 里按分类/标签算相关性，
+   而正文走的是真接口，导致「相关阅读」显示的是若干篇假文章，点进去 404。
+   现在改用 GET /article/recommend?excludeId=<当前文章 id>，
+   由后端按阅读与互动推荐，并排除当前这篇。 */
+const related = ref([])
+
+async function loadRelated(articleId) {
+  const res = await articlesApi.recommend({ excludeId: articleId, pageSize: 3 })
+  if (res.code !== 200) {
+    related.value = []
+    return
+  }
+  const list = (res.data && res.data.list) || []
+  // 保险起见再按 id 过滤一次，避免后端未生效时把自己也列进去
+  related.value = list.filter((x) => String(x.id) !== String(articleId)).slice(0, 3)
+}
 
 /* ---------------- 收藏 / 点赞 ---------------- */
 const collected = computed(() => store.isArticleCollected(article.value?.id))

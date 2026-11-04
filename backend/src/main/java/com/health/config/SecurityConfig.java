@@ -75,10 +75,27 @@ public class SecurityConfig {
         return source;
     }
 
+    /**
+     * 权限不足（403）的统一响应。
+     *
+     * 原先用 response.sendError(SC_FORBIDDEN, "Forbidden")，
+     * 这会把请求交给 Spring 的默认错误页，返回：
+     *   {"timestamp":"...","status":403,"error":"Forbidden","path":"/api/admin/overview"}
+     * —— 不是项目约定的信封 { code, message, data }，
+     * 而且 message 是英文，前端 http.js 的兜底会把 "Forbidden" 直接展示给用户。
+     *
+     * 现在直接写 JSON，与其它接口保持一致，中文提示对用户友好。
+     */
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
-        return (request, response, accessDeniedException) ->
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+        return (request, response, accessDeniedException) -> {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json;charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(
+                "{\"code\":403,\"message\":\"当前账号没有该操作权限，请使用管理员账号登录\",\"data\":null}"
+            );
+        };
     }
 
     @Bean
@@ -87,7 +104,20 @@ public class SecurityConfig {
             .cors().and()
             .csrf().disable()
             .exceptionHandling()
-            .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+            /*
+             * 未认证（401）同样返回统一信封。
+             * HttpStatusEntryPoint 只设状态码、不给响应体，
+             * 前端 http.js 虽然对 401 有专门分支，但响应体为空会让
+             * 调试时看不到任何原因。这里换成自定义 entryPoint。
+             */
+            .authenticationEntryPoint((request, response, authException) -> {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write(
+                    "{\"code\":401,\"message\":\"登录已过期，请重新登录\",\"data\":null}"
+                );
+            })
             .accessDeniedHandler(accessDeniedHandler())
             .and()
             .authorizeRequests()
