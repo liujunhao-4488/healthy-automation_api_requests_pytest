@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_intruder_delete_does_not_actually_remove_it  0.02s

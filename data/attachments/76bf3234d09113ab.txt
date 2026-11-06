@@ -1,0 +1,5 @@
+20:17:42 I → POST /assistant/chat    200   1698ms
+20:17:42 I · AI    问「西兰花的营养成分是什么」  → 按每 100 克西兰花计算：热量 34 千卡，蛋白质 2.8 克，碳水化合物 7 克，脂肪 0.4 克，膳食纤维 2.6 克，糖 1.7 克，钠 33 毫克，升糖指数 GI 为 15。 可以看出西兰花…
+20:17:42 I → DELETE /assistant/conversations/3463 200      7ms
+20:17:42 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3463,) | affected=2 | 1.6ms
+20:17:42 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3463,) | affected=1 | 1.1ms

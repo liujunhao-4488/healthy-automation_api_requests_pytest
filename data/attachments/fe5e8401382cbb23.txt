@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1972 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:17:12 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:17:10",
+      "id": 7325,
+      "text": "减脂期蛋白质吃多少克"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:17:12",
+      "ragUsed": false,
+      "id": 7326,
+      "text": "减脂期建议每天摄入约 110–140 克蛋白质，按你 70.2 公斤体重折算大约是每公斤体重 1.6–2.0 克。减脂时热量有缺口，蛋白质吃够能尽量保住肌肉、维持基础代谢，同时蛋白质饱腹感强，更利于控制总热量。你目前没有慢性病和忌口记录，按这个范围执行即可；如果某天训练强度大，可以往 2.0 克/公斤靠，休息日往 1.6 克/公斤靠。分配上建议每餐 25–35 克，分 3–4 餐摄入，吸收和饱腹效果更好。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3448,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "减脂期建议每天摄入约 110–140 克蛋白质，按你 70.2 公斤体重折算大约是每公斤体重 1.6–2.0 克。减脂时热量有缺口，蛋白质吃够能尽量保住肌肉、维持基础代谢，同时蛋白质饱腹感强，更利于控制总热量。你目前没有慢性病和忌口记录，…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:17:12.421869747",
+      "createTime": "2026-11-06T20:17:10",
+      "updateTime": "2026-11-06T20:17:10",
+      "id": 3448,
+      "title": "减脂期蛋白质吃多少克"
+    }
+  },
+  "message": "发送消息成功"
+}

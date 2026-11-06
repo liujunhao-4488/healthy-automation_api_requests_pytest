@@ -1,0 +1,5 @@
+20:18:21 I → POST /assistant/chat    200   2808ms
+20:18:21 I · AI    问「你好，今天想吃点好的」  → 想吃点好的完全没问题，关键是「好」可以落在食材新鲜、做得香、吃得舒服上，而不必等于油多盐重。比如清蒸鱼、白灼虾、菌菇炖鸡、番茄牛腩这类菜，味道足、负担也不大。 如果这顿想丰盛一点，可以按「一份优质蛋白…
+20:18:21 I → DELETE /assistant/conversations/3483 200      7ms
+20:18:21 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3483,) | affected=2 | 1.5ms
+20:18:21 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3483,) | affected=1 | 1.0ms

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1810 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:20:38 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:20:36",
+      "id": 7573,
+      "text": "那如果我想更快一点呢，最快能多快？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:20:38",
+      "ragUsed": false,
+      "id": 7574,
+      "text": "在保证安全和可持续的前提下，一般不建议超过每周 1 公斤（2 斤）太多；比较激进的短期做法是每周 1～1.5 公斤（2～3 斤），但只适合体重基数较大、在专业人员监督下进行，且不宜长期维持。\n\n再快就要警惕了：每周超过 1.5 公斤往往意味着能量缺口过大，容易带来肌肉流失、基础代谢下降、胆结石风险上升、电解质紊乱和反弹。极端节食、断食、催吐或滥用减肥药都不建议尝试，风险远大于收益。如果想在安全范围内提速，更稳妥的方向是增加日常活动量和力量训练、保证蛋白质摄入、减少液体热量和精制糖，而不是继续压低进食量。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3568,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "在保证安全和可持续的前提下，一般不建议超过每周 1 公斤（2 斤）太多；比较激进的短期做法是每周 1～1.5 公斤（2～3 斤），但只适合体重基数较大、在专业人员监督下进行，且不宜长期维持。  再快就要警惕了：每周超过 1.5 公斤往往意…",
+      "messageCount": 4,
+      "lastMessageAt": "2026-11-06T20:20:38.720825775",
+      "createTime": "2026-11-06T20:20:35",
+      "updateTime": "2026-11-06T20:20:35",
+      "id": 3568,
+      "title": "健康的减重速度是每周多少..."
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1295 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:20:35 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:20:34",
+      "id": 7567,
+      "text": "好的，那我现在开始问了。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:20:35",
+      "ragUsed": false,
+      "id": 7568,
+      "text": "好的，你问吧。饮食与健康相关的问题我都可以帮你分析，比如食材替换、三餐搭配、营养和热量估算、控油控糖控钠，或者运动和体重管理方面的疑问。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3567,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "好的，你问吧。饮食与健康相关的问题我都可以帮你分析，比如食材替换、三餐搭配、营养和热量估算、控油控糖控钠，或者运动和体重管理方面的疑问。",
+      "messageCount": 4,
+      "lastMessageAt": "2026-11-06T20:20:35.359685608",
+      "createTime": "2026-11-06T20:20:32",
+      "updateTime": "2026-11-06T20:20:32",
+      "id": 3567,
+      "title": "我们现在玩个角色扮演游戏..."
+    }
+  },
+  "message": "发送消息成功"
+}

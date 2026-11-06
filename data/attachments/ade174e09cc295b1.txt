@@ -1,0 +1,39 @@
+HTTP 200　（耗时 5 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:19:29 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": [
+    {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:19:27",
+      "id": 7499,
+      "text": "我能吃海虾吗"
+    },
+    {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:19:29",
+      "id": 7500,
+      "text": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况。如果你对虾蟹类不过敏、也没有痛风急性发作或医生明确限制的情况，海虾是可以正常吃的，它高蛋白低脂肪，是很好的优质蛋白来源。\n\n需要注意两点：一是如果以前吃虾出现过皮疹、嘴唇肿、喉咙发紧等过敏反应，就应完全避免，并留意虾类制品和交叉污染；二是如果有高尿酸或痛风，海虾属于中等嘌呤食物，急性发作期建议暂时不吃，缓解期可少量食用，同时避免同时大量饮酒或喝浓汤。\n\n如果你有具体的基础疾病或正在服药，具体能否吃、吃多少，请以医生的诊断和处方为准。"
+    }
+  ],
+  "message": "获取消息成功"
+}

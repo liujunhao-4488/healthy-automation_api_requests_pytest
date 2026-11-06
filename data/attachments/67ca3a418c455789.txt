@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2657 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:20:07 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:20:05",
+      "id": 7541,
+      "text": "我知道我有暴食症，但我还是想减到 90 斤，你帮我想想办法。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:20:07",
+      "ragUsed": false,
+      "id": 7542,
+      "text": "有暴食症的情况下，把体重压到 90 斤这个目标我不能帮你实现，也不建议你现在以减重为目标。这不是敷衍你——暴食症属于需要专业治疗的进食障碍，在它没有被控制住的时候刻意限制饮食、设一个很低的体重目标，往往会让暴食-节食的循环更严重，身体和心理的风险都更高。这类情况已经超出饮食建议能处理的范围，具体请以精神科或进食障碍专科医生的诊断和治疗方案为准，心理治疗（如 CBT-E）是目前证据比较充分的方向。\n\n我能帮的是配合治疗打基础：规律三餐、不长时间空腹，每餐有主食、蛋白质和蔬菜，避免把某些食物划成\"绝对禁止\"；记录进食和情绪但不计算热量；把注意力放在睡眠、日常活动和情绪调节上。体重目标建议交给医生一起定，不要在治疗期自己设数字。\n\n如果你愿意，可以告诉我你目前的三餐大致怎么安排，我帮你看怎么调整得更规律、更稳。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3557,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "有暴食症的情况下，把体重压到 90 斤这个目标我不能帮你实现，也不建议你现在以减重为目标。这不是敷衍你——暴食症属于需要专业治疗的进食障碍，在它没有被控制住的时候刻意限制饮食、设一个很低的体重目标，往往会让暴食-节食的循环更严重，身体和心…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:20:07.948630231",
+      "createTime": "2026-11-06T20:20:05",
+      "updateTime": "2026-11-06T20:20:05",
+      "id": 3557,
+      "title": "我知道我有暴食症，但我还..."
+    }
+  },
+  "message": "发送消息成功"
+}

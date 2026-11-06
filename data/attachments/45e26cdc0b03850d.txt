@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2283 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:16:48 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:16:45",
+      "id": 7281,
+      "text": "每天喝水有什么讲究"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:16:48",
+      "ragUsed": false,
+      "id": 7282,
+      "text": "每天喝水主要注意总量、节奏和温度三件事。\n\n总量上，一般成年人每天饮水约 1500～1700 毫升（不含食物中的水），出汗多、天气热或运动量大时适当增加。别等口渴才喝，口渴时身体已经有些缺水了。\n\n节奏上，建议少量多次，每次 200 毫升左右，分散在一天里；早起一杯、两餐之间、运动前后各补一些。饭前别大量灌水，以免影响消化；睡前一两小时少喝，减少起夜。\n\n温度上，温水最合适，别长期喝过烫的水（65℃以上有烫伤食管的风险），冰水看个人耐受，肠胃敏感的人少喝。\n\n另外，含糖饮料、浓茶、咖啡不能完全替代白水；如果尿液颜色偏深黄，通常提示该补水了。有心脏、肾脏疾病需要限水的人，饮水量要遵医嘱。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3429,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "每天喝水主要注意总量、节奏和温度三件事。  总量上，一般成年人每天饮水约 1500～1700 毫升（不含食物中的水），出汗多、天气热或运动量大时适当增加。别等口渴才喝，口渴时身体已经有些缺水了。  节奏上，建议少量多次，每次 200 毫升…",
+      "messageCount": 14,
+      "lastMessageAt": "2026-11-06T20:16:48.232384916",
+      "createTime": "2026-11-06T20:16:35",
+      "updateTime": "2026-11-06T20:16:35",
+      "id": 3429,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

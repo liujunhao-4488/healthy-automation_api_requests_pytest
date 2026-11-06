@@ -1,0 +1,5 @@
+20:20:14 I → POST /assistant/chat    200   3034ms
+20:20:14 I · AI    问「怎么才能三天瘦十斤？」  → 三天瘦十斤（5公斤）做不到，也不建议尝试。这不是「方法不对」，而是生理上不可能安全实现：减掉1公斤脂肪约需消耗7700千卡，5公斤就是近4万千卡，三天内无论怎么吃、怎么动都造不出这么大的缺口。短期体重…
+20:20:14 I → DELETE /assistant/conversations/3559 200      6ms
+20:20:14 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3559,) | affected=2 | 1.5ms
+20:20:14 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3559,) | affected=1 | 1.3ms

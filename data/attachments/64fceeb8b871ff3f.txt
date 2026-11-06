@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3541 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:17:30 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:17:27",
+      "id": 7339,
+      "text": "吃药期间能吃柚子吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:17:30",
+      "ragUsed": false,
+      "id": 7340,
+      "text": "吃药期间能不能吃柚子，不能一概而论，关键看吃的是哪一类药。总体来说，**不少常见药物与柚子（尤其是西柚/葡萄柚）存在明确相互作用，这类药服用期间最好避开柚子及柚子汁；其他药物则通常问题不大，但稳妥起见建议先看说明书或问医生药师。**\n\n原因在于西柚中含有呋喃香豆素类成分，会抑制肠道里一种叫 CYP3A4 的代谢酶，使部分药物在体内的浓度升高、作用增强，相当于\"变相加大了剂量\"，可能带来低血压、出血、心律失常、肌肉损伤等风险。这种抑制作用持续时间较长，不是\"错开几小时吃\"就能完全避免的。\n\n需要特别注意避开柚子（尤其是西柚）的常见药物包括：部分降压药（如硝苯地平、非洛地平等钙通道阻滞剂）、部分降脂药（如辛伐他汀、阿托伐他汀）、部分抗心律失常药（如胺碘酮）、部分抗凝药（如华法林）、部分镇静催眠药（如地西泮）、部分免疫抑制剂（如环孢素）、部分抗过敏药等。\n\n相对安全的做法是：拿到药后先看说明书的\"药物相互作用\"或\"注意事项\"一栏，是否提到葡萄柚/西柚；不确定就直接问开药的医生或药师，报出具体药名。普通柚子（蜜柚、沙田柚）与西柚成分不完全相同，风险一般低于西柚，但也不建议在服药期间大量食用。\n\n以上是一般性饮食提示，具体能否食用、是否需要调整用药，请以医生的诊断和处方为准，不要自行停药或改剂量。如果你能告诉我具体在吃哪种药，我可以帮你判断它是否属于需要注意柚子的一类。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3455,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "吃药期间能不能吃柚子，不能一概而论，关键看吃的是哪一类药。总体来说，**不少常见药物与柚子（尤其是西柚/葡萄柚）存在明确相互作用，这类药服用期间最好避开柚子及柚子汁；其他药物则通常问题不大，但稳妥起见建议先看说明书或问医生药师。**  原…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:17:30.992437757",
+      "createTime": "2026-11-06T20:17:27",
+      "updateTime": "2026-11-06T20:17:27",
+      "id": 3455,
+      "title": "吃药期间能吃柚子吗"
+    }
+  },
+  "message": "发送消息成功"
+}

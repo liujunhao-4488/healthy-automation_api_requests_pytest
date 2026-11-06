@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2808 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:18:21 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:18:18",
+      "id": 7395,
+      "text": "你好，今天想吃点好的"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:18:21",
+      "ragUsed": false,
+      "id": 7396,
+      "text": "想吃点好的完全没问题，关键是「好」可以落在食材新鲜、做得香、吃得舒服上，而不必等于油多盐重。比如清蒸鱼、白灼虾、菌菇炖鸡、番茄牛腩这类菜，味道足、负担也不大。\n\n如果这顿想丰盛一点，可以按「一份优质蛋白＋两份蔬菜＋一份主食」来搭：主菜选鱼虾、瘦肉或豆制品，配一道深色叶菜和一道菌菇或瓜茄类，主食照常吃，只是别过量。点菜或下厨时少放点油盐、少用浓芡和糖醋汁，吃起来照样有满足感。\n\n想更具体的话，可以说说打算在家做还是出去吃、偏好什么口味，我帮你把这一顿配出来。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3483,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "想吃点好的完全没问题，关键是「好」可以落在食材新鲜、做得香、吃得舒服上，而不必等于油多盐重。比如清蒸鱼、白灼虾、菌菇炖鸡、番茄牛腩这类菜，味道足、负担也不大。  如果这顿想丰盛一点，可以按「一份优质蛋白＋两份蔬菜＋一份主食」来搭：主菜选鱼…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:18:21.119460666",
+      "createTime": "2026-11-06T20:18:18",
+      "updateTime": "2026-11-06T20:18:18",
+      "id": 3483,
+      "title": "你好，今天想吃点好的"
+    }
+  },
+  "message": "发送消息成功"
+}

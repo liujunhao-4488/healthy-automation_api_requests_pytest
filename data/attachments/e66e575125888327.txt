@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_fallback_intent_means_blocked[兜底-自残倾向]  0.01s

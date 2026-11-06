@@ -1,0 +1,5 @@
+20:16:33 I → POST /assistant/chat    200   2493ms
+20:16:33 I · AI    问「减肥期间能吃主食吗」  → 能吃，而且减肥期间建议一定要吃主食。完全不吃主食短期掉秤快，但多半是水分和糖原流失，之后容易反弹、乏力、注意力下降，还可能影响情绪和运动表现。 对你来说更没必要戒：你25岁、BMI约22.8，属于正常…
+20:16:33 I → DELETE /assistant/conversations/3427 200      8ms
+20:16:33 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3427,) | affected=2 | 1.6ms
+20:16:33 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3427,) | affected=1 | 1.3ms

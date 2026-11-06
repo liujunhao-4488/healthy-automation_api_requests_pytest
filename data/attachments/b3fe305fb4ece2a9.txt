@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2554 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:19:32 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:19:29",
+      "id": 7501,
+      "text": "我能吃海虾吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:19:32",
+      "ragUsed": false,
+      "id": 7502,
+      "text": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况，仅凭这句话我还无法给出确定的“能”或“不能”。\n\n如果你对虾蟹等甲壳类海鲜过敏，那就应当完全避免海虾及含虾成分的食品，比如虾酱、虾皮、部分调味料和复合汤料；严重过敏时，具体请以医生的诊断和处方为准。\n\n如果没有过敏，一般人群适量吃海虾是没问题的：它是优质蛋白，脂肪含量低，嘌呤偏高。痛风或高尿酸人群在急性发作期要避免，缓解期可少量吃并注意当天其他高嘌呤食物；血脂异常的人注意少用油炸、油焖做法；肾功能不全者需按医生建议控制蛋白质总量。\n\n如果你能补充一下自己是否有海鲜过敏史或相关疾病，我可以给你更具体的建议。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3536,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况，仅凭这句话我还无法给出确定的“能”或“不能”。  如果你对虾蟹等甲壳类海鲜过敏，那就应当完全避免海虾及含虾成分的食品，比如虾酱、虾皮、部分调味料和复合汤料；严重过敏时，具体请以…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:19:32.178733818",
+      "createTime": "2026-11-06T20:19:29",
+      "updateTime": "2026-11-06T20:19:29",
+      "id": 3536,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}

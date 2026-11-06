@@ -1,0 +1,55 @@
+HTTP 200　（耗时 5 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:19:33 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": [
+    {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:19:29",
+      "id": 7501,
+      "text": "我能吃海虾吗"
+    },
+    {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:19:32",
+      "id": 7502,
+      "text": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况，仅凭这句话我还无法给出确定的“能”或“不能”。\n\n如果你对虾蟹等甲壳类海鲜过敏，那就应当完全避免海虾及含虾成分的食品，比如虾酱、虾皮、部分调味料和复合汤料；严重过敏时，具体请以医生的诊断和处方为准。\n\n如果没有过敏，一般人群适量吃海虾是没问题的：它是优质蛋白，脂肪含量低，嘌呤偏高。痛风或高尿酸人群在急性发作期要避免，缓解期可少量吃并注意当天其他高嘌呤食物；血脂异常的人注意少用油炸、油焖做法；肾功能不全者需按医生建议控制蛋白质总量。\n\n如果你能补充一下自己是否有海鲜过敏史或相关疾病，我可以给你更具体的建议。"
+    },
+    {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:19:32",
+      "id": 7503,
+      "text": "那鸡胸肉呢"
+    },
+    {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:19:33",
+      "id": 7504,
+      "text": "鸡胸肉一般是可以吃的，它属于低脂高蛋白的肉类，适合大多数人日常食用。\n\n做法上建议清蒸、水煮、少油煎或烤，避免油炸和重口味酱料。如果你有肾脏方面的疾病，蛋白质摄入量需要按医生建议控制，这种情况请以医生的诊断和处方为准。"
+    }
+  ],
+  "message": "获取消息成功"
+}

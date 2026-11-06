@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3739 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:17:58 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:17:54",
+      "id": 7367,
+      "text": "最近老犯困，怎么吃能改善"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:17:58",
+      "ragUsed": false,
+      "id": 7368,
+      "text": "白天犯困，饮食上最值得先调整的是三件事：别让血糖大起大落、别让午饭太撑、保证蛋白质和铁的摄入。\n\n具体可以这样做：\n\n一是三餐定时，主食别只吃精白米面。把一部分白米饭、白馒头换成杂粮饭、燕麦、全麦面包或薯类，能减缓餐后血糖上升，避免饭后一两个小时那种“血糖掉下来”的困倦感。你25岁、体重正常、没有慢性病，这个调整没有额外负担。\n\n二是午饭控制总量，七分饱即可，少油少糖。一顿吃得太饱，血液集中在消化道，本来就容易犯困；高油高糖的午餐会让这种困意更明显。可以先把菜和蛋白质吃够，主食最后吃、适量吃。\n\n三是每餐都安排足量蛋白质，比如鸡蛋、瘦肉、鱼虾、豆制品、奶类，早餐尤其别只吃粥和包子。蛋白质能延长饱腹感、让能量释放更平稳，对下午的精神状态帮助比较直接。如果平时红肉吃得少，可以留意一下铁的来源（瘦肉、动物肝脏、深色蔬菜配维生素C），缺铁也会让人乏力犯困。\n\n另外两个小习惯也有用：早餐别空腹只喝咖啡，咖啡因顶过劲后反而更累；下午犯困时先喝杯水、起身活动几分钟，很多时候是轻度缺水或久坐导致的。\n\n需要说明的是，犯困的原因很多，睡眠不足、作息紊乱、贫血、甲状腺问题都可能引起。如果按上面调整两三周仍没改善，或者伴随明显乏力、心慌、体重变化，建议去医院查一下血常规和甲状腺功能，具体以医生的诊断为准。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3469,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "白天犯困，饮食上最值得先调整的是三件事：别让血糖大起大落、别让午饭太撑、保证蛋白质和铁的摄入。  具体可以这样做：  一是三餐定时，主食别只吃精白米面。把一部分白米饭、白馒头换成杂粮饭、燕麦、全麦面包或薯类，能减缓餐后血糖上升，避免饭后一…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:17:58.036757466",
+      "createTime": "2026-11-06T20:17:54",
+      "updateTime": "2026-11-06T20:17:54",
+      "id": 3469,
+      "title": "最近老犯困，怎么吃能改善"
+    }
+  },
+  "message": "发送消息成功"
+}

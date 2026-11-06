@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_get_profile_response_shape      0.01s

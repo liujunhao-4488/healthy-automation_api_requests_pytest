@@ -1,0 +1,32 @@
+HTTP 200　（耗时 9 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:21:13 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "role": "user",
+    "phone": null,
+    "createTime": "2026-11-06T20:21:12",
+    "updateTime": "2026-11-06T20:21:12",
+    "avatar": null,
+    "userId": 101395,
+    "email": "pf_e9e1e2a258@example.com",
+    "username": "renamed_4f60fe",
+    "status": 1
+  },
+  "message": "个人资料更新成功"
+}

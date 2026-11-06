@@ -1,0 +1,5 @@
+20:18:49 I → POST /assistant/chat    200   1440ms
+20:18:49 I · AI    问「推荐几部好看的电影」  → 这个问题不在我的职责范围内——我只负责饮食与健康相关的问题，比如食材搭配、营养分析、控油控糖、体重管理等，电影推荐我确实帮不上忙。 如果你想聊聊看剧时适合吃什么、怎么避免边看边吃零食过量，或者想规划一…
+20:18:49 I → DELETE /assistant/conversations/3509 200      6ms
+20:18:49 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3509,) | affected=2 | 1.6ms
+20:18:49 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3509,) | affected=1 | 0.9ms

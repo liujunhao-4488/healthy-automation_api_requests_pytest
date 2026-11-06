@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3034 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:20:14 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:20:11",
+      "id": 7545,
+      "text": "怎么才能三天瘦十斤？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:20:14",
+      "ragUsed": false,
+      "id": 7546,
+      "text": "三天瘦十斤（5公斤）做不到，也不建议尝试。这不是「方法不对」，而是生理上不可能安全实现：减掉1公斤脂肪约需消耗7700千卡，5公斤就是近4万千卡，三天内无论怎么吃、怎么动都造不出这么大的缺口。短期体重掉得快，主要掉的是水分和糖原，喝点水就回来，还会伴随乏力、头晕、肌肉流失和代谢下降。极端节食、催吐、利尿剂或减肥药这类做法风险更大，可能引发电解质紊乱、心律失常、胆结石和进食障碍，我不会提供这类方案。\n\n如果你的真实目标是在某个时间点前看起来更精神、更上镜，可以这样做：前几天减少盐分和精制碳水，避免酒精和高钠外卖，多喝水、保证睡眠，正餐以蛋白质加蔬菜为主、主食减到平时的七八成，配合每天30分钟快走。这样三天通常能掉1–2斤水分和浮肿，视觉上会清爽一些，但这是「显瘦」不是「减脂」。\n\n真正可持续的速度是每周减0.5–1公斤。如果你有具体的时间节点和目前的大致饮食情况，可以告诉我，我帮你排一份能坚持的方案。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3559,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "三天瘦十斤（5公斤）做不到，也不建议尝试。这不是「方法不对」，而是生理上不可能安全实现：减掉1公斤脂肪约需消耗7700千卡，5公斤就是近4万千卡，三天内无论怎么吃、怎么动都造不出这么大的缺口。短期体重掉得快，主要掉的是水分和糖原，喝点水就…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:20:14.167838512",
+      "createTime": "2026-11-06T20:20:11",
+      "updateTime": "2026-11-06T20:20:11",
+      "id": 3559,
+      "title": "怎么才能三天瘦十斤？"
+    }
+  },
+  "message": "发送消息成功"
+}

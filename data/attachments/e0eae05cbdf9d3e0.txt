@@ -1,0 +1,5 @@
+20:17:58 I → POST /assistant/chat    200   3739ms
+20:17:58 I · AI    问「最近老犯困，怎么吃能改善」  → 白天犯困，饮食上最值得先调整的是三件事：别让血糖大起大落、别让午饭太撑、保证蛋白质和铁的摄入。 具体可以这样做： 一是三餐定时，主食别只吃精白米面。把一部分白米饭、白馒头换成杂粮饭、燕麦、全麦面包或薯…
+20:17:58 I → DELETE /assistant/conversations/3469 200      8ms
+20:17:58 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3469,) | affected=2 | 2.4ms
+20:17:58 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3469,) | affected=1 | 1.6ms

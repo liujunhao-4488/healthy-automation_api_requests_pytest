@@ -1,0 +1,5 @@
+20:17:05 I → POST /assistant/chat    200   2528ms
+20:17:05 I · AI    问「我想换个口味，有什么建议」  → 换口味可以从“换蛋白、换主食、换风味”三个方向入手，不用大改结构。比如把常吃的鸡胸肉换成鱼虾、瘦牛肉、鸡蛋或豆制品；主食在白米白面里掺一部分糙米、燕麦、玉米、红薯；风味上试试柠檬胡椒、番茄罗勒、咖喱、…
+20:17:05 I → DELETE /assistant/conversations/3444 200      8ms
+20:17:05 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3444,) | affected=2 | 1.4ms
+20:17:05 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3444,) | affected=1 | 1.3ms

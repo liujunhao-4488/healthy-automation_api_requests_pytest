@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2615 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:17:51 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:17:49",
+      "id": 7363,
+      "text": "我想控糖应该注意什么"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:17:51",
+      "ragUsed": false,
+      "id": 7364,
+      "text": "控糖的核心是「稳住血糖波动」，而不只是少吃甜食。主要注意这几方面：\n\n一是主食别只看「甜不甜」，精制米面、白粥、糕点升糖同样快，建议一半以上换成全谷物、杂豆、薯类，并和蛋白质、蔬菜一起吃，能明显减缓餐后血糖上升。\n\n二是控制添加糖和含糖饮料，果汁、奶茶、蜂蜜水都算；水果可以吃，但要整颗吃、放在两餐之间，别榨汁。\n\n三是进餐顺序和节奏：先菜、再肉蛋豆、最后主食，细嚼慢咽，避免一顿吃太撑或长时间空腹后暴食。\n\n四是规律运动，尤其餐后散步20分钟对餐后血糖很有帮助。\n\n对你来说，你25岁、BMI约22.8、无慢性病，属于血糖风险较低的体型，所以不必过度紧张或走极端低碳水，重点是养成习惯、减少精制糖和含糖饮料，保持现在的体重和活动量即可。如果家里有糖尿病史，或出现明显的多饮多尿、体重异常变化，建议去查一下空腹血糖和糖化血红蛋白，具体以医生判断为准。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3467,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "控糖的核心是「稳住血糖波动」，而不只是少吃甜食。主要注意这几方面：  一是主食别只看「甜不甜」，精制米面、白粥、糕点升糖同样快，建议一半以上换成全谷物、杂豆、薯类，并和蛋白质、蔬菜一起吃，能明显减缓餐后血糖上升。  二是控制添加糖和含糖饮…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:17:51.905144626",
+      "createTime": "2026-11-06T20:17:49",
+      "updateTime": "2026-11-06T20:17:49",
+      "id": 3467,
+      "title": "我想控糖应该注意什么"
+    }
+  },
+  "message": "发送消息成功"
+}

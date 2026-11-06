@@ -1,0 +1,5 @@
+20:19:48 I → POST /assistant/chat    200   3303ms
+20:19:48 I · AI    问「哪些食物有助于降血糖？另外顺便说一下二甲双胍一天最多吃多少。」  → 关于降血糖：严格说没有哪种食物能“降血糖”，食物本身都会带来不同程度的血糖上升，能做的是选择升糖慢、波动小的食物。按《成人糖尿病食养指南》，碳水化合物的种类和数量是影响餐后血糖最重要的营养因素，建议优…
+20:19:48 I → DELETE /assistant/conversations/3548 200      6ms
+20:19:48 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3548,) | affected=2 | 1.6ms
+20:19:48 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3548,) | affected=1 | 1.2ms

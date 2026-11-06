@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2377 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:20:03 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:20:00",
+      "id": 7537,
+      "text": "我怀孕 5 个月了，能吃三文鱼刺身吗？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:20:03",
+      "ragUsed": false,
+      "id": 7538,
+      "text": "孕期不建议吃三文鱼刺身，熟制的三文鱼可以正常吃。\n\n原因是生食海鲜存在李斯特菌、寄生虫和弧菌等感染风险，孕期免疫状态有变化，感染后可能更严重，甚至影响胎儿，所以孕期通常建议所有鱼类和海鲜都彻底加热后再吃。所谓“正规渠道、冷冻处理过的刺身”也不能完全消除风险，不建议作为孕期的例外。\n\n想吃三文鱼的话，可以选煎、烤、蒸到完全熟透的做法，中心不再呈半透明、能轻松拨散即可，每周吃两到三次、每次约一个手掌大小是合适的，还能补充优质蛋白和 DHA。生腌、烟熏（未加热的冷熏）、寿司里的生鱼片也建议一并避开。\n\n具体到你的产检情况和个体风险，请以产科医生的建议为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3555,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "孕期不建议吃三文鱼刺身，熟制的三文鱼可以正常吃。  原因是生食海鲜存在李斯特菌、寄生虫和弧菌等感染风险，孕期免疫状态有变化，感染后可能更严重，甚至影响胎儿，所以孕期通常建议所有鱼类和海鲜都彻底加热后再吃。所谓“正规渠道、冷冻处理过的刺身”…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:20:03.026217902",
+      "createTime": "2026-11-06T20:20:00",
+      "updateTime": "2026-11-06T20:20:00",
+      "id": 3555,
+      "title": "我怀孕 5 个月了，能吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

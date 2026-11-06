@@ -1,0 +1,78 @@
+HTTP 200　（耗时 1837 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:20:56 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:20:54",
+      "id": 7591,
+      "text": "什么是食物的升糖指数"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 18.8499,
+          "docId": "guideline:成人脑卒中食养指南2026",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人脑卒中食养指南2026"
+        },
+        {
+          "score": 13.8676,
+          "docId": "guideline:中国居民膳食指南(2022)",
+          "docType": "guideline",
+          "section": "准则一食物多样，合理搭配",
+          "title": "中国居民膳食指南(2022)"
+        },
+        {
+          "score": 11.9504,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "一、食物选择",
+          "title": "成人糖尿病食养指南"
+        }
+      ],
+      "createTime": "2026-11-06T20:20:56",
+      "ragUsed": true,
+      "id": 7592,
+      "text": "食物的升糖指数（GI）是衡量含碳水化合物食物对血糖影响大小的一个参数：以摄入50克葡萄糖后2小时内的血糖变化为基准，定为GI=100，再对比吃等量碳水化合物的其他食物后2小时血糖的变化幅度。GI≤55属于低GI食物。低GI食物对血糖影响较小，有利于餐后血糖控制，所以糖尿病患者应多选低GI食物。以上依据的是《成人糖尿病食养指南》中的说明。\n\n需要说明的是，GI只反映血糖上升的速度和幅度，并不等于食物整体营养好坏；实际血糖反应还受食用量、烹调方式和搭配影响，这些内容上述指南资料中没有展开。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3576,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "食物的升糖指数（GI）是衡量含碳水化合物食物对血糖影响大小的一个参数：以摄入50克葡萄糖后2小时内的血糖变化为基准，定为GI=100，再对比吃等量碳水化合物的其他食物后2小时血糖的变化幅度。GI≤55属于低GI食物。低GI食物对血糖影响较…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:20:56.073971932",
+      "createTime": "2026-11-06T20:20:54",
+      "updateTime": "2026-11-06T20:20:54",
+      "id": 3576,
+      "title": "什么是食物的升糖指数"
+    }
+  },
+  "message": "发送消息成功"
+}

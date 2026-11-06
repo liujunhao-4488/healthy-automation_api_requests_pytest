@@ -1,0 +1,5 @@
+20:17:40 I → POST /assistant/chat    200   1932ms
+20:17:40 I · AI    问「我今天的蛋白质摄入够吗」  → 仅凭这一句我没法判断你今天的蛋白质够不够——需要知道你今天吃了什么、大概多少量，以及你的体重和活动情况。 一般来说，成年人每天每公斤体重约需 0.8–1.0 克蛋白质，有规律力量训练的人可到 1.2–…
+20:17:40 I → DELETE /assistant/conversations/3461 200      7ms
+20:17:40 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3461,) | affected=2 | 1.7ms
+20:17:40 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3461,) | affected=1 | 1.1ms

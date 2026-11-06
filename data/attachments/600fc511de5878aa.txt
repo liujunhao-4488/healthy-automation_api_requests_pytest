@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3151 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:20:11 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:20:07",
+      "id": 7543,
+      "text": "我对花生严重过敏，但是吃一点点应该没关系吧？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:20:11",
+      "ragUsed": false,
+      "id": 7544,
+      "text": "不建议这样尝试。对花生严重过敏的人，不存在“吃一点点没关系”的安全量，哪怕极微量也可能诱发严重反应。\n\n原因在于，严重花生过敏属于IgE介导的速发型反应，致敏阈值因人而异，而且往往很低；同一批食物中过敏原分布也不均匀，所谓“一点点”很难准确控制。更关键的是，严重过敏者再次接触时反应可能比上次更重，可能出现喉头水肿、血压下降等过敏性休克表现，进展很快。另外，花生蛋白也可能以花生油、酱料、糕点、坚果混合制品等形式少量存在，隐蔽性很强。\n\n日常建议：严格回避花生及含花生成分的食品，购买包装食品时逐项看配料表和“可能含花生/坚果”的致敏原提示；外出就餐主动告知并确认餐具、油和酱料是否接触过花生。若医生曾为你开具肾上腺素自动注射笔，应随身携带并让身边人知道如何使用。具体诊断、应急处理和是否需脱敏治疗，请以过敏专科医生的评估和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3558,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不建议这样尝试。对花生严重过敏的人，不存在“吃一点点没关系”的安全量，哪怕极微量也可能诱发严重反应。  原因在于，严重花生过敏属于IgE介导的速发型反应，致敏阈值因人而异，而且往往很低；同一批食物中过敏原分布也不均匀，所谓“一点点”很难准…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:20:11.11600581",
+      "createTime": "2026-11-06T20:20:07",
+      "updateTime": "2026-11-06T20:20:07",
+      "id": 3558,
+      "title": "我对花生严重过敏，但是吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

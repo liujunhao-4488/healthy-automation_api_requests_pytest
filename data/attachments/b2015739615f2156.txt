@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2118 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:16:51 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:16:49",
+      "id": 7285,
+      "text": "我最近在减脂，中午一般吃鸡胸肉。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:16:51",
+      "ragUsed": false,
+      "id": 7286,
+      "text": "鸡胸肉作为减脂期的午餐主食是很合适的选择，它脂肪低、蛋白质高，饱腹感强，有利于在控制热量时保住肌肉。不过单吃鸡胸肉容易缺少蔬菜和主食，长期这样午餐结构偏单一，也可能让你下午更饿。\n\n建议把午餐搭配成“鸡胸肉 + 一份蔬菜 + 适量主食”的组合，比如鸡胸肉配西兰花、番茄或绿叶菜，再加小半碗杂粮饭或一个中等大小的红薯。烹调上尽量用蒸、煮、烤或少油煎，避免油炸和浓重酱汁，这样热量更好控制。如果天天吃鸡胸肉觉得腻，也可以和鱼虾、瘦牛肉、豆腐轮换着来。\n\n如果你愿意说说午餐的具体分量和搭配，我可以帮你估算一下热量和蛋白质是否够。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3430,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉作为减脂期的午餐主食是很合适的选择，它脂肪低、蛋白质高，饱腹感强，有利于在控制热量时保住肌肉。不过单吃鸡胸肉容易缺少蔬菜和主食，长期这样午餐结构偏单一，也可能让你下午更饿。  建议把午餐搭配成“鸡胸肉 + 一份蔬菜 + 适量主食”的…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:16:51.203493096",
+      "createTime": "2026-11-06T20:16:49",
+      "updateTime": "2026-11-06T20:16:49",
+      "id": 3430,
+      "title": "我最近在减脂，中午一般吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,5 @@
+20:17:51 I → POST /assistant/chat    200   2615ms
+20:17:51 I · AI    问「我想控糖应该注意什么」  → 控糖的核心是「稳住血糖波动」，而不只是少吃甜食。主要注意这几方面： 一是主食别只看「甜不甜」，精制米面、白粥、糕点升糖同样快，建议一半以上换成全谷物、杂豆、薯类，并和蛋白质、蔬菜一起吃，能明显减缓餐后…
+20:17:51 I → DELETE /assistant/conversations/3467 200      7ms
+20:17:51 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3467,) | affected=2 | 2.0ms
+20:17:51 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3467,) | affected=1 | 1.3ms

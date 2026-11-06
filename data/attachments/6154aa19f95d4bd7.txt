@@ -1,0 +1,6 @@
+20:16:08 I → POST http://127.0.0.1:5000/api/kb/search 200      8ms
+20:16:11 I → POST /assistant/chat    200   3341ms
+20:16:11 I · AI    问「高血压怎么吃」     → 高血压的饮食核心是**减钠增钾、饮食清淡**，同时做到合理膳食、吃动平衡、戒烟限酒、规律监测血压。依据《成人高血压食养指南》，具体可以这样落地： **1. 控盐是第一位的。** 每人每日食盐摄入量逐步…
+20:16:11 I → DELETE /assistant/conversations/3420 200     10ms
+20:16:11 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3420,) | affected=2 | 1.6ms
+20:16:11 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3420,) | affected=1 | 1.2ms

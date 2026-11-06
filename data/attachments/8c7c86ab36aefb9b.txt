@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1932 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 06 Nov 2026 20:17:40 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-06T20:17:38",
+      "id": 7351,
+      "text": "我今天的蛋白质摄入够吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-06T20:17:40",
+      "ragUsed": false,
+      "id": 7352,
+      "text": "仅凭这一句我没法判断你今天的蛋白质够不够——需要知道你今天吃了什么、大概多少量，以及你的体重和活动情况。\n\n一般来说，成年人每天每公斤体重约需 0.8–1.0 克蛋白质，有规律力量训练的人可到 1.2–1.6 克。你可以把今天吃的东西大致说一下（比如鸡蛋几个、牛奶多少毫升、肉或豆制品大概多少），我帮你估算一下够不够。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3461,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "仅凭这一句我没法判断你今天的蛋白质够不够——需要知道你今天吃了什么、大概多少量，以及你的体重和活动情况。  一般来说，成年人每天每公斤体重约需 0.8–1.0 克蛋白质，有规律力量训练的人可到 1.2–1.6 克。你可以把今天吃的东西大致…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-06T20:17:40.029814402",
+      "createTime": "2026-11-06T20:17:38",
+      "updateTime": "2026-11-06T20:17:38",
+      "id": 3461,
+      "title": "我今天的蛋白质摄入够吗"
+    }
+  },
+  "message": "发送消息成功"
+}
