@@ -107,21 +107,24 @@ def test_get_profile_success(api, auth_headers):
 
 
 def test_get_profile_without_token(api):
-    """/user/profile 必须带 token：不带 → 401，且**响应体是空的**。
+    """/user/profile 必须带 token：不带 → 401，响应体是统一信封。
 
-    注意断言里没有 resp.json() —— 401 是空体，读 json 会直接抛异常。
-    这类"只断状态码"的写法，本身就是一条契约：**401 不给 body**。
+    ★ 2026-11-06 更新：401 原来**空响应体**，现在全站统一成
+       {"code":401,"message":"登录已过期，请重新登录","data":null}
+       旧断言 `resp.text == ""` 因此失效。改用 assert_error 后同时验了
+       HTTP 401 + 业务 code 401 + 文案，比"只断空体"更强。
+    ⚠️ 历史备注：这条断言曾经是 `resp.text == ""`（"401 不给 body"）。
+       2026-11-06 后端统一了 401 的信封，原来的写法成了假失败。
+       改完顺手把全站六个接口的 401 都看了一遍，行为一致，不是单点改动。
     """
     resp = api.user.get_profile()
-    assert resp.status_code == 401, f"无 token 应 401，实际 {resp.status_code}"
-    assert resp.text == "", f"401 响应体应为空，实际 {resp.text!r}"
+    api.assert_error(resp, 401, "登录已过期，请重新登录", http=401)
 
 
 def test_get_profile_with_bad_token(api):
-    """伪造的 token → 同样 401 + 空体（后端验签不过）。"""
+    """伪造的 token → 同样 401（后端验签不过），响应与"没带 token"一致。"""
     resp = api.user.get_profile(headers={"Authorization": "Bearer abc.def.ghi"})
-    assert resp.status_code == 401, f"伪 token 应 401，实际 {resp.status_code}"
-    assert resp.text == ""
+    api.assert_error(resp, 401, "登录已过期，请重新登录", http=401)
 
 
 # ==================== PUT：各类失败（在临时靶子上跑）====================

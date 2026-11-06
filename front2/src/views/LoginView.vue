@@ -41,9 +41,6 @@ function resetErrors(obj) {
   Object.keys(obj).forEach((k) => (obj[k] = false))
 }
 
-/** 后端连不上时返回的 code（见 services/http.js） */
-const OFFLINE_CODES = [-1, -2]
-
 async function onLogin() {
   resetErrors(loginErr)
   const email = loginForm.email.trim()
@@ -74,27 +71,23 @@ async function onLogin() {
 }
 
 async function onDemo() {
-  // 优先走真实后端；只有「连不上」才退回本地假会话，保证任何情况下都能看界面
+  // 体验账号也走真实登录：后端没起就如实报错，不再造一个假 token 混进系统
   loginForm.email = DEMO_EMAIL
   loginForm.password = DEMO_PASSWORD
   busy.value = true
   const res = await authApi.login({ email: DEMO_EMAIL, password: DEMO_PASSWORD })
   busy.value = false
 
-  if (res.code === 200) {
-    if (res.data?.role === 'admin') {
-      toast('体验账号已是管理员，请改用运营后台登录', 'error')
-      return
-    }
-    store.enter(res.data)
-    toast('已用体验账号登录')
-  } else if (OFFLINE_CODES.includes(res.code)) {
-    store.login(DEMO_EMAIL, DEMO_PASSWORD)
-    toast('后端未连接，已进入本地体验模式')
-  } else {
-    toast(res.message, 'error')
+  if (res.code !== 200) {
+    toast(res.message || '登录失败，请稍后重试', 'error')
     return
   }
+  if (res.data?.role === 'admin') {
+    toast('体验账号已是管理员，请改用运营后台登录', 'error')
+    return
+  }
+  store.enter(res.data)
+  toast('已用体验账号登录')
   setTimeout(() => router.push('/'), 320)
 }
 

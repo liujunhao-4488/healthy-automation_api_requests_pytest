@@ -128,10 +128,6 @@ async function generate() {
   days.value = result
   generatedDays.value = count
   savePlan()
-  if (res.data && res.data.offline) {
-    toast(res.message)
-    return
-  }
   toast(`已生成 ${count} 天配餐计划`)
 }
 

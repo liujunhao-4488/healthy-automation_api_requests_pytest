@@ -157,8 +157,9 @@ export function toHealthInfo(be, local) {
     exerciseMin: Number(be.exerciseDuration) >= 0 ? Number(be.exerciseDuration) : base.exerciseMin,
     exerciseType: be.exerciseType || '',
     chronic: strToArr(be.chronicDiseases),
-    // 后端没有 waist 字段，沿用本地
-    waist: num(base.waist, 80),
+    // 后端没有 waist 字段：本地有就沿用，没有就留空
+    // （以前兜底 80cm，等于给没量过腰围的人编了一个数）
+    waist: num(base.waist, ''),
     updatedAt: fmtTime(be.updateTime) || base.updatedAt || ''
   }
 }

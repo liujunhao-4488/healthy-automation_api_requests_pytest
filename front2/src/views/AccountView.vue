@@ -10,11 +10,12 @@
    ============================================================ */
 import { ref, reactive, computed, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { useAppStore } from '@/stores/app'
+import { useAppStore, TODAY } from '@/stores/app'
 import { recipesApi, articlesApi, userApi, notificationsApi } from '@/services/api'
 import { toast } from '@/composables/useToast'
 import { confirmDialog } from '@/composables/useConfirm'
 import SvgIcon from '@/components/SvgIcon.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const store = useAppStore()
 const router = useRouter()
@@ -36,6 +37,8 @@ const profile = reactive({
   username: store.session?.username || '',
   email: store.session?.email || '',
   phone: store.session?.phone || '',
+  // 头像存的是 base64 data URI（后端 avatar 字段 longtext）
+  avatar: store.session?.avatar || '',
   joined: '',
   status: 1,
   updateTime: '',
@@ -50,8 +53,9 @@ const roleText = computed(() => (profile.role === 'admin' ? '管理员' : '普�
 const stats = computed(() => ({
   recipes: favList.value.length,
   articles: favArticles.value.length,
-  records: store.recordList.length,
-  streak: '5 天'
+  /* 只统计「今天」——前端拿到的记录就是当天那一批；
+     后端没有累计条数 / 连续天数接口，硬编一个「5 天」属于假数据，已去掉。 */
+  records: store.recordsByDate(TODAY).length
 }))
 
 /** 资料来自 GET /user/profile */
@@ -109,6 +113,123 @@ async function saveProfile() {
 function editProfile() {
   tab.value = 'profile'
   setTimeout(() => document.getElementById('pfName')?.focus(), 60)
+}
+
+/* ============================================================
+   头像上传
+   ------------------------------------------------------------
+   后端 avatar 字段是 longtext，存 base64 data URI（已有的那条是
+   25KB 的 jpeg）。直接把原图转 base64 会有几个问题：
+     · 手机照片动辄 3-5MB，base64 后要膨胀约 33%
+     · 后端 DTO 限制 4MB（@Size max = 4194304）
+     · 整个会话要写进 localStorage（配额 5MB），头像太大直接把
+       登录态挤爆，表现为「刷新后自动退出登录」
+   所以这里先在 canvas 上压到 256×256 再转 JPEG(0.85)，
+   实测一张 4MB 照片压完约 15-25KB，远低于所有限制。
+   ============================================================ */
+const avatarInput = ref(null)
+const avatarBusy = ref(false)
+
+/** 触发隐藏的 file input */
+function pickAvatar() {
+  if (avatarBusy.value) return
+  avatarInput.value?.click()
+}
+
+/**
+ * 把图片文件压成 256×256 的 data URI。
+ * 用 canvas 等比缩放后居中裁切，保证头像不拉伸变形。
+ */
+function compressImage(file, size = 256, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('读取图片失败'))
+    reader.onload = () => {
+      const img = new Image()
+      img.onerror = () => reject(new Error('图片格式无法识别'))
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas')
+          canvas.width = size
+          canvas.height = size
+          const ctx = canvas.getContext('2d')
+          // 白底：PNG 透明区域转 JPEG 后会变黑，先铺白
+          ctx.fillStyle = '#ffffff'
+          ctx.fillRect(0, 0, size, size)
+
+          // 居中等比裁切：取短边做正方形
+          const side = Math.min(img.width, img.height)
+          const sx = (img.width - side) / 2
+          const sy = (img.height - side) / 2
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size)
+
+          resolve(canvas.toDataURL('image/jpeg', quality))
+        } catch (e) {
+          reject(new Error('图片处理失败'))
+        }
+      }
+      img.src = reader.result
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+async function onAvatarChange(e) {
+  const file = e.target.files && e.target.files[0]
+  // 选完立刻清空，否则选同一张图不会再触发 change
+  if (e.target) e.target.value = ''
+  if (!file) return
+
+  if (!/^image\/(png|jpeg|jpg|webp|gif)$/i.test(file.type)) {
+    toast('请选择 JPG / PNG / WebP / GIF 图片', 'error')
+    return
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    toast('图片不能超过 10MB', 'error')
+    return
+  }
+
+  avatarBusy.value = true
+  try {
+    const dataUri = await compressImage(file)
+    // base64 每 4 字符约 3 字节；这里按字符数粗估，超过 4MB 后端会拒绝
+    if (dataUri.length > 3.5 * 1024 * 1024) {
+      toast('压缩后仍然过大，请换一张尺寸更小的图片', 'error')
+      return
+    }
+    await applyAvatar(dataUri)
+  } catch (err) {
+    toast(err.message || '头像处理失败', 'error')
+  } finally {
+    avatarBusy.value = false
+  }
+}
+
+/** 提交头像到后端并同步本地状态 */
+async function applyAvatar(dataUri) {
+  const res = await userApi.updateProfile({ avatar: dataUri })
+  if (res.code !== 200) {
+    toast(res.message || '头像保存失败', 'error')
+    return false
+  }
+  profile.avatar = res.data.avatar || ''
+  // 同步顶栏头像（store.session.avatar 变了，AppShell 会立刻重渲染）
+  store.updateProfile({ avatar: profile.avatar })
+  toast(dataUri ? '头像已更新' : '头像已移除')
+  return true
+}
+
+async function removeAvatar() {
+  const ok = await confirmDialog('移除后头像会变回用户名首字，确定吗？', {
+    title: '移除头像',
+    okText: '移除',
+    danger: true
+  })
+  if (!ok) return
+  avatarBusy.value = true
+  // 后端约定：avatar 传空字符串即清空（updateProfile 里有专门分支）
+  await applyAvatar('')
+  avatarBusy.value = false
 }
 
 async function logout() {
@@ -358,7 +479,26 @@ async function markAll() {
 
   <!-- 资料头 -->
   <section class="card profile-head reveal d1">
-    <span class="avatar lg">{{ (profile.username || '用')[0] }}</span>
+    <!-- 头像：已上传则显示图片，否则退回首字。点击可更换 -->
+    <div class="avatar-block">
+      <UserAvatar :src="profile.avatar" :name="profile.username" size="xl" />
+      <button
+        class="avatar-edit"
+        type="button"
+        :disabled="avatarBusy"
+        :title="profile.avatar ? '更换头像' : '上传头像'"
+        @click="pickAvatar"
+      >
+        <SvgIcon name="edit" />
+      </button>
+      <input
+        ref="avatarInput"
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        style="display: none"
+        @change="onAvatarChange"
+      />
+    </div>
     <div class="grow">
       <div class="row" style="gap: 10px">
         <h2 class="display" style="font-size: 24px; color: var(--green-950)">{{ profile.username }}</h2>
@@ -366,6 +506,23 @@ async function markAll() {
         <span class="badge gray">{{ profile.status === 1 ? '账号正常' : '账号未启用' }}</span>
       </div>
       <p class="small muted">{{ profile.email }} · 注册于 {{ profile.joined || '—' }}</p>
+
+      <!-- 头像操作区：上传 / 移除，以及压缩说明 -->
+      <div class="row wrap mt-8" style="gap: 8px; align-items: center">
+        <button class="btn btn-outline btn-sm" :disabled="avatarBusy" @click="pickAvatar">
+          <SvgIcon name="plus" />{{ avatarBusy ? '处理中…' : (profile.avatar ? '更换头像' : '上传头像') }}
+        </button>
+        <button
+          v-if="profile.avatar"
+          class="btn btn-outline btn-sm"
+          :disabled="avatarBusy"
+          @click="removeAvatar"
+        >
+          <SvgIcon name="trash" />移除头像
+        </button>
+        <span class="small muted">支持 JPG / PNG / WebP，自动压缩到 256×256</span>
+      </div>
+
       <div class="account-stat">
         <div>
           <div class="v num">{{ stats.recipes }}</div>
@@ -377,11 +534,7 @@ async function markAll() {
         </div>
         <div>
           <div class="v num">{{ stats.records }}</div>
-          <div class="k">累计记录</div>
-        </div>
-        <div>
-          <div class="v num">{{ stats.streak }}</div>
-          <div class="k">连续记录</div>
+          <div class="k">今日记录</div>
         </div>
       </div>
     </div>
@@ -830,5 +983,49 @@ async function markAll() {
 .account-stat .k {
   font-size: 11px;
   color: var(--text-3);
+}
+
+/* ---------------- 头像区 ----------------
+   头像右下方叠一个小的编辑按钮，hover 时头像轻微变暗，
+   暗示「可点击更换」。 */
+.avatar-block {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.avatar-edit {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: var(--green-800, #1f5b3e);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.avatar-edit:hover:not(:disabled) {
+  transform: scale(1.08);
+}
+
+.avatar-edit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.avatar-edit :deep(svg) {
+  width: 13px;
+  height: 13px;
+}
+
+.avatar-block:hover .ua {
+  filter: brightness(0.96);
 }
 </style>

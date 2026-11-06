@@ -10,7 +10,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAppStore, TODAY } from '@/stores/app'
-import { goalApi } from '@/services/api'
+import { goalApi, healthApi } from '@/services/api'
 import { toast } from '@/composables/useToast'
 import SvgIcon from '@/components/SvgIcon.vue'
 
@@ -283,8 +283,26 @@ async function loadRemote() {
     c: macros.c,
     f: macros.f
   }
+  /* 推荐起点要用档案里的体重和基础代谢；AppShell 那边的请求可能还没回来
+     （子组件 mounted 早于父组件），这里补拉一次，避免算不出推荐值。
+     顺序必须在读目标之前：目标的 currentWeight 要用档案体重兜底。 */
+  if (!store.healthFilled) {
+    const hr = await healthApi.get()
+    if (hr.code === 200) store.applyHealthRemote(hr.data)
+  }
+
   const res = await goalApi.get()
-  if (res.code !== 200 || !res.data) return
+  if (res.code !== 200) return
+
+  /* 统一走 store：后端有目标就覆盖并标记已设；
+     后端返回 null（新用户没设过）→ store 清空，这里再给一组基于档案的推荐起点。
+     以前这里是「拿不到就保留本地缓存」，而缓存的初始值是 emptyGoal() 的
+     减脂 1800kcal / 62kg —— 会被当成用户自己设过的目标。 */
+  const filled = store.applyGoalRemote(res.data)
+  if (!filled) {
+    fillRecommendationStart()
+    return
+  }
 
   // 请求返回前用户已经改过表单，就别覆盖他的输入
   const untouched =
@@ -294,7 +312,7 @@ async function loadRemote() {
     macros.p === before.p && macros.c === before.c && macros.f === before.f
   if (!untouched) return
 
-  const g = res.data
+  const g = store.goalInfo
   Object.assign(form, {
     goalType: g.goalType,
     startWeight: g.startWeight || form.startWeight,
@@ -312,6 +330,27 @@ async function loadRemote() {
     c: +g.carbPct || 45,
     f: +g.fatPct || 25
   })
+}
+
+/**
+ * 后端没有目标时，用「健康档案 + 目标类型系数」推一组起点填进表单。
+ * 注意：只填表单、不写 store —— 用户点保存才算真的设了目标，
+ * 所以首页在这些值被保存前仍然显示「未设置」。
+ */
+function fillRecommendationStart() {
+  const w = +health.value.weight || 0
+  const b = +health.value.bmr || 0
+  if (!w) return // 连档案都没有，就别猜了，让用户自己填
+  if (+form.currentWeight && +form.kcal) return // 表单已有值，不动
+
+  form.currentWeight = w
+  if (!+form.startWeight) form.startWeight = w
+  if (!+form.targetWeight) form.targetWeight = Math.max(1, Math.round((w - 5) * 10) / 10)
+  if (!+form.kcal && b) {
+    const cfg = TYPE_CFG[form.goalType] || TYPE_CFG['维持']
+    form.kcal = Math.round((b * cfg.factor + cfg.delta) / 50) * 50
+  }
+  if (!+form.water) form.water = 2000
 }
 </script>
 
@@ -331,6 +370,17 @@ async function loadRemote() {
       </button>
     </div>
   </header>
+
+  <!-- 还没保存过目标：说明下面的数字是推荐起点，不是已生效的目标 -->
+  <section v-if="!store.goalFilled" class="reveal">
+    <article class="card card-pad" style="display: flex; gap: 12px; align-items: flex-start">
+      <span class="badge amber"><SvgIcon name="alert" />未保存</span>
+      <p class="small muted grow" style="margin: 0">
+        下面是你健康档案推算出的<strong>推荐起点</strong>，可以直接改。点右上角「保存目标」之后才会生效 ——
+        保存前首页与推荐仍按「未设置目标」处理。
+      </p>
+    </article>
+  </section>
 
   <section class="grid split">
     <div class="col" style="gap: 20px">

@@ -30,17 +30,19 @@ from common import cleanup
 # ==================== 鉴权 ====================
 
 def test_chat_without_token(api):
-    """/assistant/chat 必须带 token：不带 → 401，且响应体是空的。"""
+    """/assistant/chat 必须带 token：不带 → 401，响应体是统一信封。
+
+    ★ 2026-11-06 更新：401 原来**空响应体**，现在全站统一成
+       {"code":401,"message":"登录已过期，请重新登录","data":null}
+    """
     resp = api.assistant.chat({"rawPrompt": "你好"})
-    assert resp.status_code == 401, f"无 token 应 401，实际 {resp.status_code}"
-    assert resp.text == "", f"401 响应体应为空，实际 {resp.text!r}"
+    api.assert_error(resp, 401, "登录已过期，请重新登录", http=401)
 
 
 def test_conversations_without_token(api):
-    """会话列表同样要 token → 401 + 空体。"""
+    """会话列表同样要 token → 401（同一套信封）。"""
     resp = api.assistant.list_conversations()
-    assert resp.status_code == 401, f"无 token 应 401，实际 {resp.status_code}"
-    assert resp.text == ""
+    api.assert_error(resp, 401, "登录已过期，请重新登录", http=401)
 
 
 # ==================== 参数校验 ====================

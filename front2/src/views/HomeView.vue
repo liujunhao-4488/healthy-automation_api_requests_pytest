@@ -38,11 +38,17 @@ const subtitle = computed(
 
 /* ---------------- 能量环 ---------------- */
 const goal = computed(() => store.goalInfo)
+/* 有没有真的设过目标。为 false 时全站不按 0 计算，改显示「—」+ 引导卡 */
+const hasGoal = computed(() => store.goalFilled)
 const total = computed(() => store.totals(TODAY))
 const kcalPct = computed(() =>
-  Math.min(100, Math.round((total.value.kcal / goal.value.kcal) * 100))
+  goal.value.kcal
+    ? Math.min(100, Math.round((total.value.kcal / goal.value.kcal) * 100))
+    : 0
 )
-const kcalLeft = computed(() => Math.max(0, goal.value.kcal - total.value.kcal))
+const kcalLeft = computed(() =>
+  goal.value.kcal ? Math.max(0, goal.value.kcal - total.value.kcal) : 0
+)
 const RADIUS = 70
 const CIRC = 2 * Math.PI * RADIUS
 /** 环的偏移量：一开始满格（100% 未填充），挂载后再动画到目标值 */
@@ -58,28 +64,30 @@ onMounted(() => {
 const macros = computed(() => {
   const t = total.value
   const g = goal.value
+  /* 没设目标时 target 给 0，模板那边显示「—」；不要用 1800 这种默认值冒充 */
+  const part = (pct, perGram) => (g.kcal && pct ? Math.round((g.kcal * pct) / 100 / perGram) : 0)
   return [
     {
       name: '蛋白质',
       val: t.p,
-      target: Math.round((g.kcal * g.proteinPct) / 100 / 4),
+      target: part(g.proteinPct, 4),
       cls: ''
     },
     {
       name: '碳水',
       val: t.c,
-      target: Math.round((g.kcal * g.carbPct) / 100 / 4),
+      target: part(g.carbPct, 4),
       cls: ' amber'
     },
     {
       name: '脂肪',
       val: t.f,
-      target: Math.round((g.kcal * g.fatPct) / 100 / 9),
+      target: part(g.fatPct, 9),
       cls: ' clay'
     }
   ].map((m) => ({
     ...m,
-    pct: Math.min(100, Math.round((m.val / (m.target || 1)) * 100))
+    pct: m.target ? Math.min(100, Math.round((m.val / m.target) * 100)) : 0
   }))
 })
 
@@ -97,10 +105,35 @@ onMounted(() => {
   setTimeout(() => (weightBarWidth.value = goalPct.value + '%'), 200)
 })
 
-const streakDays = ['一', '二', '三', '四', '五', '六', '日']
+/* 连续记录：用近 7 天趋势里「有记录」的天数往前数（以前是写死 i < 5 亮 5 格） */
+const streakDays = ref([])
+
+async function loadStreak() {
+  const res = await recordsApi.trend()
+  if (res.code !== 200) return
+  const list = res.data || []
+  let run = 0
+  for (let i = list.length - 1; i >= 0; i--) {
+    if (list[i].kcal > 0) run++
+    else break
+  }
+  const WEEK = ['日', '一', '二', '三', '四', '五', '六']
+  streakDays.value = list.map((d, i) => {
+    const day = d.fullDate ? new Date(d.fullDate + 'T00:00:00') : null
+    return {
+      label: day ? WEEK[day.getDay()] : '',
+      on: i >= list.length - run
+    }
+  })
+}
+loadStreak()
 
 /* ---------------- 饮水 ---------------- */
-const waterText = computed(() => store.waterCups * 250 + ' / ' + goal.value.water + ' ml')
+const waterText = computed(() =>
+  store.goalFilled && goal.value.water
+    ? store.waterCups * 250 + ' / ' + goal.value.water + ' ml'
+    : store.waterCups * 250 + ' ml'
+)
 
 function onCup(index) {
   // 点第几格就是第几杯；点当前最后一杯则减一杯
@@ -192,6 +225,27 @@ const quickLinks = [
     </div>
   </header>
 
+  <!-- 没填档案 / 没设目标时给一张引导卡：只提示，不拦路 -->
+  <section v-if="!hasGoal" class="reveal">
+    <article class="card card-pad">
+      <span class="badge amber"><SvgIcon name="alert" />待完善</span>
+      <h3 style="margin-top: 12px">
+        {{ store.healthFilled ? '还没有设置饮食目标' : '还没有健康档案和饮食目标' }}
+      </h3>
+      <p class="small muted" style="max-width: 640px; margin-top: 6px">
+        下方热量环、营养素目标和体重进度都要靠档案里的身高体重来算，暂时留空。
+        花一分钟填完，推荐和配比就会按你本人的数据来。
+      </p>
+      <RouterLink
+        class="btn btn-primary"
+        style="margin-top: 16px"
+        :to="store.healthFilled ? '/goal' : '/health'"
+      >
+        <SvgIcon name="edit" />{{ store.healthFilled ? '去设置目标' : '去填健康档案' }}
+      </RouterLink>
+    </article>
+  </section>
+
   <!-- 今日能量 + 目标 -->
   <section class="grid split">
     <article class="card energy-card reveal d1">
@@ -231,7 +285,7 @@ const quickLinks = [
             <div v-for="m in macros" :key="m.name" class="macro-item">
               <span class="name">{{ m.name }}</span>
               <span class="bar" :class="m.cls"><i :style="{ width: m.pct + '%' }" /></span>
-              <span class="val">{{ m.val }} / {{ m.target }}g</span>
+              <span class="val">{{ m.val }} / {{ m.target ? m.target + 'g' : '—' }}</span>
             </div>
           </div>
           <div
@@ -240,11 +294,11 @@ const quickLinks = [
           >
             <div class="kpi">
               <span class="kpi-label">还可摄入</span>
-              <span class="kpi-value num">{{ kcalLeft }} kcal</span>
+              <span class="kpi-value num">{{ hasGoal ? kcalLeft + ' kcal' : '—' }}</span>
             </div>
             <div class="kpi" style="text-align: right">
               <span class="kpi-label">今日目标</span>
-              <span class="kpi-value num">{{ goal.kcal }} kcal</span>
+              <span class="kpi-value num">{{ hasGoal ? goal.kcal + ' kcal' : '—' }}</span>
             </div>
           </div>
         </div>
@@ -252,7 +306,7 @@ const quickLinks = [
     </article>
 
     <aside class="col" style="gap: 20px">
-      <article class="card card-pad reveal d2">
+      <article v-if="hasGoal" class="card card-pad reveal d2">
         <div class="row-between">
           <p class="eyebrow" style="margin: 0">Goal · 目标进度</p>
           <RouterLink class="link small" to="/goal" style="color: var(--green-700); text-decoration: none">
@@ -275,9 +329,18 @@ const quickLinks = [
         <div class="mt-16">
           <span class="small muted">连续记录</span>
           <div class="streak">
-            <i v-for="(d, i) in streakDays" :key="d" :class="{ on: i < 5 }">{{ d }}</i>
+            <i v-for="(d, i) in streakDays" :key="i" :class="{ on: d.on }">{{ d.label }}</i>
           </div>
         </div>
+      </article>
+
+      <!-- 没设目标：不显示 0.0 kg 这种假进度 -->
+      <article v-else class="card card-pad reveal d2">
+        <p class="eyebrow" style="margin: 0">Goal · 目标进度</p>
+        <p class="small muted mt-8">
+          还没有设置饮食目标，设完之后这里会显示体重变化与达成进度。
+        </p>
+        <RouterLink class="btn btn-primary btn-sm" style="margin-top: 12px" to="/goal">去设置目标</RouterLink>
       </article>
 
       <article class="card card-pad reveal d3">

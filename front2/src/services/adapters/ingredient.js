@@ -36,13 +36,11 @@
         直接渲染会出现一长串小数。
         → 统一保留一位小数，热量取整。
 
-     5) ⚠️ /ingredient/substitute 是**硬编码假数据**
-        实测无论传什么 ingredientName，都返回固定的
-        [西兰花 similarity 0.9, 花椰菜 similarity 0.8]。
-        而且返回结构是 [{name, similarity, reason}]，
+     5) /ingredient/substitute 返回 [{name, similarity, reason}]，
         没有前端要的 kcal/p/f/tag（页面会渲染成空白/undefined）。
         → 本适配层把 similarity 映射成 tag，用食材库补齐营养值。
-        但这依然是假数据，只适合演示，不能当真实推荐。
+        （2026-11-06 实测：后端已按营养构成真实计算，鸡胸肉 / 白米饭 /
+          西兰花 三次调用结果各不相同；旧注释里「硬编码假数据」已过时。）
    ============================================================ */
 
 /** 后端食材分类（实测存在但在前端 CATS 之外的） */
@@ -87,7 +85,7 @@ export function toIngredientList(beList) {
 
 /**
  * 前端筛选：分类 + 关键字
- * 和后端 mock 分支逻辑保持一致，方便对照。
+ * 后端 /ingredient/list 是全量接口，筛选只能在前端做。
  *
  * 注意「调味 / 测试分类」不在前端 CATS 里：
  * 选「全部」时它们要能出现（否则用户会发现库里 125 条只显示 120 条），

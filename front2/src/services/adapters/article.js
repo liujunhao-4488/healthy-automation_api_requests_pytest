@@ -217,6 +217,58 @@ export async function fetchArticleList({ category, tag, keyword, page = 1, pageS
   }
 }
 
+/**
+ * POST /article/publish  用户发帖
+ *
+ * 后端接收 HealthArticle 实体，关键约束（看 HealthArticleController.publishArticle）：
+ *   · title   @NotBlank，不能为空
+ *   · content 不能为空
+ *   · category 为空时后端兜底成「健康知识」
+ *   · author 为空时后端用当前登录用户的 username
+ *   · 前端传的 id 会被后端强制置 null（防止覆盖已有文章）
+ *   · status 强制为 1（直接上架），前端传什么都不作数
+ *
+ * 标签在库里是「顿号或逗号分隔的字符串」，不是数组：
+ *   "控糖，糖尿病，健康"
+ * 前端表单用数组更好操作（增删标签），提交前在这里 join 成字符串。
+ */
+export async function publishArticle(payload) {
+  const p = payload || {}
+
+  const title = String(p.title || '').trim()
+  const content = String(p.content || '').trim()
+  if (!title) return { code: 400, message: '请填写文章标题', data: null }
+  if (!content) return { code: 400, message: '请填写文章内容', data: null }
+
+  // tags 支持数组或字符串两种输入
+  const tags = Array.isArray(p.tags)
+    ? p.tags.map((t) => String(t).trim()).filter(Boolean)
+    : String(p.tags || '')
+        .split(/[，,、;；\s]+/)
+        .map((t) => t.trim())
+        .filter(Boolean)
+
+  const body = {
+    title,
+    summary: String(p.summary || '').trim(),
+    content,
+    category: String(p.category || '').trim() || '健康知识',
+    tags: tags.join('，'),
+    // author 留空则由后端填当前用户名；这里显式传便于用户自定义署名
+    author: String(p.author || '').trim(),
+    suitableFor: String(p.suitableFor || '').trim(),
+    goalType: String(p.goalType || '').trim()
+  }
+
+  const res = await http.post('/article/publish', body)
+  if (res.code !== 200) return res
+  return {
+    code: 200,
+    message: res.message || '发布成功',
+    data: res.data ? toArticle(res.data) : null
+  }
+}
+
 /** GET /article/detail/{id} */
 export async function fetchArticleDetail(id) {
   const res = await http.get('/article/detail/' + id)

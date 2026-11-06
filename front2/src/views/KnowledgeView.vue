@@ -158,6 +158,10 @@ onMounted(() => {
           @input="onSearchInput"
         />
       </div>
+      <!-- 用户发帖入口：后端 /article/publish 仅需登录，发布即上架 -->
+      <RouterLink class="btn btn-primary" to="/knowledge/new">
+        <SvgIcon name="plus" />发布文章
+      </RouterLink>
     </div>
   </header>
 

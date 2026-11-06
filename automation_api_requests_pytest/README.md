@@ -129,7 +129,7 @@ automation_api_requests_pytest/
 │   └── Allure报告-使用说明.md ← 报告怎么看 / 怎么跑 / 为什么这么集成
 ├── pytest.ini           ← pytest 运行配置（pythonpath / 中文用例名显示 / SQL 日志）
 ├── requirements.txt     ← 依赖清单
-├── test_cases/          ← 测试用例，按业务模块分目录（合计 346 条，2026-10-27 收集数）
+├── test_cases/          ← 测试用例，按业务模块分目录（合计 465 条，2026-11-06 收集数）
 │   ├── ai_assistant/    ← AI 行为（模型问答 / RAG / 安全）             ★ 已覆盖（221 条）
 │   │   ├── test_assistant_结构鉴权.py            11
 │   │   ├── test_assistant_安全拦截.py            24
@@ -156,9 +156,20 @@ automation_api_requests_pytest/
 │   │   ├── test_health_info.py                   21
 │   │   ├── test_health_goal.py                   14
 │   │   └── test_health_契约.py                   10
-│   ├── user/            ← /user/*                                  ★ 已覆盖（19 条）
+│   ├── user/            ← /user/*                                  ★ 已覆盖（49 条）
 │   │   ├── test_profile_契约.py                  4
-│   │   └── test_user_profile.py                  15
+│   │   ├── test_user_profile.py                  15
+│   │   ├── test_notification_idor.py             20（通知越权）
+│   │   └── test_diet_preference.py               10（饮食偏好，2026-11-06）
+│   ├── recipe/          ← /recipe/*（2026-11-06 新增）             26 条
+│   │   ├── test_recipe_收藏闭环.py               14（A 档：状态机 + 归属）
+│   │   └── test_recipe_读类契约.py               12（B 档薄壳）
+│   ├── record/          ← /record/*（2026-11-06 新增）             19 条
+│   │   └── test_record_增删查.py                 19（A 档：写链路 + IDOR + 分页）
+│   ├── ingredient/      ← /ingredient/*（2026-11-06 新增）         11 条
+│   │   └── test_ingredient_读类契约.py           11（B 档薄壳）
+│   ├── article/         ← /article/*（2026-11-06 新增）            12 条
+│   │   └── test_article_读类契约.py              12（B 档薄壳，写类因空表未做）
 │   └── toolbox/         ← 工具零件自测（不对应业务接口）             7 条
 │       └── test_data_loader.py                   ← Excel 多工作表加载
 ├── common/              ← 可复用零件（与"接口"无关的通用工具）

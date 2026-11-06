@@ -7,7 +7,8 @@
    要点：
    · 正文是结构化节点数组（h2/h3/ul/quote/p），用 v-for 渲染，
      顺便给每个 h2 生成锚点 id，右侧目录就能点、能跟着滚动高亮
-   · 收藏 / 点赞 / 评论都走本地状态，刷新后仍在（store 持久化）
+   · 收藏 / 点赞 / 评论都走后端（2026-11-06 起不再用本地状态冒充），
+     初始状态取详情接口返回的 collected / liked
    ============================================================ */
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
@@ -36,8 +37,14 @@ async function load(id) {
   }
   article.value = res.data
   document.title = res.data.title + ' · 膳衡'
+  /* 详情接口带 collected / liked，同步到 store 当全局缓存
+     （列表页、个人中心都读它，避免各处再单独查一次） */
+  store.setArticleCollected(res.data.id, !!res.data.collected)
+  store.setArticleLiked(res.data.id, !!res.data.liked)
+  // 阅读记录落库；失败不阻塞正文
+  articlesApi.read(res.data.id, { duration: 0 })
   store.markArticleRead(res.data.id)
-  comments.value = SEEDS.map((c) => ({ ...c, liked: false }))
+  loadComments(res.data.id)
   // 相关阅读依赖后端推荐，单独拉取，不阻塞正文渲染
   loadRelated(res.data.id)
   await nextTick()
@@ -125,17 +132,37 @@ async function loadRelated(articleId) {
 }
 
 /* ---------------- 收藏 / 点赞 ---------------- */
+/* 初始状态来自详情接口（load 时写进 store）；点击时发 POST/DELETE，
+   成功后才改本地状态 —— 失败就保持原样，不制造「点了但没生效」的错觉。 */
 const collected = computed(() => store.isArticleCollected(article.value?.id))
 const liked = computed(() => store.isArticleLiked(article.value?.id))
-const likeCount = computed(() => (article.value?.likes || 0) + (liked.value ? 1 : 0))
+const likeCount = computed(() => article.value?.likes || 0)
 
-function toggleCollect() {
-  const on = store.toggleArticleCollect(article.value.id)
-  toast(on ? '已收藏这篇文章' : '已取消收藏')
+async function toggleCollect() {
+  const id = article.value?.id
+  if (!id) return
+  const next = !collected.value
+  const res = await articlesApi.toggleCollect(id, next)
+  if (res.code !== 200) {
+    toast(res.message || '操作失败，请稍后重试', 'error')
+    return
+  }
+  store.setArticleCollected(id, next)
+  article.value.collects = Math.max(0, (article.value.collects || 0) + (next ? 1 : -1))
+  toast(next ? '已收藏这篇文章' : '已取消收藏')
 }
-function toggleLike() {
-  const on = store.toggleArticleLike(article.value.id)
-  toast(on ? '感谢点赞' : '已取消点赞')
+async function toggleLike() {
+  const id = article.value?.id
+  if (!id) return
+  const next = !liked.value
+  const res = await articlesApi.toggleLike(id, next)
+  if (res.code !== 200) {
+    toast(res.message || '操作失败，请稍后重试', 'error')
+    return
+  }
+  store.setArticleLiked(id, next)
+  article.value.likes = Math.max(0, (article.value.likes || 0) + (next ? 1 : -1))
+  toast(next ? '感谢点赞' : '已取消点赞')
 }
 
 /* ---------------- 目录滚动高亮 ---------------- */
@@ -167,41 +194,14 @@ function scrollToSection(id) {
 }
 
 /* ---------------- 评论 ---------------- */
-const SEEDS = [
-  {
-    name: '陈嘉宁',
-    avatar: '陈',
-    time: '2 小时前',
-    likes: 24,
-    text: '把晚餐的一半白米换成杂粮饭，坚持三周后餐后犯困明显少了。文里「份量比种类更关键」这句很受用，容易执行。'
-  },
-  {
-    name: '许知遥',
-    avatar: '许',
-    time: '昨天',
-    likes: 11,
-    text: '想问下燕麦奶能不能替代牛奶？乳糖不耐，但不太喜欢豆奶的味道。',
-    reply: {
-      name: '周昀',
-      text: '可以，但要留意燕麦奶的碳水与添加糖，选择配料表干净的无糖款，并相应计入全天主食量。'
-    }
-  },
-  {
-    name: '赵思齐',
-    avatar: '赵',
-    time: '2 天前',
-    likes: 8,
-    text: '希望后续能出一篇外食场景的实操，尤其是火锅和烧烤怎么点，光看原则还是不太会落地。'
-  }
-]
-
 const comments = ref([])
 const commentInput = ref('')
 const posting = ref(false)
 
-function toggleCommentLike(c) {
-  c.liked = !c.liked
-  c.likes = c.likes + (c.liked ? 1 : -1)
+/** 评论列表走后端；后端没给「评论点赞」接口，所以这里不再放点赞按钮 */
+async function loadComments(articleId) {
+  const res = await articlesApi.comments(articleId)
+  comments.value = res.code === 200 ? res.data : []
 }
 
 function replyTo(c) {
@@ -221,18 +221,9 @@ async function postComment() {
     toast(r.message, 'error')
     return
   }
-  comments.value = [
-    {
-      name: store.displayName,
-      avatar: (store.displayName || '用').charAt(0),
-      text: content,
-      time: '刚刚',
-      likes: 0,
-      liked: false,
-      self: true
-    }
-  ].concat(comments.value)
   commentInput.value = ''
+  // 重新拉一次，保证和后端一致（时间、用户、id 都以服务端为准）
+  await loadComments(article.value.id)
   toast('评论已发布')
 }
 
@@ -358,10 +349,6 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
                   </div>
                   <p>{{ c.text }}</p>
                   <div class="actions">
-                    <button class="link-btn" type="button" @click="toggleCommentLike(c)">
-                      <SvgIcon name="thumbs-up" />{{ c.liked ? '已赞 ' : '点赞 ' }}
-                      <span class="num">{{ c.likes }}</span>
-                    </button>
                     <button class="link-btn" type="button" @click="replyTo(c)">
                       <SvgIcon name="reply" />回复
                     </button>

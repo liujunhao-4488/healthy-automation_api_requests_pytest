@@ -41,17 +41,24 @@ def test_get_goal_without_record(api, health_user):
 
 
 def test_get_goal_without_token(api):
-    """无 token → 401 + 空体。"""
+    """无 token → 401，且响应体是统一信封。
+
+    ★ 2026-11-06 更新：401 原来**空响应体**，现在全站统一成
+       {"code":401,"message":"登录已过期，请重新登录","data":null}
+       旧断言 `resp.text == ""` 因此失效。改用 assert_error 后同时验了
+       HTTP 401 + 业务 code 401 + 文案，比"只断空体"更强。
+    """
     resp = api.health.get_goal()
-    assert resp.status_code == 401
-    assert resp.text == ""
+    api.assert_error(resp, 401, "登录已过期，请重新登录", http=401)
 
 
 def test_get_goal_with_bad_token(api):
-    """伪造 token → 401 + 空体。"""
+    """伪造 token → 401，和"没带 token"完全同一套响应。
+
+    两条失败路（没凭证 / 凭证无效）必须长得一样，否则前端要写两个分支。
+    """
     resp = api.health.get_goal(headers={"Authorization": "Bearer abc.def.ghi"})
-    assert resp.status_code == 401
-    assert resp.text == ""
+    api.assert_error(resp, 401, "登录已过期，请重新登录", http=401)
 
 
 # ==================== POST：新增 / 更新（upsert）====================
@@ -125,10 +132,9 @@ def test_save_goal_fail(api, health_user, case):
 
 
 def test_save_goal_without_token(api):
-    """POST 必须带 token → 401 + 空体。"""
+    """POST 必须带 token → 401（统一信封，同 GET）。"""
     resp = api.health.save_goal(VALID_GOAL)
-    assert resp.status_code == 401
-    assert resp.text == ""
+    api.assert_error(resp, 401, "登录已过期，请重新登录", http=401)
 
 
 # ==================== 已知缺陷（钉住，不修）====================

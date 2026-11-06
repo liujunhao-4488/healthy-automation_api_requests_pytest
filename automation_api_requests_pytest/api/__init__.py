@@ -11,11 +11,15 @@
 
 from .assistant_api import AssistantApi
 from .admin_api import AdminApi
+from .article_api import ArticleApi
 from .auth_api import AuthApi
 from .base_api_client import BaseApiClient
 from .health_api import HealthApi
+from .ingredient_api import IngredientApi
 from .kb_api import KbApi
 from .notification_api import NotificationApi
+from .recipe_api import RecipeApi
+from .record_api import RecordApi
 from .user_api import UserApi
 
 
@@ -31,6 +35,11 @@ class Api:
         self.admin = AdminApi()          # 用例里：api.admin.list_users(headers=...)
         # 只操作自己的通知，发通知在 admin 里 —— 见 notification_api.py 顶部说明
         self.notification = NotificationApi()  # 用例里：api.notification.list_mine(...)
+        # ---- 2026-11-06 补的四个模块（覆盖矩阵 A/B 档）----
+        self.recipe = RecipeApi()        # 用例里：api.recipe.collect(rid, headers=...)
+        self.record = RecordApi()        # 用例里：api.record.submit(payload, headers=...)
+        self.ingredient = IngredientApi()  # 用例里：api.ingredient.list_all(headers=...)
+        self.article = ArticleApi()      # 用例里：api.article.list_articles(headers=...)
 
     def assert_ok(self, resp, msg="接口应成功", schema=None):
         """把底座的判定器借过来（用例里 api.assert_ok(resp) 照旧能用）。

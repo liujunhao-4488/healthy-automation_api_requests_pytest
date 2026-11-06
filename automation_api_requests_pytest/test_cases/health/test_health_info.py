@@ -43,17 +43,21 @@ def test_get_info_without_record(api, health_user):
 
 
 def test_get_info_without_token(api):
-    """必须带 token：不带 → 401，且**响应体为空**（只断状态码，不读 body）。"""
+    """必须带 token：不带 → 401，且响应体是统一信封。
+
+    ★ 2026-11-06 更新：401 原来**空响应体**，现在全站统一成
+       {"code":401,"message":"登录已过期，请重新登录","data":null}
+       旧断言 `resp.text == ""` 因此失效。改用 assert_error 后同时验了
+       HTTP 401 + 业务 code 401 + 文案，比"只断空体"更强。
+    """
     resp = api.health.get_info()
-    assert resp.status_code == 401, f"无 token 应 401，实际 {resp.status_code}"
-    assert resp.text == "", f"401 响应体应为空，实际 {resp.text!r}"
+    api.assert_error(resp, 401, "登录已过期，请重新登录", http=401)
 
 
 def test_get_info_with_bad_token(api):
-    """伪造 token → 同样 401 + 空体（后端验签不过）。"""
+    """伪造 token → 同样 401（后端验签不过），响应与"没带 token"一致。"""
     resp = api.health.get_info(headers={"Authorization": "Bearer abc.def.ghi"})
-    assert resp.status_code == 401
-    assert resp.text == ""
+    api.assert_error(resp, 401, "登录已过期，请重新登录", http=401)
 
 
 # ==================== POST：新增 / 更新（upsert）====================
@@ -146,7 +150,6 @@ def test_save_info_fail(api, health_user, case):
 
 
 def test_save_info_without_token(api):
-    """POST 同样必须带 token → 401 + 空体。"""
+    """POST 同样必须带 token → 401（统一信封，同 GET）。"""
     resp = api.health.save_info(VALID_INFO)
-    assert resp.status_code == 401
-    assert resp.text == ""
+    api.assert_error(resp, 401, "登录已过期，请重新登录", http=401)

@@ -131,23 +131,35 @@ def test_admin_api_requires_login(api, my_user_id, call):
       403 = 我知道你是谁，但你不够格 → 登了也没用
     两者混用是常见 bug（把未登录也返回 403），所以分开验。
 
-    ⚠️ 实测：全站 401 都是**空响应体**，不是 JSON 信封。
-       所以这里断"响应体为空"，而不是去 resp.json() —— 那样会抛 JSONDecodeError，
-       报错指向"解析失败"，掩盖了真正要验的东西。
+    ★ 2026-11-06 更新：**401 不再是空响应体**，现在也是统一信封：
+          {"code":401,"message":"登录已过期，请重新登录","data":null}
+      实测全站一致（/user/profile、/record/list、/recipe/collect/list、
+      /user/diet-preference、/notification/list、/health/info 六个接口逐一看过）。
+
+      原来的断言是 `assert not resp.text` —— 当时实测确实是空体。
+      这里按注释里预留的处理方式同步改了（"如果是有意改的，要同步改断言，
+      并检查其它接口的 401 是否也一起改了"），检查已做，全站一致。
+
+      ⚠️ 这条现在同时守住两件事：401 必须是 401，且**必须能告诉用户为什么**
+         （message 非空）。空 message 在页面上等于一个空白弹窗。
     """
     resp = call(api, {}, my_user_id)
 
     assert resp.status_code == 401, (
         f"未登录调管理接口应返回 401，实际 {resp.status_code}。\n"
         f"→ 200 = 管理接口对匿名用户开放了（严重）；"
-        f"403 = 把「未登录」和「没权限」混为一谈（应该 401）；"
-        f"500 = 后端崩了。\n"
+        f"→ 403 = 把「未登录」和「没权限」混为一谈（应该 401）；"
+        f"→ 500 = 后端崩了。\n"
         f"响应体：{(resp.text or '')[:300]}"
     )
-    assert not (resp.text or "").strip(), (
-        f"401 应是空响应体（实测全站如此），实际返回了：{(resp.text or '')[:300]}\n"
-        f"→ 如果这是有意改的（比如想让前端能提示「请先登录」），"
-        f"那要同步改这条断言，并检查其它接口的 401 是否也一起改了。"
+
+    body = resp.json()
+    assert body.get("code") == 401, (
+        f"401 必须走统一信封（code=401），实际响应体：{str(body)[:300]}"
+    )
+    assert body.get("message"), "401 的 message 不能为空 —— 空文案在页面上等于没有提示"
+    assert body.get("data") is None, (
+        f"401 的响应里不该带业务数据，实际：{str(body.get('data'))[:200]}"
     )
 
 
@@ -295,29 +307,38 @@ def test_admin_api_works_for_real_admin(api, admin_headers, my_user_id, call):
     )
 
 
-# ==================== 七、缺陷固定：403 不走统一信封 ====================
-# 接口覆盖矩阵 #10 已记录这个缺陷：业务错误（400）走 {"code","message"} 信封，
+# ==================== 七、403 必须走统一信封 ====================
+# 接口覆盖矩阵 #10 曾记录：业务错误（400）走 {"code","message"} 信封，
 # 而权限拒绝（403）走 Spring Security 的默认体 {"timestamp","status","error","path"}。
-# 前端如果按统一信封解析，拿到 403 时会读到一个 undefined 的 message，弹窗是空白的。
+# 前端按统一信封解析时，拿到 403 会读到 undefined 的 message，弹窗是空白的。
 #
-# 为什么用 xfail 而不是 assert 它"就是 Spring 默认体"：
-#   断言"必须是默认体"等于把缺陷当成正确答案钉死 —— 哪天修好了测试反而红。
-#   xfail(strict=True) 的语义是"我知道它现在是坏的，修好了请提醒我"：
-#     现在：断言失败 → 记为 xfailed（预期内）
-#     修好：断言通过 → 变成 XPASS → strict 模式下报错，提醒你删掉这条
+# ★ 2026-11-06：**缺陷 #10 已修复**。实测 403 现在返回
+#     {"code":403,"message":"当前账号没有该操作权限，请使用管理员账号登录","data":null}
+#   原来的 xfail(strict=True) 因此变成 XPASS（整场红），按项目约定就该摘标记 ——
+#   这正是 xfail(strict) 的设计意图："修好了请提醒我删掉这条"。
+#   摘掉 xfail 后，这条从"预期失败"变成**真正的回归保护**：
+#   以后谁把 handler 去掉、让 403 退回 Spring 默认体，它会立刻红。
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="缺陷#10：403 返回 Spring 默认错误体，不走统一信封 {code,message}",
-)
 def test_forbidden_body_uses_unified_envelope(api, auth_headers):
-    """403 也应该走 {"code":403, "message":"无权限"} 的统一信封。"""
+    """403 也必须走 {"code":403, "message":"...", "data":null} 的统一信封。
+
+    ══ 为什么"能跑通"不够，还要专门验这条 ══
+    前端只有一套错误提示逻辑（读 body.message）。403 一旦退回框架默认体，
+    越权场景下用户看到的不是"没有权限"，而是**一个空白弹窗**——
+    这比不提示更糟：用户不知道是自己登错了号，还是系统坏了。
+    """
     resp = api.admin.overview(headers=auth_headers)
     body = resp.json()
 
+    assert resp.status_code == 403
     assert "code" in body and "message" in body, (
         f"403 没有走统一信封，实际返回：{body}\n"
         f"→ 前端统一按 body.message 弹提示，这里会拿到 undefined。"
+    )
+    assert body["code"] == 403, f"信封里的业务 code 应该是 403，实际 {body.get('code')}"
+    assert body["message"], "403 的 message 不能为空 —— 空文案在页面上等于没有提示"
+    assert body.get("data") is None, (
+        f"被拒绝的响应里带了业务数据：{str(body.get('data'))[:200]} —— 这是数据泄露，不只是格式问题"
     )
 
 

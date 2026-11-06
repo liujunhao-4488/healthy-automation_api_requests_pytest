@@ -115,11 +115,11 @@ async function removeRecord(r) {
 }
 
 /* ---------------- 近 7 日趋势图 ----------------
-   趋势数据源：优先用后端 /record/analysis/trend 的结果（remoteTrend），
-   拿不到再退回 store.trend（本地假数据），保证图永远有东西可画。
+   数据唯一来源是后端 /record/analysis/trend。
+   拉不到就显示空图（页面有「暂无趋势」占位），不再用本地假数据凑一张图。
    注意必须先声明 trend 再被下面的 chart computed 引用。 */
 const remoteTrend = ref(null)
-const trend = computed(() => remoteTrend.value || store.trend)
+const trend = computed(() => remoteTrend.value || [])
 
 const chart = computed(() => {
   const data = trend.value

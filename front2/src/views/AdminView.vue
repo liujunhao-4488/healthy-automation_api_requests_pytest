@@ -4,7 +4,7 @@
       <div>
         <p class="eyebrow">Admin Console · 运营视图</p>
         <h1 class="page-title">管理后台</h1>
-        <p class="page-sub">数据截至 2026-10-23 14:20 · 全站用户、内容与 AI 调用概览</p>
+        <p class="page-sub">数据截至 {{ loadedAt || '加载中…' }} · 全站用户、内容与运营概览</p>
       </div>
       <div class="page-actions">
         <button class="btn btn-outline" @click="toast('报表已生成（演示环境不产生文件）')">
@@ -122,7 +122,6 @@
           <div class="row-between small muted mt-12">
             <span>日均活跃 <b class="num">{{ chart ? num(chart.avgDau) : '—' }}</b></span>
             <span>日均记录 <b class="num">{{ chart ? num(chart.avgRecords) : '—' }}</b></span>
-            <span>AI 调用成功率 <b class="num">98.4%</b></span>
           </div>
         </div>
       </article>
@@ -909,13 +908,27 @@ const num = (n) => Number(n || 0).toLocaleString('zh-CN')
 
 /* ---------------- 概览 ---------------- */
 const overview = ref(null)
+/** 概览拉取成功的时间，页面头部显示「数据截至 …」（以前是写死的固定日期） */
+const loadedAt = ref('')
+function stampNow() {
+  const d = new Date()
+  const p = (n) => String(n).padStart(2, '0')
+  return (
+    d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+    ' ' + p(d.getHours()) + ':' + p(d.getMinutes())
+  )
+}
 
 const cards = computed(() => {
   const s = overview.value?.stats || {}
+  /* 这些副标题全部由真实数据推算。以前写的是「+3.2% 较上周 / 覆盖率 71%」，
+     后端没有环比与覆盖率字段，属于凭空编的数，已去掉。 */
+  const activeRate = s.users ? Math.round((s.dau / s.users) * 100) : 0
+  const perActive = s.dau ? (s.records / s.dau).toFixed(1) : '0'
   return [
-    { label: '累计用户', value: num(s.users), delta: '+3.2% 较上周', icon: 'users', down: false },
-    { label: '今日活跃', value: num(s.dau), delta: '+6.8% 较昨日', icon: 'activity', down: false },
-    { label: '今日记录', value: num(s.records), delta: '覆盖率 71%', icon: 'notebook', down: false },
+    { label: '累计用户', value: num(s.users), delta: '注册账号总数', icon: 'users', down: false },
+    { label: '今日活跃', value: num(s.dau), delta: '活跃率 ' + activeRate + '%', icon: 'activity', down: false },
+    { label: '今日记录', value: num(s.records), delta: '活跃用户人均 ' + perActive + ' 条', icon: 'notebook', down: false },
     {
       label: '内容总量',
       value: num(s.recipes + s.articles + s.ingredients),
@@ -1300,6 +1313,7 @@ onMounted(async () => {
     return
   }
   overview.value = res.data
+  loadedAt.value = stampNow()
   loadUsers()
 })
 </script>

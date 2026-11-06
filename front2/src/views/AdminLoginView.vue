@@ -28,9 +28,6 @@ const busy = ref(false)
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-/** 后端连不上时返回的 code（见 services/http.js） */
-const OFFLINE_CODES = [-1, -2]
-
 /** 登录后回跳：只接受后台地址，避免被 query 带到用户端页面 */
 function redirectTarget() {
   const to = String(route.query.redirect || '')
@@ -55,36 +52,18 @@ async function onLogin() {
   const res = await authApi.login({ email, password: form.password })
   busy.value = false
 
-  if (res.code === 200) {
-    if (!res.data || res.data.role !== 'admin') {
-      toast('该账号不是管理员，无法进入后台', 'error')
-      return
-    }
-    store.enterAdmin(res.data)
-    toast('登录成功，正在进入运营后台')
-    setTimeout(() => router.replace(redirectTarget()), 320)
+  if (res.code !== 200) {
+    // 不再放行「离线体验管理员」：没有后端就没有可信身份，直接如实报错
+    toast(res.message || '登录失败，请稍后重试', 'error')
     return
   }
-
-  // 后端没起时只放行演示管理员，其他账号无法离线校验身份
-  if (OFFLINE_CODES.includes(res.code)) {
-    if (email !== DEMO_ADMIN_EMAIL) {
-      toast('后端未连接，暂时无法校验管理员身份', 'error')
-      return
-    }
-    store.enterAdmin({
-      userId: 3,
-      username: '管理员',
-      email,
-      role: 'admin',
-      token: 'mock-admin-jwt-' + Date.now()
-    })
-    toast('后端未连接，已进入后台体验模式')
-    setTimeout(() => router.replace(redirectTarget()), 320)
+  if (!res.data || res.data.role !== 'admin') {
+    toast('该账号不是管理员，无法进入后台', 'error')
     return
   }
-
-  toast(res.message, 'error')
+  store.enterAdmin(res.data)
+  toast('登录成功，正在进入运营后台')
+  setTimeout(() => router.replace(redirectTarget()), 320)
 }
 
 /* 后台登录页复用登录页的整页背景 */

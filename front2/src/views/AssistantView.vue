@@ -4,19 +4,27 @@
    ------------------------------------------------------------
    对应静态版 pages/assistant.html。核心是流式对话：
 
-     用户提问 → 列表先落一条 user 消息 → 气泡区插一个「正在输入」
+     用户提问 → 本地先落一条 user 消息（即时回显）
      → chatStream 的 onChunk 逐段刷新 streamText（打字机效果）
-     → onDone 把最终回答写进 store，占位气泡被真实消息替换
+     → 流结束后用后端返回的 assistantMessage 落一条 AI 消息
+
+   ⭐ 2026-11-06：会话与历史消息全部来自后端
+     · 进页面 GET /assistant/conversations 拉会话列表
+     · 点某条会话再 GET .../messages 拉历史（懒加载，只拉一次）
+     · 新对话不预建本地假会话：后端在首条消息时创建，
+       从流式 start/done 事件里取真实 conversationId 再写回列表
+     · 删除走 DELETE /assistant/conversations/{id}
 
    每条 AI 回答都带「意图 + 来源」两个小标签，这是这个页面的产品点。
    ============================================================ */
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { assistantApi } from '@/services/api'
 import { toast } from '@/composables/useToast'
 import { confirmDialog } from '@/composables/useConfirm'
 import SvgIcon from '@/components/SvgIcon.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const store = useAppStore()
 const router = useRouter()
@@ -48,11 +56,14 @@ const SOURCES = {
 }
 
 /* ---------------- 会话 ---------------- */
-const currentId = ref(store.convos.length ? store.convos[0].id : null)
+const currentId = ref(null)
 const search = ref('')
+const loadingMsgs = ref(false)
 
 const currentConv = computed(() =>
-  currentId.value ? store.conversation(currentId.value) : null
+  currentId.value
+    ? store.convos.find((c) => String(c.id) === String(currentId.value)) || null
+    : null
 )
 
 const filteredConvs = computed(() => {
@@ -82,9 +93,6 @@ const chatSub = computed(() =>
 function stamp() {
   return store.now().slice(5)
 }
-function userChar() {
-  return (store.displayName || '我').charAt(0)
-}
 function intentLabel(m) {
   return INTENTS[m.intent] || INTENTS.chat
 }
@@ -92,37 +100,66 @@ function sourceLabel(m) {
   return SOURCES[m.source] || SOURCES.model
 }
 
+/** 拉会话列表；首次进页面默认打开最近一条 */
+async function loadConversations() {
+  const res = await assistantApi.conversations()
+  if (res.code !== 200) {
+    toast(res.message || '会话列表加载失败', 'error')
+    return
+  }
+  store.setConversations(res.data)
+  if (!currentId.value && res.data.length) pickConv(res.data[0].id)
+}
+
+/** 拉某个会话的历史消息；已拉过就不再重复请求 */
+async function loadMessages(id) {
+  const conv = store.convos.find((c) => String(c.id) === String(id))
+  if (!conv || conv.messagesLoaded) return
+  loadingMsgs.value = true
+  const res = await assistantApi.messages(id)
+  loadingMsgs.value = false
+  if (res.code !== 200) {
+    toast(res.message || '历史消息加载失败', 'error')
+    return
+  }
+  const fresh = store.convos.find((c) => String(c.id) === String(id))
+  if (!fresh) return
+  store.saveConversation(
+    Object.assign({}, fresh, { messages: res.data, messagesLoaded: true })
+  )
+}
+
 function pickConv(id) {
   currentId.value = id
+  loadMessages(id)
   nextTick(scrollBottom)
 }
 
 async function removeConv(c) {
   const ok = await confirmDialog(
-    '删除「' + (c.title || '这条会话') + '」后，对话记录将从本机移除，无法恢复。',
+    '删除「' + (c.title || '这条会话') + '」后，对话记录将被永久删除，无法恢复。',
     { title: '删除会话', okText: '删除', danger: true }
   )
   if (!ok) return
-  const wasCurrent = currentId.value === c.id
+  const res = await assistantApi.remove(c.id)
+  if (res.code !== 200) {
+    toast(res.message || '删除失败，请稍后重试', 'error')
+    return
+  }
+  const wasCurrent = String(currentId.value) === String(c.id)
   store.removeConversation(c.id)
   if (wasCurrent) {
-    currentId.value = store.convos.length ? store.convos[0].id : null
+    currentId.value = null
+    if (store.convos.length) pickConv(store.convos[0].id)
   }
   toast('会话已删除')
 }
 
+/** 新对话：不预建本地假会话，后端在首条消息时创建（见 send） */
 function newConv() {
-  const conv = {
-    id: 'c-' + Date.now(),
-    title: '新的对话',
-    summary: '尚未开始对话',
-    time: stamp(),
-    messages: []
-  }
-  store.saveConversation(conv)
-  currentId.value = conv.id
+  currentId.value = null
+  search.value = ''
   nextTick(() => inputEl.value?.focus())
-  toast('已新建对话')
 }
 
 /* ---------------- 输入框 ---------------- */
@@ -156,6 +193,25 @@ const sending = ref(false)
 const streaming = ref(false)
 const streamText = ref('')
 
+/**
+ * 后端建好会话后，把本地临时 id 换成真实 id。
+ * 不做这一步，下一次发消息还会带不上 conversationId，等于每条消息都新开一个会话。
+ */
+function adoptServerConversation(realId) {
+  if (!realId) return
+  const real = String(realId)
+  if (String(currentId.value) === real) return
+  const conv = currentConv.value
+  if (!conv) {
+    currentId.value = real
+    loadConversations()
+    return
+  }
+  store.removeConversation(conv.id)
+  store.saveConversation(Object.assign({}, conv, { id: real }))
+  currentId.value = real
+}
+
 async function send(prompt) {
   if (sending.value) {
     toast('正在生成回答，请稍候', 'error')
@@ -172,28 +228,23 @@ async function send(prompt) {
     return
   }
 
-  // 没有会话就先建一个
-  let conv = currentConv.value
-  if (!conv) {
-    conv = {
-      id: 'c-' + Date.now(),
-      title: '新的对话',
-      summary: '尚未开始对话',
-      time: stamp(),
-      messages: []
-    }
-    store.saveConversation(conv)
-    currentId.value = conv.id
-  }
-  const targetId = conv.id
+  const conv = currentConv.value
+  const targetId = conv && conv.id != null ? String(conv.id) : null
+  const title = conv && conv.title && conv.title !== '新的对话' ? conv.title : text.slice(0, 18)
 
-  // 落一条用户消息（第一句顺便当标题）
-  const title = !conv.title || conv.title === '新的对话' ? text.slice(0, 18) : conv.title
+  /* 本地先落一条用户消息（即时回显）；新对话先用临时 id，
+     等流式 start/done 事件带回真实 conversationId 再替换。 */
+  const userMsg = { role: 'user', text, time: store.nowTime() }
+  const draftId = targetId || 'tmp-' + Date.now()
   store.saveConversation({
-    ...conv,
+    id: draftId,
     title,
-    messages: conv.messages.concat([{ role: 'user', text, time: store.nowTime() }])
+    summary: (conv && conv.summary) || '',
+    time: stamp(),
+    messages: (conv ? conv.messages.slice() : []).concat([userMsg]),
+    messagesLoaded: true
   })
+  currentId.value = draftId
 
   inputText.value = ''
   autoGrow()
@@ -205,58 +256,71 @@ async function send(prompt) {
   scrollBottom()
 
   try {
-    await assistantApi.chatStream(text, {
+    const res = await assistantApi.chatStream(text, {
+      conversationId: targetId || undefined,
+      onStart: (r) => adoptServerConversation(r && r.conversationId),
       onChunk: (shown) => {
         streamText.value = shown
         scrollBottom()
-      },
-      onDone: (result) => {
-        const aiMsg = result.blocked
-          ? {
-              role: 'ai',
-              blocked: true,
-              intent: result.intent,
-              source: 'guardrail',
-              text: result.text,
-              time: store.nowTime()
-            }
-          : {
-              role: 'ai',
-              intent: result.intent,
-              source: result.source,
-              text: result.text,
-              list: result.list,
-              cards: result.cards,
-              note: result.note,
-              time: store.nowTime()
-            }
-
-        const fresh = store.conversation(targetId)
-        if (fresh) {
-          const plain = String(result.text || '')
-          store.saveConversation({
-            ...fresh,
-            messages: fresh.messages.concat([aiMsg]),
-            time: stamp(),
-            title: fresh.title || text.slice(0, 18),
-            summary: plain.slice(0, 26) + (plain.length > 26 ? '…' : '')
-          })
-        }
-        streaming.value = false
-        streamText.value = ''
       }
     })
+
+    if (res.code !== 200) {
+      toast(res.message || '回答生成失败，请稍后重试', 'error')
+      // 失败时把刚才那条用户消息留在会话里，方便重发；不做假回答
+      return
+    }
+
+    const d = res.data || {}
+    // 有的情况下 id 只在 done 事件里出现，这里再兜一次
+    adoptServerConversation(d.conversationId)
+
+    const fresh = currentConv.value
+    if (!fresh) return
+
+    let aiMsg = d.message
+    if (!aiMsg) {
+      aiMsg = d.blocked
+        ? {
+            role: 'ai',
+            blocked: true,
+            intent: d.intent,
+            source: 'guardrail',
+            text: d.text,
+            time: store.nowTime()
+          }
+        : {
+            role: 'ai',
+            intent: d.intent,
+            source: d.source,
+            text: d.text,
+            cards: d.cards || [],
+            time: store.nowTime()
+          }
+    }
+    const plain = String(aiMsg.text || '')
+    store.saveConversation(
+      Object.assign({}, fresh, {
+        messages: fresh.messages.concat([aiMsg]),
+        time: stamp(),
+        title: fresh.title || text.slice(0, 18),
+        summary: plain.slice(0, 26) + (plain.length > 26 ? '…' : '')
+      })
+    )
   } catch (err) {
     toast('回答生成失败，请稍后重试', 'error')
+  } finally {
     streaming.value = false
     streamText.value = ''
-  } finally {
     sending.value = false
     await nextTick()
     scrollBottom()
     inputEl.value?.focus()
   }
 }
+
+/* 进页面先拉会话列表（后端为空就是空列表，页面自己显示「还没有会话」） */
+onMounted(loadConversations)
 
 /* 消息变化或流式刷新时自动滚到底 */
 watch([() => messages.value.length, streamText], () => {
@@ -365,7 +429,17 @@ const guideText = computed(() => {
             class="msg"
             :class="{ user: m.role === 'user' }"
           >
-            <div class="msg-avatar">{{ m.role === 'user' ? userChar() : '衡' }}</div>
+            <div class="msg-avatar">
+    <!-- 用户消息：优先显示上传的头像，没有则沿用「首字」 -->
+    <UserAvatar
+      v-if="m.role === 'user'"
+      :src="store.session?.avatar || ''"
+      :name="store.displayName"
+      size="sm"
+      :round="false"
+    />
+    <span v-else>衡</span>
+  </div>
             <div class="msg-body">
               <!-- 用户气泡 -->
               <template v-if="m.role === 'user'">

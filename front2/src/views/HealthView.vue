@@ -9,7 +9,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { healthApi } from '@/services/api'
+import { healthApi, userApi } from '@/services/api'
 import { toast } from '@/composables/useToast'
 import SvgIcon from '@/components/SvgIcon.vue'
 
@@ -93,7 +93,10 @@ const kpi = computed(() => {
   const h = health.value
   const bmrOk = h.bmr >= 1000 && h.bmr <= 2000
   return {
-    sub: '最近更新 ' + h.updatedAt + ' · 档案数据用于生成推荐与营养目标',
+    /* 没填过档案就别显示「最近更新」，否则会带出一个空时间 */
+    sub: store.healthFilled
+      ? '最近更新 ' + h.updatedAt + ' · 档案数据用于生成推荐与营养目标'
+      : '还没填过档案 —— 填完身高体重，才能算 BMI 与每日推荐热量',
     bmi: Number(h.bmi).toFixed(1),
     bmiBadge: bmiBadge(h.bmi),
     bmiPos: bmiPos(h.bmi) + '%',
@@ -135,7 +138,10 @@ async function saveHealth() {
     setErr('age', true)
     invalid.push('年龄')
   } else setErr('age', false)
-  if (!(form.waist >= 50 && form.waist <= 150)) {
+  /* 腰围后端不存、历史数据里也常常没有，属于可选项：
+     留空就跳过校验，不要因为一个非必填字段卡住保存。 */
+  const waistFilled = form.waist !== '' && form.waist !== null && form.waist !== undefined
+  if (waistFilled && !(form.waist >= 50 && form.waist <= 150)) {
     setErr('waist', true)
     invalid.push('腰围')
   } else setErr('waist', false)
@@ -167,6 +173,22 @@ async function saveHealth() {
     return
   }
   toast(res.message || '健康档案已保存')
+  /* 保存后补两件事：
+     1) 表单回填 store 里的最新值（后端会重算 bmi/bmr，可能和输入的不一样）；
+     2) 刷新体重趋势，新的记录点立刻出现，不用手动刷页面。 */
+  const h = store.healthInfo
+  Object.assign(form, {
+    gender: h.gender || form.gender,
+    age: h.age || form.age,
+    height: h.height || form.height,
+    weight: h.weight || form.weight,
+    waist: h.waist !== undefined ? h.waist : form.waist,
+    activity: h.activity || form.activity,
+    exerciseMin: h.exerciseMin,
+    exerciseType: h.exerciseType || form.exerciseType
+  })
+  chronic.value = (h.chronic || chronic.value).slice()
+  loadHistory()
 }
 
 /* ---------------- 体重趋势图 ---------------- */
@@ -254,6 +276,10 @@ const chart = computed(() => {
 /* ---------------- 目标提示 ---------------- */
 const targetNote = computed(() => {
   const g = store.goalInfo
+  /* 没设过目标时不能说「当前已达到目标」—— 那是拿 0 和目标比出来的假结论 */
+  if (!store.goalFilled || !+g.targetWeight) {
+    return '还没有设置目标体重，去「饮食目标」页设完这里会显示达成进度。'
+  }
   const diff = +(g.currentWeight - g.targetWeight).toFixed(1)
   if (diff <= 0) {
     return '目标体重 ' + g.targetWeight.toFixed(1) + ' kg · 当前已达到目标，注意保持即可。'
@@ -266,6 +292,8 @@ const targetNote = computed(() => {
 })
 
 /* ---------------- 饮食偏好 ---------------- */
+/* 初值先用本地缓存（通常为空），进页面后由 loadPrefs() 用后端数据覆盖。
+   保存也走后端，本地只做回显 —— 不这样就只有「本机记得、服务器没存」。 */
 const prefs = reactive({
   dietType: (store.preferences.dietType || []).slice(),
   allergens: (store.preferences.allergens || []).slice(),
@@ -273,6 +301,31 @@ const prefs = reactive({
   likes: (store.preferences.likes || []).slice()
 })
 const prefSaving = ref(false)
+
+function applyPrefs(p) {
+  prefs.dietType = (p.dietType || []).slice()
+  prefs.allergens = (p.allergens || []).slice()
+  prefs.dislikes = (p.dislikes || []).slice()
+  prefs.likes = (p.likes || []).slice()
+  store.savePreferences({
+    dietType: prefs.dietType,
+    allergens: prefs.allergens,
+    dislikes: prefs.dislikes,
+    likes: prefs.likes
+  })
+}
+
+async function loadPrefs() {
+  const res = await userApi.preference()
+  if (res.code !== 200 || !res.data) return
+  const p = res.data
+  applyPrefs({
+    dietType: p.diet,
+    allergens: p.allergens,
+    dislikes: p.dislikes,
+    likes: p.likes
+  })
+}
 
 const prefGroups = [
   { key: 'dietType', label: '饮食类型（可多选）', options: DIET },
@@ -289,18 +342,29 @@ function togglePref(key, val) {
   prefs[key] = list
 }
 
-function savePref() {
+async function savePref() {
   prefSaving.value = true
+  const res = await userApi.savePreference({
+    diet: prefs.dietType,
+    allergens: prefs.allergens,
+    dislikes: prefs.dislikes,
+    likes: prefs.likes,
+    // 这一页不管餐次/加餐，沿用已有值，避免保存时把别处设的覆盖掉
+    mealsPerDay: store.preferences.mealsPerDay || 3,
+    snack: !!store.preferences.snack
+  })
+  prefSaving.value = false
+  if (res.code !== 200) {
+    toast(res.message || '保存失败，请稍后重试', 'error')
+    return
+  }
   store.savePreferences({
     dietType: prefs.dietType,
     allergens: prefs.allergens,
     dislikes: prefs.dislikes,
     likes: prefs.likes
   })
-  setTimeout(() => {
-    prefSaving.value = false
-    toast('饮食偏好已保存，下次推荐将按新偏好过滤')
-  }, 480)
+  toast('饮食偏好已保存，下次推荐将按新偏好过滤')
 }
 
 /* ---------------- 滚到表单 ---------------- */
@@ -332,14 +396,26 @@ onMounted(() => {
     weight: form.weight
   })
   // 再从后端拉一次真数据（已接 GET /health/info）。
-  // 拿到后用返回值刷新 store 和表单；拿不到就沿用本地缓存，页面不闪也不报错。
+  // 拿到后由 store 统一转成前端形状并写入，页面各处（含顶部 KPI）才会同步。
   loadRemote()
+  // 饮食偏好同样以后端为准，不能只读 localStorage
+  loadPrefs()
 })
 
 async function loadRemote() {
   const res = await healthApi.get()
-  if (res.code !== 200 || !res.data) return
-  const h = res.data
+  if (res.code !== 200) return
+
+  /* 以前这里有两个问题：
+     1) 只把返回值写进 form，没写回 store —— 顶部 KPI（BMI/BMR/血压/血糖）
+        一直读 store.healthInfo，也就是 DB.health 那套假人数据，永远不更新；
+     2) 直接读 h.activity / h.exerciseMin / h.waist，而后端字段叫
+        activityLevel / exerciseDuration，且没有 waist，回填全是 undefined。
+     现在一律经 store.applyHealthRemote() 走适配器，字段名和性别翻译都在那层做。 */
+  const filled = store.applyHealthRemote(res.data)
+  if (!filled) return // 后端确实没档案：表单保持空，等用户自己填
+
+  const h = store.healthInfo
   const cur = form
   // 用户可能在请求返回前就改了表单，这种情况不回填，避免把输入冲掉
   const untouched =
@@ -381,7 +457,8 @@ async function loadRemote() {
     </div>
   </header>
 
-  <section class="grid g4 reveal d1">
+  <!-- KPI：只有真填过档案才显示，否则一排 0 比不显示更误导 -->
+  <section v-if="store.healthFilled" class="grid g4 reveal d1">
     <article class="card card-pad kpi">
       <div class="row-between" style="align-items: flex-start">
         <span class="kpi-label">BMI · 身体质量指数</span>
@@ -432,7 +509,23 @@ async function loadRemote() {
     </article>
   </section>
 
-  <section class="mt-24 reveal d2">
+  <!-- 没填过档案：给一张说明卡，不拦路、不强制跳转 -->
+  <section v-else class="reveal d1">
+    <article class="card card-pad">
+      <span class="badge amber"><SvgIcon name="alert" />未填写</span>
+      <h3 style="margin-top: 12px">还没有健康档案</h3>
+      <p class="small muted" style="max-width: 620px; margin-top: 6px">
+        填好身高、体重、活动量之后，BMI、基础代谢、每日热量目标以及首页推荐才会按你本人的数据计算。
+        下面表单填完点「保存身体数据」即可，其余页面照常可用。
+      </p>
+      <button class="btn btn-primary" style="margin-top: 16px" @click="onEditProfile">
+        <SvgIcon name="edit" />开始填写
+      </button>
+    </article>
+  </section>
+
+  <!-- 风险提示只对真正有对应慢病的人显示（以前是写死「血脂偏高」） -->
+  <section v-if="chronic.includes('高血脂')" class="mt-24 reveal d2">
     <div class="alert-inline">
       <SvgIcon name="alert" />
       <div class="grow">

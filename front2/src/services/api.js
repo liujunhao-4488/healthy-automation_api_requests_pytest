@@ -4,20 +4,12 @@
    对应静态版的 js/api.js。签名 / 返回结构照原样保留，
    页面代码永远只认统一信封 { code, message, data }。
 
-   ⭐ 现状（2026-10-26）：
-      · 登录 / 注册          已接真接口  AUTH_USE_MOCK = false
-      · 食谱列表 / 详情 / 营养 已接真接口  RECIPE_USE_MOCK = false
-      · 其余模块              仍走本地 mock，接一个改一个。
-
-   接法就两种状态：
-     · MOCK  ：本地 setTimeout + DB 假数据（后端没起也能演示）
-     · 真接口：http.js 发请求到 /api（vite 代理 → 127.0.0.1:8080）
-
-   为什么按模块分开关而不是一个全局 USE_MOCK：
-   只联调了登录就全局关 mock，其余页面会打到不存在的接口、整站崩。
-   一个模块一个开关，「跑通一个关一个」最稳。
+   ⭐ 2026-11-06：全部模块都走真实后端，本地 mock 已整体移除。
+     · 请求经 http.js 发到 /api（vite 代理 → 127.0.0.1:8081）
+     · 后端没起 / 接口报错时如实返回失败码（-1 网络、-2 超时…），
+       由页面按失败处理，不再用假数据顶替成功。
+     没有「离线演示模式」了：要看界面先把后端跑起来。
    ============================================================ */
-import DB from '@/mock/db'
 import { useAppStore, TODAY } from '@/stores/app'
 import { request } from './http'
 import {
@@ -29,12 +21,9 @@ import {
   removeCustomRecipe
 } from './adapters/recipe'
 import {
-  toHealthInfo,
   toHealthDTO,
   toHistoryList,
-  toGoalInfo,
-  toGoalDTO,
-  emptyHealth
+  toGoalDTO
 } from './adapters/health'
 import {
   toSubmitDTO,
@@ -58,6 +47,7 @@ import {
   postArticleComment,
   fetchArticleRecommend,
   fetchArticleTags,
+  publishArticle,
   fetchCollectedArticles,
   fetchArticleReadHistory,
   recordArticleRead,
@@ -74,8 +64,7 @@ import {
   fetchProfile,
   saveProfile,
   fetchDietPreference,
-  saveDietPreference,
-  toProfile as toUserProfile
+  saveDietPreference
 } from './adapters/user'
 import { toNotification } from './adapters/notification'
 import {
@@ -84,58 +73,10 @@ import {
   toAdminContentRows
 } from './adapters/admin'
 
-/** 全局默认：没接后端的模块继续走 mock */
-export const USE_MOCK = true
-
-/** 食谱库：已接真实后端（列表 / 详情 / 营养）*/
-export const RECIPE_USE_MOCK = false
-
-/** 健康档案：已接真实后端（GET/POST /health/info、/health/history）*/
-export const HEALTH_USE_MOCK = false
-
-/** 饮食目标：已接真实后端（GET/POST /health/goal）*/
-export const GOAL_USE_MOCK = false
-
-/** 饮食记录：已接真实后端（/record/submit、list、analysis/trend、suggestions）*/
-export const RECORD_USE_MOCK = false
-
-/** 食材库：已接真实后端（/ingredient/list、nutrition、substitute）*/
-export const INGREDIENT_USE_MOCK = false
-
-/** 推荐：已接真实后端（/recommend/recipes、/recommend/recipes/today）*/
-export const RECOMMEND_USE_MOCK = false
-
-/** 文章：已接真实后端（/article/list、detail、comment、like、collect、recommend、read）*/
-export const ARTICLE_USE_MOCK = false
-
-/** AI 助手：已接真实后端（/assistant/conversations、messages、chat/stream、删除会话）*/
-export const ASSISTANT_USE_MOCK = false
-
-/** 个人资料 / 饮食偏好：已接真实后端（/user/profile、/user/diet-preference）*/
-export const USER_USE_MOCK = false
-
-const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 const ok = (data, message) => ({ code: 200, message: message || '操作成功', data })
 const fail = (code, message) => ({ code, message, data: null })
 
-const GOAL_LABEL = { 减脂: '减脂', 增肌: '增肌', 控糖: '控糖', 维持: '维持' }
-
-/** 推荐匹配分：目标契合 + 热量贴近 + 蛋白/纤维 + 评分 */
-function matchScore(recipe, goal) {
-  let s = 30
-  if (recipe.fit.includes(GOAL_LABEL[goal.goalType] || '维持')) s += 22
-  const kcalGap = Math.abs(recipe.kcal - goal.kcal / goal.meals)
-  s += Math.max(0, 20 - kcalGap / 18)
-  s += Math.min(12, recipe.p / 4)
-  s += Math.min(8, recipe.fiber / 1.4)
-  s += recipe.rating * 2
-  return Math.min(96, Math.round(s))
-}
-
 /* ---------------- 账号与认证 FR-AUTH ---------------- */
-
-/** 登录/注册是否走真实后端。设成 true 可退回本地假登录（后端没起时对照用） */
-const AUTH_USE_MOCK = false
 
 /**
  * 后端登录返回的 avatar 是 base64 头像（实测几十 KB 起），
@@ -153,41 +94,18 @@ function trimAvatar(data) {
 export const authApi = {
   // POST /auth/login → { token, userId, username, email, phone, avatar, role }
   async login({ email, password }) {
-    if (!AUTH_USE_MOCK) {
-      const res = await request('/auth/login', { method: 'POST', body: { email, password } })
-      if (res.code !== 200) return res
-      return ok(trimAvatar(res.data), res.message || '登录成功')
-    }
-    await delay(520)
-    if (!email || !password) return fail(400, '请输入邮箱与密码')
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(400, '邮箱格式不正确')
-    if (password.length < 6) return fail(400, '密码错误（至少 6 位）')
-    return ok(
-      {
-        token: 'mock-jwt',
-        userId: DB.user.userId,
-        username: DB.user.username,
-        email,
-        role: DB.user.role
-      },
-      '登录成功'
-    )
+    const res = await request('/auth/login', { method: 'POST', body: { email, password } })
+    if (res.code !== 200) return res
+    return ok(trimAvatar(res.data), res.message || '登录成功')
   },
   // POST /auth/register → 后端注册成功会直接发 token，可以免二次登录
   async register({ username, email, password, phone }) {
-    if (!AUTH_USE_MOCK) {
-      const res = await request('/auth/register', {
-        method: 'POST',
-        body: { username, email, password, phone }
-      })
-      if (res.code !== 200) return res
-      return ok(trimAvatar(res.data), res.message || '注册成功')
-    }
-    await delay(600)
-    if (!username || !email || !password) return fail(400, '请完整填写注册信息')
-    if (password.length < 6 || password.length > 50) return fail(400, '密码长度需在 6–50 位之间')
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(400, '邮箱格式不正确')
-    return ok({ token: 'mock-jwt', userId: DB.user.userId, username, role: 'user' }, '注册成功')
+    const res = await request('/auth/register', {
+      method: 'POST',
+      body: { username, email, password, phone }
+    })
+    if (res.code !== 200) return res
+    return ok(trimAvatar(res.data), res.message || '注册成功')
   }
 }
 
@@ -195,59 +113,22 @@ export const authApi = {
 export const userApi = {
   // GET /user/profile
   async profile() {
-    if (!USER_USE_MOCK) return fetchProfile()
-    await delay(220)
-    const s = useAppStore().session || {}
-    return ok(
-      toUserProfile({
-        userId: DB.user.userId,
-        username: s.username || DB.user.username,
-        email: s.email || DB.user.email,
-        phone: s.phone || '',
-        avatar: '',
-        status: 1,
-        role: s.role || 'user',
-        createTime: '',
-        updateTime: ''
-      })
-    )
+    return fetchProfile()
   },
 
   // PUT /user/profile（只支持用户名 / 手机号 / 头像，邮箱不可改）
   async updateProfile(patch) {
-    if (!USER_USE_MOCK) return saveProfile(patch)
-    await delay(260)
-    return ok(useAppStore().updateProfile(patch), '资料已更新')
+    return saveProfile(patch)
   },
 
   // GET /user/diet-preference
   async preference() {
-    if (!USER_USE_MOCK) return fetchDietPreference()
-    await delay(200)
-    const p = useAppStore().preferences || {}
-    return ok({
-      diet: p.dietType || [],
-      allergens: p.allergens || [],
-      dislikes: p.dislikes || [],
-      likes: p.likes || [],
-      mealsPerDay: p.mealsPerDay || 3,
-      snack: !!p.snack
-    })
+    return fetchDietPreference()
   },
 
   // PUT /user/diet-preference
   async savePreference(prefs) {
-    if (!USER_USE_MOCK) return saveDietPreference(prefs)
-    await delay(260)
-    useAppStore().savePreferences({
-      dietType: prefs.diet,
-      allergens: prefs.allergens,
-      dislikes: prefs.dislikes,
-      likes: prefs.likes,
-      mealsPerDay: prefs.mealsPerDay,
-      snack: prefs.snack
-    })
-    return ok(prefs, '偏好已保存')
+    return saveDietPreference(prefs)
   }
 }
 
@@ -255,56 +136,33 @@ export const userApi = {
 export const healthApi = {
   // GET /health/info
   async get() {
-    if (!HEALTH_USE_MOCK) {
-      const res = await request('/health/info')
-      // 后端不支持 GET 时（或 token 失效）退回本地缓存，页面不至于白屏
-      if (res.code !== 200) {
-        if (res.code === 401) return res
-        return ok(emptyHealth(), res.message)
-      }
-      const store = useAppStore()
-      // 注意：analysis 在信封外面（res.analysis），不在 data 里
-      const info = toHealthInfo(res.data, store.healthInfo)
-      store.healthInfo = info
-      return ok(info, res.message || '获取健康信息成功')
-    }
-
-    await delay(320)
-    return ok(useAppStore().healthInfo)
+    const res = await request('/health/info')
+    /* 失败就如实返回失败信封 —— 以前这里会 return ok(emptyHealth())，
+       等于把「29 岁 / 170cm / 120/80」这套默认值当成用户数据，
+       调用方还以为成功了。现在由调用方决定：失败保留本地缓存、不清空。 */
+    if (res.code !== 200) return res
+    // 后端没有档案时 data 为 null，原样交给调用方走空态
+    if (!res.data) return ok(null, res.message || '尚未填写健康档案')
+    /* 这里必须返回「后端原始对象」，不能先 toHealthInfo 一次：
+       store.applyHealthRemote() 还要拿它做适配，适配两遍会把
+       targetCalories→kcal、male→男 这类只映射一次的字段弄丢。 */
+    return ok(res.data, res.message || '获取健康信息成功')
   },
   // POST /health/info
   async save(patch) {
-    if (!HEALTH_USE_MOCK) {
-      const body = toHealthDTO(patch)
-      const res = await request('/health/info', { method: 'POST', body })
-      if (res.code !== 200) return res
-      const store = useAppStore()
-      // 用后端返回的实体回填（bmi 是后端算的），waist 等本地字段一并保留
-      const info = toHealthInfo(res.data, Object.assign({}, store.healthInfo, patch))
-      store.healthInfo = info
-      return ok(info, res.message || '健康档案已保存')
-    }
-
-    await delay(560)
-    if (!patch.height || !patch.weight) return fail(400, '身高与体重为必填项')
-    return ok(useAppStore().saveHealth(patch), '健康档案已保存')
+    const body = toHealthDTO(patch)
+    const res = await request('/health/info', { method: 'POST', body })
+    if (res.code !== 200) return res
+    const store = useAppStore()
+    // 用后端返回的实体回填（bmi 是后端算的），waist 等后端不存的字段从 patch 带回来
+    if (!store.applyHealthRemote(res.data, patch)) return fail(500, '保存失败，请稍后重试')
+    return ok(store.healthInfo, res.message || '健康档案已保存')
   },
   // GET /health/history
   async history() {
-    if (!HEALTH_USE_MOCK) {
-      const res = await request('/health/history')
-      if (res.code !== 200) return res
-      return ok(toHistoryList(res.data), res.message)
-    }
-
-    await delay(280)
-    return ok([
-      { date: '09-01', weight: 71.2 },
-      { date: '09-15', weight: 70.4 },
-      { date: '10-01', weight: 69.2 },
-      { date: '10-10', weight: 68.9 },
-      { date: '10-20', weight: 68.4 }
-    ])
+    const res = await request('/health/history')
+    if (res.code !== 200) return res
+    return ok(toHistoryList(res.data), res.message)
   }
 }
 
@@ -312,39 +170,25 @@ export const healthApi = {
 export const goalApi = {
   // GET /health/goal
   async get() {
-    if (!GOAL_USE_MOCK) {
-      const res = await request('/health/goal')
-      if (res.code !== 200) {
-        if (res.code === 401) return res
-        return ok(useAppStore().goalInfo, res.message)
-      }
-      const store = useAppStore()
-      // 新用户后端返回 data:null，toGoalInfo 会补成完整默认形状
-      const goal = toGoalInfo(res.data, store.goalInfo)
-      store.goalInfo = goal
-      return ok(goal, res.message || '获取饮食目标成功')
-    }
-
-    await delay(260)
-    return ok(useAppStore().goalInfo)
+    const res = await request('/health/goal')
+    // 失败如实返回，不再拿本地值冒充「获取成功」
+    if (res.code !== 200) return res
+    // 新用户后端返回 data:null —— 交给调用方标记「未设目标」，不补默认 1800kcal
+    if (!res.data) return ok(null, res.message || '尚未设置饮食目标')
+    // 同 healthApi.get：返回原始对象，适配统一由 store.applyGoalRemote 做
+    return ok(res.data, res.message || '获取饮食目标成功')
   },
   // POST /health/goal
   async save(patch) {
     const pct = (+patch.proteinPct || 0) + (+patch.carbPct || 0) + (+patch.fatPct || 0)
     if (Math.abs(pct - 100) > 2) return fail(400, '三大营养素占比之和需为 100%')
 
-    if (!GOAL_USE_MOCK) {
-      const body = toGoalDTO(Object.assign({}, useAppStore().goalInfo, patch))
-      const res = await request('/health/goal', { method: 'POST', body })
-      if (res.code !== 200) return res
-      const store = useAppStore()
-      const goal = toGoalInfo(res.data, Object.assign({}, store.goalInfo, patch))
-      store.goalInfo = goal
-      return ok(goal, res.message || '目标已更新')
-    }
-
-    await delay(540)
-    return ok(useAppStore().saveGoal(patch), '目标已更新')
+    const body = toGoalDTO(Object.assign({}, useAppStore().goalInfo, patch))
+    const res = await request('/health/goal', { method: 'POST', body })
+    if (res.code !== 200) return res
+    const store = useAppStore()
+    if (!store.applyGoalRemote(res.data, patch)) return fail(500, '保存失败，请稍后重试')
+    return ok(store.goalInfo, res.message || '目标已更新')
   }
 }
 
@@ -352,99 +196,59 @@ export const goalApi = {
 export const recordsApi = {
   // GET /record/list?page=&pageSize=&startDate=&endDate=
   async list({ date } = {}) {
-    if (!RECORD_USE_MOCK) {
-      const d = date || TODAY
-      /* 后端是分页的，前端要「某一天全部记录」，所以把 start/end 都钉死在那天，
-         并给一个足够大的 pageSize（一天最多也就十几餐）。
-         后端返回按时间倒序，页面自己按 mealType 分组和排序，不用重新排。 */
-      const res = await request('/record/list', {
-        query: { date: undefined, startDate: d, endDate: d, page: 1, pageSize: 100 }
-      })
-      if (res.code !== 200) return res
-      const list = toRecordList(res.data)
-      // 直接刷进 store，页面 recordsByDate() 就能读到
-      const store = useAppStore()
-      const others = store.recordList.filter((r) => r.date !== d)
-      store.recordList = others.concat(list)
-      return ok({ list, total: list.length, date: d }, res.message)
-    }
-
-    await delay(340)
-    const store = useAppStore()
     const d = date || TODAY
-    const list = store.recordsByDate(d)
-    return ok({ list, total: list.length, date: d })
+    /* 后端是分页的，前端要「某一天全部记录」，所以把 start/end 都钉死在那天，
+       并给一个足够大的 pageSize（一天最多也就十几餐）。
+       后端返回按时间倒序，页面自己按 mealType 分组和排序，不用重新排。 */
+    const res = await request('/record/list', {
+      query: { date: undefined, startDate: d, endDate: d, page: 1, pageSize: 100 }
+    })
+    if (res.code !== 200) return res
+    const list = toRecordList(res.data)
+    // 直接刷进 store，页面 recordsByDate() 就能读到
+    const store = useAppStore()
+    const others = store.recordList.filter((r) => r.date !== d)
+    store.recordList = others.concat(list)
+    return ok({ list, total: list.length, date: d }, res.message)
   },
   // POST /record/submit
   async submit(rec) {
     if (!rec.items || !rec.items.length) return fail(400, '请至少添加一项食物')
 
-    if (!RECORD_USE_MOCK) {
-      const body = toSubmitDTO(rec)
-      const res = await request('/record/submit', { method: 'POST', body })
-      if (res.code !== 200) return res
-      /* submit 的响应里 details 是 null，拿不到明细，
-         所以再拉一次当天列表，保证页面和数据库一致（也能拿到后端生成的 id）。 */
-      const saved = toRecord(res.data)
-      await recordsApi.list({ date: saved.date })
-      return ok(saved, res.message || '记录已保存')
-    }
-
-    await delay(520)
-    return ok(useAppStore().addRecord(rec), '记录已保存')
+    const body = toSubmitDTO(rec)
+    const res = await request('/record/submit', { method: 'POST', body })
+    if (res.code !== 200) return res
+    /* submit 的响应里 details 是 null，拿不到明细，
+       所以再拉一次当天列表，保证页面和数据库一致（也能拿到后端生成的 id）。 */
+    const saved = toRecord(res.data)
+    await recordsApi.list({ date: saved.date })
+    return ok(saved, res.message || '记录已保存')
   },
   // GET /record/analysis/trend?startDate=&endDate=（两个参数都必填）
   async trend() {
-    if (!RECORD_USE_MOCK) {
-      const { startDate, endDate } = last7Days()
-      const res = await request('/record/analysis/trend', {
-        query: { startDate, endDate }
-      })
-      if (res.code !== 200) return res
-      return ok(toTrend(res.data, { days: 7 }), res.message)
-    }
-
-    await delay(300)
-    return ok(useAppStore().trend)
+    const { startDate, endDate } = last7Days()
+    const res = await request('/record/analysis/trend', {
+      query: { startDate, endDate }
+    })
+    if (res.code !== 200) return res
+    return ok(toTrend(res.data, { days: 7 }), res.message)
   },
   // GET /record/suggestions
   async suggestions() {
-    if (!RECORD_USE_MOCK) {
-      const res = await request('/record/suggestions')
-      if (res.code !== 200) return res
-      const list = Array.isArray(res.data) ? res.data : []
-      return ok(list, res.message)
-    }
-
-    await delay(420)
-    const store = useAppStore()
-    const t = store.totals(TODAY)
-    const g = store.goalInfo
-    const left = Math.max(0, g.kcal - t.kcal)
-    const proteinLeft = Math.max(0, Math.round((g.kcal * g.proteinPct) / 100 / 4 - t.p))
-    return ok([
-      `距今日热量目标还可摄入约 ${left} kcal，晚餐建议控制在 500 kcal 以内。`,
-      proteinLeft > 20
-        ? `蛋白质还差约 ${proteinLeft}g，可补充鸡胸肉、豆腐或无糖希腊酸奶。`
-        : '蛋白质摄入已接近目标，晚餐以蔬菜和适量主食为主即可。',
-      '今日膳食纤维约 9g，低于建议的 25g，晚餐可增加一份深色蔬菜。'
-    ])
+    const res = await request('/record/suggestions')
+    if (res.code !== 200) return res
+    const list = Array.isArray(res.data) ? res.data : []
+    return ok(list, res.message)
   },
   // DELETE /record/{recordId}
   async remove(id) {
-    if (!RECORD_USE_MOCK) {
-      const target = useAppStore().recordList.find((r) => String(r.id) === String(id))
-      const res = await request('/record/' + id, { method: 'DELETE' })
-      if (res.code !== 200) return res
-      // 后端是软删除，本地同步移除，再拉一次当天列表对齐
-      useAppStore().removeRecord(id)
-      if (target) await recordsApi.list({ date: target.date })
-      return ok(null, res.message || '记录已删除')
-    }
-
-    await delay(300)
+    const target = useAppStore().recordList.find((r) => String(r.id) === String(id))
+    const res = await request('/record/' + id, { method: 'DELETE' })
+    if (res.code !== 200) return res
+    // 后端是软删除，本地同步移除，再拉一次当天列表对齐
     useAppStore().removeRecord(id)
-    return ok(null, '记录已删除')
+    if (target) await recordsApi.list({ date: target.date })
+    return ok(null, res.message || '记录已删除')
   }
 }
 
@@ -452,89 +256,34 @@ export const recordsApi = {
 export const recommendApi = {
   // GET /recommend/recipes?breakfastCount=&lunchCount=&dinnerCount=
   async daily() {
-    if (!RECOMMEND_USE_MOCK) {
-      /* 后端返回按餐次分组的对象 { breakfast, lunch, dinner }，
-         toMealList 负责拍平成页面要的一维数组。 */
-      const res = await request('/recommend/recipes', {
-        query: { breakfastCount: 3, lunchCount: 3, dinnerCount: 3 }
-      })
-      if (res.code !== 200) return res
-      const list = toMealList(res.data)
-      /* matchScore 取所有建议里的最高分代表整体匹配度；
-         后端没给 engine 字段，这里如实标注数据来源为后端推荐。 */
-      const top = list.reduce((m, x) => Math.max(m, x.score), 0)
-      return ok({ engine: 'v2', matchScore: top, list }, res.message)
-    }
-
-    await delay(680)
-    const goal = useAppStore().goalInfo
-    const pick = (type) =>
-      DB.recipes
-        .filter((r) => r.mealType === type && r.status !== 0)
-        .map((r) => Object.assign({ score: matchScore(r, goal) }, r))
-        .sort((a, b) => b.score - a.score)
-    return ok({
-      engine: 'v2',
-      matchScore: 78,
-      breakfast: pick('早餐').slice(0, 3),
-      lunch: pick('午餐').slice(0, 3),
-      dinner: pick('晚餐').slice(0, 3)
+    /* 后端返回按餐次分组的对象 { breakfast, lunch, dinner }，
+       toMealList 负责拍平成页面要的一维数组。 */
+    const res = await request('/recommend/recipes', {
+      query: { breakfastCount: 3, lunchCount: 3, dinnerCount: 3 }
     })
+    if (res.code !== 200) return res
+    const list = toMealList(res.data)
+    /* 取所有建议里的最高分代表整体匹配度；
+       后端没给 engine 字段，这里如实标注数据来源为后端推荐。 */
+    const top = list.reduce((m, x) => Math.max(m, x.score), 0)
+    return ok({ engine: 'v2', matchScore: top, list }, res.message)
   },
   // GET /recommend/recipes?breakfastCount=&lunchCount=&dinnerCount=
   /* 配餐计划：counts 就是需要的天数，1/7/30 天各取对应数量后按天排列 */
   async plan({ breakfastCount = 3, lunchCount = 3, dinnerCount = 3 } = {}) {
-    const buildLocalGroups = () => {
-      const goal = useAppStore().goalInfo
-      const pick = (type, count) =>
-        DB.recipes
-          .filter((r) => r.mealType === type && r.status !== 0)
-          .map((r) => Object.assign({ score: matchScore(r, goal) }, r))
-          .sort((a, b) => b.score - a.score)
-          .slice(0, count)
-      return [
-        { key: 'breakfast', label: '早餐', list: pick('早餐', breakfastCount) },
-        { key: 'lunch', label: '午餐', list: pick('午餐', lunchCount) },
-        { key: 'dinner', label: '晚餐', list: pick('晚餐', dinnerCount) }
-      ]
-    }
-
-    if (!RECOMMEND_USE_MOCK) {
-      const res = await request('/recommend/recipes', {
-        query: { breakfastCount, lunchCount, dinnerCount }
-      })
-      if (res.code === 200) return ok({ groups: toMealGroups(res.data), offline: false }, res.message)
-      // 后端没起时仍给出可演示的清单，但明确标注来源是本地数据
-      if (![-1, -2].includes(res.code)) return res
-      return ok({ groups: buildLocalGroups(), offline: true }, '后端未连接，已使用本地演示食谱')
-    }
-
-    await delay(680)
-    return ok({ groups: buildLocalGroups(), offline: true }, '已使用本地演示食谱')
+    const res = await request('/recommend/recipes', {
+      query: { breakfastCount, lunchCount, dinnerCount }
+    })
+    if (res.code !== 200) return res
+    return ok({ groups: toMealGroups(res.data) }, res.message)
   },
   // GET /recommend/recipes/today
   async today() {
-    if (!RECOMMEND_USE_MOCK) {
-      const res = await request('/recommend/recipes/today')
-      if (res.code !== 200) return res
-      const list = toMealList(res.data)
-      const top = list.reduce((m, x) => Math.max(m, x.score), 0)
-      return ok({ engine: 'v2', matchScore: top, list }, res.message)
-    }
-
-    await delay(520)
-    const goal = useAppStore().goalInfo
-    const types = ['早餐', '午餐', '晚餐']
-    const list = types
-      .map((t) => {
-        const pool = DB.recipes
-          .filter((r) => r.mealType === t && r.status !== 0)
-          .map((r) => Object.assign({ score: matchScore(r, goal) }, r))
-          .sort((a, b) => b.score - a.score)
-        return pool[0]
-      })
-      .filter(Boolean)
-    return ok({ engine: 'v2', matchScore: 78, list })
+    const res = await request('/recommend/recipes/today')
+    if (res.code !== 200) return res
+    const list = toMealList(res.data)
+    const top = list.reduce((m, x) => Math.max(m, x.score), 0)
+    return ok({ engine: 'v2', matchScore: top, list }, res.message)
   }
 }
 
@@ -564,91 +313,42 @@ async function fetchAllIngredients({ force = false } = {}) {
 export const ingredientsApi = {
   // GET /ingredient/list?category=&keyword=
   async list({ cat, keyword } = {}) {
-    if (!INGREDIENT_USE_MOCK) {
-      const res = await fetchAllIngredients()
-      if (res.code !== 200) return res
-      // 后端 list 是全量、不带筛选参数，筛选在本地做（与 mock 分支逐行一致）
-      const list = filterIngredients(res.data, { cat, keyword })
-      return ok({ list, total: list.length }, res.message)
-    }
-
-    await delay(380)
-    let list = DB.ingredients.filter((i) => i.status !== 0)
-    if (cat && cat !== '全部') list = list.filter((i) => i.cat === cat)
-    if (keyword) list = list.filter((i) => i.name.includes(keyword))
-    return ok({ list, total: list.length })
+    const res = await fetchAllIngredients()
+    if (res.code !== 200) return res
+    // 后端 list 是全量、不带筛选参数，筛选在本地做
+    const list = filterIngredients(res.data, { cat, keyword })
+    return ok({ list, total: list.length }, res.message)
   },
   // POST /recommend/ingredient/substitute
   async substitute({ name, prompt }) {
-    if (!INGREDIENT_USE_MOCK) {
-      if (!name) return fail(400, '请先选择需要替代的食材')
-      /* 后端按营养构成相似度真实计算（2026-11-02 修复，原先为硬编码假数据）。
-         返回每项已带营养字段，前端直接渲染即可。 */
-      const res = await request('/ingredient/substitute', {
-        method: 'POST',
-        body: { ingredientName: name, prompt: prompt || '', limit: 4 }
-      })
-      if (res.code !== 200) return res
-      const all = await fetchAllIngredients()
-      const pool = all.code === 200 ? all.data : []
-      return ok(
-        toSubstitutes(res.data, pool, { source: name, prompt }),
-        res.message || '已找到等价替代方案'
-      )
-    }
-
-    await delay(760)
     if (!name) return fail(400, '请先选择需要替代的食材')
-    const MAP = {
-      鸡胸肉: [
-        { name: '北豆腐', kcal: 116, p: 12.2, f: 6.9, reason: '植物蛋白，脂肪低于鸡胸，适合清淡口味', tag: '推荐' },
-        { name: '牛里脊', kcal: 125, p: 20.2, f: 3.6, reason: '蛋白接近鸡胸，脂肪低，含铁更丰富', tag: '高蛋白' },
-        { name: '鹰嘴豆', kcal: 164, p: 8.9, f: 2.6, reason: '低 GI 且纤维高，替换时需减少主食量', tag: '低GI' }
-      ],
-      白米饭: [
-        { name: '糙米饭', kcal: 112, p: 2.6, f: 0.8, reason: '保留麸皮，纤维更高，餐后血糖更平缓', tag: '低GI' },
-        { name: '藜麦', kcal: 368, p: 14.1, f: 6.1, reason: '蛋白质与纤维同时提升，注意生重换算', tag: '高蛋白' },
-        { name: '红薯', kcal: 86, p: 1.6, f: 0.1, reason: '热量更低、饱腹感强，适合减脂期', tag: '减脂' }
-      ],
-      牛奶: [
-        { name: '无糖豆奶', kcal: 33, p: 3.3, f: 1.8, reason: '适合乳糖不耐人群，选择无添加糖款', tag: '乳糖不耐' },
-        { name: '无糖希腊酸奶', kcal: 59, p: 10.2, f: 0.4, reason: '蛋白密度更高，可减少其他蛋白来源', tag: '高蛋白' }
-      ]
-    }
-    const list = MAP[name] || [
-      { name: '北豆腐', kcal: 116, p: 12.2, f: 6.9, reason: '通用低脂蛋白替代，口感中性易调味', tag: '推荐' },
-      { name: '鹰嘴豆', kcal: 164, p: 8.9, f: 2.6, reason: '低 GI 主食型替代，增加纤维', tag: '低GI' }
-    ]
-    return ok({ source: name, prompt: prompt || '', list }, '已找到等价替代方案')
+    /* 后端按营养构成相似度真实计算（2026-11-02 修复，原先为硬编码假数据）。
+       返回每项已带营养字段，前端直接渲染即可。 */
+    const res = await request('/ingredient/substitute', {
+      method: 'POST',
+      body: { ingredientName: name, prompt: prompt || '', limit: 4 }
+    })
+    if (res.code !== 200) return res
+    const all = await fetchAllIngredients()
+    const pool = all.code === 200 ? all.data : []
+    return ok(
+      toSubstitutes(res.data, pool, { source: name, prompt }),
+      res.message || '已找到等价替代方案'
+    )
   },
   // POST /ingredient/nutrition
   async nutrition({ id, grams }) {
-    if (!INGREDIENT_USE_MOCK) {
-      const params = toNutritionParams({ id, grams })
-      const res = await request('/ingredient/nutrition', { method: 'POST', body: params })
-      if (res.code !== 200) return res
-      // 后端返回裸浮点（0.6000000000000001），toNutrition 会规整
-      const all = await fetchAllIngredients()
-      const pool = all.code === 200 ? all.data : []
-      const found = pool.find((x) => String(x.id) === String(id))
-      return ok(
-        toNutrition(res.data, { name: found ? found.name : '', grams: params.quantity }),
-        res.message
-      )
-    }
-
-    await delay(240)
-    const ing = DB.ingredients.find((i) => i.id === +id)
-    if (!ing) return fail(404, '食材不存在')
-    const k = (+grams || 100) / 100
-    return ok({
-      name: ing.name,
-      grams: +grams || 100,
-      kcal: Math.round(ing.kcal * k),
-      p: +(ing.p * k).toFixed(1),
-      c: +(ing.c * k).toFixed(1),
-      f: +(ing.f * k).toFixed(1)
-    })
+    const params = toNutritionParams({ id, grams })
+    const res = await request('/ingredient/nutrition', { method: 'POST', body: params })
+    if (res.code !== 200) return res
+    // 后端返回裸浮点（0.6000000000000001），toNutrition 会规整
+    const all = await fetchAllIngredients()
+    const pool = all.code === 200 ? all.data : []
+    const found = pool.find((x) => String(x.id) === String(id))
+    return ok(
+      toNutrition(res.data, { name: found ? found.name : '', grams: params.quantity }),
+      res.message
+    )
   }
 }
 
@@ -656,88 +356,51 @@ export const ingredientsApi = {
 export const recipesApi = {
   // GET /recipe/list
   async list({ mealType, fit, keyword, page = 1, pageSize = 6 } = {}) {
-    /* ---- 真接口 ----
-       后端 /recipe/list 是**全量、不带分页参数**的接口（实测 193 条），
+    /* 后端 /recipe/list 是**全量、不带分页参数**的接口（实测 193 条），
        所以筛选和分页在这里做。adapter 里缓存了全量结果，
        RecipesView 的 load() 循环拉 12 页也只会打 1 次网络。 */
-    if (!RECIPE_USE_MOCK) {
-      const res = await fetchAllRecipes()
-      if (res.code !== 200) return res
-      // 下面这段筛选逻辑与 mock 分支逐行一致，两边行为不会走偏
-      let list = res.data
-      if (mealType && mealType !== '全部') list = list.filter((r) => r.mealType === mealType)
-      if (fit && fit !== '全部') list = list.filter((r) => r.fit.includes(fit))
-      const kw = String(keyword || '').trim()
-      if (kw) list = list.filter((r) => r.name.includes(kw) || r.desc.includes(kw))
-      const total = list.length
-      const start = (page - 1) * pageSize
-      return ok({ list: list.slice(start, start + pageSize), total, page, pageSize })
-    }
-    /* ---- 本地 mock ---- */
-    await delay(460)
-    let list = DB.recipes.filter((r) => r.status !== 0)
+    const res = await fetchAllRecipes()
+    if (res.code !== 200) return res
+    let list = res.data
     if (mealType && mealType !== '全部') list = list.filter((r) => r.mealType === mealType)
     if (fit && fit !== '全部') list = list.filter((r) => r.fit.includes(fit))
-    if (keyword) list = list.filter((r) => r.name.includes(keyword) || r.desc.includes(keyword))
+    const kw = String(keyword || '').trim()
+    if (kw) list = list.filter((r) => r.name.includes(kw) || r.desc.includes(kw))
     const total = list.length
-    list = list.slice((page - 1) * pageSize, page * pageSize)
-    return ok({ list, total, page, pageSize })
+    const start = (page - 1) * pageSize
+    return ok({ list: list.slice(start, start + pageSize), total, page, pageSize })
   },
   // GET /recipe/detail/{id}
   async get(id) {
     /* 后端返回 { recipe, ingredients }，adapter 拍平成页面要的单个对象 */
-    if (!RECIPE_USE_MOCK) return fetchRecipeDetail(id)
-
-    await delay(400)
-    const r = DB.recipes.find((x) => x.id === +id) || useAppStore().getCustomRecipe(id)
-    if (!r || r.status === 0) return fail(404, '食谱不存在或已下架')
-    return ok(r)
+    return fetchRecipeDetail(id)
   },
   // GET /recipe/nutrition/{id}
   async nutrition(id) {
-    if (!RECIPE_USE_MOCK) {
-      const res = await fetchAllRecipes()
-      if (res.code !== 200) return res
-      const r = res.data.find((x) => x.id === +id)
-      return ok(r ? { kcal: r.kcal, p: r.p, c: r.c, f: r.f, fiber: r.fiber } : null)
-    }
-
-    await delay(260)
-    const r = DB.recipes.find((x) => x.id === +id) || useAppStore().getCustomRecipe(id)
+    const res = await fetchAllRecipes()
+    if (res.code !== 200) return res
+    const r = res.data.find((x) => x.id === +id)
     return ok(r ? { kcal: r.kcal, p: r.p, c: r.c, f: r.f, fiber: r.fiber } : null)
   },
   // POST /recipe/collect/{recipeId} · DELETE /recipe/collect/{recipeId}
   async collect(id) {
     /* 后端的收藏不是 toggle：POST 收藏、DELETE 取消，两个独立请求。
        所以先看本地已知状态决定发哪个，再用后端返回的 collected 作准。 */
-    if (!RECIPE_USE_MOCK) {
-      const store = useAppStore()
-      const on = store.isRecipeCollected(id)
-      const res = await request('/recipe/collect/' + id, { method: on ? 'DELETE' : 'POST' })
-      if (res.code !== 200) return res
-      const collected = !!(res.data && res.data.collected)
-      store.setRecipeCollected(id, collected)
-      return ok({ collected }, res.message || '收藏状态已更新')
-    }
-
-    await delay(260)
-    return ok({ collected: useAppStore().toggleRecipeCollect(id) }, '收藏状态已更新')
+    const store = useAppStore()
+    const on = store.isRecipeCollected(id)
+    const res = await request('/recipe/collect/' + id, { method: on ? 'DELETE' : 'POST' })
+    if (res.code !== 200) return res
+    const collected = !!(res.data && res.data.collected)
+    store.setRecipeCollected(id, collected)
+    return ok({ collected }, res.message || '收藏状态已更新')
   },
   // GET /recipe/collect/list 我收藏的食谱（后端直接返回完整食谱，不是 id 列表）
   async collected() {
-    if (!RECIPE_USE_MOCK) return fetchCollectedRecipes()
-
-    await delay(220)
-    const store = useAppStore()
-    return ok(DB.recipes.filter((r) => store.recipeCollectIds.includes(r.id)))
+    return fetchCollectedRecipes()
   },
   // GET /recipe/custom 本人创建的自定义食谱
   async custom() {
-    if (!RECIPE_USE_MOCK) return fetchCustomRecipes()
-
-    await delay(240)
-    const store = useAppStore()
-    return ok(store.customRecipeList.slice())
+    return fetchCustomRecipes()
   },
   // POST /recipe/save · PUT /recipe/update
   async save(payload) {
@@ -746,21 +409,11 @@ export const recipesApi = {
     if (!(+payload.kcal > 0)) return fail(400, '请填写大于 0 的热量')
     if (!payload.steps || !payload.steps.length) return fail(400, '请至少填写一个制作步骤')
 
-    if (!RECIPE_USE_MOCK) return saveCustomRecipe(payload)
-
-    await delay(480)
-    const saved = useAppStore().saveCustomRecipe(payload)
-    return ok(saved, payload.id ? '自定义食谱已更新' : '自定义食谱已保存')
+    return saveCustomRecipe(payload)
   },
   // DELETE /recipe/delete/{id}
   async remove(id) {
-    if (!RECIPE_USE_MOCK) return removeCustomRecipe(id)
-
-    await delay(320)
-    const store = useAppStore()
-    if (!store.getCustomRecipe(id)) return fail(404, '自定义食谱不存在')
-    store.removeCustomRecipe(id)
-    return ok({ id: +id }, '自定义食谱已删除')
+    return removeCustomRecipe(id)
   }
 }
 
@@ -768,105 +421,58 @@ export const recipesApi = {
 export const articlesApi = {
   // GET /article/list?category=&tag=&keyword=&page=&sort=
   async list({ cat, tag, keyword, page = 1, pageSize = 5, sort = 'recommend' } = {}) {
-    if (!ARTICLE_USE_MOCK) {
-      return fetchArticleList({
-        category: cat && cat !== '全部' ? cat : undefined,
-        tag,
-        keyword,
-        page,
-        pageSize,
-        sort
-      })
-    }
-
-    await delay(480)
-    let list = DB.articles.filter((a) => a.status !== 0)
-    if (cat && cat !== '全部') list = list.filter((a) => a.cat === cat)
-    if (tag) list = list.filter((a) => a.tags.includes(tag))
-    if (keyword) list = list.filter((a) => a.title.includes(keyword) || a.summary.includes(keyword))
-    const total = list.length
-    list = list.slice((page - 1) * pageSize, page * pageSize)
-    return ok({ list, total, page, pageSize })
+    return fetchArticleList({
+      category: cat && cat !== '全部' ? cat : undefined,
+      tag,
+      keyword,
+      page,
+      pageSize,
+      sort
+    })
   },
   // GET /article/detail/{id}
   async get(id) {
-    if (!ARTICLE_USE_MOCK) return fetchArticleDetail(id)
-
-    await delay(420)
-    const a = DB.articles.find((x) => x.id === +id)
-    if (!a || a.status === 0) return fail(404, '文章不存在或已下架')
-    return ok(a)
+    return fetchArticleDetail(id)
   },
   // GET /article/recommend?excludeId=
   async recommend({ excludeId, page = 1, pageSize = 3 } = {}) {
-    if (!ARTICLE_USE_MOCK) return fetchArticleRecommend({ excludeId, page, pageSize })
-
-    const list = DB.articles.filter((a) => a.status !== 0 && a.id !== +excludeId)
-    return ok({ list: list.slice(0, pageSize), total: list.length })
+    return fetchArticleRecommend({ excludeId, page, pageSize })
   },
   // GET /article/tags  全部标签（实测返回纯字符串数组，54 个）
   async tags() {
-    if (!ARTICLE_USE_MOCK) return fetchArticleTags()
-
-    // mock：从本地文章里统计
-    const count = {}
-    DB.articles.forEach((a) => (a.tags || []).forEach((t) => { count[t] = (count[t] || 0) + 1 }))
-    return ok(Object.keys(count).sort((a, b) => count[b] - count[a]))
+    return fetchArticleTags()
   },
   // GET /article/comment/list/{articleId}
   async comments(articleId) {
-    if (!ARTICLE_USE_MOCK) {
-      return fetchArticleComments(articleId, useAppStore().session?.userId)
-    }
-    return ok([])
+    return fetchArticleComments(articleId, useAppStore().session?.userId)
   },
   // POST /article/comment/{articleId}
   async comment({ articleId, content, parentId }) {
-    if (!ARTICLE_USE_MOCK) return postArticleComment(articleId, content, parentId)
-
-    await delay(500)
-    if (!content || content.trim().length < 2) return fail(400, '评论内容太短')
-    return ok({ id: 'c-' + Date.now(), content: content.trim(), time: '刚刚' }, '评论已发布')
+    return postArticleComment(articleId, content, parentId)
   },
   // POST / DELETE /article/like/{articleId}
   async toggleLike(articleId, next) {
-    if (!ARTICLE_USE_MOCK) return setArticleLike(articleId, next)
-
-    return ok({ liked: next, likeCount: 0 }, next ? '点赞成功' : '已取消点赞')
+    return setArticleLike(articleId, next)
   },
   // POST / DELETE /article/collect/{articleId}
   async toggleCollect(articleId, next) {
-    if (!ARTICLE_USE_MOCK) return setArticleCollect(articleId, next)
-
-    return ok({ collected: next, collectCount: 0 }, next ? '已收藏' : '已取消收藏')
+    return setArticleCollect(articleId, next)
   },
   // GET /article/collect/list
   async collected() {
-    if (!ARTICLE_USE_MOCK) return fetchCollectedArticles()
-
-    const store = useAppStore()
-    return ok(DB.articles.filter((a) => store.articleCollectIds.includes(a.id)))
+    return fetchCollectedArticles()
   },
   // GET /article/read/history
   async history(limit = 20) {
-    if (!ARTICLE_USE_MOCK) return fetchArticleReadHistory(limit)
-
-    const store = useAppStore()
-    return ok(
-      store.articleReadList
-        .map((r) => ({
-          id: r.id,
-          date: r.date,
-          duration: r.duration,
-          article: DB.articles.find((a) => a.id === r.id)
-        }))
-        .filter((r) => r.article)
-    )
+    return fetchArticleReadHistory(limit)
   },
   // POST /article/read/{articleId}
   async read(articleId, payload) {
-    if (!ARTICLE_USE_MOCK) return recordArticleRead(articleId, payload)
-    return ok(true)
+    return recordArticleRead(articleId, payload)
+  },
+  // POST /article/publish  用户发帖（后端直接上架 status=1）
+  async publish(payload) {
+    return publishArticle(payload)
   }
 }
 
@@ -874,24 +480,17 @@ export const articlesApi = {
 export const assistantApi = {
   // GET /assistant/conversations
   async conversations() {
-    if (!ASSISTANT_USE_MOCK) return fetchConversations()
-    await delay(220)
-    return ok(useAppStore().convos)
+    return fetchConversations()
   },
 
   // GET /assistant/conversations/{id}/messages
   async messages(conversationId) {
-    if (!ASSISTANT_USE_MOCK) return fetchConversationMessages(conversationId)
-    await delay(160)
-    const conv = useAppStore().conversation(conversationId)
-    return ok(conv ? conv.messages || [] : [])
+    return fetchConversationMessages(conversationId)
   },
 
   // DELETE /assistant/conversations/{id}
   async remove(conversationId) {
-    if (!ASSISTANT_USE_MOCK) return deleteConversation(conversationId)
-    await delay(180)
-    return ok({ id: conversationId }, '会话已删除')
+    return deleteConversation(conversationId)
   },
 
   /**
@@ -900,32 +499,7 @@ export const assistantApi = {
    * 流结束后把结果放在统一信封里返回（text / intent / source / blocked / cards）。
    */
   async chatStream(prompt, { conversationId, onStart, onChunk } = {}) {
-    if (!ASSISTANT_USE_MOCK) {
-      return assistantChatStream(prompt, { conversationId, onStart, onChunk })
-    }
-
-    // ---- mock：本地规则桩，按原来的打字机节奏输出 ----
-    const text = (prompt || '').trim()
-    const result = buildReply(text)
-    if (onStart) onStart({ conversationId: conversationId || null, conversation: null })
-
-    if (result.blocked) {
-      await delay(420)
-      return ok(result)
-    }
-
-    await delay(360)
-    const full =
-      result.text +
-      (result.list ? '\n\n' + result.list.map((x, i) => i + 1 + '. ' + x).join('\n') : '') +
-      (result.note ? '\n\n' + result.note : '')
-    let shown = ''
-    for (let i = 0; i < full.length; i += 2) {
-      shown += full.slice(i, i + 2)
-      if (onChunk) onChunk(shown, result)
-      await delay(16)
-    }
-    return ok(result)
+    return assistantChatStream(prompt, { conversationId, onStart, onChunk })
   }
 }
 
@@ -1012,99 +586,3 @@ export const adminApi = {
   }
 }
 
-/* ---------------- 离线回复生成（规则 + 固定文案） ---------------- */
-function buildReply(text) {
-  const len = text.length
-  const abuse = ['傻', '滚', '垃圾', '白痴', '智障', '妈的', 'fuck']
-  const medical = ['诊断', '开药', '处方', '吃什么药', '能治', '治愈', '替代医嘱']
-
-  if (len > 1000) {
-    return {
-      blocked: true,
-      intent: 'blocked',
-      source: 'guardrail',
-      text: '输入内容超过 1000 字，已触发长度护栏。请精简问题后再试。'
-    }
-  }
-  if (medical.some((w) => text.includes(w))) {
-    return {
-      blocked: true,
-      intent: 'medical',
-      source: 'guardrail',
-      text: '我只能提供饮食与营养方面的通用建议，不能进行医疗诊断或开具处方。如有相关需求，请咨询医生或临床营养师，并遵医嘱。'
-    }
-  }
-  if (abuse.some((w) => text.toLowerCase().includes(w))) {
-    return {
-      blocked: true,
-      intent: 'abuse',
-      source: 'guardrail',
-      text: '请保持友善的交流方式，我会继续为你提供饮食建议。'
-    }
-  }
-
-  if (/替代|换成|代替/.test(text)) {
-    return {
-      intent: 'advice',
-      source: 'ingredient',
-      text: '可以按「热量接近、蛋白不低于原食材、脂肪更低」三个条件来替换。以鸡胸肉 100g 为例，以下方案比较接近：',
-      list: [
-        '北豆腐 120g：热量更低，植物蛋白，适合清淡口味',
-        '牛里脊 95g：蛋白接近，脂肪低且含铁更丰富',
-        '鹰嘴豆 100g（熟）：低 GI，但需相应减少主食约 40g'
-      ],
-      note: '替换后记得同步调整用量，保持这一餐蛋白质总量不变。'
-    }
-  }
-  if (/高血脂|血脂|胆固醇|糖尿病|血糖|痛风|尿酸|高血压/.test(text)) {
-    return {
-      intent: 'knowledge',
-      source: 'authority',
-      text: '结合权威食养指南的通用原则，可以从这几个方向调整：',
-      list: [
-        '减少饱和脂肪：肥肉、黄油、奶油点心，烹调油换成橄榄油或菜籽油',
-        '每周 2 次深海鱼，每天一小把原味坚果（约 10g）',
-        '主食一半换成全谷物或杂豆，增加可溶性膳食纤维',
-        '每天蔬菜 300–500g，深色蔬菜占一半',
-        '限制含糖饮料与精制甜点，添加糖控制在 25g 以内'
-      ],
-      note: '以上为通用营养建议，不构成诊断或处方，具体方案请遵医嘱。'
-    }
-  }
-  if (/热量|多少卡|卡路里|GI|嘌呤|蛋白质|碳水|脂肪/.test(text)) {
-    return {
-      intent: 'knowledge',
-      source: 'ingredient',
-      text: '我先在食材库里做精确查表，避免给出模糊估算：',
-      list: [
-        '白米饭（熟）100g ≈ 116 kcal，碳水 25.9g，GI 83',
-        '鸡胸肉 100g ≈ 165 kcal，蛋白质 31g，脂肪 3.6g',
-        '西兰花 100g ≈ 34 kcal，膳食纤维 1.6g',
-        '牛油果 100g ≈ 160 kcal，脂肪 14.7g（热量密度高，注意份量）'
-      ],
-      note: '数值来自食材库每 100g 均值，实际会因品种与烹调方式浮动。'
-    }
-  }
-  if (/推荐|食谱|吃什么|搭配|早餐|午餐|晚餐|减脂|增肌/.test(text)) {
-    const goal = useAppStore().goalInfo
-    const cards = DB.recipes.slice(0, 3).map((r) => ({
-      title: r.name,
-      sub: r.kcal + ' kcal · 蛋白 ' + r.p + 'g',
-      img: r.img,
-      to: '/recipes/' + r.id
-    }))
-    return {
-      intent: 'recipe',
-      source: 'recipe',
-      text: '结合你的目标（' + goal.goalType + '，每日 ' + goal.kcal + ' kcal）与健康档案，今天推荐这三份：',
-      cards,
-      note: '推荐结果会随你的记录与偏好更新；可在「食谱库」查看更多候选。'
-    }
-  }
-  return {
-    intent: 'chat',
-    source: 'model',
-    text: '我可以帮你做这几类事：① 估算食物热量与营养；② 按目标推荐三餐；③ 给食材做等价替代；④ 解释营养概念与慢病饮食原则。你可以直接说「今天晚餐吃什么」「米饭多少卡」这样的问题。',
-    note: '涉及诊断、用药与处方的问题，我会拒绝回答并建议你咨询医生。'
-  }
-}

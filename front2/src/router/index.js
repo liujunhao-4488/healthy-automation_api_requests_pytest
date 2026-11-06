@@ -94,6 +94,14 @@ const routes = [
         meta: { nav: 'knowledge', title: '健康知识 · 膳衡' }
       },
       {
+        /* 用户发帖。必须排在 knowledge/:id 之前，
+           否则 /knowledge/new 会被 :id 捕获当成文章 id。 */
+        path: 'knowledge/new',
+        name: 'article-publish',
+        component: () => import('@/views/ArticlePublishView.vue'),
+        meta: { nav: 'knowledge', title: '发布文章 · 膳衡' }
+      },
+      {
         path: 'knowledge/:id',
         name: 'article-detail',
         component: () => import('@/views/ArticleDetailView.vue'),

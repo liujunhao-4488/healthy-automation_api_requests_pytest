@@ -85,6 +85,17 @@ _USER_CHILD_DELETES = [
      "`record_id` IN (SELECT `id` FROM `diet_record` WHERE `user_id` = %s)"),
     ("recipe_ingredient",
      "`recipe_id` IN (SELECT `id` FROM `recipe` WHERE `creator_id` = %s)"),
+    # ⚠️ 2026-11-06 实测撞出来的两条：别人**引用了我要删的食谱**。
+    #    只按 user_id 删自己的收藏是删不干净的 —— 收藏测试里必然出现
+    #    「B 收藏了 A 的食谱」，删 A 的账号时要删 A 名下的 recipe，
+    #    而 B 那条收藏行还指向它 → 1451（user_recipe_collect_ibfk_2）。
+    #    所以必须补一条「按食谱 id 反查所有引用者」，把别人的引用也清掉。
+    #    这两条能删到**别人的**数据，看着危险，实际是对的范围：
+    #    这些行引用的是本账号即将删除的对象，留着只会让删除失败、越积越多。
+    ("user_recipe_collect",
+     "`recipe_id` IN (SELECT `id` FROM `recipe` WHERE `creator_id` = %s)"),
+    ("diet_record_detail",
+     "`recipe_id` IN (SELECT `id` FROM `recipe` WHERE `creator_id` = %s)"),
     # ---- 子表 ----
     ("assistant_conversation", "`user_id` = %s"),
     ("health_info_history", "`user_id` = %s"),

@@ -117,3 +117,31 @@ def notification_pair(api):
 
     for u in (owner, intruder):
         cleanup.purge_user(u["userId"])
+
+
+# ==================== 饮食偏好（2026-11-06 新增）====================
+
+@pytest.fixture
+def preference_pair(api):
+    """两个临时账号，用于饮食偏好的读写与越权验证。
+
+    ⚠️ 为什么不能用主测试账号：
+       /user/diet-preference 是**单例写入**接口（一个用户只有一行），
+       PUT 会把主账号真实的饮食偏好改掉。而饮食偏好直接影响推荐结果 ——
+       改完可能几天后才发现"推荐怎么变得这么怪"，还找不到原因。
+       所以用它必须给临时账号。
+
+    ⚠️ 为什么是两个而不是一个：
+       "PUT 里塞别人的 userId 会不会改到别人"这个探测点，需要真的有另一个
+       用户存在才有意义。塞一个不存在的 id，后端不报错也不能证明归属校验是好的。
+    """
+    owner = _register(api, "dp_owner_")
+    other = _register(api, "dp_other_")
+
+    for u in (owner, other):
+        cleanup.register_user(u["userId"], u["email"])
+
+    yield {"owner": owner, "other": other}
+
+    for u in (owner, other):
+        cleanup.purge_user(u["userId"])

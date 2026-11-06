@@ -11,9 +11,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { recipesApi, notificationsApi } from '@/services/api'
+import { recipesApi, notificationsApi, healthApi, goalApi } from '@/services/api'
 import { confirmDialog } from '@/composables/useConfirm'
 import SvgIcon from './SvgIcon.vue'
+import UserAvatar from './UserAvatar.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -35,6 +36,21 @@ onMounted(async () => {
   // 通知角标也依赖真实列表，进站时同步一次
   const notifRes = await notificationsApi.list()
   if (notifRes.code === 200) store.setNotifications(notifRes.data)
+
+  /* 健康档案 / 饮食目标是全站推荐的基础，放在外壳里统一拉一次。
+     ------------------------------------------------------------
+     以前各页面各自拉、拉不到就沿用本地缓存，而缓存初始值是 DB.health
+     那套假人数据（29 岁 / 165cm），新用户会看到不属于自己的体重与热量。
+     现在统一走 store 的 apply*Remote：
+       · 后端有数据 → 覆盖并标记已填
+       · 后端返回 null（确实没填过）→ 清空并标记未填，页面显示空态
+       · 请求失败（code !== 200）→ 不动本地缓存，避免网络抖动清空数据
+     顺序不能换：goal 的 currentWeight 要用 health 的体重兜底。 */
+  const healthRes = await healthApi.get()
+  if (healthRes.code === 200) store.applyHealthRemote(healthRes.data)
+
+  const goalRes = await goalApi.get()
+  if (goalRes.code === 200) store.applyGoalRemote(goalRes.data)
 })
 
 /** 导航分组，照抄静态版结构 */
@@ -65,7 +81,10 @@ const navGroups = [
   }
 ]
 
-const avatarText = computed(() => (store.displayName || '用')[0])
+/**
+ * 头像统一交给 UserAvatar 组件处理（有图用图、无图退回首字）。
+ * 原先这里只算首字 avatarText，上传头像后顶栏不会变。
+ */
 /** 用户端只展示普通用户身份：管理员走独立后台，不在同一会话里混用 */
 const roleText = '普通用户'
 
@@ -133,7 +152,8 @@ function closeMenu() {
     </template>
 
     <div class="nav-user">
-      <span class="nav-avatar">{{ avatarText }}</span>
+      <!-- 顶栏头像：上传过就显示图片，否则退回首字 -->
+      <UserAvatar :src="store.session?.avatar || ''" :name="store.displayName" size="sm" />
       <span class="grow">
         <span class="nav-user-name">{{ store.displayName }}</span>
         <span class="nav-user-role">{{ roleText }}</span>

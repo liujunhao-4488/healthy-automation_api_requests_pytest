@@ -1,27 +1,27 @@
 /* ============================================================
    stores/app.js · 全局状态层（Pinia）
    ------------------------------------------------------------
-   对应静态版的 js/store.js，职责完全一致：
    会话 / 健康档案 / 饮食偏好 / 饮食目标 / 饮食记录 /
    收藏点赞阅读 / 通知 / AI 会话 / 饮水
 
-   三点变化：
-   1) 原来是普通对象 + 每次读 localStorage；现在用 ref 存内存，
-      再用 watch 自动写回 localStorage（改数据页面就会自动更新）
-   2) 原来是函数 Store.health()；现在是状态 healthInfo，
-      访问方式变成 store.healthInfo
-   3) 推导值（通知列表、未读数、趋势）用 computed，不再每次重算
+   ⭐ 2026-11-06：本地 mock 已整体删除。
+     这里的 ref 只做「后端数据的本地缓存 + 即时回显」，
+     初始值一律是空的，任何真实数据都必须由接口拉取后写入。
+     没数据就显示空态，绝不拿假数据顶替。
    ============================================================ */
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import DB from '@/mock/db'
-import recipeChickenImg from '@/assets/recipe-chicken.jpg'
+import { toHealthInfo, toGoalInfo } from '@/services/adapters/health'
 
 const PREFIX = 'sh_'
 const K = {
   session: PREFIX + 'session',
   adminSession: PREFIX + 'admin_session',
   health: PREFIX + 'health',
+  /* 「档案/目标是否真的存在」的标记。和 health/goal 分开存：
+     值可能是空的，光看值分不清「没填」和「填了但没数据」。 */
+  healthFilled: PREFIX + 'health_filled',
+  goalFilled: PREFIX + 'goal_filled',
   pref: PREFIX + 'pref',
   goal: PREFIX + 'goal',
   records: PREFIX + 'records',
@@ -33,6 +33,61 @@ const K = {
   notif: PREFIX + 'notif',
   convos: PREFIX + 'convos',
   water: PREFIX + 'water'
+}
+
+/* ============================================================
+   空档案 / 空目标模板
+   ------------------------------------------------------------
+   以前 healthInfo 的兜底值是一套写死的假档案（29 岁 / 165cm / 68.4kg），
+   后端返回 data:null（新用户没填过）时页面会静默沿用这套假数据 ——
+   用户看到的体重、热量、推荐全是别人的。
+
+   现在兜底一律是「全空」：没填就是没填，页面自己显示空态；
+   数值一律给 0 而不是 undefined，避免模板里 .toFixed() 抛 NaN。
+   ============================================================ */
+export const EMPTY_HEALTH = {
+  gender: '',
+  /* 数值字段用空串而不是 0：输入框直接绑这些值，
+     显示「0」比显示空更容易被当成真实数据（尤其是年龄 0、体重 0）。 */
+  age: '',
+  height: '',
+  weight: '',
+  waist: '',
+  bmi: 0,
+  bmr: 0,
+  bloodPressure: '',
+  bloodSugar: '',
+  activity: '',
+  exerciseMin: '',
+  exerciseType: '',
+  chronic: [],
+  updatedAt: ''
+}
+
+export const EMPTY_GOAL = {
+  goalType: '',
+  startWeight: 0,
+  currentWeight: 0,
+  targetWeight: 0,
+  kcal: 0,
+  proteinPct: 0,
+  carbPct: 0,
+  fatPct: 0,
+  water: 0,
+  meals: 3,
+  snack: false,
+  startDate: '',
+  endDate: ''
+}
+
+/* 饮食偏好：后端还没填过时就是「什么都没选」 */
+export const EMPTY_PREFERENCES = {
+  dietType: [],
+  allergens: [],
+  dislikes: [],
+  likes: [],
+  mealsPerDay: 3,
+  snack: false
 }
 
 /* ---------------- 工具函数 ---------------- */
@@ -63,80 +118,53 @@ function write(key, value) {
   }
 }
 
-/** 首次访问时把种子数据灌进 localStorage（静态版的 seed()） */
-function seed() {
-  if (!read(K.records)) {
-    write(
+/* 一次性清理：旧版本会用种子数据往 localStorage 里灌假记录、假收藏、
+   假自定义食谱、假通知、假 AI 会话。删掉 mock 之后这些 key 里可能还留着，
+   继续读下去就会把假数据当成用户真实数据，所以第一次加载时统一清掉。
+   只清「曾经被灌过种子」的 key，登录态 / 档案 / 目标这类真实缓存不动。 */
+const PURGED_KEY = PREFIX + 'mock_purged_v1'
+function purgeOldMockData() {
+  try {
+    if (localStorage.getItem(PURGED_KEY)) return
+    ;[
       K.records,
-      DB.records.map((r) => Object.assign({}, r, { date: TODAY }))
-    )
+      K.collectRecipe,
+      K.customRecipe,
+      K.collectArticle,
+      K.likeArticle,
+      K.readArticle,
+      K.notif,
+      K.convos,
+      K.pref,
+      K.water
+    ].forEach((key) => localStorage.removeItem(key))
+    localStorage.setItem(PURGED_KEY, '1')
+  } catch (e) {
+    /* 隐私模式下 localStorage 可能不可用，忽略 */
   }
-  if (!read(K.collectRecipe)) write(K.collectRecipe, [1, 3])
-  if (!read(K.customRecipe)) {
-    write(K.customRecipe, [
-      {
-        id: 1001,
-        custom: true,
-        name: '番茄鸡胸意面',
-        desc: '自己常做的低脂高蛋白快手午餐，20 分钟出锅。',
-        mealType: '午餐',
-        cuisine: '西式',
-        time: 20,
-        level: '简单',
-        servings: 1,
-        kcal: 486,
-        p: 39,
-        c: 52,
-        f: 11,
-        fiber: 6.2,
-        fit: ['减脂', '增肌'],
-        img: recipeChickenImg,
-        rating: 0,
-        views: 0,
-        collects: 0,
-        ingredients: [
-          { name: '全麦意面', amount: '70', unit: 'g' },
-          { name: '鸡胸肉', amount: '120', unit: 'g' },
-          { name: '番茄', amount: '2', unit: '个' }
-        ],
-        steps: ['意面下沸水煮 8 分钟，捞出备用。', '鸡胸切条用黑胡椒腌 5 分钟，少油煎熟。', '番茄炒出汁，倒入意面与鸡胸翻匀即可。'],
-        tips: '用不粘锅可把用油控制在 5g 以内。',
-        createdAt: TODAY,
-        updatedAt: TODAY
-      }
-    ])
-  }
-  if (!read(K.collectArticle)) write(K.collectArticle, [2])
-  if (!read(K.likeArticle)) write(K.likeArticle, [1])
-  if (!read(K.readArticle)) {
-    write(K.readArticle, [{ id: 2, date: '2026-10-21', duration: 186, done: true }])
-  }
-  if (!read(K.notif)) {
-    write(K.notif, {
-      read: DB.notifications.filter((n) => n.read).map((n) => n.id),
-      deleted: []
-    })
-  }
-  if (!read(K.convos)) write(K.convos, DB.conversations)
-  if (!read(K.water)) write(K.water, 4)
 }
-seed()
+purgeOldMockData()
 
 export const useAppStore = defineStore('app', () => {
   /* ================= 状态 ================= */
   const session = ref(read(K.session, null)) // 用户端登录态
   const adminSession = ref(read(K.adminSession, null)) // 后台登录态，与用户端完全隔离
-  const healthInfo = ref(read(K.health, DB.health)) // 健康档案
-  const preferences = ref(read(K.pref, DB.preferences)) // 饮食偏好
-  const goalInfo = ref(read(K.goal, DB.goal)) // 饮食目标
+  const healthFilled = ref(!!read(K.healthFilled, false)) // 后端确实存在档案
+  const goalFilled = ref(!!read(K.goalFilled, false)) // 后端确实存在目标
+  /* 只有「标记为已填」时才复用本地缓存；老版本留下的 sh_health（其实是
+     那套假档案）没有配套标记，会被直接丢弃。 */
+  const healthInfo = ref(
+    healthFilled.value ? read(K.health, { ...EMPTY_HEALTH }) : { ...EMPTY_HEALTH }
+  )
+  const preferences = ref(read(K.pref, { ...EMPTY_PREFERENCES })) // 饮食偏好
+  const goalInfo = ref(goalFilled.value ? read(K.goal, { ...EMPTY_GOAL }) : { ...EMPTY_GOAL })
   const recordList = ref(read(K.records, [])) // 饮食记录
   const recipeCollectIds = ref(read(K.collectRecipe, []))
-  const customRecipeList = ref(read(K.customRecipe, []))
   const articleCollectIds = ref(read(K.collectArticle, []))
   const articleLikeIds = ref(read(K.likeArticle, []))
   const articleReadList = ref(read(K.readArticle, []))
   const notifState = ref(read(K.notif, { read: [], deleted: [], remote: [], loaded: false }))
-  const convos = ref(read(K.convos, DB.conversations))
+  const convos = ref(read(K.convos, [])) // AI 会话列表（后端拉取后的本地副本）
   const waterCups = ref(read(K.water, 4))
 
   /* ================= 持久化 =================
@@ -145,11 +173,12 @@ export const useAppStore = defineStore('app', () => {
     [session, K.session],
     [adminSession, K.adminSession],
     [healthInfo, K.health],
+    [healthFilled, K.healthFilled],
     [preferences, K.pref],
     [goalInfo, K.goal],
+    [goalFilled, K.goalFilled],
     [recordList, K.records],
     [recipeCollectIds, K.collectRecipe],
-    [customRecipeList, K.customRecipe],
     [articleCollectIds, K.collectArticle],
     [articleLikeIds, K.likeArticle],
     [articleReadList, K.readArticle],
@@ -191,22 +220,6 @@ export const useAppStore = defineStore('app', () => {
     return session.value
   }
 
-  /**
-   * ⚠️ 仅「本地体验」用：不请求后端，直接造一个假会话。
-   * 真实登录请用 authApi.login() + enter(res.data)。
-   * 保留它是因为后端没起的时候还得能点进系统看界面。
-   */
-  function login(email, password) {
-    const user = DB.user
-    session.value = {
-      userId: user.userId,
-      username: user.username,
-      email: email || user.email,
-      role: user.role,
-      token: 'mock-jwt-' + Date.now()
-    }
-    return session.value
-  }
   function logout() {
     session.value = null
     // 同 enter()：同步清盘，别让 http.js 还拿着上一个账号的 token 发请求
@@ -242,62 +255,59 @@ export const useAppStore = defineStore('app', () => {
   }
 
   /* ================= 健康档案 ================= */
-  function saveHealth(patch) {
-    // TODO: 替换为 POST /health/info
-    const next = Object.assign({}, healthInfo.value, patch, { updatedAt: now() })
-    // 同时给了身高体重时，顺手把 BMI / 基础代谢算出来
-    if (patch.height && patch.weight) {
-      const h = patch.height / 100
-      next.bmi = +(patch.weight / (h * h)).toFixed(1)
-      next.bmr = Math.round(
-        10 * patch.weight +
-          6.25 * patch.height -
-          5 * (patch.age || 29) +
-          (patch.gender === '男' ? 5 : -161)
-      )
+
+  /**
+   * 用后端返回的档案覆盖本地（唯一入口）。
+   * be 为 null / 非对象 = 这个账号确实没填过 → 清空并标记未填，
+   * 绝不回退到 emptyHealth() 那套 29 岁 / 170cm 的默认值。
+   * extra：后端不存的本地字段（waist 等），保存后要把表单里的值带回来，否则会丢。
+   */
+  function applyHealthRemote(be, extra) {
+    if (!be || typeof be !== 'object') {
+      healthInfo.value = { ...EMPTY_HEALTH }
+      healthFilled.value = false
+      return false
     }
-    healthInfo.value = next
-    return next
+    const local = Object.assign({}, healthInfo.value, extra || {})
+    healthInfo.value = toHealthInfo(be, local)
+    healthFilled.value = true
+    return true
   }
 
   /* ================= 饮食偏好 ================= */
   function savePreferences(patch) {
-    // TODO: 替换为 PUT /user/preferences
+    /* 只做本地回显（真实保存由 userApi.savePreference 落到后端），
+       这样保存后不必整页刷新就能让提示文案立刻用上新偏好。 */
     preferences.value = Object.assign({}, preferences.value, patch)
     return preferences.value
   }
 
   /* ================= 饮食目标 ================= */
-  function saveGoal(patch) {
-    // TODO: 替换为 POST /health/goal
-    goalInfo.value = Object.assign({}, goalInfo.value, patch)
-    return goalInfo.value
+
+  /**
+   * 用后端返回的目标覆盖本地。be 为空 → 清空 + 标记未设。
+   *
+   * 后端 DietGoal 没有 startWeight / currentWeight（前端独有的进度概念）：
+   *   currentWeight 用健康档案里的体重兜底；
+   *   startWeight 没有就只能等于 currentWeight（进度显示 0%，不是假数据）。
+   */
+  function applyGoalRemote(be, extra) {
+    if (!be || typeof be !== 'object') {
+      goalInfo.value = { ...EMPTY_GOAL }
+      goalFilled.value = false
+      return false
+    }
+    const next = toGoalInfo(be, Object.assign({}, goalInfo.value, extra || {}))
+    if (!next.currentWeight) next.currentWeight = Number(healthInfo.value.weight) || 0
+    if (!next.startWeight) next.startWeight = next.currentWeight || 0
+    goalInfo.value = next
+    goalFilled.value = true
+    return true
   }
 
   /* ================= 饮食记录 ================= */
   function recordsByDate(date) {
     return recordList.value.filter((r) => r.date === date)
-  }
-  function addRecord(rec) {
-    // TODO: 替换为 POST /record/submit（主记录 + 明细数组）
-    const item = Object.assign(
-      {
-        id: 'r-' + Date.now(),
-        date: rec.date || TODAY,
-        time: rec.time || nowTime(),
-        note: rec.note || '',
-        items: rec.items || []
-      },
-      rec
-    )
-    const sum = (k) =>
-      +item.items.reduce((s, i) => s + (+i[k] || 0), 0).toFixed(1)
-    item.kcal = Math.round(sum('kcal'))
-    item.p = sum('p')
-    item.c = sum('c')
-    item.f = sum('f')
-    recordList.value = recordList.value.concat([item])
-    return item
   }
   function removeRecord(id) {
     // TODO: 替换为 DELETE /record/{recordId}（软删除）
@@ -321,33 +331,9 @@ export const useAppStore = defineStore('app', () => {
     sum.f = +sum.f.toFixed(1)
     return sum
   }
-  /** 近 7 日趋势：前 6 天取假数据，最后一天用今天真实记录 */
-  const trend = computed(() => {
-    // TODO: 替换为 GET /record/analysis/trend
-    const t = DB.trend7.slice(0, 6).map((d) => Object.assign({}, d))
-    const todayTotals = totals(TODAY)
-    t.push({
-      date: '今天',
-      kcal: todayTotals.kcal,
-      p: todayTotals.p,
-      c: todayTotals.c,
-      f: todayTotals.f
-    })
-    return t
-  })
-
   /* ================= 收藏 / 点赞 / 阅读 ================= */
   function isRecipeCollected(id) {
     return recipeCollectIds.value.includes(+id)
-  }
-  function toggleRecipeCollect(id) {
-    // 仅 mock 模式使用。接真接口后由 api.js 调 setRecipeCollected
-    const list = recipeCollectIds.value.slice()
-    const i = list.indexOf(+id)
-    if (i > -1) list.splice(i, 1)
-    else list.push(+id)
-    recipeCollectIds.value = list
-    return i === -1
   }
   /**
    * 明确设置收藏状态（不翻转）。
@@ -368,58 +354,37 @@ export const useAppStore = defineStore('app', () => {
   function setCollectIds(ids) {
     recipeCollectIds.value = (ids || []).map(Number).filter((n) => !isNaN(n))
   }
-  /* ---------------- 自定义食谱 ---------------- */
-  function getCustomRecipe(id) {
-    return customRecipeList.value.find((r) => r.id === +id)
-  }
-  function saveCustomRecipe(data) {
-    // TODO: 替换为 POST /recipe/save（新建） / PUT /recipe/update/{id}（编辑）
-    const list = customRecipeList.value.slice()
-    if (data.id) {
-      const i = list.findIndex((r) => r.id === +data.id)
-      if (i > -1) {
-        list[i] = Object.assign({}, list[i], data, { id: +data.id, updatedAt: TODAY })
-        customRecipeList.value = list
-        return list[i]
-      }
-    }
-    const next = list.reduce((m, r) => Math.max(m, r.id), 1000) + 1
-    const item = Object.assign(
-      { custom: true, rating: 0, views: 0, collects: 0, createdAt: TODAY, updatedAt: TODAY },
-      data,
-      { id: next }
-    )
-    list.unshift(item)
-    customRecipeList.value = list
-    return item
-  }
-  function removeCustomRecipe(id) {
-    // TODO: 替换为 DELETE /recipe/delete/{id}
-    customRecipeList.value = customRecipeList.value.filter((r) => r.id !== +id)
-    recipeCollectIds.value = recipeCollectIds.value.filter((x) => x !== +id)
-  }
 
   function isArticleCollected(id) {
     return articleCollectIds.value.includes(+id)
   }
-  function toggleArticleCollect(id) {
+  /** 用后端返回的状态覆盖本地（POST/DELETE 是幂等的两次请求，不能靠翻转同步） */
+  function setArticleCollected(id, on) {
+    const n = +id
     const list = articleCollectIds.value.slice()
-    const i = list.indexOf(+id)
-    if (i > -1) list.splice(i, 1)
-    else list.push(+id)
+    const i = list.indexOf(n)
+    if (on && i === -1) list.push(n)
+    else if (!on && i > -1) list.splice(i, 1)
+    else return !!on
     articleCollectIds.value = list
-    return i === -1
+    return !!on
   }
   function isArticleLiked(id) {
     return articleLikeIds.value.includes(+id)
   }
-  function toggleArticleLike(id) {
+  function setArticleLiked(id, on) {
+    const n = +id
     const list = articleLikeIds.value.slice()
-    const i = list.indexOf(+id)
-    if (i > -1) list.splice(i, 1)
-    else list.push(+id)
+    const i = list.indexOf(n)
+    if (on && i === -1) list.push(n)
+    else if (!on && i > -1) list.splice(i, 1)
+    else return !!on
     articleLikeIds.value = list
-    return i === -1
+    return !!on
+  }
+  /** 用后端列表整体覆盖（登录 / 刷新后同步用） */
+  function setArticleCollectIds(ids) {
+    articleCollectIds.value = (ids || []).map(Number).filter((n) => !isNaN(n))
   }
   function markArticleRead(id, duration) {
     // TODO: 替换为 POST /article/read/{id}
@@ -431,8 +396,8 @@ export const useAppStore = defineStore('app', () => {
   /* ================= 通知 ================= */
   const notifications = computed(() => {
     const st = notifState.value
-    // 已从后端拉过通知就用真实列表，否则保留种子数据供离线演示
-    const base = st.loaded ? st.remote || [] : DB.notifications
+    // 只用后端拉回来的真实列表；还没拉到时就是空，不再拿本地种子顶替
+    const base = st.remote || []
     const deleted = st.deleted || []
     const read = st.read || []
     return (st.extra || [])
@@ -451,7 +416,7 @@ export const useAppStore = defineStore('app', () => {
   }
 
   function markAllRead() {
-    // 用推导后的列表而不是 DB，这样后台新发布的通知也能一起标记
+    // 用推导后的列表，这样后台新发布的通知也能一起标记
     notifState.value = Object.assign({}, notifState.value, {
       read: notifications.value.map((n) => n.id)
     })
@@ -468,7 +433,7 @@ export const useAppStore = defineStore('app', () => {
       deleted: notifState.value.deleted.concat([+id])
     })
   }
-  /** 后台发布通知后调用，把新通知推到通知中心最前面 */
+  /** 后台发布通知后调用，把新通知推到通知中心最前面（真实发布走 notificationApi） */
   function publishNotif({ type, title, content }) {
     const item = {
       id: 'p-' + Date.now(),
@@ -487,18 +452,34 @@ export const useAppStore = defineStore('app', () => {
 
   /* ================= AI 会话 ================= */
   function conversation(id) {
-    return convos.value.find((c) => c.id === id)
+    return convos.value.find((c) => String(c.id) === String(id))
   }
   function saveConversation(conv) {
     const list = convos.value.slice()
-    const i = list.findIndex((c) => c.id === conv.id)
+    const i = list.findIndex((c) => String(c.id) === String(conv.id))
     if (i > -1) list[i] = conv
     else list.unshift(conv)
     convos.value = list
     return conv
   }
   function removeConversation(id) {
-    convos.value = convos.value.filter((c) => c.id !== id)
+    convos.value = convos.value.filter((c) => String(c.id) !== String(id))
+  }
+  /**
+   * 用后端会话列表整体覆盖。
+   * 已经拉过历史消息的会话要把 messages 带过来，否则刷新列表会把聊天记录冲掉。
+   */
+  function setConversations(list) {
+    const cache = {}
+    convos.value.forEach((c) => {
+      cache[String(c.id)] = c
+    })
+    convos.value = (Array.isArray(list) ? list : []).map((c) => {
+      const old = cache[String(c.id)]
+      return old && old.messagesLoaded
+        ? Object.assign({}, c, { messages: old.messages, messagesLoaded: true })
+        : c
+    })
   }
 
   /* ================= 饮水 ================= */
@@ -531,8 +512,10 @@ export const useAppStore = defineStore('app', () => {
     session,
     adminSession,
     healthInfo,
+    healthFilled,
     preferences,
     goalInfo,
+    goalFilled,
     recordList,
     recipeCollectIds,
     articleCollectIds,
@@ -547,33 +530,26 @@ export const useAppStore = defineStore('app', () => {
     displayName,
     notifications,
     unreadCount,
-    trend,
     // 方法
-    login,
     enter,
     logout,
     enterAdmin,
     adminLogout,
     updateProfile,
-    saveHealth,
+    applyHealthRemote,
     savePreferences,
-    saveGoal,
+    applyGoalRemote,
     recordsByDate,
-    addRecord,
     removeRecord,
     totals,
     isRecipeCollected,
-    toggleRecipeCollect,
     setRecipeCollected,
     setCollectIds,
-    customRecipeList,
-    getCustomRecipe,
-    saveCustomRecipe,
-    removeCustomRecipe,
     isArticleCollected,
-    toggleArticleCollect,
+    setArticleCollected,
     isArticleLiked,
-    toggleArticleLike,
+    setArticleLiked,
+    setArticleCollectIds,
     markArticleRead,
     markAllRead,
     markNotifRead,
@@ -582,6 +558,7 @@ export const useAppStore = defineStore('app', () => {
     publishNotif,
     conversation,
     saveConversation,
+    setConversations,
     removeConversation,
     addWater,
     now,
