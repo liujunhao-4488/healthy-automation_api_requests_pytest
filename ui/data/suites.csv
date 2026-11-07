@@ -1,16 +1,16 @@
 "DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","480","test_密码错误_红色提示且留在登录页","test_cases.front2.auth","2026-11-07","passed","2026-11-07","TestF2Login","test_f2_login_ui","",""
-"","2836","test_修改体重保存成功_刷新后仍是新值","test_cases.front2.health","2026-11-07","passed","2026-11-07","TestF2HealthProfile","test_f2_health_profile_ui","",""
-"","385","test_档案回显_KPI的BMI与表单身高体重自洽","test_cases.front2.health","2026-11-07","passed","2026-11-07","TestF2HealthProfile","test_f2_health_profile_ui","",""
-"登录态持久化（sh_session）的 UI 层证据，理由同老版那条。","1388","test_刷新后登录态保留","test_cases.front2.auth","2026-11-07","passed","2026-11-07","TestF2Login","test_f2_login_ui","",""
-"","269","test_未登录访问受限页_被踢回登录页","test_cases.front2.auth","2026-11-07","passed","2026-11-07","TestF2RouteGuard","test_f2_login_ui","",""
-"比老版更严格一步：监听网络请求，断言 /auth/login 没发出。
+"","367","test_密码错误_红色提示且留在登录页","test_cases.auth","2026-11-07","passed","2026-11-07","TestLogin","test_login_ui","",""
+"注册成功直接发 token 并跳 /health，不需要再登一次。","855","test_注册新账号_直接进入健康引导页","test_cases.auth","2026-11-07","passed","2026-11-07","TestLogin","test_login_ui","",""
+"","1206","test_体重超范围_保存被前端拦下且字段标红","test_cases.health","2026-11-07","passed","2026-11-07","TestHealthProfile","test_health_profile_ui","",""
+"登录态持久化的 UI 层证据：刷新后不该被踢回登录页。","1229","test_刷新后登录态保留","test_cases.auth","2026-11-07","passed","2026-11-07","TestLogin","test_login_ui","",""
+"","150","test_直注登录态后_受限页直接放行","test_cases.auth","2026-11-07","passed","2026-11-07","TestRouteGuard","test_login_ui","",""
+"","313","test_档案回显_KPI的BMI与表单身高体重自洽","test_cases.health","2026-11-07","passed","2026-11-07","TestHealthProfile","test_health_profile_ui","",""
+"","2392","test_修改体重保存成功_刷新后仍是新值","test_cases.health","2026-11-07","passed","2026-11-07","TestHealthProfile","test_health_profile_ui","",""
+"监听网络请求，断言 /auth/login 没发出。
 
         理由：这类""纯前端校验""的价值就在""不打后端""。
         只断言""留在登录页""的话，后端挂了/校验漏了都能给出同样的表象 ——
         监听请求才能把""校验生效""和""碰巧没成功""区分开。
-        ","359","test_邮箱格式非法_前端拦截_请求根本没发出去","test_cases.front2.auth","2026-11-07","passed","2026-11-07","TestF2Login","test_f2_login_ui","",""
-"","216","test_直注登录态后_受限页直接放行","test_cases.front2.auth","2026-11-07","passed","2026-11-07","TestF2RouteGuard","test_f2_login_ui","",""
-"front2 注册成功直接发 token 并跳 /health（老版注册后要再登一次）。","1387","test_注册新账号_直接进入健康引导页","test_cases.front2.auth","2026-11-07","passed","2026-11-07","TestF2Login","test_f2_login_ui","",""
-"","1422","test_登录成功_落到首页且登录态已写入","test_cases.front2.auth","2026-11-07","passed","2026-11-07","TestF2Login","test_f2_login_ui","",""
-"","1393","test_体重超范围_保存被前端拦下且字段标红","test_cases.front2.health","2026-11-07","passed","2026-11-07","TestF2HealthProfile","test_f2_health_profile_ui","",""
+        ","251","test_邮箱格式非法_前端拦截_请求根本没发出去","test_cases.auth","2026-11-07","passed","2026-11-07","TestLogin","test_login_ui","",""
+"","181","test_未登录访问受限页_被踢回登录页","test_cases.auth","2026-11-07","passed","2026-11-07","TestRouteGuard","test_login_ui","",""
+"","1331","test_登录成功_落到首页且登录态已写入","test_cases.auth","2026-11-07","passed","2026-11-07","TestLogin","test_login_ui","",""
