@@ -1,12 +1,22 @@
 # pages/login_page.py
-# 登录页（frontend/src/views/Login.vue）
+# 作用：front2 登录/注册页的 Page Object。
 #
-# 这个 page 对象只有一个职责：**把登录表单走完**。
-# 它不负责"跳过登录" —— 直注 token 那条路在 conftest 里，两者刻意分开：
-#   · 本文件代表"被测功能"
-#   · 直注代表"测试准备手段"
-#   混在一起，就会出现"为了测登录而绕开登录"的荒谬结构，
-#   最终结果是登录页坏了一整天都没人发现（所有用例都从直注开始）。
+# ⚠️ 这个页面最大的坑：**登录和注册两个 <form> 同时挂在 DOM 里**，
+#    靠 tab 状态切换 .auth-form.on 才显示。所以：
+#      · 所有输入框/按钮都必须限定在 form.auth-form.on 里找，
+#        否则 get_by_placeholder("you@example.com") 会命中两个元素，
+#        Playwright 严格模式直接报 strict mode violation —— 这还算好的，
+#        换成 .first 就可能把邮箱填进注册表单，报出来的是"登录失败"。
+#      · 切 tab 用 .auth-tab 按钮，切完等目标 form 带 .on 再操作。
+#
+# 登录成功的落点是首页 '/'（LoginView 里 router.push('/')），
+# 守卫只看登录态、不管档案 —— 登录成功即进首页。
+
+import re
+
+from playwright.sync_api import expect
+
+from config.config import EXPECT_TIMEOUT
 
 from pages.base_page import BasePage
 
@@ -14,74 +24,99 @@ from pages.base_page import BasePage
 class LoginPage(BasePage):
     path = "/login"
 
-    # ---- 元素 ----
-    @property
-    def title(self):
-        return self.page.get_by_text("欢迎回来")
+    # ---------------- 作用域 ----------------
 
-    @property
+    def active_form(self):
+        """当前显示的那个表单（.auth-form.on）。
+
+        这是本页所有操作的根作用域 —— 必须先拿到它再往里找控件。
+        """
+        return self.page.locator("form.auth-form.on")
+
+    def switch_tab(self, name):
+        """切换 登录 / 注册。切完等表单真正切换再返回，避免下一句填错 form。
+
+        用 get_by_role 按可访问名找 tab：.auth-tab 的 innerText 带模板换行，
+        has_text 正则锚点匹配不上（注册用例第一次跑就红在这）。
+        """
+        self.page.get_by_role("button", name=name, exact=True).click()
+        expect(self.active_form()).to_be_visible()
+        return self
+
+    # ---------------- 登录表单控件 ----------------
+
     def email_input(self):
-        return self.by_placeholder("请输入邮箱地址")
+        return self.active_form().get_by_placeholder("you@example.com")
 
-    @property
     def password_input(self):
-        return self.by_placeholder("请输入密码")
+        # 登录 form 里只有一个密码框（注册 form 的在另一个 form 里，被作用域挡住）
+        return self.active_form().locator("input[type=password]").first
 
-    @property
     def submit_button(self):
-        # 用可访问名定位而不是 .auth-submit：
-        # class 是样式锚点，前端改版第一件事就是改它；文案"登录"是业务语义。
-        return self.by_role_button("登录")
+        # 用 type=submit 定位而不是文案：busy 时文案会从「登录」变成「登录中」
+        return self.active_form().locator("button[type=submit]")
 
-    @property
-    def reset_button(self):
-        return self.by_role_button("重置")
+    def demo_button(self):
+        return self.active_form().get_by_role("button", name="使用体验账号快速进入")
 
-    def field_error(self, text):
-        """表单校验错误（红色小字，el-form-item__error）。"""
-        return self.page.locator(".el-form-item__error").filter(has_text=text).first
+    # ---------------- 操作 ----------------
 
-    # ---- 操作 ----
-    def expect_loaded(self):
-        self.expect_visible(self.email_input)
-        self.expect_visible(self.submit_button)
-        return self
+    def open(self, path=None, wait_until="domcontentloaded"):
+        super().open(path, wait_until)
+        return self.expect_loaded()
 
-    def fill_email(self, email):
-        self.email_input.fill(email)
-        return self
-
-    def fill_password(self, password):
-        self.password_input.fill(password)
-        return self
-
-    def submit(self):
-        self.submit_button.click()
+    def expect_loaded(self, timeout=EXPECT_TIMEOUT):
+        # 品牌标题是登录页独有的，导航/壳层上没有
+        expect(self.page.get_by_role("heading", name="今天，好好吃饭")).to_be_visible(
+            timeout=timeout
+        )
         return self
 
     def login(self, email, password):
-        """完整登录动作：填 → 点 → （调用方自己等跳转）。
+        self.email_input().fill(email)
+        self.password_input().fill(password)
+        self.submit_button().click()
+        return self
 
-        故意不在末尾等跳转：
-          登录有 3 种去向（admin / 档案完整 / 档案未完成），
-          "该跳哪里"是**用例要断言的业务结论**，
-          写死在 page 对象里会把用例的判断力抽走。
+    # ---------------- 断言 ----------------
+
+    def expect_login_success(self, timeout=EXPECT_TIMEOUT):
+        self.toast("登录成功", timeout=timeout)
+        return self
+
+    def expect_login_failed(self, timeout=EXPECT_TIMEOUT):
+        """失败 = 出了红色提示 + 人还在登录页。
+
+        不断言具体文案：后端"邮箱或密码错误"的说法改过好几次，
+        断言 .toast.error 这个**类型**才稳定 —— 文案变了用例不该红。
         """
-        self.fill_email(email).fill_password(password).submit()
+        loc = self.toast(timeout=timeout)
+        expect(loc).to_have_class(re.compile(r"error"), timeout=2000)
+        expect(self.page).to_have_url(re.compile(r"/login/?$"), timeout=timeout)
         return self
 
-    # ---- 断言 ----
-    def expect_login_success(self):
-        """成功提示 + 离开登录页。"""
-        self.toast("登录成功")
-        self.expect_hidden(self.email_input)
-        return self
+    def field_error(self, text=None):
+        """字段级错误文案（.field.has-error 里的 .field-error）。
 
-    def expect_login_failed(self, message_fragment=""):
-        """失败提示：密码错 / 账号不存在 / 格式非法都走这里。"""
-        toast = self.page.locator(".el-message:visible").filter(has_text=message_fragment or "登录")
-        self.expect_visible(toast.first)
-        # 失败必须**留在登录页** —— 这条比提示文案更重要：
-        # 提示文案会改，而"没登进去却跳走了"是严重缺陷。
-        self.expect_visible(self.email_input)
+        前端校验失败时只标红字段，不弹 toast —— 两套反馈别搞混：
+          · 格式错误（邮箱/密码长度）→ 字段标红
+          · 后端拒绝（密码不对）     → toast
+        """
+        loc = self.active_form().locator(".field.has-error .field-error")
+        if text is not None:
+            loc = loc.filter(has_text=text)
+        return loc.first
+
+    # ---------------- 注册表单控件 ----------------
+
+    def register(self, username, email, password, phone=""):
+        """走注册 tab 提交。注册成功直接发 token 并跳 /health（健康引导）。"""
+        self.switch_tab("注册")
+        form = self.active_form()
+        form.get_by_placeholder("2–20 个字符").fill(username)
+        form.get_by_placeholder("you@example.com").fill(email)
+        if phone:
+            form.get_by_placeholder("选填，用于接收饮食提醒").fill(phone)
+        form.locator("input[type=password]").first.fill(password)
+        form.locator("button[type=submit]").click()
         return self

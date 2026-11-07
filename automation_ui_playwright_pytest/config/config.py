@@ -22,17 +22,13 @@ def _env_bool(name, default=False):
 
 
 # ------------------------------------------------------------
-# 被测前端
+# 被测前端（front2，Vue3 + Vite5）
 # ------------------------------------------------------------
-# frontend/（Vue3 + Element Plus，老版）—— 主目标
-# ⚠️ 用 localhost 而不是 127.0.0.1，理由同 FRONT2_URL：Vite 默认只绑 ::1
-FRONTEND_URL = _env("AUTOTEST_UI_BASE_URL", "http://localhost:5173")
-# front2/（Vue3 + Vite5，新版）—— 次目标，单独一套用例
 # ⚠️ 用 localhost 而不是 127.0.0.1：Vite 5 默认只绑 ::1（IPv6 localhost），
 #    写 127.0.0.1 会连接拒绝（症状是探活 000、用例整片超时）。
-FRONT2_URL = _env("AUTOTEST_FRONT2_URL", "http://localhost:5174")
+FRONTEND_URL = _env("AUTOTEST_UI_BASE_URL", "http://localhost:5174")
 
-# 后端地址：只用于「环境预检」判断服务活没活，UI 用例本身不直连它
+# 后端地址：用于①环境预检 ②接口侧账号准备/档案预建（common/auth_state.py）
 BACKEND_URL = _env("AUTOTEST_BASE_URL", "http://127.0.0.1:8081/api")
 
 # ------------------------------------------------------------
@@ -131,20 +127,19 @@ EXPECT_TIMEOUT = _env_int("AUTOTEST_UI_EXPECT_TIMEOUT", 8_000)
 AI_TIMEOUT = _env_int("AUTOTEST_UI_AI_TIMEOUT", 60_000)
 
 # 健康档案回归基线。
-# ⚠️ 这些值同时被两处使用：
-#   ① token 直注时写进 localStorage 的 health-user.healthInfo（决定路由守卫放不放行）
+# ⚠️ 两处使用，必须是**库里真实存在的档案值**：
+#   ① common/auth_state.ensure_profile() 用它给测试账号补建档案
 #   ② 档案用例断言"页面回显的就是库里的值"
-#   所以它必须是**库里真实存在的档案**，否则 UI 显示和注入值对不上 ——
-#   那种失败最难查：看起来像前端 bug，其实是测试数据没对齐。
+#   否则 UI 显示和基线对不上 —— 那种失败最难查：看起来像前端 bug，其实是测试数据没对齐。
+# 注意 activityLevel 填的是前端的 value（moderately_active），不是页面上的中文标签。
 PROFILE = {
     "age": _env_int("AUTOTEST_UI_PROFILE_AGE", 26),
     "gender": _env("AUTOTEST_UI_PROFILE_GENDER", "male"),
     "height": float(_env("AUTOTEST_UI_PROFILE_HEIGHT", "178")),
     "weight": float(_env("AUTOTEST_UI_PROFILE_WEIGHT", "70")),
-    # 取值必须是前端的 value 而不是 label：
-    #   sedentary / lightly_active / moderately_active / very_active / extra_active
-    # 页面上显示的是"中度活动"。填 label 的话 el-select 匹配不到，会被判为未选择 ——
-    # 症状是保存时提示"请选择活动水平"，而人明明选了。
+    # 这里是**接口契约**里的取值（sedentary / lightly_active / ...），
+    # 注意与页面上的中文标签（"中度活动"）不同：ensure_profile() 发给后端时要转成标签，
+    # 用例断言页面回显时又要按标签比对 —— 两套表示法别混（front2 的下拉 value 就是中文）。
     "activityLevel": _env("AUTOTEST_UI_PROFILE_ACTIVITY", "moderately_active"),
     "bloodPressure": _env("AUTOTEST_UI_PROFILE_BP", "120/80"),
     "bloodSugar": float(_env("AUTOTEST_UI_PROFILE_SUGAR", "5.2")),

@@ -4,20 +4,25 @@
 # POM 的边界在这儿（很重要，划错了会烂成另一个样）：
 #   Page Object 里**只写"怎么操作这个页面"**：元素在哪、怎么点、怎么填、怎么读。
 #   断言留一部分在页面对象里：
-#     · "这个页面到了没有"（is_loaded / expect_on_page）—— 这是页面自己的知识
+#     · "这个页面到了没有"（expect_loaded）—— 这是页面自己的知识
 #     · "业务对不对"（BMI 算得对不对、记录是不是真进了库）—— 留在用例里
 #   把业务断言塞进 page 对象，用例读起来就是一行 page.xxx()，等于没写用例，
 #   出了问题也看不出"哪条需求被违反了"。
 #
-# ── 定位策略（这个项目没有 data-testid，只能靠语义定位）──────────
-#   Element Plus 的组件最终都渲染成标准 DOM，可访问名和 placeholder 是稳定的：
-#     el-button        → <button><span>登录</span></button>   → get_by_role("button", name="登录")
-#     el-input         → <div class="el-input"><input placeholder="...">
-#     el-input-number  → 内层同样是 <input>（比外层 div 好定位得多）
-#     el-select        → 触发器是 div，**下拉面板挂在 body 下**，不在表单里
-#     el-table         → <tr class="el-table__row">
+# ── DOM 约定（被测前端 front2 是零依赖实现，没有 Element Plus）──────────
+# 组件名和源码（front2/src）一一对应：
 #
-#   ⚠️ 最推荐的做法是给关键元素加 data-testid（`<el-input data-testid="login-email">`），
+#   轻提示        ToastHost.vue      → .toast-wrap .toast（error 类名区分红/绿）
+#   二次确认      ConfirmDialog.vue  → .overlay.open .modal（按钮文案由 okText 决定）
+#   表单项        各 View 里的 .field（<label> + input/textarea，label 没有 for 关联）
+#   分段选择      .seg（一排 button，选中项带 .on）
+#   多选 chip     .chip（选中项带 .on）
+#
+# ── 定位策略（这个项目没有 data-testid，只能靠语义）────────────────────
+#   顶用的是 placeholder / 可访问名 / 文案，加上 front2 给关键输入框留的 id
+#   （foodSearch / gramsInput / noteInput）—— 弹窗里的操作优先用 id，比文案稳。
+#
+#   ⚠️ 最推荐的做法是给关键元素加 data-testid（`<input data-testid="login-email">`），
 #      定位就从"猜文案"变成"查固定锚点"。这件事该提给前端，属于可测性改进 ——
 #      在简历里它是"发现了可测性风险并推动解决"，比多写 20 条用例更能说明问题。
 #      在这之前，靠 placeholder + label 文案定位，**文案一改选择器就断**，
@@ -69,70 +74,86 @@ class BasePage:
     # ---------------- 定位辅助 ----------------
 
     def by_role_button(self, name, exact=False):
+        """按可访问名找按钮。
+
+        默认 exact=False 是 Playwright 的语义（子串匹配）；
+        名字可能撞车的场景（"登录" vs "登录/注册"）由调用方传 exact=True。
+        """
         return self.page.get_by_role("button", name=name, exact=exact)
 
     def by_placeholder(self, placeholder):
-        """placeholder 匹配。用 or_ 兼容"完全相等"和"包含"两种写法。
-
-        为什么不一上来就用包含匹配：
-          "请输入邮箱地址" 和 "请输入邮箱" 会同时命中，
-          填密码时可能填进邮箱框 —— 这种错不会报元素找不到，只会报"登录失败"。
-          所以优先 exact，确实要模糊匹配时由调用方显式传。
-        """
+        """placeholder 匹配。优先精确：'请输入邮箱地址' 和 '请输入邮箱' 会互相误伤。"""
         return self.page.get_by_placeholder(placeholder)
 
-    def form_item(self, label, exact=True):
-        """按表单项的 label 抓整块，再往里找 input。
+    def field(self, label, exact=True):
+        """按 label 文案抓一个表单项 .field。
 
-        Element Plus 的 el-form-item 结构：
-          <div class="el-form-item"><label class="el-form-item__label">邮箱</label>
-            <div class="el-form-item__content"><div class="el-input"><input ...>
-
-        为什么需要这个而不只用 placeholder：
-          el-input-number / el-select 常常没有 placeholder，
-          只能靠"它属于哪个 label"来定位。
+        label 没有 for 属性、input 也没有 id（弹窗里那几个除外），
+        只能靠"包含这段文案的 .field"来圈定范围。
+        用 exact：'年龄（岁）' 和 '年龄' 是两个不同的字段，模糊匹配会填错框。
         """
-        return self.page.locator(".el-form-item").filter(
+        return self.page.locator(".field").filter(
             has=self.page.get_by_text(label, exact=exact)
         ).first
 
-    def form_input(self, label, exact=True):
-        """按 label 找到该表单项里的 input（含 el-input-number 的内层 input）。"""
-        return self.form_item(label, exact=exact).locator("input").first
+    def field_input(self, label, exact=True):
+        """表单项里的输入控件（input 或 textarea 都覆盖）。"""
+        return self.field(label, exact=exact).locator("input, textarea").first
 
-    def el_select(self, label, exact=True):
-        """按 label 找到 el-select 的触发器（点它才会展开下拉）。"""
-        return self.form_item(label, exact=exact).locator(".el-select").first
+    def seg_option(self, scope, name, exact=True):
+        """.seg 分段选择里的一个选项按钮。
 
-    def pick_select_option(self, option_text, timeout=EXPECT_TIMEOUT):
-        """选中已展开的下拉项。
-
-        ⚠️ 坑：下拉面板 teleport 到 body 末尾，且**上一次展开的面板不会立刻消失**。
-        直接 `page.get_by_text("中等")` 可能点到隐藏面板里的项，
-        点击落在不可见元素上 → Playwright 一直重试直到超时。
-        所以限定 `:visible`，只点当前展开的那个。
+        scope 必传：性别、餐次的 .seg 都不止一个，不圈范围会点到别的。
+        用 get_by_role（可访问名匹配）而不是 has_text 正则锚点：
+          Vue 模板 `{{ name }}` 渲染出来的按钮 innerText 带换行缩进，
+          ^name$ 永远匹配不上；可访问名会做空白归一化，稳。
         """
-        option = self.page.locator(
-            ".el-select-dropdown:visible .el-select-dropdown__item"
-        ).filter(has_text=option_text).first
-        option.click(timeout=timeout)
+        return scope.get_by_role("button", name=name, exact=exact)
+
+    def chip(self, scope, name):
+        """多选 chip 按钮（慢病 / 饮食偏好）。scope 同样必传。"""
+        return scope.get_by_role("button", name=name, exact=True)
+
+    # ---------------- 反馈类（全局组件）----------------
+
+    def toast(self, text=None, timeout=EXPECT_TIMEOUT):
+        """轻提示（ToastHost）。
+
+        两个坑：
+          · 2.6s 后自动淡出，断言必须用 expect 等"出现"，不能睡一觉再看；
+          · 连续动作会叠出多条，filter(has_text=...) 后取 first。
+        返回 locator 而不是 self：调用方经常还要断言它有 error 类（红色报错），
+        返回 locator 才能继续 .to_have_class()。
+        """
+        wrap = self.page.locator(".toast-wrap .toast:visible")
+        if text is None:
+            loc = wrap.first
+        else:
+            loc = wrap.filter(has_text=text).first
+        expect(loc).to_be_visible(timeout=timeout)
+        return loc
+
+    def wait_toast_gone(self, timeout=EXPECT_TIMEOUT):
+        """等当前提示全部消失。删除/保存后的连续动作前要用它，否则会点到半透明的 toast。"""
+        expect(self.page.locator(".toast-wrap .toast")).to_have_count(0, timeout=timeout)
         return self
 
-    def dialog(self):
-        """当前打开的 el-dialog。
+    def confirm_dialog(self, ok_text="确认"):
+        """二次确认弹窗（ConfirmDialog）。
 
-        同理，多个弹窗会叠在 DOM 里，只取可见的那个。
+        普通弹窗和确认框都是 .overlay.open .modal，
+        按钮文案由调用方的 okText 决定（删除确认传的是「删除」）。
         """
-        return self.page.locator(".el-dialog:visible").last
+        box = self.page.locator(".overlay.open .modal").last
+        expect(box).to_be_visible(timeout=EXPECT_TIMEOUT)
+        box.get_by_role("button", name=re.compile(f"^{re.escape(ok_text)}$")).click()
+        return self
 
-    def table_rows(self, scope=None):
-        """表格数据行。
-
-        排除展开行（type="expand" 会额外渲染一行 el-table__expanded-cell），
-        否则"行数"永远比实际记录数多。
-        """
-        root = scope or self.page
-        return root.locator(".el-table__body-wrapper tbody tr.el-table__row")
+    def modal(self):
+        """当前打开的页面级弹窗（添加记录这类 .modal.wide）。"""
+        loc = self.page.locator(".overlay.open .modal").last
+        expect(loc).to_be_visible(timeout=EXPECT_TIMEOUT)
+        return loc
 
     # ---------------- 等待 / 断言辅助 ----------------
 
@@ -159,29 +180,6 @@ class BasePage:
         expect(self.page).to_have_url(pattern, timeout=timeout)
         return self
 
-    # ---------------- 反馈类（全局组件）----------------
-
-    def toast(self, text=None, timeout=EXPECT_TIMEOUT):
-        """ElMessage 轻提示。
-
-        ElMessage 是单例队列，2~3s 后自动消失，且**同名提示可能连续出现两次**
-        （比如重复点提交）。所以：
-          · 断言用 expect(toast).to_contain_text(...)，
-          · 不要自己 sleep 等它消失，等消失用 expect_hidden。
-        """
-        if text is None:
-            return self.page.locator(".el-message:visible").first
-        locator = self.page.locator(".el-message:visible").filter(has_text=text).first
-        expect(locator).to_be_visible(timeout=timeout)
-        return self
-
-    def wait_toast_gone(self, timeout=EXPECT_TIMEOUT):
-        expect(self.page.locator(".el-message:visible")).to_have_count(0, timeout=timeout)
-        return self
-
-    def confirm_dialog(self, button_text="确定"):
-        """el-message-box（二次确认框，注意它**不是** el-dialog）。"""
-        box = self.page.locator(".el-message-box:visible").last
-        expect(box).to_be_visible(timeout=EXPECT_TIMEOUT)
-        box.get_by_role("button", name=button_text).click()
-        return self
+    def expect_loaded(self, timeout=EXPECT_TIMEOUT):
+        """子类覆盖：断言"这个页面真的到了"。"""
+        raise NotImplementedError("各页面自己定义'加载完成'的标志")

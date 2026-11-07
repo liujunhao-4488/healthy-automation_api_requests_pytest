@@ -1,5 +1,5 @@
 # common/auth_state.py
-# 作用：**用接口拿 token，直接注入浏览器本地存储，跳过 UI 登录**。
+# 作用：**用接口拿 token，直接写进浏览器 localStorage（sh_session），跳过 UI 登录**。
 #
 # 这是整层 UI 自动化里唯一"值得单独写一个模块"的东西，原因：
 #   一次 UI 登录 = 填表(2 次输入) + 点按钮 + 等 axios + 等路由跳转 + 等档案接口，
@@ -9,37 +9,39 @@
 #
 #   直注之后：一次 requests 登录（约 80ms）+ 一次 add_init_script，几乎零成本。
 #
-# ── 为什么"不能只写 token 这一个键" ──────────────────────────────
-#   前端存了两处（frontend/src/stores/user.js）：
-#       localStorage['token']       = 裸 JWT 字符串
-#       localStorage['health-user'] = 整个用户态 JSON（含 healthInfo / role / userId）
+# ── 为什么直注是"等价于登录"，不是伪造 ──────────────────────────
+#   front2 的登录成功回调（stores/app.js 的 enter(res.data)）做的事情就是：
+#       localStorage['sh_session'] = JSON.stringify(res.data 挑出的字段)
+#   这里注入的 payload 和它**是同一个东西**（字段清单见 build_session），
+#   所以"注入了还是被踢回登录页"只可能是注入本身不对，而不是"测试环境特殊"。
 #
-#   路由守卫（frontend/src/router/index.js）读的是 **health-user**，不是 token：
-#       · 只写 token → 守卫里 `persisted` 为 null → role 默认 'user'、档案判为未完成
-#       · 访问 /dashboard 能进（那条只查 token）
-#       · 但进入任何"需要档案"的页面时，前端会认为你还没建档案，页面走空态
-#       · 想测 /health-info-basic 引导流程时，反而**必须**不写 healthInfo
-#   所以下面把「注入哪种状态」做成显式参数（profile_completed），
-#   而不是让每个用例自己去拼 localStorage —— 拼错了会变成"前端 bug" 的假象。
+#   健康档案不在 session 里（front2 用 sh_health / sh_health_filled 另存），
+#   且档案页挂载时会 GET /health/info 以后端为准 —— 所以这里**不伪造档案数据**，
+#   缺档案时由 ensure_profile() 用接口补建（那是测试数据准备，不是绕过校验）。
+#
+#   写错 key 的症状很隐蔽：守卫读不到 session 会把你送回 /login，
+#   看起来像"token 无效"，实际是 key 名不对。所以 key 名提成常量，
+#   和 front2/src/services/http.js 的 SESSION_KEY 保持字面一致。
 #
 # ── 为什么不 import 接口层的 common.accounts ────────────────────
 #   两个项目各有一个 `common` 包，同名包同时进 sys.path 会互相盖住，
 #   症状是 ImportError 或"导进来的是另一个项目的函数"，且只在 IDE 里偶发。
 #   这里直接用 requests 打同一个 /auth/login（同一套账号、同一份契约、同一个测试库），
 #   复用的是**接口和账号体系**，不是代码文件 —— 这是刻意选择，不是省事。
-#
-#   想彻底消除重复，正路是把账号保障抽成独立的 `autotest_shared` 包，
-#   两个项目都装它。那是一次跨项目的结构调整，不该夹在 UI 层搭建里做。
 
 import json
 import time
 
 import requests
 
-from config.config import BACKEND_URL, TEST_USER, TEST_USERNAME
+from config.config import BACKEND_URL, PROFILE, TEST_USER, TEST_USERNAME
 
 LOGIN_PATH = "/auth/login"
 REGISTER_PATH = "/auth/register"
+
+# 与 front2/src/services/http.js 的 SESSION_KEY、stores/app.js 的 K.session 一致。
+# http.js 从这里读 token 发请求 —— 写错这个 key，注入后所有请求都是 401。
+SESSION_KEY = "sh_session"
 
 # token 缓存文件。和 storage_state 放一起，方便人工打开看。
 # 缓存的唯一目的是**同一台机器连跑多轮时省一次登录**，
@@ -50,6 +52,8 @@ CACHE_TTL = 600  # 秒；超过就重新登，别拿一个快过期的 token 去
 class AuthBootstrapError(RuntimeError):
     """拿不到可用 token。消息直接面向人，调用方原样展示。"""
 
+
+# ==================== 账号准备（走接口）====================
 
 def _json(resp):
     try:
@@ -110,10 +114,9 @@ def token_exp_seconds(token):
     """从 JWT 里读 exp（秒），读不到返回 None。
 
     为什么要自己解 JWT 而不问后端：
-      前端 isTokenExpired() 就是这么干的（裸 atob 解第二段），
+      前端 isLoggedIn 也是看本地 session 里的 token 有没有过期，
       要保证"注入的 token 前端认可"，判据必须和前端一致。
-      差一天就因为 exp 判错，症状是"注入了还是被踢回登录页"。
-    """
+  """
     try:
         payload = token.split(".")[1]
         payload += "=" * (-len(payload) % 4)
@@ -129,104 +132,61 @@ def is_expired(token, skew=60):
     """token 是否过期（留 skew 秒余量：别拿一个 10 秒后过期的 token 跑用例）。"""
     exp = token_exp_seconds(token)
     if exp is None:
-        return False  # 没有 exp 就当前端认为"不过期"，和 isTokenExpired 保持一致
+        return False  # 没有 exp 就当前端认为"不过期"，和前端判据保持一致
     return exp <= time.time() + skew
 
 
-def build_user_state(user, profile=None, profile_completed=True):
-    """拼出前端 health-user 的完整结构。
+# ==================== 登录态直注 ====================
 
-    字段必须和 stores/user.js 的 loadPersistedUser() 一一对应 ——
-    少写一个不会报错，只会让某个页面表现异常，排查时很难联想到"注入少了个字段"。
+def build_session(account):
+    """从接口登录返回的 data 里挑出会话需要的字段。
 
-    profile_completed=False 时 healthInfo 置 None：
-      路由守卫会判定"档案未完成"，用来测 /health-info-basic 的引导流程。
+    前端 enter() 显式挑了这几个字段（多带不带都不报错，但少带会丢显示），
+    这里保持同一份清单，别把 res.data 整包塞进去 ——
+    后端将来往 data 里加字段时，整包塞会把这些字段悄悄变成"前端可读的隐藏数据"。
     """
     return {
-        "userId": user.get("userId"),
-        "username": user.get("username") or "",
-        "email": user.get("email") or "",
-        "phone": user.get("phone") or "",
-        "avatar": user.get("avatar") or "",
-        "role": user.get("role") or "user",
-        "token": user.get("token") or "",
-        "healthInfo": _profile_payload(profile) if profile_completed else None,
-        "healthAnalysis": None,
-        "dietGoal": None,
-        "dietGoalMeta": None,
-        "healthHistory": [],
-        "recipeRecommendations": None,
-        "ingredientAssistantHistory": [],
+        "userId": account.get("userId"),
+        "username": account.get("username") or "",
+        "email": account.get("email") or "",
+        "phone": account.get("phone") or "",
+        "role": account.get("role") or "user",
+        "avatar": account.get("avatar") or "",
+        "token": account.get("token") or "",
     }
 
 
-def _profile_payload(profile):
-    """把 config.PROFILE 转成前端 healthInfo 的形状。
-
-    bmi / bmr 这里自己算而不是留空：
-      它们是页面上的**只读派生值**，前端拿到 healthInfo 就直接渲染。
-      留 null 的话页面上是空白，用例断言"BMI 有值"会失败，
-      而失败原因是注入数据不全 —— 又会浪费一轮排查。
-    """
-    height_m = profile["height"] / 100.0
-    bmi = round(profile["weight"] / (height_m ** 2), 1)
-
-    # Mifflin-St Jeor（男 +5 / 女 -161）—— 和后端 HealthService 的公式一致
-    base = 10 * profile["weight"] + 6.25 * profile["height"] - 5 * profile["age"]
-    bmr = round(base + (5 if profile["gender"] == "male" else -161))
-
-    return {
-        "age": profile["age"],
-        "gender": profile["gender"],
-        "height": profile["height"],
-        "weight": profile["weight"],
-        "activityLevel": profile["activityLevel"],
-        "bloodPressure": profile["bloodPressure"],
-        "bloodSugar": profile["bloodSugar"],
-        "exerciseDuration": profile["exerciseDuration"],
-        "chronicDiseases": profile["chronicDiseases"],
-        "bmi": bmi,
-        "bmr": bmr,
-    }
-
-
-def build_init_script(token, user_state):
-    """生成写 localStorage 的 JS。
+def build_init_script(account):
+    r"""生成往 localStorage 写 sh_session 的 init script。
 
     ⚠️ 三个必须踩对的点：
-      1) add_init_script 注册在 **context** 上，且必须在 new_page / goto **之前**。
-         它保证"页面自己的 JS 跑之前"先执行 —— pinia 的 state 初始化一上来就读
-         localStorage，晚一步就等于用户已经进了登录页才补票，守卫早判完了。
-         注意它**不要求先导航**：注册后该 context 下每次导航都会先跑这段脚本，
-         所以不需要"先 goto 空白页再 evaluate"。那种写法多一次导航、多 300ms，
-         而且遇到 SPA 内部路由变化时根本不会再执行。
-      2) localStorage 是**按 origin 隔离**的。前端在 5173，token 就写在 5173 下；
-         写去 8081（后端）没有任何用。脚本跟随页面 origin 自动落位，
-         所以只能注入到"前端自己的页面"，这也是它必须是 init script 的原因。
-      3) 用 json.dumps 序列化，别手拼字符串 —— 用户名/慢病描述里有中文、
-         可能带引号，手拼一定会在某个账号上炸，而且报的是 JS 语法错误，与账号无关的样子。
+      1) 必须注册在 **context** 上，且在 new_page / goto **之前**。
+         页面自己的 JS 跑之前先执行 —— pinia 的 store 在模块加载时就读一次
+         localStorage，晚一步守卫就判完了，等于"人已经进登录页了才补票"。
+         注册后该 context 下每次导航都会先跑这段脚本，不需要"先 goto 空白页再 evaluate"。
+      2) localStorage 是**按 origin 隔离**的。前端在 5174，token 就写在 5174 下；
+         写去 8081（后端）没有任何用。
+      3) 用 json.dumps 序列化，别手拼字符串 —— 用户名里有中文、可能带引号，
+         手拼一定会在某个账号上炸，而且报的是 JS 语法错误，与账号无关的样子。
+         ensure_ascii=True 是为了把中文转成 \uXXXX：U+2028/U+2029 会截断 JS 字符串字面量。
     """
-    # ensure_ascii=True：把中文转成 \uXXXX。
-    # 直接用原字符也能跑，但 U+2028/U+2029 会截断 JS 字符串字面量，属于极难复现的坑。
-    payload = json.dumps({"token": token, "user": user_state}, ensure_ascii=True)
+    payload = json.dumps({"session": build_session(account)}, ensure_ascii=True)
     return (
         "(() => {"
         f"  const p = {payload};"
-        "  localStorage.setItem('token', p.token);"
-        "  localStorage.setItem('health-user', JSON.stringify(p.user));"
+        f"  localStorage.setItem('{SESSION_KEY}', JSON.stringify(p.session));"
         "})();"
     )
 
 
-def build_storage_state(token, user_state, base_url):
-    """生成 Playwright 的 storage_state 结构（备用路径）。
+def build_storage_state(account, base_url):
+    """Playwright storage_state 结构（人工调试用，运行走 init_script）。
 
     和 add_init_script 的区别：
       · init_script 每次新 context 都重新执行，天然干净；
       · storage_state 是一份"已经写好的快照"，可以直接喂给
         browser.new_context(storage_state=...)，也能被 `playwright codegen --load-storage`
-        读去做手工调试 —— 排查时很有用，所以留着落盘。
-    这里只生成当前前端 origin 下的条目，不掺别的域名。
+        读去做手工调试 —— 排查"注入了还是被踢回登录页"时比截图直观。
     """
     from urllib.parse import urlparse
 
@@ -237,9 +197,64 @@ def build_storage_state(token, user_state, base_url):
             {
                 "origin": origin,
                 "localStorage": [
-                    {"name": "token", "value": token},
-                    {"name": "health-user", "value": json.dumps(user_state, ensure_ascii=False)},
+                    {
+                        "name": SESSION_KEY,
+                        "value": json.dumps(build_session(account), ensure_ascii=False),
+                    }
                 ],
             }
         ],
     }
+
+
+# ==================== 健康档案预建 ====================
+# 档案页的数据唯一来源是后端 GET /health/info（healthFilled 由此判定），
+# 测试账号没档案时 KPI 区整个 v-if 掉，档案用例无从跑起。
+# 所以在会话开始时用接口补建一条（幂等：有就不动），和 login_via_api
+# 里"账号不存在自动注册"是同一个思路 —— 环境缺数据该补的是环境，不是改用例。
+#
+# payload 按前端适配器 toHealthDTO 的合同来（gender 收 male/female、
+# activityLevel 存中文标签）。字段值必须跟前端形状一致，这正是
+# "直注数据必须跟前端形状一致"的又一次体现。
+
+_HEALTH_INFO = "/health/info"
+
+
+def ensure_profile(account, profile=None, timeout=10):
+    """保证测试账号在后端有健康档案。返回 True 表示新建了，False 表示本来就有。
+
+    profile 默认取 config.PROFILE（档案回归基线），字段值按前端合同转换：
+    activityLevel 存中文标签、慢病转逗号串。
+    """
+    profile = profile or PROFILE
+    token = account["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    resp = requests.get(BACKEND_URL + _HEALTH_INFO, headers=headers, timeout=timeout)
+    body = _json(resp)
+    if _ok(resp.status_code, body) and body.get("data"):
+        return False  # 已有档案，不动 —— 别覆盖测试库里的既有数据
+
+    payload = {
+        "age": profile["age"],
+        "gender": "male" if profile["gender"] == "male" else "female",
+        "height": profile["height"],
+        "weight": profile["weight"],
+        "bloodPressure": profile["bloodPressure"],
+        "bloodSugar": profile["bloodSugar"],
+        # 下拉选项是中文标签，后端原样存
+        "activityLevel": "中度活动",
+        "exerciseDuration": profile["exerciseDuration"],
+        "exerciseType": "",
+        "chronicDiseases": "" if profile["chronicDiseases"] in ("无", "") else profile["chronicDiseases"],
+    }
+    resp = requests.post(
+        BACKEND_URL + _HEALTH_INFO, json=payload, headers=headers, timeout=timeout
+    )
+    body = _json(resp)
+    if not _ok(resp.status_code, body):
+        raise AuthBootstrapError(
+            f"健康档案预建失败（HTTP {resp.status_code}）：{body}\n"
+            f"  档案用例依赖测试账号有档案；也可以手动在档案页填一次。"
+        )
+    return True

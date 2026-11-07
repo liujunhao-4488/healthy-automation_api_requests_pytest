@@ -34,22 +34,18 @@ from common.auth_state import (
     AuthBootstrapError,
     build_init_script,
     build_storage_state,
-    build_user_state,
     is_expired,
     login_via_api,
 )
-from common.auth_state_f2 import build_f2_init_script, build_f2_storage_state
 from config.config import (
     ARTIFACTS,
     BROWSER,
     DEFAULT_TIMEOUT,
     EXPECT_TIMEOUT,
-    FRONT2_URL,
     FRONTEND_URL,
     HEADLESS,
     LOCALE,
     NAV_TIMEOUT,
-    PROFILE,
     REQUIRE_SERVICE,
     SLOWMO,
     TEST_USER,
@@ -132,27 +128,12 @@ def pytest_collection_finish(session):
         return
 
     problems = []
-    # 探活按"这次实际要跑哪版前端"决定，别无脑探 FRONTEND_URL：
-    #   只跑 front2（test_cases/front2/...）时老版前端根本没参与，
-    #   5173 没起就把整场拦死，属于把"不相关环境没就绪"当成了致命错误。
-    paths = [item.nodeid.replace("\\", "/") for item in session.items]
-    has_f2 = any(p.startswith("test_cases/front2/") for p in paths)
-    has_f1 = any(not p.startswith("test_cases/front2/") for p in paths)
-
-    if has_f1:
-        ok, detail = _probe(FRONTEND_URL)
-        if not ok:
-            problems.append(
-                f"前端 {FRONTEND_URL} 打不开（{detail}）\n"
-                f"    → cd frontend && npm run dev（默认 5173）"
-            )
-    if has_f2:
-        ok, detail = _probe(FRONT2_URL)
-        if not ok:
-            problems.append(
-                f"front2 {FRONT2_URL} 打不开（{detail}）\n"
-                f"    → cd front2 && npm run dev（端口 5174）"
-            )
+    ok, detail = _probe(FRONTEND_URL)
+    if not ok:
+        problems.append(
+            f"前端 {FRONTEND_URL} 打不开（{detail}）\n"
+            f"    → cd front2 && npm run dev（端口 5174）"
+        )
 
     try:
         login_via_api()
@@ -250,41 +231,6 @@ def _ensure_fresh(account):
     return account
 
 
-@pytest.fixture
-def auth_context(browser, request, account):
-    """**已登录**的上下文：token 直注，跳过 UI 登录。
-
-    为什么要在 context 级注入而不是 page 级：
-      add_init_script 注册在 context 上，该 context 下**所有**页面
-      （包括用例中途打开的新标签页）都会自动带上 token。
-      注册在 page 上就只对那一个页面有效，遇到 target="_blank" 就又变回未登录。
-    """
-    account = _ensure_fresh(account)
-    user_state = build_user_state(account, PROFILE, profile_completed=True)
-    script = build_init_script(account["token"], user_state)
-
-    # 顺手落一份 storage_state：不是给运行用的（运行用 init_script），
-    # 是给人排查用的 —— `playwright codegen --load-storage=...` 能直接进已登录态。
-    try:
-        import json
-
-        state_path = ARTIFACTS["storage"] / f"{artifacts.safe_name(request.node.nodeid)}.json"
-        state_path.write_text(
-            json.dumps(
-                build_storage_state(account["token"], user_state, FRONTEND_URL),
-                ensure_ascii=False,
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
-    except Exception:
-        pass
-
-    ctx = _new_context(browser, inject_script=script)
-    yield ctx
-    _close_context(ctx, request.node)
-
-
 def _open_page(ctx):
     page = ctx.new_page()
     page.set_default_timeout(DEFAULT_TIMEOUT)
@@ -298,6 +244,44 @@ def page(context):
     yield pg
     if not pg.is_closed():
         pg.close()
+
+
+# ==================== 已登录夹具 ====================
+# 登录态只有一个 key：sh_session（详见 common/auth_state.py）。
+# 直注而不是走登录表单：一次 UI 登录 2.5~4s，十几条用例就是 40s 纯等待，
+# 而且登录页一改版，全部用例一起红，失败原因全指向"登录页选择器变了"。
+
+@pytest.fixture
+def auth_context(browser, request, account):
+    """**已登录**的上下文：token 直注，跳过 UI 登录。
+
+    为什么要在 context 级注入而不是 page 级：
+      add_init_script 注册在 context 上，该 context 下**所有**页面
+      （包括用例中途打开的新标签页）都会自动带上 token。
+      注册在 page 上就只对那一个页面有效，遇到 target="_blank" 就又变回未登录。
+    """
+    account = _ensure_fresh(account)
+
+    # 落一份 storage_state 供人工调试（codegen --load-storage 直进登录态）。
+    # 不是给运行用的（运行用 init_script），是给人排查用的。
+    try:
+        import json
+
+        state_path = ARTIFACTS["storage"] / f"{artifacts.safe_name(request.node.nodeid)}.json"
+        state_path.write_text(
+            json.dumps(
+                build_storage_state(account, FRONTEND_URL),
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+    except Exception:
+        pass
+
+    ctx = _new_context(browser, inject_script=build_init_script(account))
+    yield ctx
+    _close_context(ctx, request.node)
 
 
 @pytest.fixture
@@ -314,80 +298,16 @@ def user_page(auth_context):
         pg.close()
 
 
-@pytest.fixture
-def guest_profile_page(browser, request, account):
-    """**已登录、但档案未完成**的页面。
-
-    存在的理由：路由守卫会把"没建档案的用户"导向 /health-info-basic，
-    这条引导流程只有从这里才能测到。
-    如果所有用例都注入"档案完整"状态，就等于把整个新用户引导流程漏掉了 ——
-    而那恰恰是新注册用户 100% 会走的路。
-    """
-    account = _ensure_fresh(account)
-    user_state = build_user_state(account, PROFILE, profile_completed=False)
-    ctx = _new_context(browser, inject_script=build_init_script(account["token"], user_state))
-    pg = _open_page(ctx)
-    yield pg
-    if not pg.is_closed():
-        pg.close()
-    _close_context(ctx, request.node)
-
-
-# ==================== front2（膳衡重写版）的夹具 ====================
-# front2 的登录态只有一个 key：sh_session（详见 common/auth_state_f2.py）。
-# 注入方式、生命周期管理和老版完全同构，只有"写什么"不同 ——
-# 所以 fixture 结构照抄 auth_context / user_page，别去"通用化"两套注入：
-# 两版前端的存储结构本来就不同，硬抽成一个参数化 fixture 只会让两边都难读。
-
-@pytest.fixture
-def f2_auth_context(browser, request, account):
-    """front2 的**已登录**上下文：同一个后端账号，注入 sh_session。
-
-    account 夹具直接复用：登录接口是同一个（8081 /auth/login），
-    token 也是同一份 —— 换的只是"前端把它存哪儿"。
-    """
-    account = _ensure_fresh(account)
-
-    # 落一份 storage_state 供人工调试（codegen --load-storage 直进登录态）
-    try:
-        import json
-
-        state_path = ARTIFACTS["storage"] / f"f2__{artifacts.safe_name(request.node.nodeid)}.json"
-        state_path.write_text(
-            json.dumps(
-                build_f2_storage_state(account, FRONT2_URL),
-                ensure_ascii=False,
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
-    except Exception:
-        pass
-
-    ctx = _new_context(browser, inject_script=build_f2_init_script(account))
-    yield ctx
-    _close_context(ctx, request.node)
-
-
-@pytest.fixture
-def f2_user_page(f2_auth_context):
-    """front2 的已登录页面。命名对照 user_page（f2 前缀标明是哪个前端）。"""
-    pg = _open_page(f2_auth_context)
-    yield pg
-    if not pg.is_closed():
-        pg.close()
-
-
 @pytest.fixture(scope="session")
-def f2_profile_ready(account):
-    """保证测试账号在后端有健康档案（front2 档案页数据唯一来源是后端）。
+def profile_ready(account):
+    """保证测试账号在后端有健康档案（档案页数据唯一来源是后端）。
 
     session 级 + 幂等：第一场跑完档案就在了，之后每场只多一次 GET。
     health 域的用例依赖它；没有档案时 KPI 区是 v-if 掉的，用例无从断言。
     """
-    from common.auth_state_f2 import ensure_f2_profile
+    from common.auth_state import ensure_profile
 
-    ensure_f2_profile(account)
+    ensure_profile(account)
     return account
 
 
@@ -421,7 +341,7 @@ def pytest_runtest_makereport(item, call):
         return
 
     pg = None
-    for name in ("user_page", "page", "guest_profile_page", "f2_user_page"):
+    for name in ("user_page", "page"):
         pg = item.funcargs.get(name)
         if pg is not None:
             break
@@ -444,12 +364,10 @@ def pytest_runtest_makereport(item, call):
 #   weekly   : 全部 —— 每周回归跑这一档
 #   slow_ai  : 依赖大模型回复
 # 新增目录时只改这张表，用例文件保持干净。
-#
-# front2/ 的用例放在 test_cases/front2/<域>/ 二级目录下，
-# module 取两段（front2/auth），和老版的一级目录区分开。
-_SMOKE_MODULES = {"auth", "health", "front2/auth", "front2/health"}
-_AI_MODULES = {"assistant", "front2/assistant"}
-_FORM_LOGIN_MODULES = {"auth", "front2/auth"}
+_SMOKE_MODULES = {"auth", "health"}
+_AI_MODULES = {"assistant"}
+_FORM_LOGIN_MODULES = {"auth"}
+_PROFILE_MODULES = {"health"}
 
 
 def pytest_itemcollected(item):
@@ -461,9 +379,7 @@ def pytest_itemcollected(item):
     """
     path = item.nodeid.split("::")[0].replace("\\", "/")
     parts = path.split("/")
-    module = "/".join(parts[1:3]) if len(parts) > 2 and parts[1] == "front2" else (
-        parts[1] if len(parts) > 1 else ""
-    )
+    module = parts[1] if len(parts) > 1 else ""
 
     item.add_marker(pytest.mark.regression)
     item.add_marker(pytest.mark.weekly)
@@ -474,7 +390,7 @@ def pytest_itemcollected(item):
         item.add_marker(pytest.mark.slow_ai)
     if module in _FORM_LOGIN_MODULES:
         item.add_marker(pytest.mark.ui_form_login)
-    if module in ("health", "front2/health"):
+    if module in _PROFILE_MODULES:
         item.add_marker(pytest.mark.needs_profile)
 
 

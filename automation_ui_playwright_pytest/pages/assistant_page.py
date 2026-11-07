@@ -1,136 +1,124 @@
 # pages/assistant_page.py
-# AI 饮食助手（frontend/src/views/IngredientSubstitute.vue）
-# 路由：/dashboard/ingredient-substitute
+# 作用：front2 AI 助手页（AssistantView）的 Page Object。
 #
-# ── UI 层测 AI 对话，该断言什么（这个决定比选择器重要得多）───────────
-#   ✗ 不断言回复内容。"控糖早餐怎么搭配" 每次答得都不一样，把某句话写进断言，
-#     这条用例就会长期红着并最终被人 skip 掉 —— 那是负资产。
-#   ✗ 不断言回复是否"科学/正确"。那是模型效果，归接口层的评测集管
-#     （automation_api_requests_pytest 里已经有一套）。
-#   ✓ 断言**链路和渲染**：用户气泡出现了吗？助手气泡有内容吗？
-#     流结束后按钮恢复可点吗？会话切换后消息没串到别的会话吧？
-#   ✓ 断言**前端该拦的**：空输入能不能发出去、超长输入提示、删除会话后消息清空。
+# 页面核心是流式对话，用例面对的不确定性：
+#   · 回复耗时波动大（后端调大模型 8~25s，护栏拦截几乎秒回）——
+#     两者都给 AI_TIMEOUT 上限，用 expect 等结果，绝不 sleep 固定秒数；
+#   · 进页面会拉历史会话并自动打开最近一条 —— 消息区可能不为空，
+#     断言"收到了新回复"要数着消息发，不能只看"有没有消息"；
+#   · 流式期间有个占位气泡（.typing / .stream-text），结束后被真消息替换。
 #
-#   一句话：**UI 层管"用户看得见的流程有没有断"，接口层管"答得对不对"。**
-#   两层都去管模型效果，等于同一个东西测两遍，且 UI 那遍必然不稳定。
-#
-# ── 流式回复的"完成"怎么判（最容易写错的地方）────────────────────
-#   ✗ sleep(10)。慢的时候没答完，快的时候白等；CI 上机器更慢。
-#   ✗ 等文本不再变化。流式传输中间有停顿，会在半句话处判"完成"。
-#   ✓ 等**发送按钮的 loading 态消失**。它是 <el-button :loading="loading">，
-#     loading 就是"这一轮请求还没结束"的唯一真相来源，
-#     前端自己在 finally 里关掉它，比任何文本特征都可靠。
+# 产品点也是断言点：每条 AI 回答带「意图：xx」「来源：xx」两个 chip ——
+# 这是这个模块的可追溯性需求，UI 用例专门盯它。
 
 import re
 
 from playwright.sync_api import expect
 
 from config.config import AI_TIMEOUT, EXPECT_TIMEOUT
-from pages.base_page import BasePage
 
-SEND_BUTTON = ".send-btn"
+from pages.base_page import BasePage
 
 
 class AssistantPage(BasePage):
-    path = "/dashboard/ingredient-substitute"
+    path = "/assistant"
 
-    # ---------------- 首页 ----------------
+    def open(self, path=None, wait_until="domcontentloaded"):
+        super().open(path, wait_until)
+        return self.expect_loaded()
 
-    def expect_loaded(self):
-        # 只等输入框：它是这个页面的功能核心，且渲染最晚（在会话列表和聊天区之后）。
-        # 不去断言标题文字 —— 标题是最容易被改的东西，
-        # 而它一变，所有用例的失败信息都变成"标题不对"，掩盖真正的业务失败。
-        self.expect_visible(self.composer)
-        self.expect_visible(self.send_button)
+    def expect_loaded(self, timeout=EXPECT_TIMEOUT):
+        # exact=True：get_by_role 的 name 默认子串匹配，标题类断言一律加严
+        expect(
+            self.page.get_by_role("heading", name="AI 饮食助手", exact=True)
+        ).to_be_visible(timeout=timeout)
+        # 会话列表是异步拉的，等它有个结论（有列表或空态文案）再继续，
+        # 避免开场瞬间"既没有会话也没有空态"的中间态
+        expect(
+            self.page.locator(".conv-empty").or_(self.page.locator(".conv-row").first)
+        ).to_be_visible(timeout=timeout)
         return self
 
-    @property
-    def composer(self):
-        return self.page.get_by_placeholder("输入你的问题，例如：减脂期间晚餐怎么吃？")
+    # ---------------- 输入与发送 ----------------
 
-    @property
+    def input_box(self):
+        return self.page.locator(".chat-input textarea")
+
     def send_button(self):
-        # ⚠️ 这个按钮是 circle + 图标，没有文字：
-        #   <el-button type="success" circle class="send-btn"><el-icon><Promotion/></el-icon></el-button>
-        # 可访问名是空的，get_by_role("button", name=...) 抓不到。
-        # 这就是"没有 data-testid 时的代价"—— 只能靠 class。
-        # 该 class 一旦被样式重构改名，这条链路就断，所以它是加 data-testid 的头号候选。
-        return self.page.locator(SEND_BUTTON).first
+        return self.page.locator(".chat-input").get_by_role("button", name="发送")
 
-    def is_streaming(self):
-        """这一轮还在流式输出吗（按钮处于 loading）。"""
-        return self.send_button.evaluate("el => el.classList.contains('is-loading')")
+    def send(self, text):
+        """输入并发送。发送后输入框会被清空 —— 这本身就是"发出去了"的证据。"""
+        count_before = self.ai_message_count()
+        self.input_box().fill(text)
+        self.send_button().click()
+        expect(self.input_box()).to_have_value("", timeout=EXPECT_TIMEOUT)
+        # 等用户气泡真的出现在消息区（本地先落一条，应该瞬间可见）
+        expect(self.page.locator(".msg.user .msg-bubble").filter(has_text=text).last).to_be_visible(
+            timeout=EXPECT_TIMEOUT
+        )
+        return count_before
 
-    # ---------------- 消息 ----------------
-
-    @property
-    def assistant_bubbles(self):
-        return self.page.locator(".message-row.assistant .bubble-assistant")
-
-    @property
-    def user_bubbles(self):
-        return self.page.locator(".message-row.user .bubble-user")
-
-    def last_assistant_text(self):
-        return self.assistant_bubbles.last.inner_text().strip()
-
-    def think_indicator(self):
-        return self.page.locator(".chat-loading")
-
-    # ---------------- 发送 ----------------
-
-    def new_conversation(self):
-        self.by_role_button("新建会话").click()
+    def click_suggest(self, text):
+        """点引导页的快捷提问（等价于直接 send 这句话）。"""
+        self.page.locator(".suggest").filter(has_text=text).first.click()
         return self
 
-    def ask(self, prompt):
-        """输入并发送（填输入框 + 点发送按钮）。"""
-        self.composer.fill(prompt)
-        self.send_button.click()
-        return self
+    def guardrail_button(self):
+        """输入区下方的「试试医疗越界问题」—— 走护栏链路的捷径。"""
+        return self.page.locator(".chat-hint .link-btn")
 
-    def ask_by_quick_chip(self, label):
-        """点快捷问题发送。
+    # ---------------- 回复断言 ----------------
 
-        比填输入框更稳：快捷 chip 是普通 <button>，有可见文字，
-        定位不依赖任何 class；而 textarea 需要处理 Enter/失焦等细节。
-        代价是问题固定 —— 正好，UI 层要的就是可重复。
+    def wait_ai_settled(self, before_count=0, timeout=AI_TIMEOUT):
+        """等一条**新的 AI 回复落定**，返回最后一条 AI 消息。
+
+        两个必须绕开的坑：
+        1) 流式期间页面会插一个占位气泡（.msg 不带 user 类），它**也匹配
+           .msg:not(.user)** —— 只数消息数的话，占位一出现就"到数"了，
+           读到的是还没内容的气泡。占位气泡的标志是页面存在 .stream-text，
+           它消失 = 流式结束、占位被真消息替换。
+        2) 落定后还要确认最后一条有正文或有拦截说明（流式中断会留下空气泡）。
         """
-        self.page.locator(".quick-chip").filter(has_text=label).first.click()
+        import time
+
+        deadline = time.monotonic() + timeout / 1000
+        msgs = self.page.locator(".msg:not(.user)")
+        while time.monotonic() < deadline:
+            settled = (
+                msgs.count() == before_count + 1
+                and self.page.locator(".stream-text").count() == 0
+            )
+            if settled:
+                last = msgs.last
+                if last.locator(".blocked-note").count() or last.locator(".msg-bubble").count():
+                    return last
+            self.page.wait_for_timeout(300)
+        raise AssertionError(
+            f"等了 {timeout}ms 没等到 AI 回复落定"
+            f"（发送前 {before_count} 条，当前 {msgs.count()} 条，"
+            f"streaming={'进行中' if self.page.locator('.stream-text').count() else '已结束'}）"
+        )
+
+    def ai_message_count(self):
+        """当前 AI 消息数（含流式占位 —— 只用于"发送前"的基线计数）。"""
+        return self.page.locator(".msg:not(.user)").count()
+
+    def expect_reply_annotated(self, msg, timeout=EXPECT_TIMEOUT):
+        """断言回答带意图与来源标注（本模块的可追溯性需求）。"""
+        meta = msg.locator(".msg-meta")
+        expect(meta).to_contain_text("意图：", timeout=timeout)
+        expect(meta).to_contain_text("来源：", timeout=timeout)
         return self
 
-    def wait_reply_done(self, timeout=AI_TIMEOUT):
-        """等这一轮流式结束，并返回助手回复文本。
+    def expect_reply_nonempty(self, msg):
+        """回答正文非空（流式断了会留下空气泡，这里兜住）。"""
+        text = msg.locator(".msg-bubble").inner_text().strip()
+        assert text, "AI 回复的气泡是空的 —— 流式链路可能中断"
 
-        判定顺序：
-          ① 助手气泡出现（至少一条）
-          ② 发送按钮 loading 消失
-          ③ 助手气泡**非空**
-        第 ③ 步单独判：流式是先建一个空气泡再往里填，
-        如果后端一上来就报错，气泡会一直是空的、按钮也已恢复 ——
-        只看 ① ② 会把"打开就是空白"当成通过。
-        """
-        expect(self.assistant_bubbles.first).to_be_visible(timeout=timeout)
-        expect(self.page.locator(f"{SEND_BUTTON}.is-loading")).to_have_count(0, timeout=timeout)
-
-        bubble = self.assistant_bubbles.last
-        expect(bubble).not_to_have_text(re.compile(r"^\s*$"), timeout=EXPECT_TIMEOUT)
-        return bubble.inner_text().strip()
-
-    def ask_and_wait(self, prompt, timeout=AI_TIMEOUT):
-        self.ask(prompt)
-        return self.wait_reply_done(timeout=timeout)
-
-    # ---------------- 会话管理 ----------------
-
-    def conversation_items(self):
-        return self.page.locator(".assistant-body .conversation-item, .conversation-list li")
-
-    def delete_conversation(self):
-        self.by_role_button("删除会话").click()
-        return self
-
-    def expect_empty_chat(self):
-        expect(self.assistant_bubbles).to_have_count(0, timeout=EXPECT_TIMEOUT)
-        expect(self.user_bubbles).to_have_count(0, timeout=EXPECT_TIMEOUT)
+    def expect_blocked(self, timeout=AI_TIMEOUT):
+        """护栏拦截：出现 .blocked-note（含「安全护栏已拦截」）。"""
+        note = self.page.locator(".blocked-note").last
+        expect(note).to_be_visible(timeout=timeout)
+        expect(note).to_contain_text("安全护栏已拦截")
         return self

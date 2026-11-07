@@ -3,12 +3,11 @@
 #
 #  跑什么：
 #    MySQL(3306) → 后端 Spring Boot(8081) → 算法服务(5000) → front2 dev server(5174)
-#    再执行 automation_ui_playwright_pytest/test_cases/front2 的用例。
+#    再执行 automation_ui_playwright_pytest 的 14 条用例（登录/档案/记录/AI，POM 分层）。
 #
-#  为什么只跑 front2 这套：
-#    老版 frontend 的用例在本机还有历史红（选择器遗留问题，见 UI README），
-#    CI 的原则是"红 = 真缺陷"。等老版修绿后再把 test_cases/auth、health 加进来。
-#    conftest 的环境预检本来就按"跑哪版前端探哪版"，这里不跑 5173 它也不会探。
+#  为什么只测 front2：
+#    它是产品在用的那一版前端；老版 frontend 已退役，那套用例随之删除，
+#    避免同一场景维护两份、改一遍要改两处。
 #
 #  为什么后端起 8081 而接口层 CI 起 8080：
 #    两个前端的 vite proxy 都指向 8081（本地已切端口，见 backend 提交 abe9019），
@@ -49,11 +48,11 @@ on:
       layer:
         description: "要跑的测试分层"
         required: true
-        default: front2-smoke
+        default: smoke
         type: choice
         options:
-          - front2-smoke
-          - front2-weekly
+          - smoke
+          - weekly
 
 concurrency:
   group: ui-tests-${{ github.ref }}
@@ -76,7 +75,7 @@ env:
   # UI 自动化（config/config.py 读 AUTOTEST_*）
   # 后端 8081：与 front2/vite.config.js 的 proxy target 一致
   AUTOTEST_BASE_URL: http://127.0.0.1:8081/api
-  AUTOTEST_FRONT2_URL: http://localhost:5174
+  AUTOTEST_UI_BASE_URL: http://localhost:5174
 
 jobs:
   ui-tests:
@@ -111,16 +110,12 @@ jobs:
           set -euo pipefail
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             MARKER="${{ inputs.layer }}"
-          elif [ "${{ github.event_name }}" = "pull_request" ]; then
-            MARKER="front2-smoke"
           elif [ "${{ github.event_name }}" = "schedule" ]; then
-            MARKER="front2-weekly"
+            MARKER="weekly"
           else
-            MARKER="front2-smoke"
+            MARKER="smoke"
           fi
-          # front2-* 前缀是给人在下拉框里看的，真正传给 -m 的去掉前缀
-          MARKER="${MARKER#front2-}"
-          echo "本次分层：$MARKER（范围 test_cases/front2）"
+          echo "本次分层：$MARKER"
           echo "MARKER=$MARKER" >> "$GITHUB_ENV"
 
       - name: 安装 Node 20（跑 front2 dev server）
@@ -246,7 +241,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          python -m pytest test_cases/front2 -m "$MARKER" \
+          python -m pytest -m "$MARKER" \
             -p no:cacheprovider 2>&1 | tee pytest-console.log
 
       - name: 把结果与失败摘要写到 Run 页面

@@ -1,18 +1,15 @@
 # test_cases/auth/test_login_ui.py
-# 登录链路 —— **唯一一组真走登录表单的用例**。
+# 登录链路 —— 全套用例里**唯一真走登录表单**的一组，是 token 直注的对照组：
+# 直注省掉了登录这一段，这里就必须有人替它守着，否则登录页坏了整套用例都发现不了。
+# 账号矩阵、爆破类的穷举在接口层做过了，UI 只覆盖行为。
 #
-# ── 为什么这组必须存在，哪怕其他所有用例都靠 token 直注 ──────────────
-#   直注跳过了登录，也就等于**放弃了登录页的覆盖**。
-#   如果整套 UI 自动化只有直注，登录页的选择器全错、按钮点了没反应、
-#   后端登录接口挂了 —— 整套用例照样全绿。
-#   所以这一组是"直注的对照组"：它红了，说明被跳过的那段坏了。
-#
-#   反过来也要说清：这一组**注定慢**（每条 3~5s），所以它只覆盖
-#   "能不能登进去"和"该拦的拦没拦住"，不做穷举（不做 20 组账号密码组合）——
-#   账号矩阵在接口层 test_cases/auth/test_login.py 里已经跑过，
-#   UI 层再跑一遍是重复劳动，而且慢十倍。
+# 两处容易写错的前端行为，用例按它们的实际表现断言：
+#   · 登录成功落点是首页 '/'
+#   · 登录页预填了体验账号（DEMO_EMAIL / DEMO_PASSWORD）——
+#     所以"邮箱为空"的用例必须先 clear，直接不填是测不到空态的
 
 import re
+import time
 
 import pytest
 from playwright.sync_api import expect
@@ -20,84 +17,99 @@ from playwright.sync_api import expect
 from config.config import FRONTEND_URL, TEST_USER
 from pages.login_page import LoginPage
 
-# 登录后的去向有两条，取决于这个账号在库里有没有完整档案：
-#   档案完整 → /dashboard/health-info
-#   没有档案 → /health-info-basic（引导建档案）
-# ⚠️ 所以这里**不能写死一条路径**：
-#   测试账号的档案状态是环境状态，不是本用例能控制的东西。
-#   写死之后，换一台机器/换一个测试库，这条用例就会红在"跳转地址不符"上，
-#   而登录功能一点问题都没有 —— 那种红是纯噪音。
-LANDING = r"/(dashboard/health-info|health-info-basic)/?$"
+HOME_URL = re.compile(FRONTEND_URL.replace(".", r"\.") + r"/?$")
 
 
 class TestLogin:
-    """用 context（未注入 token 的干净上下文）+ 真实表单。"""
+    """用 page 夹具（未注入登录态的干净上下文）。"""
 
-    def test_登录成功_进入系统并落到正确首页(self, page):
+    def test_登录成功_落到首页且登录态已写入(self, page):
         login = LoginPage(page)
-        login.open().expect_loaded()
+        login.open()
 
         login.login(TEST_USER["email"], TEST_USER["password"])
 
-        # ① 成功提示 ② 离开登录页 ③ 落到两个合法首页之一
         login.expect_login_success()
-        expect(page).to_have_url(
-            re.compile(FRONTEND_URL.replace(".", r"\.") + LANDING),
-            timeout=15000,
-        )
+        expect(page).to_have_url(HOME_URL, timeout=15_000)
+        # 登录态落进 sh_session（唯一存储 key，http.js 从这里取 token）
+        session_raw = page.evaluate("() => localStorage.getItem('sh_session')")
+        assert session_raw and "token" in session_raw, "登录成功但 sh_session 没写入"
 
-    def test_密码错误_留在登录页并给出提示(self, page):
+    def test_密码错误_红色提示且留在登录页(self, page):
         login = LoginPage(page)
-        login.open().expect_loaded()
+        login.open()
 
         login.login(TEST_USER["email"], "definitely-wrong-password")
 
-        # 不断言具体文案："密码错误"/"邮箱或密码错误"/"登录失败" 都是后端改过好几次的说法。
-        # 断言的是**行为**：给了提示、且没放人进去。
         login.expect_login_failed()
-        expect(page).to_have_url(re.compile(r"/login/?$"), timeout=10000)
 
-    def test_邮箱格式非法_前端直接拦截不发请求(self, page):
-        """纯前端校验：这类断言的价值在于"没打到后端"。
+    def test_邮箱格式非法_前端拦截_请求根本没发出去(self, page):
+        """监听网络请求，断言 /auth/login 没发出。
 
-        这里只断表单错误文案出现、没有发生跳转。
-        更严格的写法是监听 request 事件断言"没发出 /auth/login"，
-        但那属于"防浪费"的优化，不是缺陷 —— 前端拦不住也只是多一次无效请求。
+        理由：这类"纯前端校验"的价值就在"不打后端"。
+        只断言"留在登录页"的话，后端挂了/校验漏了都能给出同样的表象 ——
+        监听请求才能把"校验生效"和"碰巧没成功"区分开。
         """
+        login_requests = []
+        page.on(
+            "request",
+            lambda req: login_requests.append(req.url)
+            if "/auth/login" in req.url
+            else None,
+        )
+
         login = LoginPage(page)
-        login.open().expect_loaded()
+        login.open()
+        # 登录页预填了体验账号，必须先清空才能测"格式非法"
+        login.email_input().fill("not-an-email")
+        login.password_input().fill("123456")
+        login.submit_button().click()
 
-        login.fill_email("not-an-email").fill_password("123456").submit()
+        expect(login.field_error("请输入有效的邮箱地址")).to_be_visible()
+        expect(page).to_have_url(re.compile(r"/login/?$"), timeout=5_000)
+        assert not login_requests, f"前端校验失效，/auth/login 被发出了：{login_requests}"
 
-        login.expect_visible(login.field_error("请输入有效的邮箱地址"))
-        expect(page).to_have_url(re.compile(r"/login/?$"), timeout=5000)
-
-    def test_邮箱为空_必填校验生效(self, page):
+    def test_注册新账号_直接进入健康引导页(self, page):
+        """注册成功直接发 token 并跳 /health，不需要再登一次。"""
         login = LoginPage(page)
-        login.open().expect_loaded()
+        login.open()
 
-        login.fill_password("123456").submit()
+        ts = int(time.time())
+        email = f"f2ui_{ts}@test.local"
+        username = f"ui自动化{ts % 100000}"
 
-        login.expect_visible(login.field_error("请输入邮箱"))
+        login.register(username=username, email=email, password="123456")
 
-    def test_已登录状态下刷新_登录态不丢失(self, page):
-        """刷新后仍是登录态 —— 这是"token 持久化"的 UI 层证据。
+        login.toast(re.compile(r"注册成功"), timeout=10_000)
+        expect(page).to_have_url(
+            re.compile(FRONTEND_URL.replace(".", r"\.") + r"/health/?$"), timeout=15_000
+        )
 
-        为什么值得单独一条：
-          token 存 localStorage、刷新后由 pinia 从 localStorage 恢复，
-          这条链路只在"刷新"这个动作里才会暴露问题（比如恢复逻辑读错了 key）。
-          而日常开发几乎没人会手动刷一次登录后的页面。
-        """
+    def test_刷新后登录态保留(self, page):
+        """登录态持久化的 UI 层证据：刷新后不该被踢回登录页。"""
         login = LoginPage(page)
-        login.open().expect_loaded()
+        login.open()
         login.login(TEST_USER["email"], TEST_USER["password"])
-        login.expect_login_success()
+        expect(page).to_have_url(HOME_URL, timeout=15_000)
 
         page.reload(wait_until="domcontentloaded")
 
-        # 刷新后必须**不在**登录页；再断言 localStorage 里 token 还在
-        expect(page).not_to_have_url(
-            re.compile(r"/login/?$"), timeout=15000
-        )
-        token = page.evaluate("() => localStorage.getItem('token')")
-        assert token, "刷新后 localStorage 里的 token 丢了，登录态无法持久化"
+        expect(page).not_to_have_url(re.compile(r"/login/?$"), timeout=15_000)
+        session_raw = page.evaluate("() => localStorage.getItem('sh_session')")
+        assert session_raw, "刷新后 sh_session 丢了，登录态无法持久化"
+
+
+class TestRouteGuard:
+    """路由守卫：front2 的守卫只看 isLoggedIn（读 sh_session）。
+
+    这两条也是直注方案的冒烟验证：注入对了守卫放行、注入错了踢回登录页，
+    后面所有 user_page 用例都建立在这个前提上 —— 把它们放进 smoke。
+    """
+
+    def test_未登录访问受限页_被踢回登录页(self, page):
+        page.goto(LoginPage(page).url_for("/record"), wait_until="domcontentloaded")
+        expect(page).to_have_url(re.compile(r"/login/?$"), timeout=10_000)
+
+    def test_直注登录态后_受限页直接放行(self, user_page):
+        user_page.goto(LoginPage(user_page).url_for("/record"))
+        expect(user_page).not_to_have_url(re.compile(r"/login/?$"), timeout=10_000)
