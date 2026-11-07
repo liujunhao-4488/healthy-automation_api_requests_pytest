@@ -1,0 +1,29 @@
+# UI 自动化的依赖。和接口层分开装：
+#   接口层只要了 requests，UI 这边多一个浏览器内核，体积差 100 倍。
+#   合在一份 requirements 里，跑接口用例的人也得下 120MB 浏览器 —— 不合理。
+#
+# ⚠️ 本机测试解释器是 Python 3.8.5（C:\Users\Acer\AppData\Local\Programs\Python\Python38）。
+#    Playwright 从 1.49 起不再支持 3.8，这里**不写死版本**：
+#    pip 会在 3.8 上自动选最后一个兼容版（1.48.x），在 3.9+ 上装最新版。
+#    写死 playwright==1.49 的后果是：这台机器直接装不上，报
+#    "Could not find a version that satisfies the requirement"（看起来像网络问题，其实是版本）。
+playwright>=1.40
+pytest>=8.0
+requests>=2.28
+
+# 下面两个是"软依赖"：没装也能跑用例，只是缺了两层保护
+#   pytest-timeout      → pytest.ini 里的 timeout 不生效，某条用例卡死会拖住整场
+#   pytest-rerunfailures → pytest.ini 里的 reruns 不生效，偶发的动画/网络抖动不会被兜一次
+pytest-timeout>=2.1
+pytest-rerunfailures>=12.0
+
+# 可选：出 Allure 报告（没装也不影响跑用例，失败留痕走 artifacts 目录）
+# allure-pytest>=2.13
+
+# 装完之后还要下浏览器内核，只需一次：
+#   python -m playwright install chromium
+#
+# 只装了 chromium 而不是 install-all：
+#   firefox/webkit 各再下 80~150MB，而这个系统是 Vue3 + Element Plus，
+#   没有需要跨内核验证的 CSS/API 特性。真要跨浏览器兼容性验证时再补，
+#   那属于"兼容性专项"，不该混在每周回归里拖慢主链路。

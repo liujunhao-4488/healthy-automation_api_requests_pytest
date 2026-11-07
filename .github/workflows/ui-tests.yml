@@ -1,0 +1,376 @@
+# ============================================================
+#  UI 自动化测试（Playwright + Page Object）· GitHub Actions CI
+#
+#  跑什么：
+#    MySQL(3306) → 后端 Spring Boot(8081) → 算法服务(5000) → front2 dev server(5174)
+#    再执行 automation_ui_playwright_pytest/test_cases/front2 的用例。
+#
+#  为什么只跑 front2 这套：
+#    老版 frontend 的用例在本机还有历史红（选择器遗留问题，见 UI README），
+#    CI 的原则是"红 = 真缺陷"。等老版修绿后再把 test_cases/auth、health 加进来。
+#    conftest 的环境预检本来就按"跑哪版前端探哪版"，这里不跑 5173 它也不会探。
+#
+#  为什么后端起 8081 而接口层 CI 起 8080：
+#    两个前端的 vite proxy 都指向 8081（本地已切端口，见 backend 提交 abe9019），
+#    UI 走浏览器 → vite 代理 → 后端，链路端口必须跟 proxy 配置一致。
+#
+#  报告：
+#    Artifacts（allure-results + 失败截图/trace/视频）+ Allure 报告发布到
+#    gh-pages 的 ui/ 子目录（与接口层报告共存，互不覆盖）：
+#      https://liujunhao-4488.github.io/healthy-automation_api_requests_pytest/ui/
+#
+#  ⚠️ GitHub Actions 只在 GitHub 仓库上运行（Gitee 侧不会触发）。
+# ============================================================
+name: UI自动化测试
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - "automation_ui_playwright_pytest/**"
+      - "front2/**"
+      - "backend/**"
+      - "database/**"
+      - ".github/workflows/ui-tests.yml"
+  pull_request:
+    branches: [master, main]
+    paths:
+      - "automation_ui_playwright_pytest/**"
+      - "front2/**"
+      - "backend/**"
+      - "database/**"
+      - ".github/workflows/ui-tests.yml"
+  schedule:
+    # 每周五全量回归。错开接口层的 14:00 UTC 一小时，避免两个工作流
+    # 同时抢 MySQL 服务和 gh-pages 发布（北京时间周五 23:00）
+    - cron: "0 15 * * 5"
+  workflow_dispatch:
+    inputs:
+      layer:
+        description: "要跑的测试分层"
+        required: true
+        default: front2-smoke
+        type: choice
+        options:
+          - front2-smoke
+          - front2-weekly
+
+concurrency:
+  group: ui-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # 后端（application.yml 读 DB_*）
+  DB_HOST: 127.0.0.1
+  DB_PORT: "3306"
+  DB_NAME: health_diet_test
+  DB_USER: root
+  DB_PASSWORD: "123456"
+
+  # 算法服务 kb_retriever.py 读的是 DB_USERNAME
+  DB_USERNAME: root
+
+  # UI 自动化（config/config.py 读 AUTOTEST_*）
+  # 后端 8081：与 front2/vite.config.js 的 proxy target 一致
+  AUTOTEST_BASE_URL: http://127.0.0.1:8081/api
+  AUTOTEST_FRONT2_URL: http://localhost:5174
+
+jobs:
+  ui-tests:
+    name: playwright (${{ github.event_name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # 后端进程继承这个变量；没配 Secret 时 AI 用例自动 skip（带原因），不算红
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: "123456"
+          MYSQL_ROOT_HOST: "%"
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -p123456"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 30
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 决定本次测试分层
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MARKER="${{ inputs.layer }}"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            MARKER="front2-smoke"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            MARKER="front2-weekly"
+          else
+            MARKER="front2-smoke"
+          fi
+          # front2-* 前缀是给人在下拉框里看的，真正传给 -m 的去掉前缀
+          MARKER="${MARKER#front2-}"
+          echo "本次分层：$MARKER（范围 test_cases/front2）"
+          echo "MARKER=$MARKER" >> "$GITHUB_ENV"
+
+      - name: 安装 Node 20（跑 front2 dev server）
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: front2/package-lock.json
+
+      - name: 安装 JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            automation_ui_playwright_pytest/requirements.txt
+            algorithm/requirements-ci.txt
+
+      - name: 安装 UI 测试依赖（含 Allure 插件）
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r automation_ui_playwright_pytest/requirements.txt
+          # allure-pytest 是 UI 套件的"软依赖"：conftest 检测到它才会写
+          # allure-results，出报告靠这个，所以 CI 里必须显式装
+          pip install allure-pytest
+          # 算法服务依赖（后端推荐链路会调它，和接口层 CI 同一套锁定版本）
+          pip install -r algorithm/requirements-ci.txt
+
+      - name: 安装 Playwright Chromium 及系统依赖
+        run: |
+          python -m playwright install --with-deps chromium
+
+      - name: 编译后端（跳过 Maven 单测）
+        working-directory: backend
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -DskipTests package
+
+      - name: 重建测试库（schema + 种子数据）
+        run: python database/init_test_db.py
+
+      - name: 启动算法服务（Flask 5000）
+        run: |
+          mkdir -p logs
+          cd algorithm
+          nohup python app.py > ../logs/algorithm.log 2>&1 &
+          echo $! > ../logs/algorithm.pid
+
+      - name: 等待算法服务就绪
+        run: |
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" \
+              http://127.0.0.1:5000/api/kb/stats || true)
+            if [ "$code" = "200" ]; then
+              echo "算法服务已就绪（第 $i 次探测）"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::算法服务 120 秒内未就绪"
+          tail -n 100 logs/algorithm.log || true
+          exit 1
+
+      - name: 启动后端（Spring Boot 8081）
+        run: |
+          nohup java -jar backend/target/health-diet-backend-1.0-SNAPSHOT.jar \
+            --server.port=8081 > logs/backend.log 2>&1 &
+          echo $! > logs/backend.pid
+
+      - name: 等待后端就绪
+        run: |
+          # 同接口层：任何 HTTP 状态码（含 401）都说明端口已起
+          for i in $(seq 1 90); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" \
+              http://127.0.0.1:8081/api/health/info || true)
+            if [ -n "$code" ] && [ "$code" != "000" ]; then
+              echo "后端已就绪（HTTP $code，第 $i 次探测）"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::后端 180 秒内未就绪"
+          tail -n 200 logs/backend.log || true
+          exit 1
+
+      - name: 安装 front2 依赖
+        working-directory: front2
+        run: npm ci
+
+      - name: 启动 front2 dev server（Vite 5174）
+        working-directory: front2
+        run: |
+          # 后台起 dev server；日志放 logs/ 供失败排查
+          nohup npm run dev > ../logs/front2-vite.log 2>&1 &
+          echo $! > ../logs/front2-vite.pid
+
+      - name: 等待 front2 就绪
+        run: |
+          # Vite 只绑 localhost（本机实测是 ::1），探测用 localhost 让 curl 自己
+          # 在 v4/v6 之间试；Playwright 访问也用同一地址（config 默认 localhost）
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" \
+              http://localhost:5174/ || true)
+            if [ "$code" = "200" ]; then
+              echo "front2 已就绪（第 $i 次探测）"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::front2 dev server 120 秒内未就绪"
+          tail -n 100 logs/front2-vite.log || true
+          exit 1
+
+      - name: 运行 UI 自动化测试
+        working-directory: automation_ui_playwright_pytest
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pytest test_cases/front2 -m "$MARKER" \
+            -p no:cacheprovider 2>&1 | tee pytest-console.log
+
+      - name: 把结果与失败摘要写到 Run 页面
+        if: always()
+        shell: bash
+        run: |
+          log=automation_ui_playwright_pytest/pytest-console.log
+          {
+            echo "## UI 自动化运行摘要（$MARKER）"
+            echo ""
+            echo '```text'
+            if [ -f "$log" ]; then
+              tail -n 120 "$log"
+            else
+              echo "没有找到 pytest 控制台日志（可能失败发生在测试启动之前）"
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 失败时输出服务日志
+        if: failure()
+        run: |
+          echo "========== 后端 =========="
+          tail -n 200 logs/backend.log || true
+          echo "========== front2 vite =========="
+          tail -n 100 logs/front2-vite.log || true
+          echo "========== 算法服务 =========="
+          tail -n 100 logs/algorithm.log || true
+
+      - name: 上传测试产物（Allure 原始结果 + 失败截图/trace/视频）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-report-${{ github.run_number }}
+          path: |
+            automation_ui_playwright_pytest/artifacts/allure-results
+            automation_ui_playwright_pytest/artifacts/screenshots
+            automation_ui_playwright_pytest/artifacts/traces
+            automation_ui_playwright_pytest/artifacts/videos
+            automation_ui_playwright_pytest/pytest-console.log
+            logs/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: 停止服务
+        if: always()
+        run: |
+          for pidfile in logs/backend.pid logs/algorithm.pid logs/front2-vite.pid; do
+            [ -f "$pidfile" ] && kill "$(cat "$pidfile")" 2>/dev/null || true
+          done
+          pkill -f "health-diet-backend-1.0-SNAPSHOT.jar" 2>/dev/null || true
+          pkill -f "python app.py" 2>/dev/null || true
+          pkill -f "vite" 2>/dev/null || true
+
+  # ============================================================
+  #  把 Allure 报告发布到 GitHub Pages 的 ui/ 子目录
+  #
+  #  与接口层报告共存（接口层在根路径，UI 在 /ui/）：
+  #    https://liujunhao-4488.github.io/healthy-automation_api_requests_pytest/
+  #    https://liujunhao-4488.github.io/healthy-automation_api_requests_pytest/ui/
+  #
+  #  依赖 gh-pages 已开启（接口层 CI 首次发布时已设置过），发布失败不判红。
+  #  keep_files 必须为 true：否则 peaceiris 会把 gh-pages 同步成本目录内容，
+  #  把接口层的报告从根路径上抹掉。反过来，接口层的发布步骤也加了同一行。
+  # ============================================================
+  publish-report:
+    name: 发布 Allure 报告到 Pages（ui/ 子目录）
+    needs: ui-tests
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    permissions:
+      contents: write
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 下载测试产物
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: ui-test-report-${{ github.run_number }}
+          path: artifacts
+
+      - name: 安装 JDK 21
+        if: steps.download.outcome == 'success'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: 安装 Allure CLI
+        if: steps.download.outcome == 'success'
+        run: |
+          mkdir -p "$HOME/allure"
+          curl -sSL https://github.com/allure-framework/allure2/releases/download/2.46.1/allure-2.46.1.tgz \
+            | tar -xz -C "$HOME/allure"
+          echo "$HOME/allure/allure-2.46.1/bin" >> "$GITHUB_PATH"
+
+      - name: 生成 Allure HTML（ui/ 子目录）
+        id: generate
+        if: steps.download.outcome == 'success'
+        run: |
+          results=$(find artifacts -type d -name allure-results 2>/dev/null | head -n 1)
+          if [ -z "$results" ]; then
+            echo "::warning::产物里没有 allure-results，跳过发布"
+            echo "has_report=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mkdir -p public
+          allure generate "$results" -o public/ui --clean
+          echo "run ${{ github.run_number }} / ${{ github.sha }}" > public/ui/run-info.txt
+          echo "has_report=true" >> "$GITHUB_OUTPUT"
+
+      - name: 推送到 gh-pages 分支（保留接口层报告）
+        if: steps.generate.outputs.has_report == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+          keep_files: true
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com

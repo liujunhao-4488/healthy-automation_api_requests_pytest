@@ -357,5 +357,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
           publish_branch: gh-pages
+          # UI 自动化的报告发布在 gh-pages 的 ui/ 子目录（见 ui-tests.yml）。
+          # 没有这行，peaceiris 会把分支同步成只剩本目录内容，UI 报告被抹掉。
+          keep_files: true
           user_name: github-actions[bot]
           user_email: github-actions[bot]@users.noreply.github.com

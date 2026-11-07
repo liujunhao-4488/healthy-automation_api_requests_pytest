@@ -25,9 +25,12 @@ def _env_bool(name, default=False):
 # 被测前端
 # ------------------------------------------------------------
 # frontend/（Vue3 + Element Plus，老版）—— 主目标
-FRONTEND_URL = _env("AUTOTEST_UI_BASE_URL", "http://127.0.0.1:5173")
+# ⚠️ 用 localhost 而不是 127.0.0.1，理由同 FRONT2_URL：Vite 默认只绑 ::1
+FRONTEND_URL = _env("AUTOTEST_UI_BASE_URL", "http://localhost:5173")
 # front2/（Vue3 + Vite5，新版）—— 次目标，单独一套用例
-FRONT2_URL = _env("AUTOTEST_FRONT2_URL", "http://127.0.0.1:5174")
+# ⚠️ 用 localhost 而不是 127.0.0.1：Vite 5 默认只绑 ::1（IPv6 localhost），
+#    写 127.0.0.1 会连接拒绝（症状是探活 000、用例整片超时）。
+FRONT2_URL = _env("AUTOTEST_FRONT2_URL", "http://localhost:5174")
 
 # 后端地址：只用于「环境预检」判断服务活没活，UI 用例本身不直连它
 BACKEND_URL = _env("AUTOTEST_BASE_URL", "http://127.0.0.1:8081/api")
@@ -41,6 +44,12 @@ TEST_USER = {
     "password": _env("AUTOTEST_UI_PASSWORD", _env("AUTOTEST_PASSWORD", "123456")),
     "username": _env("AUTOTEST_UI_USERNAME", "autotest_primary"),
 }
+
+# 账号不存在、需要自动注册时用的用户名。
+# 刻意和 TEST_USER["username"] 不同 —— 和接口层同一个理由：
+#   登录响应返回的 username 要和库里的一致，用同一个名字会让"后端连错库"这种问题
+#   在自动补建时"碰巧对上"，检查就失效了。
+TEST_USERNAME = _env("AUTOTEST_UI_AUTO_USERNAME", "autotest_primary_auto")
 
 # 管理员账号 —— /admin/* 鉴权矩阵的对照组
 ADMIN_USER = {
@@ -98,7 +107,47 @@ ARTIFACTS = {
     "traces": PROJECT_ROOT / "artifacts" / "traces",
     "videos": PROJECT_ROOT / "artifacts" / "videos",
     "storage": PROJECT_ROOT / "artifacts" / "storage",
+    # allure 结果目录（json 原始结果，出报告要 allure generate 再转一次）
+    "allure": PROJECT_ROOT / "artifacts" / "allure-results",
 }
 
 for _p in ARTIFACTS.values():
     _p.mkdir(parents=True, exist_ok=True)
+
+
+# ------------------------------------------------------------
+# 2026-11-07 追加：断言 / 慢链路 / 档案基线
+# ------------------------------------------------------------
+# 导航超时。和 DEFAULT_TIMEOUT（找元素）分开：
+#   首屏要等 Vite 编译 + 后端 JWT 校验，比"找一个按钮"慢得多。
+NAV_TIMEOUT = _env_int("AUTOTEST_UI_NAV_TIMEOUT", 20_000)
+
+# 断言等待（expect 的重试上限）。比找元素短：
+#   断言失败是**结论**，不该跟"元素还没渲染"混为一谈，等太久只会拖长失败反馈。
+EXPECT_TIMEOUT = _env_int("AUTOTEST_UI_EXPECT_TIMEOUT", 8_000)
+
+# AI 对话整段回复的上限。流式输出 + 后端调大模型，实测 8~25s，
+# 给 60s 是为了模型慢响应时不算失败（真断流由用例断言"有内容"兜住）。
+AI_TIMEOUT = _env_int("AUTOTEST_UI_AI_TIMEOUT", 60_000)
+
+# 健康档案回归基线。
+# ⚠️ 这些值同时被两处使用：
+#   ① token 直注时写进 localStorage 的 health-user.healthInfo（决定路由守卫放不放行）
+#   ② 档案用例断言"页面回显的就是库里的值"
+#   所以它必须是**库里真实存在的档案**，否则 UI 显示和注入值对不上 ——
+#   那种失败最难查：看起来像前端 bug，其实是测试数据没对齐。
+PROFILE = {
+    "age": _env_int("AUTOTEST_UI_PROFILE_AGE", 26),
+    "gender": _env("AUTOTEST_UI_PROFILE_GENDER", "male"),
+    "height": float(_env("AUTOTEST_UI_PROFILE_HEIGHT", "178")),
+    "weight": float(_env("AUTOTEST_UI_PROFILE_WEIGHT", "70")),
+    # 取值必须是前端的 value 而不是 label：
+    #   sedentary / lightly_active / moderately_active / very_active / extra_active
+    # 页面上显示的是"中度活动"。填 label 的话 el-select 匹配不到，会被判为未选择 ——
+    # 症状是保存时提示"请选择活动水平"，而人明明选了。
+    "activityLevel": _env("AUTOTEST_UI_PROFILE_ACTIVITY", "moderately_active"),
+    "bloodPressure": _env("AUTOTEST_UI_PROFILE_BP", "120/80"),
+    "bloodSugar": float(_env("AUTOTEST_UI_PROFILE_SUGAR", "5.2")),
+    "exerciseDuration": _env_int("AUTOTEST_UI_PROFILE_EXERCISE", 45),
+    "chronicDiseases": _env("AUTOTEST_UI_PROFILE_CHRONIC", "无"),
+}
