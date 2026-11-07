@@ -23,7 +23,7 @@ from pages.goal_page import GoalPage
 
 
 class TestGoal:
-    def test_修改目标类型与热量_保存后刷新仍生效(self, user_page, account, cleanup):
+    def test_修改目标类型与热量_保存后刷新仍生效(self, user_page, account, cleanup, profile_ready):
         """主流程：改类型 + 改热量 → 保存 → 刷新仍生效。
 
         为什么保存后要再刷新断言一次：
@@ -51,7 +51,7 @@ class TestGoal:
         assert goal.kcal_value() == 2200, "刷新后热量目标不是刚保存的值，说明没真正落库"
         assert goal.current_type() == "增肌", "刷新后目标类型回退了"
 
-    def test_拖动蛋白质滑块_三大营养素合计恒为100(self, user_page):
+    def test_拖动蛋白质滑块_三大营养素合计恒为100(self, user_page, profile_ready):
         """前端的"自动配平"：推任意一项，另外两项按原比例修正，总和永远 100%。
 
         这是这一页最有价值的 UI 级断言 —— 后端只收三个整数，
@@ -69,7 +69,7 @@ class TestGoal:
 
         assert goal.macro_percent("蛋白质占比") > before, "推了 12 次右方向键，蛋白质占比没涨"
 
-    def test_热量低于下限_保存被拦且请求未发出(self, user_page):
+    def test_热量低于下限_保存被拦且请求未发出(self, user_page, profile_ready):
         """热量越界：前端拦下，且**请求根本没发出去**。
 
         只断言 toast 是不够的：先发请求再弹提示也算"拦下"，
@@ -91,7 +91,7 @@ class TestGoal:
 
         assert not posted, "前端校验没生效：非法热量已经发到后端了"
 
-    def test_采用建议值_热量被填成推荐值(self, user_page):
+    def test_采用建议值_热量被填成推荐值(self, user_page, profile_ready):
         """「采用建议值」是纯前端计算（基础代谢 × 类型系数 ± 幅度），必须能用。"""
         goal = GoalPage(user_page).open()
         goal.expect_loaded()
@@ -103,7 +103,7 @@ class TestGoal:
         value = goal.kcal_value()
         assert 1000 <= value <= 4000, f"建议值 {value} 落在了合法区间之外"
 
-    def test_体重低于下限_保存被拦(self, user_page):
+    def test_体重低于下限_保存被拦(self, user_page, profile_ready):
         """体重 30–200kg 的下限校验。上限由同一条规则覆盖，不重复写。"""
         goal = GoalPage(user_page).open()
         goal.expect_loaded()

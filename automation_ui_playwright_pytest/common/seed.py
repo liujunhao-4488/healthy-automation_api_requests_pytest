@@ -15,6 +15,37 @@
 from common.cleanup import api
 
 
+def seed_article(account, title, **overrides):
+    """用接口发一篇文章，返回 id。
+
+    存在的理由和 seed_recipe 一样，但这里还多一层：
+      CI 的测试库是 `database/init_test_db.py`（schema + seed_test.sql）重建的，
+      里面**没有任何业务文章**。任何"从知识列表里挑一条来点赞/评论"的用例
+      在 CI 上都会因为列表为空而红 —— 而那不是产品坏了，是环境里没数据。
+      正确做法不是给它加 skip，而是**用例自己造自己需要的那条数据**。
+    """
+    body = {
+        "title": title,
+        "summary": "自动化用例前置数据",
+        "content": "这篇由自动化用例创建，用于验证文章互动（点赞）。\n正文第二段。",
+        "category": "健康知识",
+        "tags": "自动化",
+        "author": "",
+        "suitableFor": "",
+        "goalType": "",
+    }
+    body.update(overrides)
+
+    resp = api("POST", "/article/publish", account["token"], body)
+    payload = resp.json() if resp.text else {}
+    data = payload.get("data")
+    aid = data.get("id") if isinstance(data, dict) else data
+    assert resp.status_code < 400 and aid, (
+        f"前置文章创建失败：HTTP {resp.status_code} {resp.text[:200]}"
+    )
+    return aid
+
+
 def goal_restore_payload(snapshot):
     """把 GET /health/goal 的响应剪成"能安全 POST 回去"的 payload。
 

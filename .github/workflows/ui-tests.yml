@@ -62,6 +62,14 @@ permissions:
   contents: read
 
 env:
+  # ⚠️ 时区必须固定成产品时区，不能跟 runner 走。
+  #   runner 默认 UTC，而前端浏览器（config.TIMEZONE）固定 Asia/Shanghai，
+  #   后端 JVM 又读主机时区 —— 三者不一致时，"饮食记录按日期过滤"这类逻辑
+  #   在 UTC 16:00 之后（北京 0 点后）就会把同一条数据算到两天里去：
+  #   前端按上海时间查 11-08，后端按 UTC 存成 11-07，列表查不到 → 用例红。
+  #   这不是用例的问题，是**服务端不该依赖主机时区**（已在 README 记为缺陷）。
+  TZ: Asia/Shanghai
+
   # 后端（application.yml 读 DB_*）
   DB_HOST: 127.0.0.1
   DB_PORT: "3306"

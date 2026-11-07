@@ -115,13 +115,22 @@ class TestCustomRecipe:
 
 
 class TestRecipeSearch:
-    def test_食谱库关键词搜索_命中与空态(self, user_page):
+    def test_食谱库关键词搜索_命中与空态(self, user_page, account, cleanup, unique):
         """搜索是**前端内存过滤**（后端 /recipe/list 一次给全量，前端筛）。
 
         两向都测：命中（能搜到）+ 空态（搜不到时是空态而不是"还显示全部"）。
         只测命中会漏掉"清空关键词没生效""过滤条件没接上"这类问题 ——
         它们在"能搜到"的方向上全是绿的。
+
+        ⚠️ 关键字必须来自**用例自己造的食谱**，不能写死「鸡胸」这种依赖库里已有数据的词：
+          CI 的库是 schema + seed_test.sql 重建的，里面一条食谱都没有，
+          写死关键词在 CI 上必然搜不到 —— 那红的是环境，不是产品。
+          自己建一道带唯一名称的食谱，再搜它，用例就与环境解耦了。
         """
+        name = unique("搜索目标食谱")
+        rid = seed_recipe(account, name)
+        cleanup.recipe(rid)
+
         recipes = RecipesPage(user_page).open()
         recipes.expect_loaded()
 
@@ -129,10 +138,10 @@ class TestRecipeSearch:
         recipes.search("zzz这个食材肯定不存在zzz")
         expect(recipes.page.get_by_text("没有符合条件的食谱", exact=True)).to_be_visible()
 
-        # ② 换成能搜到的词 → 空态消失、有结果
+        # ② 换成自己刚建的那道食谱名 → 空态消失、命中它
         #    先断言空态消失再断言有卡：只断言"有卡"的话，
         #    上一次刷新的旧结果也能让断言通过（空态到结果的过渡没被验证）。
-        recipes.search("鸡胸")
+        recipes.search(name)
         expect(recipes.page.get_by_text("没有符合条件的食谱", exact=True)).to_be_hidden()
         expect(recipes.page.locator("article.recipe-card:visible h3").first).to_be_visible()
-        assert recipes.library_card_names(), "搜「鸡胸」结果标题列表为空"
+        assert name in recipes.library_card_names(), "搜到的结果里没有自己刚建的食谱"

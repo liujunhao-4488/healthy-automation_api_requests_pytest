@@ -18,6 +18,7 @@ import re
 from playwright.sync_api import expect
 
 from common.cleanup import api
+from common.seed import seed_article
 from pages.article_detail_page import ArticleDetailPage
 from pages.article_publish_page import ArticlePublishPage
 from pages.knowledge_page import KnowledgePage
@@ -96,25 +97,27 @@ class TestPublish:
 
 
 class TestArticleInteraction:
-    def test_文章详情点赞_计数与状态同时变化(self, user_page, account, cleanup):
+    def test_文章详情点赞_计数与状态同时变化(self, user_page, account, cleanup, unique):
         """点赞：按钮语义（点赞 ↔ 已点赞）和计数必须**同时**变。
 
         前端是乐观更新（先改本地再发请求），所以"状态翻了但计数没动"
         是真实存在的半更新缺陷。两个断言缺一不可。
 
+        ⚠️ 文章是**用例自己发的**，不从知识列表里挑现成的：
+          CI 的库是 schema + seed_test.sql 重建的，没有任何业务文章，
+          列表为空 → "挑第一条"必然崩。自己造数据，用例就与环境解耦。
+
         跑完复位：点赞数会被所有人看到，不能因为跑了一次用例就 +1。
         复位走接口而不是再点一次（避免用例失败时点上没复位）。
         """
-        knowledge = KnowledgePage(user_page).open()
-        knowledge.expect_loaded()
-        titles = knowledge.titles()
-        assert titles, "知识列表一条文章都没有，环境缺基础数据"
-        knowledge.open_article(titles[0])
+        title = unique("互动测试文章")
+        aid = seed_article(account, title)
+        cleanup.article(aid)
 
-        detail = ArticleDetailPage(user_page)
+        detail = ArticleDetailPage(user_page).open(aid)
         detail.expect_loaded()
+        assert detail.title() == title, "详情页打开的不是刚发的那篇"
 
-        aid = detail.article_id()
         was_liked = detail.liked()
         before = detail.like_count()
         cleanup.task(
