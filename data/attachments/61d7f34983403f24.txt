@@ -1,0 +1,2 @@
+
+└─ ⊘ XFAIL   test_bug_page_size_is_ignored         缺陷 #17：/record/list 的 page/pageSize 完全不生效，传 pageSize=2 仍返回全部

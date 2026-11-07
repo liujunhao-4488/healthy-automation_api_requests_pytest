@@ -1,0 +1,4 @@
+
+└─ ⊘ XFAIL   test_bug_meal_frequency_out_of_range_accepted   缺陷 #19：mealFrequency 无范围校验，0 和 99 都能入库
+                                                                         [ 85%]
+test_cases/user/test_notification_idor.py 

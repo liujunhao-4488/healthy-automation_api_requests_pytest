@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_detail_wraps_recipe_and_ingredients  0.01s

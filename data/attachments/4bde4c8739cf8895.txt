@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_deleted_notification_rejects_further_operations[删除]  0.00s

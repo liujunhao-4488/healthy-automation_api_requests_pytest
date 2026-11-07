@@ -1,0 +1,1 @@
+15:04:03 I → GET  /ingredient/category/%E8%94%AC%E8%8F%9C 200      6ms

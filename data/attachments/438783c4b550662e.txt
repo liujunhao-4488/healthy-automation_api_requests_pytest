@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2599 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 07 Nov 2026 15:03:29 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-07T15:03:26",
+      "id": 7263,
+      "text": "我想换个口味，有什么建议"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-07T15:03:29",
+      "ragUsed": false,
+      "id": 7264,
+      "text": "想换口味的话，可以试试把日常主食和蛋白质来源轮换着来：主食在米饭、杂粮饭、荞麦面、玉米、红薯之间换；蛋白质在鱼虾、瘦牛肉、鸡蛋、豆制品、鸡腿肉之间轮换，再搭配不同颜色的蔬菜和不同风味（清蒸、凉拌、番茄味、咖喱味、香草烤）。这样不用大改结构，口味变化就很明显。\n\n你目前BMI约22.8、体重正常，没有慢病和已知忌口，热量上不用刻意增减，重点是保持蛋白质充足、蔬菜够量、烹调少油少糖。如果你告诉我平时常吃什么、想换哪一餐，我可以给更具体的搭配。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3427,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "想换口味的话，可以试试把日常主食和蛋白质来源轮换着来：主食在米饭、杂粮饭、荞麦面、玉米、红薯之间换；蛋白质在鱼虾、瘦牛肉、鸡蛋、豆制品、鸡腿肉之间轮换，再搭配不同颜色的蔬菜和不同风味（清蒸、凉拌、番茄味、咖喱味、香草烤）。这样不用大改结构…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-07T15:03:29.166246199",
+      "createTime": "2026-11-07T15:03:26",
+      "updateTime": "2026-11-07T15:03:26",
+      "id": 3427,
+      "title": "我想换个口味，有什么建议"
+    }
+  },
+  "message": "发送消息成功"
+}

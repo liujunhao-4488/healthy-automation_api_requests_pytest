@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_collect_twice_does_not_duplicate  0.04s

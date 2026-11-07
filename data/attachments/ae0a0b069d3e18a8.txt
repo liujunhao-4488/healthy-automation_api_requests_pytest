@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_login_schema_catches_missing_token  0.00s

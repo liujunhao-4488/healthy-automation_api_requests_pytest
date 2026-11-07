@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_same_day_same_meal_appends_rather_than_overwrites  0.01s

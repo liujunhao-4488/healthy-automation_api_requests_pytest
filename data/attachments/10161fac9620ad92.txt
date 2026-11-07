@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_save_goal_fail[结束日期早于开始日期]  0.00s

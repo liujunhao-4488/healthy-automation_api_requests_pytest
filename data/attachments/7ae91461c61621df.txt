@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_submit_without_details_is_accepted_with_zero_totals  0.00s
+                                                                         [ 79%]
+test_cases/toolbox/test_data_loader.py 

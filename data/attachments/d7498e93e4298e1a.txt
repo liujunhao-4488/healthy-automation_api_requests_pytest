@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_detail_of_missing_id_returns_empty_shell_not_error  0.00s

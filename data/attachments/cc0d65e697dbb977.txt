@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_intruder_collect_does_not_steal_owner_collect  0.03s

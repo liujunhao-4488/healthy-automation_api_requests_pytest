@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_intruder_cannot_delete_others_record  0.01s

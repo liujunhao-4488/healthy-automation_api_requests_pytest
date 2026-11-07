@@ -1,0 +1,2 @@
+
+└─ ⊘ XFAIL   test_bug_invalid_meal_type_accepted   缺陷 #15：mealType 无枚举白名单，任意字符串（如 'xxx'）都能入库

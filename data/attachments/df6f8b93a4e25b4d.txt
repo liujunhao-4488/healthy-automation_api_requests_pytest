@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_path_param_type_error_not_unified_envelope  0.00s
+                                                                         [ 71%]
+test_cases/record/test_record_增删查.py 

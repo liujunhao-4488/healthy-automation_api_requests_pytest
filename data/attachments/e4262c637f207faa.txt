@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2220 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 07 Nov 2026 15:03:46 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-07T15:03:44",
+      "id": 7281,
+      "text": "我草莓过敏，还能吃什么水果"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-07T15:03:46",
+      "ragUsed": false,
+      "id": 7282,
+      "text": "草莓过敏并不代表要对所有水果忌口，大多数水果你都可以正常吃。草莓过敏通常针对的是草莓中的特定蛋白，与其他水果的过敏原并不完全相同，所以不必一律回避。\n\n可以放心尝试的包括苹果、梨、香蕉、橙子、西瓜、葡萄、桃、蓝莓等常见水果。需要注意的是，草莓与蔷薇科的一些水果（如树莓、黑莓、樱桃、桃、杏）存在交叉过敏的可能，第一次吃时建议少量尝试、观察反应；如果吃后出现口唇发痒、皮疹、喉咙不适，就停止食用。\n\n另外提醒一句：如果之前草莓过敏反应比较重（比如出现呼吸困难、全身荨麻疹），吃新水果时更要谨慎，具体请以医生的诊断和过敏原检测结果为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3436,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "草莓过敏并不代表要对所有水果忌口，大多数水果你都可以正常吃。草莓过敏通常针对的是草莓中的特定蛋白，与其他水果的过敏原并不完全相同，所以不必一律回避。  可以放心尝试的包括苹果、梨、香蕉、橙子、西瓜、葡萄、桃、蓝莓等常见水果。需要注意的是，…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-07T15:03:46.901317164",
+      "createTime": "2026-11-07T15:03:44",
+      "updateTime": "2026-11-07T15:03:44",
+      "id": 3436,
+      "title": "我草莓过敏，还能吃什么水..."
+    }
+  },
+  "message": "发送消息成功"
+}

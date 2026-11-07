@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_login_schema_accepts_real_sample  0.00s

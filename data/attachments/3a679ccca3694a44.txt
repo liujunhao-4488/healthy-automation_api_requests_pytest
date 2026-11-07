@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_path_param_type_error_not_unified_envelope  0.01s
+                                                                         [ 20%]
+test_cases/assistant/test_assistant_契约.py 

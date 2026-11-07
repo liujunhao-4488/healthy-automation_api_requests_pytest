@@ -1,0 +1,28 @@
+POST http://127.0.0.1:8080/api/health/goal
+
+【请求头】
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Content-Type: application/json
+Content-Length: 336
+
+【请求体】
+{
+  "goalType": "lose_weight",
+  "targetWeight": 65.0,
+  "targetCalories": 1800.0,
+  "proteinRatio": 30.0,
+  "carbsRatio": 45.0,
+  "fatRatio": 25.0,
+  "proteinTarget": 135.0,
+  "carbsTarget": 200.0,
+  "fatTarget": 50.0,
+  "waterTarget": 2000,
+  "status": 1,
+  "startDate": "2026-10-01",
+  "endDate": "2026-12-31",
+  "reminderEnabled": 1,
+  "reminderTime": "08:00:00"
+}
