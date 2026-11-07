@@ -311,6 +311,44 @@ def profile_ready(account):
     return account
 
 
+# ==================== 用例数据卫生 ====================
+
+@pytest.fixture
+def cleanup(account):
+    """用例自己建的业务数据，跑完自己删（食谱 / 文章 / 恢复原值）。
+
+    细节见 common/cleanup.py：走接口删，不走 UI —— 快、稳、不占断言位。
+    teardown 一定会跑，所以**用例中途失败也不会留下残骸**。
+    """
+    from common.cleanup import Cleanup
+
+    reg = Cleanup(account["token"])
+    yield reg
+    reg.run()
+
+
+@pytest.fixture
+def unique():
+    """生成唯一名称后缀，例如 `UI自动化-1a2b3c4d`。
+
+    为什么必须唯一：
+      食谱 / 文章会真的进库。用固定名称的话，第二次跑用例时
+      "按名称找卡片"可能命中**上一次留下的**那条 —— 断言绿了，
+      但这次其实根本没建成功。这类假绿比红还难查。
+      唯一后缀让每次跑都是全新对象，同时也让清理能精确识别自己建的。
+    """
+    import itertools
+    import time
+
+    stamp = str(int(time.time() * 1000))[-6:]
+    counter = itertools.count(1)
+
+    def _make(prefix="UI自动化"):
+        return f"{prefix}-{stamp}{next(counter)}"
+
+    return _make
+
+
 # ==================== 失败留痕 ====================
 
 @pytest.hookimpl(hookwrapper=True)
@@ -360,11 +398,16 @@ def pytest_runtest_makereport(item, call):
 
 # ==================== 分层标记（自动挂，用例里不用写装饰器）====================
 
-#   smoke    : 不调模型、不写业务数据的核心链路（登录 + 档案读取）
+#   smoke    : 不依赖大模型的业务链路（push/PR 跑这一档）
 #   weekly   : 全部 —— 每周回归跑这一档
 #   slow_ai  : 依赖大模型回复
 # 新增目录时只改这张表，用例文件保持干净。
-_SMOKE_MODULES = {"auth", "health"}
+#
+# 为什么 recipe / article 也算 smoke：
+#   它们写业务数据，但**写的是自己建的临时数据、跑完自己删**（common/cleanup.py）。
+#   把它们排除在 smoke 外的代价是"新业务要等到周五才被验证"，
+#   而 CI 的价值恰恰是"提交时就红"，所以宁可 smoke 慢两分钟也不砍它们。
+_SMOKE_MODULES = {"auth", "health", "record", "goal", "account", "recipe", "article"}
 _AI_MODULES = {"assistant"}
 _FORM_LOGIN_MODULES = {"auth"}
 _PROFILE_MODULES = {"health"}

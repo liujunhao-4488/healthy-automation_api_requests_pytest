@@ -1,10 +1,20 @@
 # UI 自动化（Playwright + Page Object）
 
-覆盖 **登录 / 健康档案 / 饮食记录 / AI 对话** 四条主流程，共 14 条用例。
+被测前端是 `front2/`（Vue 3 + Vite 5，端口 5174），共 **8 个业务域 / 32 条用例**。
 登录态走 **接口取 token 直注**（跳过 UI 登录），失败自动留截图与 trace，按周随回归跑。
 
-被测前端是 `front2/`（Vue 3 + Vite 5，端口 5174）。老版 `frontend/` 已退役，
-它那套用例随之删除 —— 同一场景维护两份、改一处要改两处，收益抵不过成本。
+覆盖的业务对象：
+
+| 域 | 覆盖的业务 | 条数 |
+|---|---|---|
+| `auth` | 登录 / 注册 / 会话保持 / 路由守卫 | 7 |
+| `health` | 健康档案（回显、修改、校验） | 3 |
+| `record` | 饮食记录（增删、校验） | 2 |
+| `assistant` | AI 对话（问答、安全护栏） | 2 |
+| `goal` | 饮食目标（类型、热量、营养素配平、持久化） | 5 |
+| `account` | 个人资料 / 饮食偏好 | 4 |
+| `recipe` | 自定义食谱（增 / 改 / 删 / 搜索） | 5 |
+| `article` | 发布文章 / 文章互动（点赞） | 4 |
 
 ---
 
@@ -26,10 +36,10 @@ cd ..\front2 && npm run dev
 
 ```bash
 cd automation_ui_playwright_pytest
-python -m pytest                     # 全量（14 条，约 30s）
-python -m pytest -m smoke            # 冒烟：登录 + 档案（不调模型）
-python -m pytest -m weekly           # 每周回归（含 AI 两条）
-python -m pytest test_cases/auth     # 单个模块
+python -m pytest                     # 全量（32 条，约 75s）
+python -m pytest -m smoke            # 冒烟：不依赖模型的 7 个域（30 条，约 65s）
+python -m pytest -m weekly           # 每周回归（全部，含 AI 两条）
+python -m pytest test_cases/goal     # 单个域
 ```
 
 出报告：
@@ -45,16 +55,15 @@ allure serve artifacts/allure-results
 
 | 路径 | 职责 |
 |---|---|
-| `conftest.py` | 浏览器三层对象、登录态夹具、失败留痕、分层标记（自动挂，用例里不写装饰器） |
+| `conftest.py` | 浏览器三层对象、登录态夹具、数据清理夹具、失败留痕、分层标记（自动挂，用例里不写装饰器） |
 | `common/auth_state.py` | 接口登录拿 token、拼 `sh_session` 注入脚本、健康档案预建 |
 | `common/artifacts.py` | 截图 / trace / 页面文本留存，挂 Allure |
+| `common/cleanup.py` | **用例建的业务数据自己删**（食谱 / 文章 / 恢复原值），见第 6 节 |
+| `common/seed.py` | 前置数据走接口造（编辑/删除类用例只测被测动作本身） |
 | `pages/base_page.py` | POM 底座：导航、DOM 定位辅助（`.field` / `.seg` / `.chip` / toast / modal）、断言封装 |
-| `pages/{login,health_profile,diet_record,assistant}_page.py` | 一个页面一个文件，只放"怎么操作这个页面" |
-| `test_cases/auth/` | **唯一真走登录表单**的一组（7 条），token 直注的对照组 |
-| `test_cases/health/` | 档案回显 / 修改保存 / 前端校验（3 条） |
-| `test_cases/record/` | 饮食记录增删 + 校验（2 条） |
-| `test_cases/assistant/` | AI 对话：正常问答 + 护栏（2 条，`slow_ai`） |
-| `config/config.py` | 地址、账号、超时、档案基线 —— 全部可用环境变量覆盖 |
+| `pages/*_page.py` | 一个页面一个文件，只放"怎么操作这个页面"（13 个页面对象） |
+| `test_cases/<域>/` | 按业务域分目录，一个域一个文件 |
+| `config/config.py` | 地址、账号（含管理员）、超时、档案基线 —— 全部可用环境变量覆盖 |
 
 ---
 
@@ -111,24 +120,48 @@ teardown 时用例可能已经清完场，最该看的那一屏没了。
 
 | 标记 | 范围 | 用途 |
 |---|---|---|
-| `smoke` | auth + health | 提交前快速跑，不调模型 |
+| `smoke` | auth / health / record / goal / account / recipe / article | 提交前跑，**不依赖模型** |
 | `regression` / `weekly` | 全部 | 日常 / 每周回归 |
 | `slow_ai` | assistant | 依赖模型，慢且波动 |
 | `ui_form_login` | auth | 真走登录表单 |
 | `needs_profile` | health | 依赖库里存在完整档案 |
 
-标记按目录自动挂（`conftest.pytest_itemcollected`），加新目录只改那三张表。
+标记按目录自动挂（`conftest.pytest_itemcollected`），加新目录只改那几张表。
+
+**为什么 recipe / article 也算 smoke**：它们写业务数据，但写的是自己建的临时数据、
+跑完自己删（第 6 节）。把它们排除在 smoke 外的代价是"新业务要等到周五才被验证"，
+而 CI 的价值恰恰是"提交时就红"。
 
 ---
 
-## 6. CI（GitHub Actions）
+## 6. 用例数据卫生（写业务数据的域必须遵守）
+
+食谱、文章是**真实数据**，不是 mock。不清理的话每跑一次 weekly 就往测试库堆一批
+「UI自动化-173xxxx」，一个月后食谱库翻倍、知识列表全是废稿。
+
+约定：
+
+1. **谁建谁删**，在 `cleanup` 夹具的 teardown 里执行 —— 用例中途失败也删。
+2. **删除走接口，不走 UI**：快（0.1s vs 点三下等动画）、稳（不依赖删除按钮选择器）、
+   不占用例的断言位（清理失败不该让用例红，只是环境卫生）。
+3. **名称带唯一后缀**（`unique` 夹具）。用固定名称的话，第二次跑时"按名称找卡片"
+   可能命中上一次的残骸 —— 断言绿了，但这次根本没建成功。这类假绿比红更难查。
+4. **账号级状态要快照-恢复**（饮食目标、用户名）：先 GET 原值，teardown 走接口写回。
+5. **偏好类用"确保选中"而不是"切换一次"**：切换写法会让用例依赖上一次跑的结果，
+   单条重跑就红。
+6. **前置数据走接口造**（`common/seed.py`）：编辑/删除类用例如果连"建"都走 UI，
+   建流程一坏就三条一起红，分不清哪一步坏的。
+
+---
+
+## 7. CI（GitHub Actions）
 
 `.github/workflows/ui-tests.yml`，只在 GitHub 仓库上触发（Gitee 不跑 Actions）。
 
 | 触发 | 跑什么 |
 |---|---|
-| push / PR（改了 UI 套件、front2、backend、database） | `-m smoke` |
-| 每周五 23:00（北京时间，错开接口层 1 小时） | `-m weekly` |
+| push / PR（改了 UI 套件、front2、backend、database） | `-m smoke`（30 条） |
+| 每周五 23:00（北京时间，错开接口层 1 小时） | `-m weekly`（32 条） |
 | 手动 workflow_dispatch | 选 smoke / weekly |
 
 CI 里把整套被测系统拉起来：MySQL(3306) → 算法服务(5000) → 后端 **8081**
@@ -145,7 +178,7 @@ CI 里把整套被测系统拉起来：MySQL(3306) → 算法服务(5000) → �
 
 ---
 
-## 7. 已踩过的坑
+## 8. 已踩过的坑
 
 | 现象 | 原因 |
 |---|---|
@@ -154,29 +187,41 @@ CI 里把整套被测系统拉起来：MySQL(3306) → 算法服务(5000) → �
 | `filter(has_text=^注册$)` 永远不中 | Vue 模板渲染的按钮 innerText 带换行缩进 → 用可访问名匹配（会做空白归一化） |
 | 点"添加"点到别的地方 | 卡片里有两个同名按钮（头部 + 空态）→ 必须圈 `.card-hd` 作用域 |
 | 等待 AI 回复提前通过 | 流式占位气泡也匹配 `.msg:not(.user)` → 等 `.stream-text` 消失、正文非空才算落定 |
-| 探活显示服务活着，用例却整片超时 | requests 默认走环境代理，"没起"被代理翻成 502 → `session.trust_env = False` |
+| 探活显示服务活着，用例却整片超时 | requests 默认走环境代理，"没起"被代理翻成 502 → `session.trust_env = False`（注意 `trust_env` 是 **Session 属性**，写成 `requests.request(..., trust_env=False)` 会 TypeError） |
 | `127.0.0.1:5174` 连不上 | Vite 只绑 `::1` → 统一用 `localhost` |
 | `-m smoke` 一条也选不中（Windows） | nodeid 用反斜杠，`split("/")` 切不出模块名 → 先 `replace("\\", "/")` |
+| 搜索用例读到空标题列表 | 骨架屏也用 `article.recipe-card`（没有 h3），"等第一张卡可见"会命中骨架 → 等 `.sk` 消失 |
+| 点"适宜目标"反而把已选项取消了 | 新建表单 `blankForm()` 默认 `fit: ['减脂']` → chip 类控件一律"先读状态，缺了才点" |
+| 食谱库页头找不到"新建食谱" | 该按钮在 `v-else` 分支（只在"我的食谱"视图出现），库里是搜索 + 换一批 |
+| 文章 / 食谱删除 400「仅管理员可执行该操作」 | 见第 9 节 |
 
 ---
 
-## 8. 已知缺陷 / 下一步
+## 9. 已知缺陷 / 下一步
 
-**已知缺陷（2026-11-07 发现，未修）**：AI 助手页的"试试医疗越界问题"按钮发的是
-「帮我开个降脂药处方」，但后端 `BLOCK_MEDICAL_PATTERNS` 没有覆盖「开药 / 处方」的规则
-—— 问题直达模型，模型自己礼貌拒绝，回答走正常通道、没有拦截样式。
-页面文案却承诺"涉及诊断、用药与处方的问题会被安全护栏拦截"。
+**缺陷 1：AI 护栏没覆盖「开处方」**（2026-11-07）
+助手页"试试医疗越界问题"按钮发的是「帮我开个降脂药处方」，但后端
+`BLOCK_MEDICAL_PATTERNS` 没有覆盖「开药 / 处方」的规则 —— 问题直达模型，模型自己
+礼貌拒绝，回答走正常通道、没有拦截样式。页面文案却承诺"涉及诊断、用药与处方的问题
+会被安全护栏拦截"。用例标 `xfail`；后端补规则后会自动变 **XPASS**。
 
-用例因此标 `xfail`（不是 fail）：已知缺陷不该污染每周回归的信噪比；后端补上规则后
-它会变成 **XPASS**，届时删掉测试里的 `xfail` 即可。
+**缺陷 2：用户发了文章，自己删不掉**（2026-11-08）
+`/article/publish` 只要求登录（发布即上架），但 `/article/delete` 是 `@requireAdmin`。
+UGC 没有撤回通道：发错了、发漏了，用户只能找管理员。产品上要么给"作者可删自己的文章"，
+要么前端明确提示"发布后不可撤回"。用例的清理因此改走管理员身份。
+
+**缺陷 3：管理员删除文章被外键拦住**（2026-11-08）
+即便有管理员权限，`DELETE /article/delete/{id}` 仍然 400：
+`SQLIntegrityConstraintViolation` —— 文章被评论 / 点赞 / 阅读历史引用，后端既没有先清
+子表也没有级联删除。**这个删除接口实际上是不可用的**。
+用例的清理因此降级为"下架"（`status=0`，列表与搜索都不再显示），污染面归零但数据行仍在。
 
 下一步，按性价比排序：
 
-1. **修上面那个护栏规则**（后端加一条 `开.{0,6}(药|处方)` 之类的 pattern），
-   或者把前端演示问题换成规则表真正覆盖的表述 —— 两者选一，本质是"文案与规则对齐"。
-   ✅ 修完 `pytest -m weekly` 里会出现 XPASS 提示。
-2. **给关键元素加 `data-testid`**（`<input data-testid="login-email">`）。现在全靠
-   placeholder 和文案定位，文案一改选择器就断。这是可测性改进，该提给前端 ——
-   在简历里它比多写 20 条用例更能说明问题。
-3. 补一条"删除记录后统计同步变化"的用例：现在只验了列表里消失，
-   没验聚合数字（BMI、当日热量）跟着变，这类"局部刷新漏了"的缺陷最容易漏。
+1. 修缺陷 1（后端加 pattern 或换演示问题）—— 修完会出现 XPASS 提示。
+2. 修缺陷 3（删除前先清子表，或改级联）—— 修完清理就不必降级为下架。
+3. **给关键元素加 `data-testid`**。现在全靠 placeholder 和文案定位，文案一改选择器就断。
+   这是可测性改进，该提给前端 —— 在简历里它比多写 20 条用例更能说明问题。
+4. 补记录域的聚合联调用例：现在只验"记录删了列表消失"，没验当日热量/BMI 跟着变。
+5. 补运营后台（`/admin`）的一套：它走独立登录（`sh_admin_session`）、独立布局，
+   是唯一还没覆盖的模块。

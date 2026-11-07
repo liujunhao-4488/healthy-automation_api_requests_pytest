@@ -138,6 +138,33 @@ class BasePage:
         expect(self.page.locator(".toast-wrap .toast")).to_have_count(0, timeout=timeout)
         return self
 
+    def expect_success_toast(self, timeout=EXPECT_TIMEOUT):
+        """保存类动作成功的判据：出现一条**非 error** 的提示。
+
+        为什么不写死文案：成功文案大多来自后端 message（「目标已更新」
+        「保存成功」…），前端只是兜底。写死就把后端改文案变成 UI 用例的红 ——
+        那不是我们要测的东西。反过来失败提示一定带 .error 类，
+        用它区分成功/失败是稳定的。
+        """
+        toast = self.toast(timeout=timeout)
+        assert "error" not in (toast.get_attribute("class") or ""), (
+            f"操作失败，提示为错误样式：{toast.inner_text()!r}"
+        )
+        return self
+
+    def expect_rejected(self, text, timeout=EXPECT_TIMEOUT):
+        """「被前端拦下」的统一判据：出现指定文案的**红色**提示。
+
+        为什么要额外断言 error 类：
+          只匹配文案的话，把同样的字写进成功提示也能过（文案是可能被复用的）；
+          红色是"这是错误"的唯一硬信号，前端用 class="error" 表达。
+        """
+        toast = self.toast(text, timeout=timeout)
+        assert "error" in (toast.get_attribute("class") or ""), (
+            f"提示 {text!r} 出现了，但不是错误样式 —— 判据可能写错，或前端把校验提示写成了成功样式"
+        )
+        return self
+
     def confirm_dialog(self, ok_text="确认"):
         """二次确认弹窗（ConfirmDialog）。
 

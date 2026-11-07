@@ -3,7 +3,7 @@
 #
 #  跑什么：
 #    MySQL(3306) → 后端 Spring Boot(8081) → 算法服务(5000) → front2 dev server(5174)
-#    再执行 automation_ui_playwright_pytest 的 14 条用例（登录/档案/记录/AI，POM 分层）。
+#    再执行 automation_ui_playwright_pytest 的 32 条用例（8 个业务域，POM 分层）。
 #
 #  为什么只测 front2：
 #    它是产品在用的那一版前端；老版 frontend 已退役，那套用例随之删除，
