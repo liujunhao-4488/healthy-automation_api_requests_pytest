@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_get_info_without_profile_returns_null_data  0.18s

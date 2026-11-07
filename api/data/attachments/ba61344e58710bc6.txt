@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3357 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 07 Nov 2026 15:29:19 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-07T15:29:16",
+      "id": 7285,
+      "text": "吃药期间能吃柚子吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-07T15:29:19",
+      "ragUsed": false,
+      "id": 7286,
+      "text": "吃药期间吃柚子要谨慎，很多情况下建议干脆避开，尤其是西柚（葡萄柚）。这不是绝对的“都不能吃”，关键看你吃的是哪类药。\n\n原因在于西柚里的一类成分会抑制肠道中一种叫 CYP3A4 的代谢酶，让部分药物在体内的浓度明显升高，相当于变相加大了剂量，可能增加副作用风险；反过来，少数药物会因此疗效下降。受影响比较典型的包括部分降压药（如硝苯地平这类钙通道阻滞剂）、部分他汀类降脂药（如辛伐他汀、阿托伐他汀）、部分抗心律失常药、部分抗凝药、某些免疫抑制剂、部分抗焦虑和抗过敏药等。普通柚子（蜜柚、沙田柚）也有类似成分，只是含量通常低于西柚，但大量吃同样有风险。\n\n比较稳妥的做法是：正在服药期间，先看药品说明书里有没有“避免与葡萄柚汁同服”的提示；不确定就直接问开药的医生或药师，报出药名让他们判断。如果确实想吃，建议与服药时间错开并不能真正消除风险，最安全的是服药期间不吃西柚，普通柚子也少量或不吃。\n\n以上是一般性饮食提示，具体能不能吃、要不要调整用药，请以医生的诊断和处方为准，不要自行停药或改剂量。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3438,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "吃药期间吃柚子要谨慎，很多情况下建议干脆避开，尤其是西柚（葡萄柚）。这不是绝对的“都不能吃”，关键看你吃的是哪类药。  原因在于西柚里的一类成分会抑制肠道中一种叫 CYP3A4 的代谢酶，让部分药物在体内的浓度明显升高，相当于变相加大了剂…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-07T15:29:19.903549605",
+      "createTime": "2026-11-07T15:29:16",
+      "updateTime": "2026-11-07T15:29:16",
+      "id": 3438,
+      "title": "吃药期间能吃柚子吗"
+    }
+  },
+  "message": "发送消息成功"
+}

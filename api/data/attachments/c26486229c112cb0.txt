@@ -1,0 +1,5 @@
+15:28:55 I → POST /assistant/chat    200   3041ms
+15:28:55 I · AI    问「我想换个口味，有什么建议」  → 换个口味可以从两个方向入手：一是换蛋白质来源，二是换调味风格。 蛋白质方面，你现在体重和BMI都很标准，没有慢病和忌口限制，可以大胆轮换：鸡胸、鸡腿去皮、瘦牛肉、猪里脊、虾、鱼、鸡蛋、豆腐、豆制品轮着…
+15:28:55 I → DELETE /assistant/conversations/3427 200      8ms
+15:28:55 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3427,) | affected=2 | 1.3ms
+15:28:55 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3427,) | affected=1 | 0.9ms

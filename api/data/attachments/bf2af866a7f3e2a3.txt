@@ -1,0 +1,1 @@
+15:29:31 I → GET  /ingredient/detail/999999999 200      4ms

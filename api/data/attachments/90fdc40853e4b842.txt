@@ -1,0 +1,41 @@
+HTTP 200　（耗时 9 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 07 Nov 2026 15:29:41 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "id": 908487,
+    "userId": 101401,
+    "recordDate": "2026-11-06 08:00:00",
+    "mealType": "breakfast",
+    "totalCalories": -500.0,
+    "totalProtein": 0.0,
+    "totalCarbs": 0.0,
+    "totalFat": 0.0,
+    "notes": "夹具造的一餐",
+    "isDeleted": 0,
+    "createTime": null,
+    "updateTime": null,
+    "details": null,
+    "mealName": null,
+    "totalFiber": 0.0,
+    "totalSugar": 0.0,
+    "totalSodium": 0.0,
+    "totalGi": 0.0
+  },
+  "message": "饮食记录提交成功"
+}

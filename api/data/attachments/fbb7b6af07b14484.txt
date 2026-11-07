@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_detail_returns_single_object    0.03s

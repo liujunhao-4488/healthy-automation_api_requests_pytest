@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_delete_then_gone_from_list_and_detail  0.04s

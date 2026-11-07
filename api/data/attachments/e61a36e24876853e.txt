@@ -1,0 +1,23 @@
+POST http://127.0.0.1:8080/api/record/submit
+
+【请求头】
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Content-Type: application/json
+Content-Length: 131
+
+【请求体】
+{
+  "date": "2026-11-06",
+  "mealType": "breakfast",
+  "details": [
+    {
+      "foodName": "偷渡",
+      "amount": 1,
+      "unit": "g",
+      "calories": 1
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_cannot_update_others_preference_via_body_user_id  0.02s

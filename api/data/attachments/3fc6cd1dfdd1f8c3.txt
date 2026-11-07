@@ -1,0 +1,4 @@
+
+└─ ⊘ XFAIL   test_bug_search_without_keyword_not_unified_envelope   缺陷 #20：/ingredient/search 缺 keyword 时返回 Spring 默认错误体（与缺陷 #2 /recipe/search、#12 同源）
+                                                                         [ 62%]
+test_cases/recipe/test_recipe_收藏闭环.py 

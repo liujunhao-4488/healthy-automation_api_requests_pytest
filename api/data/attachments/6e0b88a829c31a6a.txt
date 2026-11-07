@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_admin_api_requires_login[收藏统计]  0.00s

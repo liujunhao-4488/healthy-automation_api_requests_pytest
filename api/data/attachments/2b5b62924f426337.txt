@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3219 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 07 Nov 2026 15:29:16 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-07T15:29:13",
+      "id": 7283,
+      "text": "我妈妈的饮食建议是少吃油"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-07T15:29:16",
+      "ragUsed": false,
+      "id": 7284,
+      "text": "「少吃油」这个方向是对的，但更准确的说法是「控制总用油量、选对油的种类」，而不是一味吃得很寡淡。对中老年人来说，油吃太多会增加热量和饱和脂肪摄入，不利于血脂和体重管理；但完全不吃油又会影响脂溶性维生素吸收和必需脂肪酸供给，所以关键是「减量+换质」。\n\n具体可以这样落地：每天烹调油控制在25克左右（大约2～3瓷勺），优先用蒸、煮、炖、凉拌、少油煎代替油炸和红烧；炒菜用不粘锅、喷油壶能明显减少用量；少用猪油、黄油、起酥油，多选菜籽油、橄榄油、花生油这类植物油并轮换着用；同时留意藏在加工食品里的油，比如饼干、糕点、坚果炒货、香肠腊肉，这些往往比炒菜油更容易被忽略。\n\n另外提醒一句：如果你妈妈有高血脂、高血压、糖尿病或胆囊、胰腺方面的问题，「少吃油」的具体程度和用油种类最好结合她的检查结果来定，具体请以医生的诊断和处方为准。如果你能告诉我她的年龄、慢病情况和平时常做的菜式，我可以帮你排一份更具体的一日三餐少油搭配。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3437,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "「少吃油」这个方向是对的，但更准确的说法是「控制总用油量、选对油的种类」，而不是一味吃得很寡淡。对中老年人来说，油吃太多会增加热量和饱和脂肪摄入，不利于血脂和体重管理；但完全不吃油又会影响脂溶性维生素吸收和必需脂肪酸供给，所以关键是「减量…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-07T15:29:16.525716618",
+      "createTime": "2026-11-07T15:29:13",
+      "updateTime": "2026-11-07T15:29:13",
+      "id": 3437,
+      "title": "我妈妈的饮食建议是少吃油"
+    }
+  },
+  "message": "发送消息成功"
+}

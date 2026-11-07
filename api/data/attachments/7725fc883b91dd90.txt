@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_unknown_category_returns_empty_array  0.01s

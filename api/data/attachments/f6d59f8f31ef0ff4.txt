@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2027 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 07 Nov 2026 15:29:06 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-07T15:29:04",
+      "id": 7275,
+      "text": "晚饭吃几粒杏仁比较合适"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-07T15:29:06",
+      "ragUsed": false,
+      "id": 7276,
+      "text": "晚饭吃杏仁，一般建议 10 粒左右（约 10–15 克）比较合适，作为餐后小食或加餐都行。\n\n原因是杏仁热量和脂肪密度高，10 粒左右大约 60–70 千卡，既能补充一点优质脂肪、蛋白和维生素 E，又不容易把晚餐热量推高。如果当晚菜里已经有坚果、油炸食物或较多烹调油，可以减到 5–8 粒；如果只是清炒蔬菜加主食，10 粒左右没问题。选原味、无盐、非油炸的更好，睡前吃的话尽量别配甜饮料。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3433,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "晚饭吃杏仁，一般建议 10 粒左右（约 10–15 克）比较合适，作为餐后小食或加餐都行。  原因是杏仁热量和脂肪密度高，10 粒左右大约 60–70 千卡，既能补充一点优质脂肪、蛋白和维生素 E，又不容易把晚餐热量推高。如果当晚菜里已经…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-07T15:29:06.138065432",
+      "createTime": "2026-11-07T15:29:04",
+      "updateTime": "2026-11-07T15:29:04",
+      "id": 3433,
+      "title": "晚饭吃几粒杏仁比较合适"
+    }
+  },
+  "message": "发送消息成功"
+}

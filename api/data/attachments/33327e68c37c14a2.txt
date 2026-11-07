@@ -1,0 +1,1 @@
+15:29:31 I → GET  /ingredient/search 400      4ms  {"timestamp":"2026-11-07 23:29:31","status":400,"error":"Bad Request","path":"/api/ingredient/search"}

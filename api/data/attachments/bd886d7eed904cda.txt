@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_intruder_list_excludes_others_collect  0.02s

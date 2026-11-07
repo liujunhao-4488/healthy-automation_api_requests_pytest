@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_malformed_token_is_rejected[缺Bearer前缀]  0.00s

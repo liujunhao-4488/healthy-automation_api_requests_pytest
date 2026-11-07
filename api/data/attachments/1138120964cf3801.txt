@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2685 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 07 Nov 2026 15:29:13 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-07T15:29:10",
+      "id": 7281,
+      "text": "我草莓过敏，还能吃什么水果"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-07T15:29:13",
+      "ragUsed": false,
+      "id": 7282,
+      "text": "草莓过敏并不代表大多数水果都不能吃，通常只需要避开草莓及可能的近亲（如其他蔷薇科浆果），大多数常见水果是可以正常吃的。\n\n草莓过敏多与蔷薇科水果的交叉过敏有关，因此建议先留意：树莓、黑莓、蓝莓（严格说蓝莓属杜鹃花科，但常被归在一起观察）、樱桃、桃、杏、李子、苹果等。这些不一定都会过敏，可以少量尝试、观察反应；如果吃后出现口腔发痒、嘴唇肿、皮疹或肠胃不适，就记录下来并避开。\n\n比较稳妥的选择是香蕉、梨（对蔷薇科敏感的人可先少量试）、西瓜、哈密瓜、葡萄、橙子、猕猴桃、火龙果、芒果、菠萝、荔枝、椰子等。第一次吃的新水果建议少量、单独吃，方便判断。\n\n如果过去草莓过敏曾出现呼吸困难、喉咙发紧、全身荨麻疹等较重反应，请先咨询医生，必要时做过敏原检测，具体以医生的诊断为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3436,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "草莓过敏并不代表大多数水果都不能吃，通常只需要避开草莓及可能的近亲（如其他蔷薇科浆果），大多数常见水果是可以正常吃的。  草莓过敏多与蔷薇科水果的交叉过敏有关，因此建议先留意：树莓、黑莓、蓝莓（严格说蓝莓属杜鹃花科，但常被归在一起观察）、…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-07T15:29:13.287616802",
+      "createTime": "2026-11-07T15:29:10",
+      "updateTime": "2026-11-07T15:29:10",
+      "id": 3436,
+      "title": "我草莓过敏，还能吃什么水..."
+    }
+  },
+  "message": "发送消息成功"
+}

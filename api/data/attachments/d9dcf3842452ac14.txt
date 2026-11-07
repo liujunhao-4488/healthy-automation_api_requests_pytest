@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_intruder_status_does_not_see_others_collect  0.02s
