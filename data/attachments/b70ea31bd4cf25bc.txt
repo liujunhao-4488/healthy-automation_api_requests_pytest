@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_full_update_then_read_matches   0.01s

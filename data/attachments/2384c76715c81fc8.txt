@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_same_question_same_result       0.01s

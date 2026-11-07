@@ -1,5 +1,0 @@
-20:17:10 I → POST /assistant/chat    200   2264ms
-20:17:10 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，主要取决于你自身的情况，单从饮食角度说，海虾是高蛋白、低脂肪的优质食材，大多数健康人可以正常吃。 需要注意的几点：如果你对虾蟹等甲壳类海鲜过敏，就应当完全避免，而且过敏反应可能较重，不能…
-20:17:10 I → DELETE /assistant/conversations/3447 200      8ms
-20:17:10 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3447,) | affected=2 | 1.6ms
-20:17:10 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3447,) | affected=1 | 1.1ms

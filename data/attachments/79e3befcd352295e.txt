@@ -1,2 +1,0 @@
-
-└─ ⊘ XFAIL   test_bug_update_response_is_request_echo_not_real_state   缺陷 #16：PUT /user/diet-preference 的响应体是请求回显，不是更新后的真实状态（PUT 只带 dietType 时，响应里 allergies=null，但库里仍是原值）

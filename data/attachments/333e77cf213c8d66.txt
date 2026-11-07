@@ -1,4 +1,0 @@
-
-└─ ⊘ XFAIL   test_fallback_intent_means_blocked[兜底-求治愈]   硬拦表没有"求治愈"这类医疗模式，该被兜底拒绝的问题落到了默认 chat
-                                                                         [ 43%]
-test_cases/ai_assistant/test_assistant_意图识别.py 

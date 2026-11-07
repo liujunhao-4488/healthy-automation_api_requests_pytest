@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_list_returns_flat_array_of_recipes  0.00s

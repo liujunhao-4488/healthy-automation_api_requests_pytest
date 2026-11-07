@@ -1,5 +1,0 @@
-20:19:41 I → POST /assistant/chat    200      9ms
-20:19:41 I · AI    问「二甲双胍一次吃几片？」  → 用药剂量、停药换药、极端节食或过速减重等问题关系到人身安全，请以医生的诊断和处方为准，我无法提供这类建议。
-20:19:41 I → DELETE /assistant/conversations/3544 200      6ms
-20:19:41 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3544,) | affected=2 | 1.4ms
-20:19:41 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3544,) | affected=1 | 1.2ms

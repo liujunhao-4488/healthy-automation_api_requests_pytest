@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_list_returns_pagination_object  0.01s

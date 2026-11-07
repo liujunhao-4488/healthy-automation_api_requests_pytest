@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_collect_again_after_uncollect_works  0.03s

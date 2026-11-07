@@ -1,2 +1,0 @@
-
-└─ ⊘ XFAIL   test_bug_negative_calories_accepted   缺陷 #18：明细里的 calories / amount 允许负数，总热量可以变成 -500

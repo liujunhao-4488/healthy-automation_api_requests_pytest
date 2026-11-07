@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_empty_update_is_noop            0.01s

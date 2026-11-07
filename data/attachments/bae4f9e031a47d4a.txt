@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_intruder_list_excludes_others_records  0.01s

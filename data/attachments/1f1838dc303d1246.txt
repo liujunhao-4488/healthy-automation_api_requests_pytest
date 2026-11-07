@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_get_goal_without_record         0.00s

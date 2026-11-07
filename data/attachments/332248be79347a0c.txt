@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_new_user_has_no_preference_row_but_gets_defaults  0.01s

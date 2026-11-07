@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_save_info_appends_history       0.03s
-
-[清理] 已回查确认删除靶子账号 userId=101336

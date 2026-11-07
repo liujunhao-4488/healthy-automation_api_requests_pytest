@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_intruder_cannot_read_others_record  0.01s

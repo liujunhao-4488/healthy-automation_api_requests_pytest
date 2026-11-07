@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_doc[太胖了怎么减]  0.01s

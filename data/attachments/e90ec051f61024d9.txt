@@ -1,5 +1,0 @@
-20:17:03 I → POST /assistant/chat    200   3019ms
-20:17:03 I · AI    问「鸡胸肉有什么替代品」  → 鸡胸肉的替代品主要看你想替代它的哪一点——高蛋白低脂、口感，还是烹饪用途。 按需求分几类： **想保持高蛋白低脂**：虾仁、龙利鱼/巴沙鱼、鳕鱼、瘦牛肉（里脊）、鸡蛋（蛋白为主）、低脂希腊酸奶、豆腐和…
-20:17:03 I → DELETE /assistant/conversations/3443 200      8ms
-20:17:03 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3443,) | affected=2 | 1.7ms
-20:17:03 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3443,) | affected=1 | 1.3ms

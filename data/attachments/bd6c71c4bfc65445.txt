@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_search_with_keyword_returns_array  0.01s

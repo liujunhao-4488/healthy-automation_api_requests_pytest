@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_profile_schema_catches_status_type_drift  0.00s

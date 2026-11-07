@@ -1,5 +1,0 @@
-15:03:54 I → POST /assistant/chat    200   3634ms
-15:03:54 I · AI    问「吃药期间能吃柚子吗」  → 不能一概而论，关键看你吃的是哪一类药。多数情况下需要谨慎甚至避免，尤其是以下几类常见药物： - **降压药**（如硝苯地平、氨氯地平等钙通道阻滞剂）：柚子（尤其西柚/葡萄柚）会抑制肠道里代谢这些药的酶…
-15:03:54 I → DELETE /assistant/conversations/3438 200      5ms
-15:03:54 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3438,) | affected=2 | 1.0ms
-15:03:54 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3438,) | affected=1 | 0.8ms

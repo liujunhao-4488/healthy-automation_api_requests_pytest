@@ -1,5 +1,0 @@
-15:03:33 I → POST /assistant/chat    200   2026ms
-15:03:33 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，主要取决于你有没有海鲜过敏，以及尿酸或血脂方面的情况。如果以前吃虾没有过敏反应，一般是可以吃的；海虾蛋白质优质、脂肪低，清蒸、白灼、少油快炒都比较合适。 需要留意的是：有海鲜过敏史的人应…
-15:03:33 I → DELETE /assistant/conversations/3430 200      6ms
-15:03:33 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3430,) | affected=2 | 1.0ms
-15:03:33 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3430,) | affected=1 | 1.0ms

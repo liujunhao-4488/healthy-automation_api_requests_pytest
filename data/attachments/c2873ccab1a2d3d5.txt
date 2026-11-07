@@ -1,2 +1,0 @@
-
-└─ ⊘ SKIPPED test_message_list_keeps_six_fields_only 

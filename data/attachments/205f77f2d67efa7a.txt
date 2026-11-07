@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_delete_twice_returns_business_error  0.01s

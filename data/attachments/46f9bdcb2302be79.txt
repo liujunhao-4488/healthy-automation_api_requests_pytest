@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_default_reads_active_sheet_only  0.00s

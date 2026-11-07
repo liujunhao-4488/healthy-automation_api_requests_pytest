@@ -1,2 +1,0 @@
-15:04:03 I → GET  /ingredient/list   200     11ms
-15:04:03 I → GET  /ingredient/detail/1 200      5ms

@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_uncollect_removes_from_status_and_list  0.02s

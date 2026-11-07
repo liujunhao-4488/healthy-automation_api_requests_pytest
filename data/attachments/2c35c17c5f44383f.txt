@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_all_sheets_keeps_header_differences_visible  0.00s

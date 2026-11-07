@@ -1,5 +1,0 @@
-20:19:19 I → POST /assistant/chat/stream 200      7ms
-20:19:21 I · AI    问「鸡胸肉多少卡」     → 鸡胸肉每100克的热量是165千卡。这个数值来自本系统的食材库，同一份数据里还显示：蛋白质31克、脂肪3.6克、碳水化合物0克。
-20:19:21 I → DELETE /assistant/conversations/3526 200      6ms
-20:19:21 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3526,) | affected=2 | 1.6ms
-20:19:21 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3526,) | affected=1 | 1.1ms

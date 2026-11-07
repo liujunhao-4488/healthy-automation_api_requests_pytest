@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_health_endpoints_reject_without_token  0.00s
-                                                                         [ 58%]
-test_cases/ingredient/test_ingredient_读类契约.py 

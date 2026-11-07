@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_irrelevant_question_returns_nothing[如何用 Python 写一个快速排序]  0.00s

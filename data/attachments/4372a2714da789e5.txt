@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_login_failure_envelope[邮箱不存在]  0.01s

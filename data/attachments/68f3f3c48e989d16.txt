@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_list_echoes_page_params         0.00s

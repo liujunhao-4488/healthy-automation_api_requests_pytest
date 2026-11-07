@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_harmful_or_offtopic_input_is_blocked[越界-股票]  0.01s

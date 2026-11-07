@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_forbidden_body_uses_unified_envelope  0.01s

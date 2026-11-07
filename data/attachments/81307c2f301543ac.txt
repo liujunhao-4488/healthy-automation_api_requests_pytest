@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_exact_match_is_not_weakened     0.00s

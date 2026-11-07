@@ -1,4 +1,0 @@
-
-└─ ✔ PASSED  test_save_info_fail[height 为 0（曾泄露异常栈，已修）]  0.01s
-
-[清理] 已回查确认删除靶子账号 userId=101341

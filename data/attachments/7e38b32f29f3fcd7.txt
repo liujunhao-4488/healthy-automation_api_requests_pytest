@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_get_history_shape               0.00s

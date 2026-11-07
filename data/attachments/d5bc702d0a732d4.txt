@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_read_endpoints_require_token[tags]  0.00s

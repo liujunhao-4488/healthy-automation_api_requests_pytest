@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_register_fail[邮箱已被注册]     0.00s

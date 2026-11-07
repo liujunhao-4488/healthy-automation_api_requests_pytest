@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_doc[高血压患者每天吃多少钾]  0.00s

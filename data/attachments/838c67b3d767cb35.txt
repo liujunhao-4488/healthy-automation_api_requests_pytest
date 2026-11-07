@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_save_goal_missing_calories      0.00s

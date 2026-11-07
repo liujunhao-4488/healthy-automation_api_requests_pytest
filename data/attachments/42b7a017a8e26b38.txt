@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_section[血压高能吃咸菜吗]  0.01s

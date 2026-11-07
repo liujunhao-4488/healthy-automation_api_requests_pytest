@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_check_passes_on_conforming_data  0.00s

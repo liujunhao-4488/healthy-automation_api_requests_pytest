@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_register_fail[邮箱空]           0.00s

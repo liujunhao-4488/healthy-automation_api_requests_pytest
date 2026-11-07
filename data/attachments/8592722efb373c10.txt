@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_boolean_is_not_accepted_as_integer  0.00s

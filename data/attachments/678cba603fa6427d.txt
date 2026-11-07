@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_section[孩子太胖了怎么办]  0.01s

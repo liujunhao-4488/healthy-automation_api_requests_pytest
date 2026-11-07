@@ -1,5 +1,0 @@
-15:03:29 I → POST /assistant/chat    200   2599ms
-15:03:29 I · AI    问「我想换个口味，有什么建议」  → 想换口味的话，可以试试把日常主食和蛋白质来源轮换着来：主食在米饭、杂粮饭、荞麦面、玉米、红薯之间换；蛋白质在鱼虾、瘦牛肉、鸡蛋、豆制品、鸡腿肉之间轮换，再搭配不同颜色的蔬菜和不同风味（清蒸、凉拌、番茄…
-15:03:29 I → DELETE /assistant/conversations/3427 200     25ms
-15:03:29 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3427,) | affected=2 | 1.0ms
-15:03:29 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3427,) | affected=1 | 0.8ms

@@ -1,2 +1,0 @@
-
-└─ ⊘ XFAIL   test_bug_search_without_keyword_not_unified_envelope   缺陷 #2：/recipe/search 缺 keyword 时返回 Spring 默认错误体{timestamp,status,error,path}，不走统一信封 {code,message}

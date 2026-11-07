@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_by_category_filters_to_that_category  0.01s

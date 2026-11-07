@@ -1,5 +1,0 @@
-20:18:07 I → POST /assistant/chat    200   2942ms
-20:18:07 I · AI    问「鸡胸肉怎么做才好吃」  → 鸡胸肉好吃的关键在于解决“柴”和“没味”两个问题，核心思路是：先让它嫩，再让它香。 嫩的处理有三招：一是逆着纹理切薄片或切条，破坏纤维；二是用少量盐、料酒和一点淀粉抓匀腌10—15分钟，淀粉能锁住水分…
-20:18:07 I → DELETE /assistant/conversations/3477 200      6ms
-20:18:07 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3477,) | affected=2 | 1.5ms
-20:18:07 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3477,) | affected=1 | 1.2ms

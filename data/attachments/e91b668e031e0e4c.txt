@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_admin_api_rejects_normal_user[改用户状态]  0.01s

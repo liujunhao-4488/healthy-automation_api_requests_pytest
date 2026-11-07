@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_list_returns_ingredients_with_per100g_fields  0.01s

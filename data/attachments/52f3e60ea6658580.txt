@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_submit_requires_token           0.01s

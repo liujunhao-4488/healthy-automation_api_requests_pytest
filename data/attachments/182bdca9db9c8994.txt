@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_default_scope_is_authority      0.01s

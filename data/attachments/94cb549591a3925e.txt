@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_section[糖尿病人主食应该怎么选]  0.01s

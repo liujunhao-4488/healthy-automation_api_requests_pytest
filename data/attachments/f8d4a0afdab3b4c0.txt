@@ -1,5 +1,0 @@
-20:18:11 I → POST /assistant/chat    200   1938ms
-20:18:11 I · AI    问「早餐吃什么比较抗饿」  → 早餐想抗饿，关键是三点：蛋白质要够、有膳食纤维、主食选消化慢的。单纯吃白粥、馒头、面条这类精制碳水，血糖升得快降得也快，往往两三个小时就饿了。 具体可以这样搭：一份优质蛋白（鸡蛋、牛奶、无糖酸奶、豆浆…
-20:18:11 I → DELETE /assistant/conversations/3479 200      7ms
-20:18:11 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3479,) | affected=2 | 1.3ms
-20:18:11 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3479,) | affected=1 | 1.2ms

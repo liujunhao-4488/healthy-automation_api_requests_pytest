@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_intruder_uncollect_does_not_affect_owner  0.02s

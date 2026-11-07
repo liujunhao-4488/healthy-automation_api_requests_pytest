@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_question_hits_expected_section[痛风患者每天喝多少水]  0.00s

@@ -1,2 +1,0 @@
-
-└─ ✔ PASSED  test_missing_article_returns_business_400  0.00s
