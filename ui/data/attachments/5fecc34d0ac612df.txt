@@ -1,0 +1,2 @@
+
+  trace 已保存：/home/runner/work/healthy-automation_api_requests_pytest/healthy-automation_api_requests_pytest/automation_ui_playwright_pytest/artifacts/traces/recipe_test_recipe_ui.py__TestRecipeSearch__test_食谱库关键词搜索_命中与空态.zip

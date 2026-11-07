@@ -1,0 +1,2 @@
+
+  trace 已保存：/home/runner/work/healthy-automation_api_requests_pytest/healthy-automation_api_requests_pytest/automation_ui_playwright_pytest/artifacts/traces/article_test_article_ui.py__TestArticleInteraction__test_文章详情点赞_计数与状态同时变化.zip

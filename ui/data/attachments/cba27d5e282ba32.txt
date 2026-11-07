@@ -1,0 +1,4 @@
+
+  trace 已保存：/home/runner/work/healthy-automation_api_requests_pytest/healthy-automation_api_requests_pytest/automation_ui_playwright_pytest/artifacts/traces/record_test_diet_record_ui.py__TestDietRecord__test_添加记录_列表出现_删除后消失.zip
+
+  trace 已保存：/home/runner/work/healthy-automation_api_requests_pytest/healthy-automation_api_requests_pytest/automation_ui_playwright_pytest/artifacts/traces/record_test_diet_record_ui.py__TestDietRecord__test_添加记录_列表出现_删除后消失.zip
