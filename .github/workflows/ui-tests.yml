@@ -364,6 +364,62 @@ jobs:
           echo "run ${{ github.run_number }} / ${{ github.sha }}" > public/ui/run-info.txt
           echo "has_report=true" >> "$GITHUB_OUTPUT"
 
+      - name: 生成报告总入口页（根路径 index）
+        if: steps.generate.outputs.has_report == 'true'
+        env:
+          RUN_LABEL: "UI 自动化 · run ${{ github.run_number }} · ${{ github.sha }}"
+        run: |
+          # 与 api-tests.yml 的同名步骤内容一致（两份 index.html 互不冲突）；
+          # keep_files: true 保证对方 workflow 的报告目录不被抹掉
+          cat > public/index.html <<'HTML'
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>健康饮食系统 · 自动化测试报告</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+                background: #0f172a; color: #e2e8f0;
+                min-height: 100vh; display: flex;
+                flex-direction: column; align-items: center; justify-content: center;
+                gap: 28px; padding: 40px;
+              }
+              h1 { font-size: 26px; font-weight: 600; }
+              p.sub { color: #94a3b8; font-size: 14px; }
+              .cards { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+              a.card {
+                display: block; width: 300px; padding: 28px 24px;
+                background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+                color: #e2e8f0; text-decoration: none; transition: border-color .2s, transform .2s;
+              }
+              a.card:hover { border-color: #38bdf8; transform: translateY(-3px); }
+              .card h2 { font-size: 18px; margin-bottom: 10px; color: #38bdf8; }
+              .card p { font-size: 13px; color: #94a3b8; line-height: 1.7; }
+              footer { color: #64748b; font-size: 12px; }
+            </style>
+          </head>
+          <body>
+            <h1>健康饮食系统 · 自动化测试报告</h1>
+            <p class="sub">由 GitHub Actions 在每次推送后自动生成</p>
+            <div class="cards">
+              <a class="card" href="./api/">
+                <h2>接口自动化</h2>
+                <p>pytest + requests<br>登录鉴权 / 健康档案 / 饮食记录 / AI 助手 / 管理端</p>
+              </a>
+              <a class="card" href="./ui/">
+                <h2>UI 自动化</h2>
+                <p>Playwright + Page Object<br>token 直注 / 失败截图与 trace / 每周回归</p>
+              </a>
+            </div>
+            <footer>__RUN_LABEL__</footer>
+          </body>
+          </html>
+          HTML
+          sed -i "s|__RUN_LABEL__|$RUN_LABEL|" public/index.html
+
       - name: 推送到 gh-pages 分支（保留接口层报告）
         if: steps.generate.outputs.has_report == 'true'
         uses: peaceiris/actions-gh-pages@v4

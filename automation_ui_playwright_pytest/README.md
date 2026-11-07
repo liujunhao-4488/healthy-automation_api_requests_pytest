@@ -201,8 +201,9 @@ front2 的 vite proxy target 一致，不是接口层 CI 的 8080）→ front2 d
 
 产物两级：
 - **Artifacts**：allure-results + 失败截图 / trace / 视频 + 服务日志（保留 14 天）
-- **Allure 报告**发布到 gh-pages 的 `ui/` 子目录，与接口层报告共存：
-  `https://liujunhao-4488.github.io/healthy-automation_api_requests_pytest/ui/`
+- **Allure 报告**发布到 gh-pages，与接口层报告共存，统一入口：
+  `https://liujunhao-4488.github.io/healthy-automation_api_requests_pytest/`
+  （入口页两张卡片 → 接口层 `./api/`，UI `./ui/`）
 
 两个工作流的发布步骤都加了 `keep_files: true`——否则 peaceiris 会把 gh-pages
 同步成只剩自己的内容，把对方报告抹掉。这类"两个发布者共写一个分支"的坑，
