@@ -1,45 +1,45 @@
 <!DOCTYPE html>
-<html dir="ltr" lang="en">
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-    <meta name="allure-report-uuid" content="d8136dbd-eeab-416e-a528-31097e0a5b48">
-    <title>Allure Report</title>
-    <link rel="icon" href="assets/favicon-BDLHVmV7.ico">
-    <!-- allure-core-head:start -->
-    <!-- allure-core-head:end -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>健康饮食系统 · 自动化测试报告</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      background: #0f172a; color: #e2e8f0;
+      min-height: 100vh; display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 28px; padding: 40px;
+    }
+    h1 { font-size: 26px; font-weight: 600; }
+    p.sub { color: #94a3b8; font-size: 14px; }
+    .cards { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+    a.card {
+      display: block; width: 300px; padding: 28px 24px;
+      background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+      color: #e2e8f0; text-decoration: none; transition: border-color .2s, transform .2s;
+    }
+    a.card:hover { border-color: #38bdf8; transform: translateY(-3px); }
+    .card h2 { font-size: 18px; margin-bottom: 10px; color: #38bdf8; }
+    .card p { font-size: 13px; color: #94a3b8; line-height: 1.7; }
+    footer { color: #64748b; font-size: 12px; }
+  </style>
 </head>
 <body>
-    <div id="alert"></div>
-    <div id="content">
-        <span class="spinner">
-            <span class="spinner__circle"></span>
-        </span>
-    </div>
-    <div id="popup"></div>
-    <!-- allure-core-body:start -->
-    <script>
-        window.__allureCoreLoaded = new Promise(function (resolve, reject) {
-        window.__allureResolveCoreLoaded = resolve;
-        window.__allureRejectCoreLoaded = reject;
-    });
-    </script>
-    <script src="assets/index-CqG5t6J2.js"></script>
-    <script>
-        if (typeof window.__allureResolveCoreLoaded === "function") {
-            window.__allureResolveCoreLoaded([]);
-        }
-    </script>
-    <!-- allure-core-body:end -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FVWC4GKEYS"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-FVWC4GKEYS', {
-          'allureVersion': '2.46.1',
-          'reportUuid': 'd8136dbd-eeab-416e-a528-31097e0a5b48',
-          'single_file': false
-        });
-    </script>
+  <h1>健康饮食系统 · 自动化测试报告</h1>
+  <p class="sub">由 GitHub Actions 在每次推送后自动生成</p>
+  <div class="cards">
+    <a class="card" href="./api/">
+      <h2>接口自动化</h2>
+      <p>pytest + requests<br>登录鉴权 / 健康档案 / 饮食记录 / AI 助手 / 管理端</p>
+    </a>
+    <a class="card" href="./ui/">
+      <h2>UI 自动化</h2>
+      <p>Playwright + Page Object<br>token 直注 / 失败截图与 trace / 每周回归</p>
+    </a>
+  </div>
+  <footer>UI 自动化 · run 2 · 6a521855f045f16dae62679e0b9f16be369a146d</footer>
 </body>
 </html>
