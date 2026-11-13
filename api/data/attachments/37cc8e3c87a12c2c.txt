@@ -1,0 +1,8 @@
+20:47:00 I → POST /assistant/chat    200   1363ms
+20:47:00 I · AI    问「我给我这一周的饮食计划起了个名字叫橙色雨伞88号，请记住这个名字。」  → 好的，我记下了：你这一周的饮食计划叫「橙色雨伞88号」。之后你提到这个名字时，我会按这份周计划来理解。 顺便说一句，目前我还不知道这份计划的具体内容，比如每天几餐、主要食材和大致热量。如果你想让我帮你…
+20:47:01 I → POST /assistant/chat    200   1280ms
+20:47:01 I · AI    问「我刚才说我给饮食计划起的名字是什么？如果不知道就直接说不知道。」  → 不知道。你之前的消息里没有提到过饮食计划的名字，我这边没有相关记录。 如果你愿意，可以现在告诉我这个名字，我记下来，后面聊计划时就能直接对应上。
+20:47:01 I → DELETE /assistant/conversations/3432 200     10ms
+20:47:01 I → DELETE /assistant/conversations/3433 200      9ms
+20:47:01 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s,%s) | args=(3432, 3433) | affected=4 | 1.4ms
+20:47:01 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s,%s) | args=(3432, 3433) | affected=2 | 1.2ms

@@ -1,0 +1,12 @@
+GET http://127.0.0.1:8080/api/recipe/search?keyword=%E7%8B%AC%E4%B8%80%E6%97%A0%E4%BA%8C%E7%9A%84%E9%A3%9F%E8%B0%B1%E5%90%8DXYZ
+
+【请求头】
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Content-Type: application/json
+Authorization: Bearer eyJhbGci…***（已脱敏）（共 175 字符）
+
+【请求体】
+（无）

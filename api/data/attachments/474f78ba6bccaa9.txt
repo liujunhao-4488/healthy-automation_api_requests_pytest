@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_admin_api_rejects_normal_user[收藏统计]  0.01s

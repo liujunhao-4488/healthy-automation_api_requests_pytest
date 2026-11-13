@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_empty_tags_returns_array        0.00s

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1000 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:46:38 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:46:37",
+      "id": 7269,
+      "text": "我给我这一周的饮食计划起了个名字叫紫色灯塔77号，请记住这个名字。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:46:38",
+      "ragUsed": false,
+      "id": 7270,
+      "text": "好的，记住了：你这一周的饮食计划叫「紫色灯塔77号」。之后你提到这个名字时，我会按这份一周计划来理解。如果方便，可以把这一周的三餐安排或大致框架发我，我可以帮你从热量、宏量营养素搭配和食材替换角度过一遍。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3429,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "好的，记住了：你这一周的饮食计划叫「紫色灯塔77号」。之后你提到这个名字时，我会按这份一周计划来理解。如果方便，可以把这一周的三餐安排或大致框架发我，我可以帮你从热量、宏量营养素搭配和食材替换角度过一遍。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:46:38.661525183",
+      "createTime": "2026-11-13T20:46:37",
+      "updateTime": "2026-11-13T20:46:37",
+      "id": 3429,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

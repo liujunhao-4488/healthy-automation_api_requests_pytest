@@ -1,0 +1,5 @@
+20:49:10 I → POST /assistant/chat/stream 200     12ms
+20:49:11 I · AI    问「鸡胸肉多少卡」     → 鸡胸肉每 100 克的热量是 165 千卡。
+20:49:11 I → DELETE /assistant/conversations/3524 200      7ms
+20:49:11 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3524,) | affected=2 | 1.0ms
+20:49:11 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3524,) | affected=1 | 0.7ms

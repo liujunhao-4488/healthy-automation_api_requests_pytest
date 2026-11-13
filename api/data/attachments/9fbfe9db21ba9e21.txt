@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1996 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:50:40 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:50:38",
+      "id": 7587,
+      "text": "每天喝多少水合适"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:50:40",
+      "ragUsed": false,
+      "id": 7588,
+      "text": "对大多数健康成年人来说，每天总饮水量在1500～1700毫升左右比较合适，大约相当于7～8杯水。这个量指的是喝水和其他饮品的总量，食物中的水分（如汤、粥、蔬果）也算一部分。\n\n具体可以这样把握：\n\n- 气温高、运动量大、出汗多时，需要相应增加，可以到2000毫升以上。\n- 尿液颜色是简单实用的参考：淡黄色说明水分基本够，颜色偏深提示该补水了。\n- 不要等到明显口渴才喝，可以分散在全天，少量多次。\n- 心衰、肾功能不全等需要限制液体的疾病，饮水量要遵医嘱，不能按上面的通用量来。\n\n如果你有具体的运动量、天气情况或健康状况，可以再说一下，我帮你估算更贴合的量。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3574,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "对大多数健康成年人来说，每天总饮水量在1500～1700毫升左右比较合适，大约相当于7～8杯水。这个量指的是喝水和其他饮品的总量，食物中的水分（如汤、粥、蔬果）也算一部分。  具体可以这样把握：  - 气温高、运动量大、出汗多时，需要相应…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:50:40.122006296",
+      "createTime": "2026-11-13T20:50:38",
+      "updateTime": "2026-11-13T20:50:38",
+      "id": 3574,
+      "title": "每天喝多少水合适"
+    }
+  },
+  "message": "发送消息成功"
+}

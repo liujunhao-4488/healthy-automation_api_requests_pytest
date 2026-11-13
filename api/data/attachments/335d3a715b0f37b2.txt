@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2836 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:07 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:04",
+      "id": 7317,
+      "text": "我想换个口味，有什么建议"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:47:07",
+      "ragUsed": false,
+      "id": 7318,
+      "text": "你的档案里没有填写过敏/忌口、慢病和目标热量，所以我先给几个方向性的换口味建议，你挑感兴趣的告诉我，我再细化成具体搭配。\n\n可以试试这几种思路：一是换主食，比如把白米饭换成杂粮饭、荞麦面、玉米、红薯，口感变化明显；二是换蛋白质来源，鸡胸吃腻了可以换鱼虾、瘦牛肉、鸡蛋、豆腐、豆制品；三是换调味风格，同一份食材用柠檬胡椒、咖喱、番茄罗勒、葱姜蒜香醋等不同做法，热量不会增加太多；四是换烹饪方式，蒸、烤、凉拌、少油煎轮着来，比一直炒菜更有新鲜感。\n\n从你的情况看，25岁男性、BMI 约22.8、中度活动，体重在正常范围，基础代谢约1729 kcal，日常大概在2200–2400 kcal上下比较合适，所以换口味时注意别靠油炸、浓酱、含糖饮料来提味，用香料和酸味来调味更划算，蛋白质每餐保证一掌心左右即可。如果你有具体不爱吃或不能吃的东西，告诉我，我可以按你的口味排一份换着吃的搭配。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3444,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你的档案里没有填写过敏/忌口、慢病和目标热量，所以我先给几个方向性的换口味建议，你挑感兴趣的告诉我，我再细化成具体搭配。  可以试试这几种思路：一是换主食，比如把白米饭换成杂粮饭、荞麦面、玉米、红薯，口感变化明显；二是换蛋白质来源，鸡胸吃…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:07.499988861",
+      "createTime": "2026-11-13T20:47:04",
+      "updateTime": "2026-11-13T20:47:04",
+      "id": 3444,
+      "title": "我想换个口味，有什么建议"
+    }
+  },
+  "message": "发送消息成功"
+}

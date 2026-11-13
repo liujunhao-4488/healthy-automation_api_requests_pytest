@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_health_info_accepts_fresh_record_with_null_optional_fields  0.00s

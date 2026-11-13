@@ -1,0 +1,78 @@
+HTTP 200　（耗时 3236 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:46:13 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:46:10",
+      "id": 7247,
+      "text": "糖尿病怎么吃"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 30.4862,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 29.2147,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 28.3687,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        }
+      ],
+      "createTime": "2026-11-13T20:46:13",
+      "ragUsed": true,
+      "id": 7248,
+      "text": "糖尿病饮食的核心是：食物多样、主食定量并优选全谷物和低血糖生成指数食物、能量适宜以维持合理体重、清淡少油盐糖且不饮酒，同时配合规律运动。这些原则出自《成人糖尿病食养指南》。\n\n具体可以这样安排：\n\n主食要定量，不要随意增减，优先选全谷物、杂豆和低血糖生成指数的品种，比如用部分糙米、燕麦、荞麦替代精白米面。每餐主食量相对固定，有助于血糖平稳。\n\n食物要多样，蔬菜、适量蛋白质（鱼禽蛋瘦肉、豆制品）、奶类都要有，避免只吃菜不吃饭或只吃主食两种极端。能量摄入要匹配体重状况：超重肥胖者适当控制总能量，消瘦者要保证充足，避免体重继续下降。\n\n清淡饮食，控制烹调油、盐和糖，不饮酒。少喝含糖饮料、少吃零食和甜点，减少不必要的聚餐和加餐。\n\n进餐要规律、细嚼慢咽。是否需要加餐、何时加餐、选什么零食，应根据个人血糖波动的特点来决定，尤其是病程较长、血糖控制不佳或使用胰岛素的患者，更要个体化安排（《成人糖尿病食养指南》）。\n\n运动方面，把身体活动列入日常计划、循序渐进，运动前后注意监测血糖，避免低血糖（同上指南）。\n\n需要说明的是，具体的主食量和总能量要结合你的体重、活动量和血糖情况来定，用药和胰岛素调整也必须由医生决定，以上只是一般性饮食原则，具体请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3419,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "糖尿病饮食的核心是：食物多样、主食定量并优选全谷物和低血糖生成指数食物、能量适宜以维持合理体重、清淡少油盐糖且不饮酒，同时配合规律运动。这些原则出自《成人糖尿病食养指南》。  具体可以这样安排：  主食要定量，不要随意增减，优先选全谷物、…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:46:13.447609848",
+      "createTime": "2026-11-13T20:46:10",
+      "updateTime": "2026-11-13T20:46:10",
+      "id": 3419,
+      "title": "糖尿病怎么吃"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,5 @@
+20:47:55 I → POST /assistant/chat    200   3379ms
+20:47:55 I · AI    问「最近老犯困，怎么吃能改善」  → 白天犯困，先从“稳住血糖、补足铁和B族、别让午饭太撑”这三件事入手，多数人调整一两周就能感觉到差别。 具体可以这样吃： - 早餐别只吃精制碳水（白粥、包子、面包），加一份蛋白质，比如鸡蛋、牛奶、无糖酸…
+20:47:55 I → DELETE /assistant/conversations/3469 200      7ms
+20:47:55 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3469,) | affected=2 | 1.1ms
+20:47:55 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3469,) | affected=1 | 0.8ms

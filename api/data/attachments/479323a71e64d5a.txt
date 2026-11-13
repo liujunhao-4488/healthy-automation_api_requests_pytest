@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3379 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:55 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:52",
+      "id": 7367,
+      "text": "最近老犯困，怎么吃能改善"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:47:55",
+      "ragUsed": false,
+      "id": 7368,
+      "text": "白天犯困，先从“稳住血糖、补足铁和B族、别让午饭太撑”这三件事入手，多数人调整一两周就能感觉到差别。\n\n具体可以这样吃：\n\n- 早餐别只吃精制碳水（白粥、包子、面包），加一份蛋白质，比如鸡蛋、牛奶、无糖酸奶或豆浆，再配点全谷物。纯碳水早餐会让血糖先冲高再回落，上午容易发困。\n- 午餐控制主食量，把一半白米饭换成杂粮饭、糙米或薯类，先吃菜和蛋白质再吃主食，吃到七八分饱就停。午餐过饱是下午犯困最常见的原因。\n- 保证铁和B族维生素的摄入：红肉（瘦牛肉、猪瘦肉）每周吃几次，搭配深绿色蔬菜、豆类和全谷物。缺铁导致的轻度贫血会让人疲乏、注意力差，男性也不少见。\n- 咖啡因放在上午，下午两点后尽量不喝咖啡浓茶，避免影响夜间睡眠、形成白天更困的循环。\n- 少喝含糖饮料、少吃甜点和油炸食品，这类食物带来的血糖波动和餐后困倦很明显。\n- 水要喝够，轻度脱水也会让人觉得没精神。\n\n你的BMI约22.8，属于正常范围，没有慢性病，所以不需要刻意节食或大改饮食结构，重点是把三餐的碳水质量提上去、蛋白质吃够、午餐别过量，这几条对你来说就够用了。\n\n另外提醒一句：如果犯困持续超过两三周，或者伴随明显乏力、体重变化、打鼾严重、白天坐着就能睡着，那可能不只是吃的问题（比如睡眠呼吸问题、贫血、甲状腺等），建议去医院查一下血常规和甲状腺功能，具体以医生的诊断为准。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3469,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "白天犯困，先从“稳住血糖、补足铁和B族、别让午饭太撑”这三件事入手，多数人调整一两周就能感觉到差别。  具体可以这样吃：  - 早餐别只吃精制碳水（白粥、包子、面包），加一份蛋白质，比如鸡蛋、牛奶、无糖酸奶或豆浆，再配点全谷物。纯碳水早餐…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:55.846415991",
+      "createTime": "2026-11-13T20:47:52",
+      "updateTime": "2026-11-13T20:47:52",
+      "id": 3469,
+      "title": "最近老犯困，怎么吃能改善"
+    }
+  },
+  "message": "发送消息成功"
+}

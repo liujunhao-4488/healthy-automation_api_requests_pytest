@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1812 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:50:10 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:50:08",
+      "id": 7551,
+      "text": "二甲双胍是治疗什么病的药？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:50:10",
+      "ragUsed": false,
+      "id": 7552,
+      "text": "二甲双胍是治疗2型糖尿病的常用口服降糖药，属于双胍类，主要作用是减少肝脏葡萄糖输出、改善外周组织对胰岛素的敏感性，从而降低血糖。它有时也用于部分存在胰岛素抵抗的多囊卵巢综合征患者，但这属于医生评估后的个体化用药，不是常规适应症。\n\n需要说明的是，用药属于医疗范畴，具体是否适用、剂量多少、如何调整，都要以医生的诊断和处方为准，不要自行开始或停用。如果你是在为家人了解服药期间的饮食配合，比如怎么安排三餐、如何减少胃肠道不适，可以告诉我，我再从饮食角度给建议。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3562,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "二甲双胍是治疗2型糖尿病的常用口服降糖药，属于双胍类，主要作用是减少肝脏葡萄糖输出、改善外周组织对胰岛素的敏感性，从而降低血糖。它有时也用于部分存在胰岛素抵抗的多囊卵巢综合征患者，但这属于医生评估后的个体化用药，不是常规适应症。  需要说…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:50:10.39422767",
+      "createTime": "2026-11-13T20:50:08",
+      "updateTime": "2026-11-13T20:50:08",
+      "id": 3562,
+      "title": "二甲双胍是治疗什么病的药..."
+    }
+  },
+  "message": "发送消息成功"
+}

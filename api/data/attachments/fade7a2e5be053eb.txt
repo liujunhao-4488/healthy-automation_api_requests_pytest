@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2221 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:50:17 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:50:14",
+      "id": 7563,
+      "text": "健康的减重速度是每周多少斤？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:50:17",
+      "ragUsed": false,
+      "id": 7564,
+      "text": "健康减重的速度一般建议每周减 0.5～1 公斤，也就是每周 1～2 斤，这个范围比较安全、也更容易长期坚持。\n\n之所以这样建议，是因为减得太快（比如每周超过 2～3 斤）往往掉的不只是脂肪，还包括水分和肌肉，容易带来乏力、掉发、月经紊乱、胆结石风险上升等问题；而且快速减重后反弹的概率也更高。每周 1～2 斤对应的是每天大约 300～500 千卡的能量缺口，通过适度控制饮食加规律运动就能实现，不必靠极端节食。\n\n另外，体重基数较大的人初期掉秤会快一些，属于正常现象；接近目标体重时速度自然会慢下来，这时每周减 0.5 斤左右也算合理。比起每周的数字，更值得关注的是腰围变化和体重长期趋势。如果有糖尿病、甲状腺疾病等基础病，或正在服药，具体减重节奏请以医生的评估为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3564,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "健康减重的速度一般建议每周减 0.5～1 公斤，也就是每周 1～2 斤，这个范围比较安全、也更容易长期坚持。  之所以这样建议，是因为减得太快（比如每周超过 2～3 斤）往往掉的不只是脂肪，还包括水分和肌肉，容易带来乏力、掉发、月经紊乱、…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:50:17.033799688",
+      "createTime": "2026-11-13T20:50:14",
+      "updateTime": "2026-11-13T20:50:14",
+      "id": 3564,
+      "title": "健康的减重速度是每周多少..."
+    }
+  },
+  "message": "发送消息成功"
+}

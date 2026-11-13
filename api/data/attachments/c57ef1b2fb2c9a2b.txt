@@ -1,0 +1,5 @@
+20:47:50 I → POST /assistant/chat    200   3301ms
+20:47:50 I · AI    问「我想控糖应该注意什么」  → 控糖的核心是控制血糖的“上升速度”和“总量”，而不只是少吃甜食。对你来说，BMI 22.8、无慢病、活动量中等，属于基础不错的情况，控糖更多是预防和稳定精力，不需要走极端。 几个要点： 一是主食别“精…
+20:47:50 I → DELETE /assistant/conversations/3467 200      6ms
+20:47:50 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3467,) | affected=2 | 1.4ms
+20:47:50 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3467,) | affected=1 | 0.9ms

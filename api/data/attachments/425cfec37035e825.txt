@@ -1,0 +1,5 @@
+20:47:59 I → POST /assistant/chat    200   1571ms
+20:47:59 I · AI    问「刚吃了碗牛肉面」   → 牛肉面是挺常见的一餐，一碗下来大致能提供主食的碳水、牛肉的蛋白质，还有不少汤里的油和盐。如果这碗面偏咸或油花较多，今天剩下的两餐可以清淡一些，多配点蔬菜，比如加个凉拌菜或清炒绿叶菜，帮助平衡钠和油脂的…
+20:47:59 I → DELETE /assistant/conversations/3474 200      6ms
+20:47:59 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3474,) | affected=2 | 1.0ms
+20:47:59 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3474,) | affected=1 | 0.8ms

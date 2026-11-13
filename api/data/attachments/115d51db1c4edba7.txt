@@ -1,0 +1,5 @@
+20:47:20 I → POST /assistant/chat    200   2115ms
+20:47:20 I · AI    问「今天天气冷了，适合喝什么汤」  → 天气转冷，适合喝一些温热、清淡、能暖身又不过分油腻的汤。比较推荐的有： 萝卜排骨汤：萝卜清甜解腻，排骨提供蛋白质，喝起来暖而不燥，适合大多数人。 番茄鸡蛋汤：做法简单，酸甜开胃，热量不高，搭配主食就是…
+20:47:20 I → DELETE /assistant/conversations/3451 200      7ms
+20:47:20 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3451,) | affected=2 | 1.1ms
+20:47:20 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3451,) | affected=1 | 0.9ms

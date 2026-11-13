@@ -1,0 +1,28 @@
+POST http://127.0.0.1:8080/api/record/submit
+
+【请求头】
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Content-Type: application/json
+Authorization: Bearer eyJhbGci…***（已脱敏）（共 175 字符）
+Content-Length: 226
+
+【请求体】
+{
+  "date": "2026-09-15",
+  "mealType": "breakfast",
+  "notes": "夹具造的一餐",
+  "details": [
+    {
+      "foodName": "燕麦",
+      "amount": 50,
+      "unit": "g",
+      "calories": 194,
+      "protein": 6.6,
+      "carbs": 33.5,
+      "fat": 3.1
+    }
+  ]
+}

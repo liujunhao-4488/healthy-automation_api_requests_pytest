@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1684 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:38 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:36",
+      "id": 7351,
+      "text": "我今天的蛋白质摄入够吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:47:38",
+      "ragUsed": false,
+      "id": 7352,
+      "text": "这需要知道你今天的实际饮食内容才能判断，目前没有这些信息，我无法直接说够或不够。\n\n判断蛋白质是否充足，通常看两点：一是你今天吃了哪些含蛋白质的食物、大致份量；二是你的基本情况（体重、活动量、是否健身或处于特殊生理阶段）。一般成年人每天每公斤体重约需 0.8～1.0 克蛋白质，规律力量训练者可到 1.2～1.6 克。\n\n你可以把今天吃的东西大致列一下（比如早餐鸡蛋几个、午晚餐有没有肉鱼蛋豆、有没有奶或豆制品），我就能帮你估算并给出补充建议。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3461,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "这需要知道你今天的实际饮食内容才能判断，目前没有这些信息，我无法直接说够或不够。  判断蛋白质是否充足，通常看两点：一是你今天吃了哪些含蛋白质的食物、大致份量；二是你的基本情况（体重、活动量、是否健身或处于特殊生理阶段）。一般成年人每天每…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:38.362825265",
+      "createTime": "2026-11-13T20:47:36",
+      "updateTime": "2026-11-13T20:47:36",
+      "id": 3461,
+      "title": "我今天的蛋白质摄入够吗"
+    }
+  },
+  "message": "发送消息成功"
+}

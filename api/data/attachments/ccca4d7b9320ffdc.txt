@@ -1,0 +1,5 @@
+20:46:32 I → POST /assistant/chat    200    722ms
+20:46:32 I · AI    问「鸡胸肉每100克多少卡」  → 鸡胸肉每100克是165千卡。
+20:46:32 I → DELETE /assistant/conversations/3426 200      9ms
+20:46:32 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3426,) | affected=2 | 1.2ms
+20:46:32 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3426,) | affected=1 | 0.9ms

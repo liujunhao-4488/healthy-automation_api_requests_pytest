@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1542 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:33 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:32",
+      "id": 7345,
+      "text": "我今天吃了多少卡"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:47:33",
+      "ragUsed": false,
+      "id": 7346,
+      "text": "我无法知道你今天的实际摄入量，因为你没有提供今天吃了哪些食物、各吃了多少。热量需要根据具体食物和份量来估算，没有这些信息就只能猜，而猜出来的数字对你没有参考价值。\n\n如果你把今天吃的东西按“食物＋大致份量”列给我，比如“早餐两个包子一杯豆浆、午餐一碗米饭加红烧肉、下午一杯奶茶”，我可以帮你逐项估算并汇总出全天热量。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3458,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "我无法知道你今天的实际摄入量，因为你没有提供今天吃了哪些食物、各吃了多少。热量需要根据具体食物和份量来估算，没有这些信息就只能猜，而猜出来的数字对你没有参考价值。  如果你把今天吃的东西按“食物＋大致份量”列给我，比如“早餐两个包子一杯豆…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:33.736991042",
+      "createTime": "2026-11-13T20:47:32",
+      "updateTime": "2026-11-13T20:47:32",
+      "id": 3458,
+      "title": "我今天吃了多少卡"
+    }
+  },
+  "message": "发送消息成功"
+}

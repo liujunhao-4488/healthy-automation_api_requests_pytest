@@ -1,0 +1,5 @@
+20:48:17 I → POST /assistant/chat    200   2194ms
+20:48:17 I · AI    问「你好，今天想吃点好的」  → 想吃点好的完全可以，关键是「好」落在食材新鲜、搭配均衡上，而不是油糖堆出来的重口味。 可以这样安排：一份优质蛋白（清蒸鱼、白灼虾、炖牛肉、鸡蛋都行），配一到两份深色蔬菜，主食换成杂粮饭或加点薯类，再有…
+20:48:17 I → DELETE /assistant/conversations/3483 200      6ms
+20:48:17 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3483,) | affected=2 | 1.2ms
+20:48:17 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3483,) | affected=1 | 0.8ms

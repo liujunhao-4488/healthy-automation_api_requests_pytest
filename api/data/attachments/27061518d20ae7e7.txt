@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1615 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:48:33 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:48:31",
+      "id": 7431,
+      "text": "帮我写个脚本批量重命名文件"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:48:33",
+      "ragUsed": false,
+      "id": 7432,
+      "text": "这个问题不在我负责的范围内——我只处理饮食与健康相关的问题，比如食材替换、食谱分析、三餐搭配、营养成分与热量估算、控油控糖控钠、慢病饮食注意事项、运动与体重管理、保健品常识等。批量重命名文件属于系统操作或编程问题，建议你使用系统自带的批量重命名功能，或向编程类助手咨询。\n\n如果你有饮食或健康方面的疑问，随时告诉我。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3501,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "这个问题不在我负责的范围内——我只处理饮食与健康相关的问题，比如食材替换、食谱分析、三餐搭配、营养成分与热量估算、控油控糖控钠、慢病饮食注意事项、运动与体重管理、保健品常识等。批量重命名文件属于系统操作或编程问题，建议你使用系统自带的批量…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:48:33.450641641",
+      "createTime": "2026-11-13T20:48:31",
+      "updateTime": "2026-11-13T20:48:31",
+      "id": 3501,
+      "title": "帮我写个脚本批量重命名文..."
+    }
+  },
+  "message": "发送消息成功"
+}

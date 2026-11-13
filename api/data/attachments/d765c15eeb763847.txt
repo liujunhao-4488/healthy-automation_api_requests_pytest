@@ -1,0 +1,5 @@
+20:48:26 I → POST /assistant/chat    200   2220ms
+20:48:26 I · AI    问「我不吃香菜，有什么能换成它」  → 香菜主要提供的是清香和点缀，替代要看它在菜里起什么作用： 如果是出锅前撒的香菜碎，想保留那点清香味，可以用小葱碎、香葱末或芹菜叶代替，量按原来香菜的用量来；想要更清爽的草本味，薄荷或罗勒也行，但风味方…
+20:48:26 I → DELETE /assistant/conversations/3490 200      7ms
+20:48:26 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3490,) | affected=2 | 1.2ms
+20:48:26 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3490,) | affected=1 | 0.7ms

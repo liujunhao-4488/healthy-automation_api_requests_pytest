@@ -1,0 +1,5 @@
+20:47:38 I → POST /assistant/chat    200   1684ms
+20:47:38 I · AI    问「我今天的蛋白质摄入够吗」  → 这需要知道你今天的实际饮食内容才能判断，目前没有这些信息，我无法直接说够或不够。 判断蛋白质是否充足，通常看两点：一是你今天吃了哪些含蛋白质的食物、大致份量；二是你的基本情况（体重、活动量、是否健身或…
+20:47:38 I → DELETE /assistant/conversations/3461 200      9ms
+20:47:38 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3461,) | affected=2 | 1.1ms
+20:47:38 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3461,) | affected=1 | 1.0ms

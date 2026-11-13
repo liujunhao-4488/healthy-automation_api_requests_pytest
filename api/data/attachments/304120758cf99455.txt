@@ -1,0 +1,5 @@
+20:49:14 I → POST /assistant/chat/stream 200      7ms
+20:49:15 I · AI    问「鸡胸肉多少卡」     → 鸡胸肉每100克含165千卡。这个热量是按生重计算的，烹饪方式不同（水煮、煎、烤）会因用油和水分流失略有变化；如果想知道某一份具体多少卡，告诉我重量即可帮你换算。
+20:49:15 I → DELETE /assistant/conversations/3529 200      6ms
+20:49:15 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3529,) | affected=2 | 1.3ms
+20:49:15 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3529,) | affected=1 | 1.0ms

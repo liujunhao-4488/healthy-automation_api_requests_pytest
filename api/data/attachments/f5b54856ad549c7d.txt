@@ -1,0 +1,5 @@
+20:47:08 I → POST /assistant/chat    200   1025ms
+20:47:08 I · AI    问「你好」             → 你好，我是饮食与健康助手。你可以问我食材怎么替换、食谱怎么分析、三餐怎么搭配、营养成分和热量怎么估算，也可以问控油控糖控钠、慢病相关的饮食注意、运动与体重管理、保健品的常见作用与注意事项。有什么想了解…
+20:47:08 I → DELETE /assistant/conversations/3445 200      7ms
+20:47:08 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3445,) | affected=2 | 1.1ms
+20:47:08 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3445,) | affected=1 | 0.8ms

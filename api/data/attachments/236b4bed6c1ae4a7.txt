@@ -1,0 +1,5 @@
+20:48:02 I → POST /assistant/chat    200   1277ms
+20:48:02 I · AI    问「谢谢你」           → 不客气。有饮食或健康相关的问题随时来问，比如食材替换、三餐搭配、热量估算都可以。
+20:48:02 I → DELETE /assistant/conversations/3476 200      6ms
+20:48:02 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3476,) | affected=2 | 1.1ms
+20:48:02 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3476,) | affected=1 | 1.0ms

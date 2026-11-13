@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2485 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:48:09 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:48:07",
+      "id": 7387,
+      "text": "早餐吃什么比较抗饿"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:48:09",
+      "ragUsed": false,
+      "id": 7388,
+      "text": "早餐想更抗饿，关键是三样搭配好：足够的蛋白质、一定量的膳食纤维，以及低升糖的慢消化碳水，同时别让精制糖和油条白粥这类快消化食物占主导。\n\n具体可以这样搭：\n\n- 蛋白质打底：鸡蛋、无糖豆浆、牛奶、原味酸奶、豆腐脑（少卤），任选一到两种。蛋白质消化慢，是延长饱腹感的主力。\n- 主食选粗不选细：燕麦、全麦面包、杂粮馒头、玉米、红薯，替换掉白粥、白馒头、甜面包。它们的升糖速度慢，血糖平稳就不容易很快又饿。\n- 加一份蔬菜或少量坚果：几片生菜番茄、一小把坚果（约一小把，10 克左右），纤维和脂肪都能拖慢胃排空。\n\n一个简单的组合示例：两个水煮蛋 + 一碗燕麦粥（不加糖）+ 一小碟凉拌蔬菜；或者全麦面包夹鸡蛋和生菜 + 一杯无糖豆浆。\n\n另外，吃得太快、早餐吃得太少也容易饿，尽量细嚼慢咽、吃到七八分饱偏上一点。如果你有血糖方面的问题，主食种类和分量最好再结合医生或营养师的意见调整。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3479,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "早餐想更抗饿，关键是三样搭配好：足够的蛋白质、一定量的膳食纤维，以及低升糖的慢消化碳水，同时别让精制糖和油条白粥这类快消化食物占主导。  具体可以这样搭：  - 蛋白质打底：鸡蛋、无糖豆浆、牛奶、原味酸奶、豆腐脑（少卤），任选一到两种。蛋…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:48:09.637303401",
+      "createTime": "2026-11-13T20:48:07",
+      "updateTime": "2026-11-13T20:48:07",
+      "id": 3479,
+      "title": "早餐吃什么比较抗饿"
+    }
+  },
+  "message": "发送消息成功"
+}

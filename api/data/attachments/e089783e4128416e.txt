@@ -1,0 +1,56 @@
+HTTP 200　（耗时 1461 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:50:22 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:50:21",
+      "id": 7569,
+      "text": "鸡胸肉每100克大概多少卡路里"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "ingredient",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:50:22",
+      "ragUsed": false,
+      "id": 7570,
+      "text": "鸡胸肉每100克大约165千卡。\n\n这个数值来自本系统食材库：每100克鸡胸肉含蛋白质31克、脂肪3.6克、碳水化合物0克，钠50毫克。它的热量主要来自蛋白质，脂肪含量很低，属于高蛋白低脂的肉类，适合需要控制热量或增加蛋白质摄入的人。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "ingredient"
+    },
+    "conversationId": 3565,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉每100克大约165千卡。  这个数值来自本系统食材库：每100克鸡胸肉含蛋白质31克、脂肪3.6克、碳水化合物0克，钠50毫克。它的热量主要来自蛋白质，脂肪含量很低，属于高蛋白低脂的肉类，适合需要控制热量或增加蛋白质摄入的人。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:50:22.870474914",
+      "createTime": "2026-11-13T20:50:21",
+      "updateTime": "2026-11-13T20:50:21",
+      "id": 3565,
+      "title": "鸡胸肉每100克大概多少..."
+    }
+  },
+  "message": "发送消息成功"
+}

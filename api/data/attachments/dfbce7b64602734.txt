@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1627 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:35 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:33",
+      "id": 7347,
+      "text": "我这周的热量摄入有多少"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:47:35",
+      "ragUsed": false,
+      "id": 7348,
+      "text": "我这边没有你这一周的饮食记录，所以算不出具体的热量摄入数字。热量估算需要依据每天吃了什么、大致分量和烹饪方式，这些信息本轮没有提供。\n\n如果你愿意，可以把这一周每天的三餐和加餐大致列一下（食物种类、份量，比如“一碗米饭”“两个鸡蛋”“炒青菜一盘”），我可以帮你逐日估算并汇总。之后如果想调整，也能一起看哪几餐热量偏高、怎么替换。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3459,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "我这边没有你这一周的饮食记录，所以算不出具体的热量摄入数字。热量估算需要依据每天吃了什么、大致分量和烹饪方式，这些信息本轮没有提供。  如果你愿意，可以把这一周每天的三餐和加餐大致列一下（食物种类、份量，比如“一碗米饭”“两个鸡蛋”“炒青…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:35.382006255",
+      "createTime": "2026-11-13T20:47:33",
+      "updateTime": "2026-11-13T20:47:33",
+      "id": 3459,
+      "title": "我这周的热量摄入有多少"
+    }
+  },
+  "message": "发送消息成功"
+}

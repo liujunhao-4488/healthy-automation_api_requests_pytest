@@ -1,0 +1,5 @@
+20:49:53 I → POST /assistant/chat    200   2217ms
+20:49:53 I · AI    问「我对花生严重过敏，但是吃一点点应该没关系吧？」  → 不建议这样尝试。对花生严重过敏的人，即使只吃一点点，也可能引发严重反应，风险并不与摄入量成正比。 严重过敏意味着免疫系统对极微量花生蛋白也可能过度反应，可能出现的包括喉头水肿、血压下降、呼吸困难等过敏…
+20:49:53 I → DELETE /assistant/conversations/3554 200      7ms
+20:49:53 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3554,) | affected=2 | 1.2ms
+20:49:53 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3554,) | affected=1 | 0.8ms

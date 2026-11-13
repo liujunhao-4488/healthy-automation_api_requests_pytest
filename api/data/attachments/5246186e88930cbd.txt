@@ -1,0 +1,56 @@
+HTTP 200　（耗时 1648 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:32 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:30",
+      "id": 7341,
+      "text": "草莓热量高吗"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "ingredient",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:47:32",
+      "ragUsed": false,
+      "id": 7342,
+      "text": "不高。草莓每100克只有32千卡，在水果里属于热量很低的一类，比苹果、香蕉、葡萄都低不少，吃一小碗（约150克）也就50千卡左右。\n\n它热量低主要是因为水分多，碳水只有7.7克/100克，糖4.9克，同时还有2克膳食纤维，饱腹感不错，血糖生成指数（GI）为40，属于低GI水果。作为加餐或代替甜点都挺合适，注意别蘸糖、炼乳或配奶油吃，那样热量就上去了。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "ingredient"
+    },
+    "conversationId": 3456,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不高。草莓每100克只有32千卡，在水果里属于热量很低的一类，比苹果、香蕉、葡萄都低不少，吃一小碗（约150克）也就50千卡左右。  它热量低主要是因为水分多，碳水只有7.7克/100克，糖4.9克，同时还有2克膳食纤维，饱腹感不错，血糖…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:32.146957178",
+      "createTime": "2026-11-13T20:47:30",
+      "updateTime": "2026-11-13T20:47:30",
+      "id": 3456,
+      "title": "草莓热量高吗"
+    }
+  },
+  "message": "发送消息成功"
+}

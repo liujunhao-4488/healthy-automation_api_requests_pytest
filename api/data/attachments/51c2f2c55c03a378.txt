@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_get_profile_with_fake_token_rejects_with_empty_body  0.00s

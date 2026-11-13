@@ -1,0 +1,5 @@
+20:48:11 I → POST /assistant/chat    200   1626ms
+20:48:11 I · AI    问「我每天该喝多少水」  → 一般成年人每天饮水约1500～1700毫升（大约7～8杯），这是指白水或淡茶，不包括食物中的水分。天气热、出汗多、运动量大时可以适当增加到2000毫升以上。 判断是否喝够，可以看尿液颜色：淡黄色说明基…
+20:48:11 I → DELETE /assistant/conversations/3480 200      7ms
+20:48:11 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3480,) | affected=2 | 1.3ms
+20:48:11 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3480,) | affected=1 | 0.9ms

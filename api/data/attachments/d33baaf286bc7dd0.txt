@@ -1,0 +1,39 @@
+HTTP 200　（耗时 5 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:49:26 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": [
+    {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:49:25",
+      "id": 7505,
+      "text": "你好"
+    },
+    {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:49:26",
+      "id": 7506,
+      "text": "你好！我是饮食与健康助手，可以帮你解答食材替代、食谱分析、三餐搭配、营养与热量估算、控油控糖控钠、慢病相关饮食注意事项、运动与体重管理，以及保健品常见作用与注意事项等问题。\n\n你直接说想了解什么就行，比如想搭配一天的饮食、看看某个菜谱是否合理，或者有某种食材想找替代品。"
+    }
+  ],
+  "message": "获取消息成功"
+}

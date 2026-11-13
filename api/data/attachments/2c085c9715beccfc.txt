@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2234 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:52 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:50",
+      "id": 7365,
+      "text": "我该吃多少鸡胸肉"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:47:52",
+      "ragUsed": false,
+      "id": 7366,
+      "text": "你目前没有记录过敏忌口和慢性病，BMI 22.8 属于正常范围，按中度活动水平估算，每日总消耗约 2600–2700 kcal。鸡胸肉作为优质蛋白来源，一般建议每天 100–150 g（生重）比较合适，大约能提供 23–35 g 蛋白质。如果你当天还吃鸡蛋、牛奶、鱼虾、豆制品，可以取下限；如果其他蛋白来源少、又有增肌需求，可以取上限到 200 g 左右。\n\n这样建议是因为你体重正常、没有慢病限制，蛋白质按每公斤体重 1.2–1.6 g 来安排即可，鸡胸肉只是其中一部分，不必全押在它身上。烹饪上建议水煮、蒸或少油煎，避免油炸和重盐酱料。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3468,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你目前没有记录过敏忌口和慢性病，BMI 22.8 属于正常范围，按中度活动水平估算，每日总消耗约 2600–2700 kcal。鸡胸肉作为优质蛋白来源，一般建议每天 100–150 g（生重）比较合适，大约能提供 23–35 g 蛋白质。…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:52.436658889",
+      "createTime": "2026-11-13T20:47:50",
+      "updateTime": "2026-11-13T20:47:50",
+      "id": 3468,
+      "title": "我该吃多少鸡胸肉"
+    }
+  },
+  "message": "发送消息成功"
+}

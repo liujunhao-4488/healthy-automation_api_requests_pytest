@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_all_problems_are_listed_at_once  0.00s

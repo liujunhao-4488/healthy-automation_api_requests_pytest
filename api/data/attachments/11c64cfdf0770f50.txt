@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2108 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:16 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:14",
+      "id": 7327,
+      "text": "早餐吃几片全麦面包合适"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:47:16",
+      "ragUsed": false,
+      "id": 7328,
+      "text": "一般早餐吃 2 片（约 60–80 克）全麦面包比较合适，作为主食的一份量，再搭配蛋白质和蔬果就能构成一顿完整早餐。\n\n之所以建议这个量，是因为 2 片大致能提供 30–40 克碳水化合物，既能给上午供能，又不至于让血糖波动太大。如果当天活动量大、或早餐后要运动，可以吃到 3 片；如果是久坐办公、或同时在控制体重，1–2 片并多配鸡蛋、牛奶、豆浆和蔬菜更稳妥。\n\n挑选时注意看配料表：全麦粉排在第一位、膳食纤维每 100 克在 6 克以上，才算真正的全麦面包；很多“棕色面包”其实是精面粉加焦糖色。另外面包本身含钠不低，夹馅尽量少用火腿、培根这类加工肉。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3449,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "一般早餐吃 2 片（约 60–80 克）全麦面包比较合适，作为主食的一份量，再搭配蛋白质和蔬果就能构成一顿完整早餐。  之所以建议这个量，是因为 2 片大致能提供 30–40 克碳水化合物，既能给上午供能，又不至于让血糖波动太大。如果当天…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:16.786665505",
+      "createTime": "2026-11-13T20:47:14",
+      "updateTime": "2026-11-13T20:47:14",
+      "id": 3449,
+      "title": "早餐吃几片全麦面包合适"
+    }
+  },
+  "message": "发送消息成功"
+}

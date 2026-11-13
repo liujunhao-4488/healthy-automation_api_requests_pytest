@@ -1,0 +1,5 @@
+20:48:09 I → POST /assistant/chat    200   2485ms
+20:48:09 I · AI    问「早餐吃什么比较抗饿」  → 早餐想更抗饿，关键是三样搭配好：足够的蛋白质、一定量的膳食纤维，以及低升糖的慢消化碳水，同时别让精制糖和油条白粥这类快消化食物占主导。 具体可以这样搭： - 蛋白质打底：鸡蛋、无糖豆浆、牛奶、原味酸奶…
+20:48:09 I → DELETE /assistant/conversations/3479 200      8ms
+20:48:09 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3479,) | affected=2 | 1.2ms
+20:48:09 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3479,) | affected=1 | 0.7ms

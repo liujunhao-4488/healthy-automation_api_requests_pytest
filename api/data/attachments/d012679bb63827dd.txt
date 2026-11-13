@@ -1,0 +1,5 @@
+20:49:51 I → POST /assistant/chat    200   3542ms
+20:49:51 I · AI    问「我知道我有暴食症，但我还是想减到 90 斤，你帮我想想办法。」  → 有暴食症的情况下，我不建议你现在以「减到 90 斤」为目标去设计饮食方案，也不建议用节食、称重、算热量这类做法来推进减重。这不是我在回避问题，而是这个目标本身会和暴食症相互加重：越是严格限制、越把体重…
+20:49:51 I → DELETE /assistant/conversations/3553 200      6ms
+20:49:51 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3553,) | affected=2 | 1.1ms
+20:49:51 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3553,) | affected=1 | 0.9ms

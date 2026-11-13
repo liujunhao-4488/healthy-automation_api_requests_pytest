@@ -1,0 +1,78 @@
+HTTP 200　（耗时 1828 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:46:43 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:46:41",
+      "id": 7275,
+      "text": "什么是食物的升糖指数"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 18.8499,
+          "docId": "guideline:成人脑卒中食养指南2026",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人脑卒中食养指南2026"
+        },
+        {
+          "score": 13.8676,
+          "docId": "guideline:中国居民膳食指南(2022)",
+          "docType": "guideline",
+          "section": "准则一食物多样，合理搭配",
+          "title": "中国居民膳食指南(2022)"
+        },
+        {
+          "score": 11.9504,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "一、食物选择",
+          "title": "成人糖尿病食养指南"
+        }
+      ],
+      "createTime": "2026-11-13T20:46:43",
+      "ragUsed": true,
+      "id": 7276,
+      "text": "升糖指数（GI）是衡量含碳水化合物的食物升高血糖快慢的指标。它以摄入 50 克葡萄糖后 2 小时内的血糖反应为 100 作基准，再看等量碳水化合物的其他食物引起多大血糖变化，折算成一个数值。按《成人糖尿病食养指南》的划分：GI≤55 为低 GI，55～70 为中 GI，高于 70 为高 GI。低 GI 食物对血糖影响较小，更有利于餐后血糖控制。\n\nGI 只反映“升得快不快”，不反映“升多少”，所以还要结合血糖负荷（GL，即 GI 乘以实际碳水摄入量）来看。同样一种食物，加工越细、煮得越烂、成熟度越高，GI 往往越高；搭配蛋白质、脂肪和膳食纤维一起吃，也能让餐后血糖上升更平缓。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3429,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "升糖指数（GI）是衡量含碳水化合物的食物升高血糖快慢的指标。它以摄入 50 克葡萄糖后 2 小时内的血糖反应为 100 作基准，再看等量碳水化合物的其他食物引起多大血糖变化，折算成一个数值。按《成人糖尿病食养指南》的划分：GI≤55 为低…",
+      "messageCount": 8,
+      "lastMessageAt": "2026-11-13T20:46:43.502996469",
+      "createTime": "2026-11-13T20:46:37",
+      "updateTime": "2026-11-13T20:46:37",
+      "id": 3429,
+      "title": "我给我这一周的饮食计划起..."
+    }
+  },
+  "message": "发送消息成功"
+}

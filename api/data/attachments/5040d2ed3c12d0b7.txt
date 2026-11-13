@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1871 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:48:19 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:48:17",
+      "id": 7397,
+      "text": "我还能吃点什么别的"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:48:19",
+      "ragUsed": false,
+      "id": 7398,
+      "text": "你这句话我暂时没法直接给出具体建议，因为不清楚你指的是哪一餐、之前吃了什么、想替换的是哪样食物，或者想找哪类食物（主食、蛋白质、蔬菜还是加餐）。补一句说明，我就能给你具体可换的选项。\n\n如果你是想在已有的一餐之外再加点东西，一般可以优先考虑：一份蔬菜或水果、一份优质蛋白（鸡蛋、豆制品、奶类、瘦肉等），或者一小把坚果；如果已经吃得比较饱，就不必硬加，喝点水或淡茶即可。\n\n你也可以直接说“我想换掉XX”或“我想加个加餐”，我按这个来给方案。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3484,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你这句话我暂时没法直接给出具体建议，因为不清楚你指的是哪一餐、之前吃了什么、想替换的是哪样食物，或者想找哪类食物（主食、蛋白质、蔬菜还是加餐）。补一句说明，我就能给你具体可换的选项。  如果你是想在已有的一餐之外再加点东西，一般可以优先考…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:48:19.448021019",
+      "createTime": "2026-11-13T20:48:17",
+      "updateTime": "2026-11-13T20:48:17",
+      "id": 3484,
+      "title": "我还能吃点什么别的"
+    }
+  },
+  "message": "发送消息成功"
+}

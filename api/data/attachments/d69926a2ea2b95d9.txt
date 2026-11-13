@@ -1,0 +1,4 @@
+
+└─ ✔ PASSED  test_save_info_fail[gender 传非法值 X]  0.01s
+
+[清理] 已回查确认删除靶子账号 userId=101340

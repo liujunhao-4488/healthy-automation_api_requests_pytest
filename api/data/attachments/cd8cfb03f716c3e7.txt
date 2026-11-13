@@ -1,0 +1,55 @@
+HTTP 200　（耗时 5 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:49:25 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": [
+    {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:49:21",
+      "id": 7501,
+      "text": "我能吃海虾吗"
+    },
+    {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:49:23",
+      "id": 7502,
+      "text": "能不能吃海虾，主要看两点：你有没有海鲜过敏，以及你的身体状况是否需要限制。\n\n如果没有海鲜过敏、也没有医生特别交代忌口，海虾是可以吃的，它蛋白质高、脂肪低，是不错的优质蛋白来源。吃的时候注意彻底煮熟，避免生食或半生食。\n\n如果你对虾蟹等甲壳类海鲜过敏，就应完全避免海虾及含虾成分的食品。另外，如果有痛风或高尿酸、肾功能问题、需要严格控盐等情况，建议先咨询医生或营养师，再决定吃多少、怎么吃。"
+    },
+    {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:49:23",
+      "id": 7503,
+      "text": "那鸡胸肉呢"
+    },
+    {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:49:25",
+      "id": 7504,
+      "text": "鸡胸肉一般是可以吃的，它脂肪低、蛋白质高，是很常见的优质蛋白来源。做法上建议少油煎、蒸、煮或烤，避免油炸和重口味酱料。\n\n不过鸡胸肉和“能不能吃海虾”不是一回事：如果你之前问海虾是因为海鲜过敏，那鸡胸肉不属于海鲜，通常不受影响；如果是其他忌口或疾病限制，则要看具体是什么。"
+    }
+  ],
+  "message": "获取消息成功"
+}

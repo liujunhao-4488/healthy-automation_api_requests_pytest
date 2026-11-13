@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2115 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:20 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:18",
+      "id": 7331,
+      "text": "今天天气冷了，适合喝什么汤"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:47:20",
+      "ragUsed": false,
+      "id": 7332,
+      "text": "天气转冷，适合喝一些温热、清淡、能暖身又不过分油腻的汤。比较推荐的有：\n\n萝卜排骨汤：萝卜清甜解腻，排骨提供蛋白质，喝起来暖而不燥，适合大多数人。\n番茄鸡蛋汤：做法简单，酸甜开胃，热量不高，搭配主食就是一顿舒服的饭。\n山药鸡汤：山药和鸡肉都比较温和，适合天冷时补充能量，注意撇去浮油。\n菌菇豆腐汤：低脂、含膳食纤维，想控制体重或晚上喝汤怕负担重的话很合适。\n冬瓜丸子汤：清爽不腻，热乎乎的也有饱腹感。\n\n喝汤时有两点可以留意：一是汤里的盐别放太多，天冷时容易口味变重，建议比平时再淡一点；二是汤面上的浮油可以撇掉，尤其是肉汤，喝起来更清爽，对血脂和体重也更友好。另外，汤不能代替正餐里的蛋白质和蔬菜，最好连汤里的食材一起吃。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3451,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "天气转冷，适合喝一些温热、清淡、能暖身又不过分油腻的汤。比较推荐的有：  萝卜排骨汤：萝卜清甜解腻，排骨提供蛋白质，喝起来暖而不燥，适合大多数人。 番茄鸡蛋汤：做法简单，酸甜开胃，热量不高，搭配主食就是一顿舒服的饭。 山药鸡汤：山药和鸡肉…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:20.942218672",
+      "createTime": "2026-11-13T20:47:18",
+      "updateTime": "2026-11-13T20:47:18",
+      "id": 3451,
+      "title": "今天天气冷了，适合喝什么..."
+    }
+  },
+  "message": "发送消息成功"
+}

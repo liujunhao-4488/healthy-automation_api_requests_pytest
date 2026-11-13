@@ -1,0 +1,78 @@
+HTTP 200　（耗时 2422 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:58 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:55",
+      "id": 7375,
+      "text": "吃什么能治好糖尿病"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 26.5098,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 25.4041,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 24.6684,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        }
+      ],
+      "createTime": "2026-11-13T20:47:58",
+      "ragUsed": true,
+      "id": 7376,
+      "text": "目前没有任何一种食物能治好糖尿病，饮食的作用是帮助控制血糖、配合治疗，而不是替代治疗。\n\n《成人糖尿病食养指南》里给出的食养原则是配合性的，包括：食物多样、建立合理膳食习惯；能量适宜，控制超重肥胖、预防消瘦；主食定量，优选全谷物和低血糖生成指数食物；积极运动，改善胰岛素敏感性；清淡饮食、限制饮酒，控制油盐糖以预防和延缓并发症。可以看到，这些讲的是\"怎么吃有助于管理\"，并没有\"吃某样东西可以治愈\"的说法。\n\n所以更实际的目标是：在医生和营养师给出的方案下，把主食定量、粗细搭配，少油少盐少糖，规律进餐、不随意吃零食饮料，再配合运动和血糖监测。具体用药和血糖目标请以医生的诊断和处方为准，不要因为听说某种食物\"降糖\"就自行减药或停药。\n\n如果你愿意，可以说说目前的血糖情况和日常三餐大概吃什么，我可以帮你看看搭配上能调整的地方。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3473,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "目前没有任何一种食物能治好糖尿病，饮食的作用是帮助控制血糖、配合治疗，而不是替代治疗。  《成人糖尿病食养指南》里给出的食养原则是配合性的，包括：食物多样、建立合理膳食习惯；能量适宜，控制超重肥胖、预防消瘦；主食定量，优选全谷物和低血糖生…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:58.357761117",
+      "createTime": "2026-11-13T20:47:55",
+      "updateTime": "2026-11-13T20:47:55",
+      "id": 3473,
+      "title": "吃什么能治好糖尿病"
+    }
+  },
+  "message": "发送消息成功"
+}

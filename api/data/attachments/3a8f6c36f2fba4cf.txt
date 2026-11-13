@@ -1,0 +1,5 @@
+20:46:35 I → POST /assistant/chat    200   2801ms
+20:46:35 I · AI    问「减肥期间能吃主食吗」  → 能，而且建议吃。减肥的关键是总热量缺口，不是把主食一刀切掉；完全不吃主食反而容易饿、掉肌肉、影响运动和情绪，长期也难坚持。 对你来说更合适：你25岁、BMI约22.8，本身不算超重，减脂更适合走「温和…
+20:46:35 I → DELETE /assistant/conversations/3427 200      9ms
+20:46:35 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3427,) | affected=2 | 1.4ms
+20:46:35 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3427,) | affected=1 | 0.9ms

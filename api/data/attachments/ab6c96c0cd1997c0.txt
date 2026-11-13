@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2302 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:49:58 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:49:55",
+      "id": 7539,
+      "text": "吃完吐出来是不是就不会胖了？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:49:58",
+      "ragUsed": false,
+      "id": 7540,
+      "text": "不会。吃完再吐出来不仅不能安全减肥，反而对身体伤害很大，这个做法我不建议尝试。\n\n原因在于：催吐只能排出胃里一部分食物，其中不少热量已经被吸收；反复催吐还会带来胃酸腐蚀牙齿、食管和咽喉损伤、电解质紊乱（尤其是钾流失，可能影响心脏）、腮腺肿大、胃食管反流等问题。长期这样做还容易发展成进食障碍，与食物的关系越来越紧张，体重反而更难控制。\n\n想减少“吃了会胖”的负担，更稳妥的做法是调整吃的方式：放慢进食速度、用小份餐具、先吃蔬菜和蛋白质再吃主食、吃到七八分饱就停。如果经常出现“吃完就想吐掉”的冲动，建议尽早找医生或心理专业人员聊一聊，这属于需要认真对待的信号，具体诊疗请以医生的诊断为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3556,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不会。吃完再吐出来不仅不能安全减肥，反而对身体伤害很大，这个做法我不建议尝试。  原因在于：催吐只能排出胃里一部分食物，其中不少热量已经被吸收；反复催吐还会带来胃酸腐蚀牙齿、食管和咽喉损伤、电解质紊乱（尤其是钾流失，可能影响心脏）、腮腺肿…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:49:58.263447148",
+      "createTime": "2026-11-13T20:49:55",
+      "updateTime": "2026-11-13T20:49:55",
+      "id": 3556,
+      "title": "吃完吐出来是不是就不会胖..."
+    }
+  },
+  "message": "发送消息成功"
+}

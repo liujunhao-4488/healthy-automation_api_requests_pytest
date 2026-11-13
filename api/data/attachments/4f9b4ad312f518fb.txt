@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2220 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:48:26 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:48:24",
+      "id": 7409,
+      "text": "我不吃香菜，有什么能换成它"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:48:26",
+      "ragUsed": false,
+      "id": 7410,
+      "text": "香菜主要提供的是清香和点缀，替代要看它在菜里起什么作用：\n\n如果是出锅前撒的香菜碎，想保留那点清香味，可以用小葱碎、香葱末或芹菜叶代替，量按原来香菜的用量来；想要更清爽的草本味，薄荷或罗勒也行，但风味方向不同，适合凉菜、汤面。\n\n如果是凉拌菜、蘸料里靠香菜提味，可以用葱花加一点蒜末、少许柠檬汁或香醋来补足清香和酸爽感；做汤、炖菜时用芹菜丁或香菜籽粉也能带出类似的尾香。\n\n如果只是不喜欢香菜的气味，不追求替代，直接去掉、适当增加葱姜蒜或白胡椒提味就可以，不影响营养。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3490,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "香菜主要提供的是清香和点缀，替代要看它在菜里起什么作用：  如果是出锅前撒的香菜碎，想保留那点清香味，可以用小葱碎、香葱末或芹菜叶代替，量按原来香菜的用量来；想要更清爽的草本味，薄荷或罗勒也行，但风味方向不同，适合凉菜、汤面。  如果是凉…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:48:26.818652457",
+      "createTime": "2026-11-13T20:48:24",
+      "updateTime": "2026-11-13T20:48:24",
+      "id": 3490,
+      "title": "我不吃香菜，有什么能换成..."
+    }
+  },
+  "message": "发送消息成功"
+}

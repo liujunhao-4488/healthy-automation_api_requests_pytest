@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_authority_filter_returns_only_authority  0.01s

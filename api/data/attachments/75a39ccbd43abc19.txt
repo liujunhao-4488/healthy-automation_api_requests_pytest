@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2136 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:50:27 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:50:25",
+      "id": 7575,
+      "text": "菠菜为什么要焯水"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:50:27",
+      "ragUsed": false,
+      "id": 7576,
+      "text": "菠菜焯水主要是为了去掉草酸，顺便改善口感和安全性。\n\n草酸会和钙结合成草酸钙，既影响钙的吸收，对容易长草酸钙结石的人也不友好。焯水能让大部分草酸溶到水里，一般沸水焯 30 秒到 1 分钟就能去掉相当一部分，叶子变软、颜色更绿即可，别煮太久以免维生素 C 和叶酸流失过多。焯完把水倒掉，不要拿这锅水继续做汤。\n\n另外两个好处：焯水能减少菠菜的涩味，口感更好；也能去掉表面部分农残和杂质。焯的时候水要宽、火要大，捞出后可过一下凉水保持色泽。如果是做菠菜豆腐这类搭配，焯水后同吃没问题，不必担心“相克”的说法。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3568,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "菠菜焯水主要是为了去掉草酸，顺便改善口感和安全性。  草酸会和钙结合成草酸钙，既影响钙的吸收，对容易长草酸钙结石的人也不友好。焯水能让大部分草酸溶到水里，一般沸水焯 30 秒到 1 分钟就能去掉相当一部分，叶子变软、颜色更绿即可，别煮太久…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:50:27.865074668",
+      "createTime": "2026-11-13T20:50:25",
+      "updateTime": "2026-11-13T20:50:25",
+      "id": 3568,
+      "title": "菠菜为什么要焯水"
+    }
+  },
+  "message": "发送消息成功"
+}

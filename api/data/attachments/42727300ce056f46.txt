@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3069 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:48:24 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:48:21",
+      "id": 7407,
+      "text": "鸡胸肉有什么替代品"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:48:24",
+      "ragUsed": false,
+      "id": 7408,
+      "text": "鸡胸肉的替代品主要看你想替代它的哪一点：高蛋白低脂、口感清淡、做法百搭。常见选择有：\n\n**想保留“高蛋白、低脂”特点的：**\n- 鸡腿肉（去皮）：蛋白质接近，脂肪略高，但口感更嫩、不容易柴。\n- 火鸡胸肉、鸭胸肉（去皮）：同样是禽类瘦肉。\n- 虾仁、龙利鱼、鳕鱼、巴沙鱼等白肉鱼：脂肪很低、易熟，适合煎、蒸、煮。\n- 瘦牛肉（里脊）、瘦猪里脊：蛋白质高，但脂肪和价格通常高于鸡胸。\n- 鸡蛋、低脂奶制品、豆腐、豆干、毛豆：植物或蛋奶来源的蛋白质，可部分替代。\n\n**想替代“口感清淡、易入味”的：**\n- 杏鲍菇、香菇、魔芋、北豆腐：适合做“仿肉”口感，但蛋白质含量远低于鸡胸，不能完全等价替换。\n- 面筋、素鸡：蛋白质尚可，但注意钠和油含量。\n\n**替换时的小提醒：** 用鱼虾替代时，同等蛋白质下热量更低但饱腹感稍弱；用豆制品替代时，要相应减少主食或油脂，避免总热量上升。若你是在控脂或增肌，优先选去皮禽肉、白肉鱼、虾和瘦里脊这类脂肪较低的蛋白来源。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3489,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉的替代品主要看你想替代它的哪一点：高蛋白低脂、口感清淡、做法百搭。常见选择有：  **想保留“高蛋白、低脂”特点的：** - 鸡腿肉（去皮）：蛋白质接近，脂肪略高，但口感更嫩、不容易柴。 - 火鸡胸肉、鸭胸肉（去皮）：同样是禽类瘦肉…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:48:24.581453267",
+      "createTime": "2026-11-13T20:48:21",
+      "updateTime": "2026-11-13T20:48:21",
+      "id": 3489,
+      "title": "鸡胸肉有什么替代品"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2831 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:12 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:09",
+      "id": 7323,
+      "text": "我能吃海虾吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:47:12",
+      "ragUsed": false,
+      "id": 7324,
+      "text": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况。\n\n如果你对虾蟹等甲壳类不过敏、也没有正在发作的痛风或严重肾病，海虾是可以吃的。它蛋白质质量高、脂肪低，还含硒、碘和维生素B12，属于很不错的优质蛋白来源。一般成年人一餐吃100～150克（去壳后的虾肉）比较合适，做法上清蒸、白灼、少油快炒都比油炸或重口味做法更好。\n\n需要留意的几种情况：一是曾经吃虾后出现皮疹、嘴唇肿、喉咙发紧或喘，那就不要吃，并建议去查过敏原；二是痛风急性发作期先避开，缓解期可以少量吃，同时注意当天其他高嘌呤食物别叠加；三是对碘敏感或有甲状腺相关疾病、正在接受治疗的人，海虾含碘较高，吃之前最好问一下医生。另外虾一定要彻底加热，避免生食带来的寄生虫和细菌风险。\n\n如果你有具体的过敏史或正在治疗的疾病，具体能否吃、吃多少，请以医生的诊断和医嘱为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3447,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况。  如果你对虾蟹等甲壳类不过敏、也没有正在发作的痛风或严重肾病，海虾是可以吃的。它蛋白质质量高、脂肪低，还含硒、碘和维生素B12，属于很不错的优质蛋白来源。一般成年人一餐吃10…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:12.675681",
+      "createTime": "2026-11-13T20:47:09",
+      "updateTime": "2026-11-13T20:47:09",
+      "id": 3447,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}

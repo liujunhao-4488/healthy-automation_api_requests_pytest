@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1676 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:50:12 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:50:10",
+      "id": 7553,
+      "text": "它一般在饭前还是饭后吃？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-13T20:50:12",
+      "ragUsed": false,
+      "id": 7554,
+      "text": "二甲双胍通常建议随餐或餐后服用，普通片多在餐中或餐后吃，缓释片一般随晚餐服用。这样安排主要是为了减轻恶心、腹胀、腹泻等胃肠道反应。\n\n具体到某一种剂型（普通片、缓释片、肠溶片）和每天几次，还是要按医生处方或说明书执行；如果胃肠不适明显，也不要自行停药，可以咨询医生是否需要调整剂型或服药时间。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3562,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "二甲双胍通常建议随餐或餐后服用，普通片多在餐中或餐后吃，缓释片一般随晚餐服用。这样安排主要是为了减轻恶心、腹胀、腹泻等胃肠道反应。  具体到某一种剂型（普通片、缓释片、肠溶片）和每天几次，还是要按医生处方或说明书执行；如果胃肠不适明显，也…",
+      "messageCount": 4,
+      "lastMessageAt": "2026-11-13T20:50:12.072264992",
+      "createTime": "2026-11-13T20:50:08",
+      "updateTime": "2026-11-13T20:50:08",
+      "id": 3562,
+      "title": "二甲双胍是治疗什么病的药..."
+    }
+  },
+  "message": "发送消息成功"
+}

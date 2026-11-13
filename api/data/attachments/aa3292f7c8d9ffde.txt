@@ -1,0 +1,78 @@
+HTTP 200　（耗时 1380 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 13 Nov 2026 20:47:22 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-13T20:47:20",
+      "id": 7333,
+      "text": "帮我翻译一下这个营养成分表"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 16.8781,
+          "docId": "guideline:中国居民膳食指南(2022)",
+          "docType": "guideline",
+          "section": "准则七会烹会选，会看标签",
+          "title": "中国居民膳食指南(2022)"
+        },
+        {
+          "score": 11.7182,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 11.3172,
+          "docId": "guideline:成人慢性肾脏病食养指南",
+          "docType": "guideline",
+          "section": "一、食物选择",
+          "title": "成人慢性肾脏病食养指南"
+        }
+      ],
+      "createTime": "2026-11-13T20:47:22",
+      "ragUsed": true,
+      "id": 7334,
+      "text": "翻译营养成分表本身没问题，但您还没有把表格内容发过来——我这里看不到任何文字或图片。请把表上的项目名称和数值贴出来（文字或截图都可以），我逐项翻译成中文，并顺便说明每项的含义。\n\n另外提醒一句：如果表上出现「NRV%」，那是中国营养标签里的「营养素参考值百分比」，指该营养素占每日参考摄入量的比例，不是含量本身，翻译时我会一并标注。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3452,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "翻译营养成分表本身没问题，但您还没有把表格内容发过来——我这里看不到任何文字或图片。请把表上的项目名称和数值贴出来（文字或截图都可以），我逐项翻译成中文，并顺便说明每项的含义。  另外提醒一句：如果表上出现「NRV%」，那是中国营养标签里…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-13T20:47:22.338572783",
+      "createTime": "2026-11-13T20:47:20",
+      "updateTime": "2026-11-13T20:47:20",
+      "id": 3452,
+      "title": "帮我翻译一下这个营养成分..."
+    }
+  },
+  "message": "发送消息成功"
+}

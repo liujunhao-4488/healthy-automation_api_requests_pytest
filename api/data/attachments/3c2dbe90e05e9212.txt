@@ -1,0 +1,8 @@
+20:49:23 I → POST /assistant/chat    200   1730ms
+20:49:23 I · AI    问「我能吃海虾吗」     → 能不能吃海虾，主要看两点：你有没有海鲜过敏，以及你的身体状况是否需要限制。 如果没有海鲜过敏、也没有医生特别交代忌口，海虾是可以吃的，它蛋白质高、脂肪低，是不错的优质蛋白来源。吃的时候注意彻底煮熟，避…
+20:49:25 I → POST /assistant/chat    200   1676ms
+20:49:25 I · AI    问「那鸡胸肉呢」       → 鸡胸肉一般是可以吃的，它脂肪低、蛋白质高，是很常见的优质蛋白来源。做法上建议少油煎、蒸、煮或烤，避免油炸和重口味酱料。 不过鸡胸肉和“能不能吃海虾”不是一回事：如果你之前问海虾是因为海鲜过敏，那鸡胸肉…
+20:49:25 I → GET  /assistant/conversations/3536/messages 200      5ms
+20:49:25 I → DELETE /assistant/conversations/3536 200      7ms
+20:49:25 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3536,) | affected=4 | 1.3ms
+20:49:25 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3536,) | affected=1 | 0.9ms

@@ -1,0 +1,5 @@
+20:47:27 I → POST /assistant/chat    200   3043ms
+20:47:27 I · AI    问「我妈妈的饮食建议是少吃油」  → “少吃油”这个方向是对的，但更准确的说法是“控总量、换好油”，而不是一味水煮、滴油不沾。 对中老年人来说，油不是越少越好。完全无油会影响脂溶性维生素（A、D、E、K）的吸收，也容易让饭菜寡淡、难以长期…
+20:47:27 I → DELETE /assistant/conversations/3454 200      8ms
+20:47:27 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3454,) | affected=2 | 1.2ms
+20:47:27 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3454,) | affected=1 | 1.2ms
