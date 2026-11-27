@@ -1,0 +1,78 @@
+HTTP 200　（耗时 2109 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:30:43 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:30:41",
+      "id": 7333,
+      "text": "帮我翻译一下这个营养成分表"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "article",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [
+        {
+          "score": 16.8781,
+          "docId": "guideline:中国居民膳食指南(2022)",
+          "docType": "guideline",
+          "section": "准则七会烹会选，会看标签",
+          "title": "中国居民膳食指南(2022)"
+        },
+        {
+          "score": 11.7182,
+          "docId": "guideline:成人糖尿病食养指南",
+          "docType": "guideline",
+          "section": "三、食养原则和建议",
+          "title": "成人糖尿病食养指南"
+        },
+        {
+          "score": 11.3172,
+          "docId": "guideline:成人慢性肾脏病食养指南",
+          "docType": "guideline",
+          "section": "一、食物选择",
+          "title": "成人慢性肾脏病食养指南"
+        }
+      ],
+      "createTime": "2026-11-27T22:30:43",
+      "ragUsed": true,
+      "id": 7334,
+      "text": "翻译营养成分表属于饮食健康范围内的需求，我可以帮忙。不过你这条消息里没有附上具体内容——营养成分表可能是图片，也可能是文字，但这次都没有传过来，我这边看不到。\n\n请把表格内容发给我，文字形式（比如“项目／每100g：能量××kJ、蛋白质××g、脂肪××g、碳水化合物××g、钠××mg”）或者图片都可以，我再逐项帮你翻译成中文并说明含义。如果表上是外文标签，也一并说明是哪种语言。\n\n另外提醒一句：按《中国居民膳食指南(2022)》准则七的建议，看营养标签除了各营养素数值，配料表也值得一起看——配料按含量从高到低排列，能帮你判断主要原料是什么。方便的话可以把配料表也发来。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "hit"
+    },
+    "conversationId": 3452,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "翻译营养成分表属于饮食健康范围内的需求，我可以帮忙。不过你这条消息里没有附上具体内容——营养成分表可能是图片，也可能是文字，但这次都没有传过来，我这边看不到。  请把表格内容发给我，文字形式（比如“项目／每100g：能量××kJ、蛋白质×…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:30:43.885856114",
+      "createTime": "2026-11-27T22:30:41",
+      "updateTime": "2026-11-27T22:30:41",
+      "id": 3452,
+      "title": "帮我翻译一下这个营养成分..."
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_assert_error_catches_wrong_http_status  0.00s

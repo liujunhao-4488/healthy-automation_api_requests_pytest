@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_admin_api_works_for_real_admin[用户列表]  0.01s

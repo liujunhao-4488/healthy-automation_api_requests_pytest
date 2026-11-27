@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1978 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:32:31 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:32:29",
+      "id": 7497,
+      "text": "我能吃海虾吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:32:31",
+      "ragUsed": false,
+      "id": 7498,
+      "text": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况。\n\n如果你对虾蟹等甲壳类不过敏，一般是可以吃的。海虾蛋白质含量高、脂肪低，是很好的优质蛋白来源，注意彻底煮熟，一次别吃太多即可。\n\n如果你已知对海鲜过敏，或者吃虾后出现过皮疹、嘴唇肿、腹泻甚至呼吸困难，就不要吃，这类过敏可能很严重。另外，如果有痛风或高尿酸，虾属于中等嘌呤食物，急性发作期建议少吃或不吃，平时适量。孕期、哺乳期和幼儿吃虾同样要煮熟煮透；具体是否适合你，请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3534,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况。  如果你对虾蟹等甲壳类不过敏，一般是可以吃的。海虾蛋白质含量高、脂肪低，是很好的优质蛋白来源，注意彻底煮熟，一次别吃太多即可。  如果你已知对海鲜过敏，或者吃虾后出现过皮疹、…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:32:31.875299059",
+      "createTime": "2026-11-27T22:32:29",
+      "updateTime": "2026-11-27T22:32:29",
+      "id": 3534,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}

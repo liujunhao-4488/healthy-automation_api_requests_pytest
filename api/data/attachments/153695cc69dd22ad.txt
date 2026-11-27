@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_login_schema_catches_role_enum_violation  0.00s

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3181 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:30:29 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:30:26",
+      "id": 7317,
+      "text": "我想换个口味，有什么建议"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:30:29",
+      "ragUsed": false,
+      "id": 7318,
+      "text": "你这次只说要换口味，没提之前吃的是什么、想换哪一类，我先按常见方向给几个思路：如果平时以中餐家常菜为主，可以试试地中海风格——主食换成全麦面包或糙米，蛋白质用清蒸鱼、烤鸡腿（去皮）、鹰嘴豆，配大量橄榄油拌蔬菜；如果吃腻了米饭炒菜，可以做一碗番茄牛肉荞麦面或韩式豆腐锅（少放酱）；想吃重口但不想负担太重，用空气炸锅做孜然鸡翅配烤蔬菜，或者用酸辣、咖喱、香草柠檬这类风味替代高油高盐的浓酱。\n\n这样建议适合你，是因为你目前 BMI 约 22.8、没有慢病，属于体重正常、以维持和吃得更均衡为目标的阶段，换口味时把重点放在食材多样性和烹饪方式上（蒸、烤、炖替代油炸和重酱），既能满足新鲜感，又不会让热量和钠摄入明显上升。你如果有具体不吃的食材或过敏项，告诉我，我可以把上面的方案再收窄到你能吃的范围里。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3444,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你这次只说要换口味，没提之前吃的是什么、想换哪一类，我先按常见方向给几个思路：如果平时以中餐家常菜为主，可以试试地中海风格——主食换成全麦面包或糙米，蛋白质用清蒸鱼、烤鸡腿（去皮）、鹰嘴豆，配大量橄榄油拌蔬菜；如果吃腻了米饭炒菜，可以做一…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:30:29.728411705",
+      "createTime": "2026-11-27T22:30:26",
+      "updateTime": "2026-11-27T22:30:26",
+      "id": 3444,
+      "title": "我想换个口味，有什么建议"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,5 @@
+22:33:06 I → POST /assistant/chat    200   2745ms
+22:33:06 I · AI    问「怎么才能三天瘦十斤？」  → 三天瘦十斤（5公斤）基本不可能健康实现，我不建议这样做。按热量算，减掉5公斤脂肪需要约3.8万千卡的热量缺口，平均到三天就是每天近1.3万千卡，远超正常人的日常消耗；短期掉秤快，减掉的主要是水分和糖原…
+22:33:06 I → DELETE /assistant/conversations/3557 200      6ms
+22:33:06 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3557,) | affected=2 | 1.0ms
+22:33:06 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3557,) | affected=1 | 0.5ms

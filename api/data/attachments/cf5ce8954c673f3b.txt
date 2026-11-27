@@ -1,0 +1,6 @@
+22:29:55 I → POST http://127.0.0.1:5000/api/kb/search 200      2ms
+22:29:58 I → POST /assistant/chat    200   2877ms
+22:29:58 I · AI    问「生酮饮食是什么」   → 生酮饮食是一种极低碳水、高脂肪、适量蛋白质的饮食方式，核心目的是让身体从「以葡萄糖供能」转为「以酮体供能」。 它的基本做法是把每日碳水压得很低（常见做法是控制在总热量的5%～10%，约20～50克），…
+22:29:58 I → DELETE /assistant/conversations/3425 200      9ms
+22:29:58 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3425,) | affected=2 | 0.9ms
+22:29:58 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3425,) | affected=1 | 0.7ms

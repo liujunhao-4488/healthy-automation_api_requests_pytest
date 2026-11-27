@@ -1,0 +1,56 @@
+HTTP 200　（耗时 1105 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:31:03 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:31:02",
+      "id": 7359,
+      "text": "牛油果的热量高吗"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "ingredient",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:31:03",
+      "ragUsed": false,
+      "id": 7360,
+      "text": "牛油果的热量在水果里算偏高的：每 100 克约 160 千卡，比苹果、橙子这类常见水果高出好几倍。\n\n不过它的热量主要来自脂肪（每 100 克 14.7 克），而且以不饱和脂肪为主，同时膳食纤维很丰富（6.7 克），糖只有 0.7 克、升糖指数仅 10，所以对血糖友好，饱腹感也强。关键是控制份量，比如一次吃半个（约 70～100 克果肉）就比较合适，用来替代沙拉酱、黄油这类脂肪来源会更划算。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "ingredient"
+    },
+    "conversationId": 3465,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "牛油果的热量在水果里算偏高的：每 100 克约 160 千卡，比苹果、橙子这类常见水果高出好几倍。  不过它的热量主要来自脂肪（每 100 克 14.7 克），而且以不饱和脂肪为主，同时膳食纤维很丰富（6.7 克），糖只有 0.7 克、升…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:31:03.644060651",
+      "createTime": "2026-11-27T22:31:02",
+      "updateTime": "2026-11-27T22:31:02",
+      "id": 3465,
+      "title": "牛油果的热量高吗"
+    }
+  },
+  "message": "发送消息成功"
+}

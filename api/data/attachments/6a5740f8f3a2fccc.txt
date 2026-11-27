@@ -1,0 +1,5 @@
+22:30:29 I → POST /assistant/chat    200   3181ms
+22:30:29 I · AI    问「我想换个口味，有什么建议」  → 你这次只说要换口味，没提之前吃的是什么、想换哪一类，我先按常见方向给几个思路：如果平时以中餐家常菜为主，可以试试地中海风格——主食换成全麦面包或糙米，蛋白质用清蒸鱼、烤鸡腿（去皮）、鹰嘴豆，配大量橄榄…
+22:30:29 I → DELETE /assistant/conversations/3444 200      6ms
+22:30:29 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3444,) | affected=2 | 0.9ms
+22:30:29 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3444,) | affected=1 | 0.6ms

@@ -1,0 +1,5 @@
+22:31:39 I → POST /assistant/chat    200   1320ms
+22:31:39 I · AI    问「我还能吃点什么别的」  → 你这个问题比较笼统，我这边没有看到你前面提到的具体食物或场景，所以没法直接给出“换哪一样”的答案。方便说一下你现在吃的是什么、想替换的是哪一餐或哪类食物吗？比如是主食、蛋白质、蔬菜还是零食，我可以按这…
+22:31:39 I → DELETE /assistant/conversations/3484 200      6ms
+22:31:39 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3484,) | affected=2 | 0.8ms
+22:31:39 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3484,) | affected=1 | 0.5ms

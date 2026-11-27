@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2861 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:33:02 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:32:59",
+      "id": 7537,
+      "text": "我知道我有暴食症，但我还是想减到 90 斤，你帮我想想办法。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:33:02",
+      "ragUsed": false,
+      "id": 7538,
+      "text": "有暴食症的情况下，我不建议把减到 90 斤当作目标，也不适合给你一套「怎么减」的方案。原因很直接：暴食症本身是一种需要专业治疗的进食障碍，在它没有被控制住之前做严格节食、算热量、设体重目标，往往会加重「限制—失控暴食」的循环，让暴食更频繁，情绪和身体都更糟。90 斤这个数字本身也不适合作为目标——它和你的身高、体型、身体状况是否匹配，需要医生和营养师评估，而不是先定一个数字再倒推怎么吃。\n\n我能做的是饮食与生活方式层面的支持，具体可以这样：\n\n一是先把「规律吃」放在减重前面。三餐定时、不长时间空腹、每餐有主食和蛋白质，能明显减少暴食的触发。暴食常常发生在长时间不吃或过度限制之后。\n\n二是别用「补偿」的方式处理暴食后的愧疚，比如下一顿不吃、加倍运动。这类补偿行为是让暴食症维持下去的关键因素之一。\n\n三是记录但不评判：简单记下吃什么、当时什么情绪、之前多久没吃，用来找触发点，而不是算热量打分。\n\n四是把体重目标暂时换成行为目标，比如「这周有几天三餐规律」「暴食次数有没有减少」，这些是能自己推进的。\n\n最重要的一点：暴食症的治疗以心理治疗为主（如认知行为治疗），必要时配合药物，这需要精神科或心理科医生评估，具体请以医生的诊断和处方为准。建议你先找专业人士看一次，把「减到 90 斤」这件事放一放，等暴食稳定了再谈体重管理，那时候我可以帮你做具体的饮食搭配。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3555,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "有暴食症的情况下，我不建议把减到 90 斤当作目标，也不适合给你一套「怎么减」的方案。原因很直接：暴食症本身是一种需要专业治疗的进食障碍，在它没有被控制住之前做严格节食、算热量、设体重目标，往往会加重「限制—失控暴食」的循环，让暴食更频繁…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:33:02.254752529",
+      "createTime": "2026-11-27T22:32:59",
+      "updateTime": "2026-11-27T22:32:59",
+      "id": 3555,
+      "title": "我知道我有暴食症，但我还..."
+    }
+  },
+  "message": "发送消息成功"
+}

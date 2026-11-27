@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_empty_sheet_contributes_nothing  0.00s

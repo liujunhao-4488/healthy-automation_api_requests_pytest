@@ -1,0 +1,55 @@
+HTTP 200　（耗时 945 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:30:56 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:30:57",
+      "id": 7349,
+      "text": "我昨天晚饭吃了什么"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:30:57",
+      "ragUsed": false,
+      "id": 7350,
+      "text": "我无法知道你昨天晚饭吃了什么，这属于你个人的生活记录，我这边没有相关信息。\n\n如果你想让我帮你分析这顿晚饭，可以把吃过的食物和大致分量告诉我，我来帮你估算热量、看看搭配是否均衡。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3460,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "我无法知道你昨天晚饭吃了什么，这属于你个人的生活记录，我这边没有相关信息。  如果你想让我帮你分析这顿晚饭，可以把吃过的食物和大致分量告诉我，我来帮你估算热量、看看搭配是否均衡。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:30:57.95543098",
+      "createTime": "2026-11-27T22:30:57",
+      "updateTime": "2026-11-27T22:30:57",
+      "id": 3460,
+      "title": "我昨天晚饭吃了什么"
+    }
+  },
+  "message": "发送消息成功"
+}

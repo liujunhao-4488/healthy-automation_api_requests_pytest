@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1320 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:31:39 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:31:38",
+      "id": 7397,
+      "text": "我还能吃点什么别的"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:31:39",
+      "ragUsed": false,
+      "id": 7398,
+      "text": "你这个问题比较笼统，我这边没有看到你前面提到的具体食物或场景，所以没法直接给出“换哪一样”的答案。方便说一下你现在吃的是什么、想替换的是哪一餐或哪类食物吗？比如是主食、蛋白质、蔬菜还是零食，我可以按这个方向给你几个具体的替换选项。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3484,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你这个问题比较笼统，我这边没有看到你前面提到的具体食物或场景，所以没法直接给出“换哪一样”的答案。方便说一下你现在吃的是什么、想替换的是哪一餐或哪类食物吗？比如是主食、蛋白质、蔬菜还是零食，我可以按这个方向给你几个具体的替换选项。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:31:39.704196394",
+      "createTime": "2026-11-27T22:31:38",
+      "updateTime": "2026-11-27T22:31:38",
+      "id": 3484,
+      "title": "我还能吃点什么别的"
+    }
+  },
+  "message": "发送消息成功"
+}

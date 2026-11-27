@@ -1,0 +1,4 @@
+
+└─ ⊘ XFAIL   test_malformed_id_uses_unified_error_envelope[小数]   缺陷#12：路径参数类型转换失败时走 Spring 默认错误体，不是统一信封 {code,message}
+                                                                         [ 95%]
+test_cases/user/test_profile_契约.py 

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1476 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:33:28 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:33:26",
+      "id": 7571,
+      "text": "一天只吃一顿饭能不能达到这个速度？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:33:28",
+      "ragUsed": false,
+      "id": 7572,
+      "text": "一天只吃一顿饭，短期体重可能掉得快，但很难稳定达到每周 2 斤的脂肪减少速度，而且我不建议用这种方式减重。\n\n原因是：一天一顿很难在一餐里吃够蛋白质、维生素和矿物质，减掉的重量里有相当一部分是水分和肌肉，而不是脂肪；同时长时间空腹容易引发暴食、低血糖、注意力下降，对有胃病或血糖问题的人风险更大。掉秤快往往只是初期糖原和水分流失，之后速度会明显放缓，反弹概率也高。\n\n想接近每周 2 斤的上限，更稳妥的是每天留 500 千卡左右的缺口、三餐规律、蛋白质吃够，再配合力量训练。如果你有慢性病、正在服药，或处于孕期哺乳期，具体方案请以医生的评估为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3566,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "一天只吃一顿饭，短期体重可能掉得快，但很难稳定达到每周 2 斤的脂肪减少速度，而且我不建议用这种方式减重。  原因是：一天一顿很难在一餐里吃够蛋白质、维生素和矿物质，减掉的重量里有相当一部分是水分和肌肉，而不是脂肪；同时长时间空腹容易引发…",
+      "messageCount": 6,
+      "lastMessageAt": "2026-11-27T22:33:28.204254171",
+      "createTime": "2026-11-27T22:33:23",
+      "updateTime": "2026-11-27T22:33:23",
+      "id": 3566,
+      "title": "健康的减重速度是每周多少..."
+    }
+  },
+  "message": "发送消息成功"
+}

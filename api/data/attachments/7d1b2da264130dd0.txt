@@ -1,0 +1,4 @@
+
+└─ ⊘ XFAIL   test_bug_collect_missing_recipe_leaks_sql   缺陷 #13：收藏不存在的食谱，400 响应体里吐出 MyBatis/SQL 外键异常原文（含库名、表名、约束名），属内部实现泄露
+                                                                         [ 81%]
+test_cases/recipe/test_recipe_读类契约.py 

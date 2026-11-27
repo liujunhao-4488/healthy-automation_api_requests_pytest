@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3386 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:31:37 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:31:33",
+      "id": 7393,
+      "text": "我想换个口味，有什么建议"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:31:37",
+      "ragUsed": false,
+      "id": 7394,
+      "text": "你的档案里目前没有记录过敏或忌口，慢病也没有，所以换口味可以放开一些，主要围绕「口味风格」来换，而不是换食材结构。\n\n可以试试这几个方向：\n\n- 换成酸辣或东南亚风：柠檬汁、小米辣、鱼露（少量）、香菜拌鸡丝或虾仁，配杂粮饭。清爽、开胃，油也用得少。\n- 换成香草烤制风：迷迭香、黑胡椒、蒜末腌鸡腿或三文鱼，烤箱或空气炸锅做，配烤时蔬。口味重但不靠盐和油。\n- 换成咖喱或炖煮风：用咖喱粉、番茄、洋葱炖牛肉或鹰嘴豆，少放椰浆，配米饭。适合一次做多份。\n- 换成中式卤味/凉拌风：卤牛肉、卤豆干、凉拌木耳黄瓜，用醋和蒜提味，减少酱油用量。\n\n这样建议适合你，是因为你 BMI 约 22.8、体重正常，没有慢病，重点不是减重而是把口味做得有变化又不靠高油高盐；中度活动量下，主食和蛋白质保持正常分量即可。\n\n如果你说的「换口味」是指换掉某样常吃的东西（比如吃腻了鸡胸肉、想换掉某种主食），告诉我具体是哪样，我再给替代方案。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3482,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "你的档案里目前没有记录过敏或忌口，慢病也没有，所以换口味可以放开一些，主要围绕「口味风格」来换，而不是换食材结构。  可以试试这几个方向：  - 换成酸辣或东南亚风：柠檬汁、小米辣、鱼露（少量）、香菜拌鸡丝或虾仁，配杂粮饭。清爽、开胃，油…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:31:37.23572841",
+      "createTime": "2026-11-27T22:31:33",
+      "updateTime": "2026-11-27T22:31:33",
+      "id": 3482,
+      "title": "我想换个口味，有什么建议"
+    }
+  },
+  "message": "发送消息成功"
+}

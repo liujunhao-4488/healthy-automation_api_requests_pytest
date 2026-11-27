@@ -1,0 +1,11 @@
+22:33:28 I → POST /assistant/chat    200    673ms
+22:33:28 I · AI    问「鸡胸肉每100克大概多少卡路里」  → 鸡胸肉每 100 克大约是 165 千卡。 这个数值来自本系统的食材库，同时每 100 克鸡胸肉含蛋白质约 31 克、脂肪约 3.6 克、碳水化合物 0 克，属于高蛋白低脂的肉类。
+22:33:29 I → POST /assistant/chat    200    601ms
+22:33:29 I · AI    问「鸡胸肉每100克大概多少卡路里」  → 鸡胸肉每100克约165千卡。这个数值来自本系统食材库，同时每100克含蛋白质31克、脂肪3.6克、碳水化合物0克。
+22:33:30 I → POST /assistant/chat    200    694ms
+22:33:30 I · AI    问「鸡胸肉每100克大概多少卡路里」  → 鸡胸肉每100克大约165千卡。
+22:33:30 I → DELETE /assistant/conversations/3567 200      5ms
+22:33:30 I → DELETE /assistant/conversations/3568 200      4ms
+22:33:30 I → DELETE /assistant/conversations/3569 200      3ms
+22:33:30 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s,%s,%s) | args=(3567, 3568, 3569) | affected=6 | 0.8ms
+22:33:30 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s,%s,%s) | args=(3567, 3568, 3569) | affected=3 | 0.5ms

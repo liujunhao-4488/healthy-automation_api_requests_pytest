@@ -1,0 +1,55 @@
+HTTP 200　（耗时 900 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:32:35 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:32:35",
+      "id": 7503,
+      "text": "那鸡胸肉呢"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:32:36",
+      "ragUsed": false,
+      "id": 7504,
+      "text": "鸡胸肉可以吃，它脂肪低、蛋白质高，是很好消化的优质蛋白来源，比海虾更不容易涉及过敏和嘌呤问题。做法上建议蒸、煮、煎或少油烤，避免油炸和重口味酱料；注意别煮得过老，口感会柴。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3536,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "鸡胸肉可以吃，它脂肪低、蛋白质高，是很好消化的优质蛋白来源，比海虾更不容易涉及过敏和嘌呤问题。做法上建议蒸、煮、煎或少油烤，避免油炸和重口味酱料；注意别煮得过老，口感会柴。",
+      "messageCount": 4,
+      "lastMessageAt": "2026-11-27T22:32:36.007679978",
+      "createTime": "2026-11-27T22:32:33",
+      "updateTime": "2026-11-27T22:32:33",
+      "id": 3536,
+      "title": "我能吃海虾吗"
+    }
+  },
+  "message": "发送消息成功"
+}

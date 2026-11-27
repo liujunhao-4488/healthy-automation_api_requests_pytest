@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_nutrition_returns_object_even_for_missing_recipe  0.01s

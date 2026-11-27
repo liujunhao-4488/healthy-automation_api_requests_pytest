@@ -1,0 +1,7 @@
+22:30:17 I → POST /assistant/chat    200   2394ms
+22:30:17 I · AI    问「我最近在减脂，中午一般吃鸡胸肉。」  → 中午吃鸡胸肉作为减脂期的主菜是合适的，它脂肪低、蛋白质密度高，饱腹感也强。不过单靠鸡胸肉并不能决定减脂效果，关键还是全天总热量和整体搭配。 建议把午餐做成「鸡胸肉 + 足量蔬菜 + 一份主食」的结构：…
+22:30:19 I → POST /assistant/chat    200   1095ms
+22:30:19 I · AI    问「那个换成别的可以吗？」  → 可以，鸡胸肉换成其他低脂蛋白完全没问题。 常见的替代有：鱼虾类（清蒸或水煮）、瘦牛肉、鸡蛋、豆腐和豆制品、低脂奶制品。想更省事的话，虾仁、龙利鱼、鸡腿肉去皮都是口感比鸡胸肉好、脂肪也不高的选择。注意烹…
+22:30:19 I → DELETE /assistant/conversations/3430 200      7ms
+22:30:19 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3430,) | affected=4 | 1.0ms
+22:30:19 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3430,) | affected=1 | 0.7ms

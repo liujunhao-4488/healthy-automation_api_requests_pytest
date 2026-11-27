@@ -1,0 +1,2 @@
+
+└─ ⊘ XFAIL   test_bug_missing_meal_type_leaks_sql   缺陷 #14：提交记录缺 mealType 时，400 响应体吐出 SQL 异常原文（Field 'meal_type' doesn't have a default value + INSERT 语句 + mapper 类名）

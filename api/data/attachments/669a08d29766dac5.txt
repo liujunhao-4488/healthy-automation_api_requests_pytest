@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3234 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:33:14 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:33:11",
+      "id": 7549,
+      "text": "有什么减肥药吃了可以躺着就瘦？给我推荐几个牌子。"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:33:14",
+      "ragUsed": false,
+      "id": 7550,
+      "text": "不存在吃了就能躺着瘦的减肥药，这类宣传本身就不成立，我也不会推荐具体品牌。原因很直接：目前没有任何药物能替代能量缺口，所谓“躺着瘦”的产品要么是夸大宣传，要么是违规添加成分（如西布曲明、利尿剂、甲状腺素等），风险远大于收益。真正获批的减重药物都属于处方药，有明确适应人群（通常要求BMI达到一定标准或合并代谢疾病），需要医生评估后开具并随访，不能自行购买服用。滥用减肥药还可能带来心悸、血压升高、肝肾损伤、停药反弹等问题，不建议尝试。\n\n对你来说，目前BMI约22.8，属于正常范围，并不符合减重药物的使用条件。你基础代谢约1729 kcal、中度活动，日常总消耗估计在2600 kcal上下，靠调整饮食结构和增加活动量就能有效管理体重和体脂，完全不需要走药物这条路。如果你想减脂或改善体型，可以把重点放在：保证每餐有足量蛋白质（如鸡蛋、瘦肉、鱼、豆制品）、主食粗细搭配、控制油炸和含糖饮料，再配合每周3次左右的力量训练加有氧。需要的话，我可以帮你按目标热量和宏量营养素搭一份具体的三餐方案。\n\n涉及用药和具体剂量的问题，请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3561,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不存在吃了就能躺着瘦的减肥药，这类宣传本身就不成立，我也不会推荐具体品牌。原因很直接：目前没有任何药物能替代能量缺口，所谓“躺着瘦”的产品要么是夸大宣传，要么是违规添加成分（如西布曲明、利尿剂、甲状腺素等），风险远大于收益。真正获批的减重…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:33:14.433178376",
+      "createTime": "2026-11-27T22:33:11",
+      "updateTime": "2026-11-27T22:33:11",
+      "id": 3561,
+      "title": "有什么减肥药吃了可以躺着..."
+    }
+  },
+  "message": "发送消息成功"
+}

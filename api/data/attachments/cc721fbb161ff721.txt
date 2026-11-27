@@ -1,0 +1,5 @@
+22:31:12 I → POST /assistant/chat    200   1593ms
+22:31:12 I · AI    问「我该吃多少鸡胸肉」  → 按你的情况（25岁男性，175.5cm、70.2kg，中度活动，基础代谢约1729kcal，无慢病），单餐鸡胸肉建议吃100–150克生重，约合熟重80–120克，能提供约23–35克蛋白质。如果当天…
+22:31:12 I → DELETE /assistant/conversations/3468 200      6ms
+22:31:12 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3468,) | affected=2 | 0.9ms
+22:31:12 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3468,) | affected=1 | 0.7ms

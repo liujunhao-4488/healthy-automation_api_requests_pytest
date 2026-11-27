@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_question_hits_expected_doc[血糖高能喝粥吗]  0.00s

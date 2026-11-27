@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3724 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:30:53 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:30:49",
+      "id": 7339,
+      "text": "吃药期间能吃柚子吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:30:53",
+      "ragUsed": false,
+      "id": 7340,
+      "text": "不能一概而论，要看具体吃的是什么药——有些药和柚子（尤其是西柚/葡萄柚）确实存在明确的相互作用，有些则基本没影响。\n\n需要特别当心的是西柚（葡萄柚）及其果汁。它含有的呋喃香豆素会抑制肠道里一种叫 CYP3A4 的代谢酶，让部分药物在体内的浓度明显升高，相当于\"变相加大了剂量\"，可能增加副作用风险。这类药物常见的有：部分降脂药（如辛伐他汀、阿托伐他汀）、部分降压药（如硝苯地平、非洛地平）、部分抗心律失常药（如胺碘酮）、部分镇静催眠药、部分抗过敏药、某些免疫抑制剂、部分抗凝药等。另外西柚汁的影响可以持续一两天，不是\"错开几小时吃\"就能避开的。\n\n相对而言，普通柚子（蜜柚、沙田柚）呋喃香豆素含量比西柚低不少，风险小一些，但也不建议在服药期间大量吃或喝柚子汁。至于橙子、橘子、柠檬，一般不属于这类高风险水果。\n\n最稳妥的做法是：看一下药品说明书里\"药物相互作用\"或\"注意事项\"一栏有没有提到葡萄柚/西柚；或者直接问开药的医生或药师，把你正在吃的药名报给他们。在没确认之前，服药期间先避开西柚和西柚汁比较安全。\n\n需要提醒的是，具体能不能吃、要不要调整用药，请以医生的诊断和处方为准，不要自行停药或改剂量。如果你愿意告诉我具体是哪种药（药名或用途），我可以帮你查一下它是否属于需要注意西柚的那一类。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3455,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不能一概而论，要看具体吃的是什么药——有些药和柚子（尤其是西柚/葡萄柚）确实存在明确的相互作用，有些则基本没影响。  需要特别当心的是西柚（葡萄柚）及其果汁。它含有的呋喃香豆素会抑制肠道里一种叫 CYP3A4 的代谢酶，让部分药物在体内的…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:30:53.053373097",
+      "createTime": "2026-11-27T22:30:49",
+      "updateTime": "2026-11-27T22:30:49",
+      "id": 3455,
+      "title": "吃药期间能吃柚子吗"
+    }
+  },
+  "message": "发送消息成功"
+}

@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1095 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:30:19 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:30:17",
+      "id": 7287,
+      "text": "那个换成别的可以吗？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:30:19",
+      "ragUsed": false,
+      "id": 7288,
+      "text": "可以，鸡胸肉换成其他低脂蛋白完全没问题。\n\n常见的替代有：鱼虾类（清蒸或水煮）、瘦牛肉、鸡蛋、豆腐和豆制品、低脂奶制品。想更省事的话，虾仁、龙利鱼、鸡腿肉去皮都是口感比鸡胸肉好、脂肪也不高的选择。注意烹调方式保持少油，别用油炸或重酱汁，替换后整体热量差别不大。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3430,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "可以，鸡胸肉换成其他低脂蛋白完全没问题。  常见的替代有：鱼虾类（清蒸或水煮）、瘦牛肉、鸡蛋、豆腐和豆制品、低脂奶制品。想更省事的话，虾仁、龙利鱼、鸡腿肉去皮都是口感比鸡胸肉好、脂肪也不高的选择。注意烹调方式保持少油，别用油炸或重酱汁，替…",
+      "messageCount": 4,
+      "lastMessageAt": "2026-11-27T22:30:19.057459747",
+      "createTime": "2026-11-27T22:30:15",
+      "updateTime": "2026-11-27T22:30:15",
+      "id": 3430,
+      "title": "我最近在减脂，中午一般吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

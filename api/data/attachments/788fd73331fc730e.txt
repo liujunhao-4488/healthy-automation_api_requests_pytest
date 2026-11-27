@@ -1,0 +1,5 @@
+22:31:10 I → POST /assistant/chat    200   3747ms
+22:31:10 I · AI    问「我想控糖应该注意什么」  → 控糖的核心是「控制血糖波动速度」，重点不在于完全不吃碳水，而在于选对种类、搭配好、吃对顺序。对你这样BMI 22.8、没有慢性病、活动量中等的25岁男性来说，控糖更多是预防性的日常习惯，不需要走极端。…
+22:31:10 I → DELETE /assistant/conversations/3467 200      6ms
+22:31:10 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3467,) | affected=2 | 0.8ms
+22:31:10 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3467,) | affected=1 | 0.8ms

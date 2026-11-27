@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1093 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:30:59 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:30:57",
+      "id": 7351,
+      "text": "我今天的蛋白质摄入够吗"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:30:59",
+      "ragUsed": false,
+      "id": 7352,
+      "text": "我目前没法判断你今天的蛋白质摄入够不够，因为这一轮你没有告诉我今天吃了哪些食物、大概的分量，也没有说明你的体重和活动情况。蛋白质够不够，需要把「吃了多少」和「需要多少」放在一起比。\n\n你可以把今天吃的东西按餐列给我（比如早餐鸡蛋2个、牛奶250毫升，午餐米饭一碗、鸡腿一个……），我帮你估算蛋白质总量，再结合你的体重和运动量给出判断和调整建议。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3461,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "我目前没法判断你今天的蛋白质摄入够不够，因为这一轮你没有告诉我今天吃了哪些食物、大概的分量，也没有说明你的体重和活动情况。蛋白质够不够，需要把「吃了多少」和「需要多少」放在一起比。  你可以把今天吃的东西按餐列给我（比如早餐鸡蛋2个、牛奶…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:30:59.063891325",
+      "createTime": "2026-11-27T22:30:57",
+      "updateTime": "2026-11-27T22:30:57",
+      "id": 3461,
+      "title": "我今天的蛋白质摄入够吗"
+    }
+  },
+  "message": "发送消息成功"
+}

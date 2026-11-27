@@ -1,0 +1,5 @@
+22:31:21 I → POST /assistant/chat    200   1634ms
+22:31:21 I · AI    问「刚吃了碗牛肉面」   → 牛肉面是一顿挺实在的饭，主食、蛋白质和汤都有了。如果想让它更均衡，可以留意三点：面量通常偏大，汤里盐和油往往不少，蔬菜和优质蛋白相对少一些。 具体来说，汤尽量少喝或不喝完，能少摄入不少钠和油；如果还饿…
+22:31:21 I → DELETE /assistant/conversations/3474 200      6ms
+22:31:21 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3474,) | affected=2 | 0.8ms
+22:31:21 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3474,) | affected=1 | 0.7ms

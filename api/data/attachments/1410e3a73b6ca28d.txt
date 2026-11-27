@@ -1,0 +1,55 @@
+HTTP 200　（耗时 912 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:31:56 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:31:56",
+      "id": 7445,
+      "text": "这个算法的时间复杂度怎么算"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:31:57",
+      "ragUsed": false,
+      "id": 7446,
+      "text": "这个问题属于计算机算法领域，不在我负责的饮食与健康范围内，我没法给你可靠的时间复杂度分析。如果你有食材替换、食谱分析、三餐搭配、营养成分与热量估算，或控油控糖控钠、慢病饮食注意事项、运动与体重管理、保健品常见作用等方面的问题，可以继续问我。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3508,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "这个问题属于计算机算法领域，不在我负责的饮食与健康范围内，我没法给你可靠的时间复杂度分析。如果你有食材替换、食谱分析、三餐搭配、营养成分与热量估算，或控油控糖控钠、慢病饮食注意事项、运动与体重管理、保健品常见作用等方面的问题，可以继续问我。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:31:57.85042643",
+      "createTime": "2026-11-27T22:31:56",
+      "updateTime": "2026-11-27T22:31:56",
+      "id": 3508,
+      "title": "这个算法的时间复杂度怎么..."
+    }
+  },
+  "message": "发送消息成功"
+}

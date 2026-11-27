@@ -1,0 +1,5 @@
+22:31:31 I → POST /assistant/chat    200   1832ms
+22:31:31 I · AI    问「我每天该喝多少水」  → 对大多数健康成年人来说，每天总饮水量（包括白水、茶、汤、食物中的水分）大约 1500～1700 毫升白水或淡茶是常见的基础参考，中国居民膳食指南建议成年男性约 1700 毫升、女性约 1500 毫升的…
+22:31:31 I → DELETE /assistant/conversations/3480 200      6ms
+22:31:31 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3480,) | affected=2 | 0.9ms
+22:31:31 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3480,) | affected=1 | 0.6ms

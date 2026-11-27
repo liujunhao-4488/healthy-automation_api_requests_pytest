@@ -1,0 +1,55 @@
+HTTP 200　（耗时 4943 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:31:17 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:31:12",
+      "id": 7367,
+      "text": "最近老犯困，怎么吃能改善"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:31:17",
+      "ragUsed": false,
+      "id": 7368,
+      "text": "白天犯困，饮食上最值得先调整的是三件事：别让血糖大起大落、保证蛋白质和铁的摄入、把咖啡因和喝水的时间安排好。\n\n具体可以这样吃：\n\n**1. 稳定血糖，减少餐后困倦**\n午餐和晚餐别让精制碳水占大头（大碗白米饭、面条、白粥配馒头这类），换成杂粮饭、糙米、燕麦、全麦，主食量控制在一拳头左右，先吃菜和蛋白质再吃主食。餐后困倦最常见的原因就是一顿高碳水、低蛋白的饭让血糖快速冲高再回落。\n\n**2. 每餐都有足量蛋白质**\n早餐尤其容易被忽略。鸡蛋、牛奶、无糖酸奶、豆制品、瘦肉都可以，早餐吃到 20 克以上蛋白质，上午的精神状态会明显不一样。按你 70 公斤左右的体重，一天蛋白质 80–100 克比较合适。\n\n**3. 排查一下铁和B族维生素**\n年轻男性长期犯困，如果还伴随脸色偏白、爬楼容易喘、注意力差，值得去查个血常规和铁蛋白。红肉（瘦牛肉、猪瘦肉）、动物肝脏（每周一次、少量）、深绿色蔬菜、豆类都是铁的来源，搭配富含维生素C的水果能提高吸收率。全谷物和瘦肉也提供B族维生素，对能量代谢有帮助。\n\n**4. 咖啡因和喝水**\n咖啡、浓茶尽量放在上午，下午两点后不喝，否则影响夜间睡眠、第二天更困。另外轻度脱水本身就会让人发蔫，白天分散喝水，别等口渴。\n\n**5. 别靠甜食和含糖饮料提神**\n它们能带来半小时的兴奋，之后是更明显的回落，反而加重犯困。\n\n你的 BMI 22.8 在正常范围，没有慢病，所以不需要刻意控制总热量，重点放在餐次结构和营养素密度上就好。另外提醒一句：如果犯困持续超过两三周、睡够 7–8 小时仍不解乏，或者伴随体重明显变化、打鼾严重，建议去医院查一下，排除贫血、甲状腺功能和睡眠呼吸方面的问题，具体以医生的诊断为准。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3469,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "白天犯困，饮食上最值得先调整的是三件事：别让血糖大起大落、保证蛋白质和铁的摄入、把咖啡因和喝水的时间安排好。  具体可以这样吃：  **1. 稳定血糖，减少餐后困倦** 午餐和晚餐别让精制碳水占大头（大碗白米饭、面条、白粥配馒头这类），换…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:31:17.231533636",
+      "createTime": "2026-11-27T22:31:12",
+      "updateTime": "2026-11-27T22:31:12",
+      "id": 3469,
+      "title": "最近老犯困，怎么吃能改善"
+    }
+  },
+  "message": "发送消息成功"
+}

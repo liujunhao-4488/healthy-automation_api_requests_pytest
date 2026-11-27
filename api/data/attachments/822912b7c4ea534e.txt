@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1104 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:31:44 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:31:43",
+      "id": 7409,
+      "text": "我不吃香菜，有什么能换成它"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:31:44",
+      "ragUsed": false,
+      "id": 7410,
+      "text": "香菜主要提供清香和点缀作用，不吃的话完全可以直接省略，或用葱、小葱、芹菜叶、薄荷、罗勒、紫苏等带清香的香草替代，按菜品风味选择即可。做凉拌菜、汤面、蘸料时用葱花或芹菜叶最接近；东南亚、西式菜可用薄荷、罗勒；如果只是要一点绿色点缀，用少量葱花或芝麻也行。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3490,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "香菜主要提供清香和点缀作用，不吃的话完全可以直接省略，或用葱、小葱、芹菜叶、薄荷、罗勒、紫苏等带清香的香草替代，按菜品风味选择即可。做凉拌菜、汤面、蘸料时用葱花或芹菜叶最接近；东南亚、西式菜可用薄荷、罗勒；如果只是要一点绿色点缀，用少量葱…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:31:44.852832022",
+      "createTime": "2026-11-27T22:31:43",
+      "updateTime": "2026-11-27T22:31:43",
+      "id": 3490,
+      "title": "我不吃香菜，有什么能换成..."
+    }
+  },
+  "message": "发送消息成功"
+}

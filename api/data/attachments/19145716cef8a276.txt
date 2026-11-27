@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_wrong_type_is_reported_with_expected_and_actual  0.00s

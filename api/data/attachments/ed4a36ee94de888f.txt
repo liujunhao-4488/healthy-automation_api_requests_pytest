@@ -1,0 +1,5 @@
+22:30:54 I → POST /assistant/chat    200   1653ms
+22:30:54 I · AI    问「草莓热量高吗」     → 不高。草莓每100克只有32千卡，在水果里属于偏低热量的，比苹果、香蕉、葡萄都低不少。它含水量高、膳食纤维有2克，吃着有饱腹感，糖也只有4.9克，升糖指数40属于低GI，作为加餐或解馋的水果都比较合适…
+22:30:54 I → DELETE /assistant/conversations/3456 200      6ms
+22:30:54 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3456,) | affected=2 | 0.9ms
+22:30:54 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3456,) | affected=1 | 0.7ms

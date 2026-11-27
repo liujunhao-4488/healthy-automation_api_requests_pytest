@@ -1,0 +1,5 @@
+22:31:38 I → POST /assistant/chat    200   1120ms
+22:31:38 I · AI    问「你好，今天想吃点好的」  → 想吃点好的完全没问题，关键是“好”可以落在食材新鲜、搭配均衡、做法讲究上，而不是只靠油盐糖堆出来的重口味。 如果你愿意说说想吃什么类型——比如在家做还是下馆子、偏爱中餐还是西餐、想吃肉还是海鲜——我可…
+22:31:38 I → DELETE /assistant/conversations/3483 200      6ms
+22:31:38 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3483,) | affected=2 | 0.9ms
+22:31:38 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3483,) | affected=1 | 0.6ms

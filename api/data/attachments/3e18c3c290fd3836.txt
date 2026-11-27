@@ -1,0 +1,5 @@
+22:31:06 I → POST /assistant/chat    200   3252ms
+22:31:06 I · AI    问「减脂晚餐怎么吃」   → 减脂晚餐的核心思路是：控制总热量、保证蛋白质、多放蔬菜、主食适量且选粗粮，晚餐时间尽量安排在睡前3小时以上。 具体可以这样搭：一份优质蛋白（约手掌大小的鱼虾、去皮鸡肉、瘦牛肉或豆腐），一到两拳头大小的…
+22:31:06 I → DELETE /assistant/conversations/3466 200      5ms
+22:31:06 W ! WRITE DELETE FROM `assistant_message` WHERE `conversation_id` IN (%s) | args=(3466,) | affected=2 | 0.8ms
+22:31:06 W ! WRITE DELETE FROM `assistant_conversation` WHERE `id` IN (%s) | args=(3466,) | affected=1 | 0.6ms

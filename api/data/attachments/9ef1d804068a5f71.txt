@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1507 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:32:57 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:32:56",
+      "id": 7533,
+      "text": "我怀孕 5 个月了，能吃三文鱼刺身吗？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:32:57",
+      "ragUsed": false,
+      "id": 7534,
+      "text": "孕期不建议吃三文鱼刺身，尤其是生的或半生的。建议吃彻底加热熟透的三文鱼。\n\n原因主要有两点：一是生鱼片可能携带李斯特菌、寄生虫（如异尖线虫）等病原体，孕期免疫状态相对特殊，感染后风险比平时更高，李斯特菌还可能影响胎儿；二是孕期一旦发生食源性感染，处理起来顾虑更多。加热到鱼肉完全变色、中心不透明，基本可以规避这类风险。\n\n如果想吃三文鱼，可以选熟制的做法，比如香煎、清蒸、烤箱烤，注意中心也要熟透；外食时生腌、烟熏（冷熏）三文鱼同样建议避开。至于具体能不能吃、吃多少，请以你的产检医生的意见为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3553,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "孕期不建议吃三文鱼刺身，尤其是生的或半生的。建议吃彻底加热熟透的三文鱼。  原因主要有两点：一是生鱼片可能携带李斯特菌、寄生虫（如异尖线虫）等病原体，孕期免疫状态相对特殊，感染后风险比平时更高，李斯特菌还可能影响胎儿；二是孕期一旦发生食源…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:32:57.712004771",
+      "createTime": "2026-11-27T22:32:56",
+      "updateTime": "2026-11-27T22:32:56",
+      "id": 3553,
+      "title": "我怀孕 5 个月了，能吃..."
+    }
+  },
+  "message": "发送消息成功"
+}

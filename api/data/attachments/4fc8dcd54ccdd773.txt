@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1665 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:31:46 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:31:44",
+      "id": 7411,
+      "text": "牛奶可以用什么代替"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:31:46",
+      "ragUsed": false,
+      "id": 7412,
+      "text": "牛奶的替代品主要看你想替代它的哪方面用途：\n\n如果是为了补钙和蛋白质，无糖豆浆、强化钙的豆奶、低乳糖奶或酸奶都可以，豆浆的蛋白质质量不错，钙含量则要看是否强化。\n\n如果是因为乳糖不耐受，可以选无乳糖牛奶、酸奶、奶酪（乳糖较低），或植物奶。\n\n如果是做菜烘焙，椰奶、燕麦奶、杏仁奶风味不同，燕麦奶口感最接近牛奶，适合咖啡和早餐；椰奶适合咖喱和甜品。\n\n如果是控制热量或脂肪，可选无糖杏仁奶、脱脂奶。\n\n需要注意：植物奶的蛋白质和钙普遍低于牛奶，长期完全替代时最好选强化了钙和维生素D的产品，并通过豆制品、深绿色蔬菜等补足蛋白质和钙。如果你有具体用途（比如早餐、烘焙或乳糖不耐），可以告诉我，我再给更针对性的建议。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3491,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "牛奶的替代品主要看你想替代它的哪方面用途：  如果是为了补钙和蛋白质，无糖豆浆、强化钙的豆奶、低乳糖奶或酸奶都可以，豆浆的蛋白质质量不错，钙含量则要看是否强化。  如果是因为乳糖不耐受，可以选无乳糖牛奶、酸奶、奶酪（乳糖较低），或植物奶。…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:31:46.53123253",
+      "createTime": "2026-11-27T22:31:44",
+      "updateTime": "2026-11-27T22:31:44",
+      "id": 3491,
+      "title": "牛奶可以用什么代替"
+    }
+  },
+  "message": "发送消息成功"
+}

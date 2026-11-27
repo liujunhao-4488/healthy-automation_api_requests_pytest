@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1172 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:31:53 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:31:52",
+      "id": 7437,
+      "text": "这个算法的时间复杂度怎么算"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:31:53",
+      "ragUsed": false,
+      "id": 7438,
+      "text": "这个问题超出我的范围了，我只负责饮食与健康相关的问题，算法时间复杂度建议你咨询编程或计算机方向的助手。\n\n如果你有饮食搭配、营养成分估算、控油控糖控钠或体重管理方面的疑问，可以随时问我。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3504,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "这个问题超出我的范围了，我只负责饮食与健康相关的问题，算法时间复杂度建议你咨询编程或计算机方向的助手。  如果你有饮食搭配、营养成分估算、控油控糖控钠或体重管理方面的疑问，可以随时问我。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:31:53.763932147",
+      "createTime": "2026-11-27T22:31:52",
+      "updateTime": "2026-11-27T22:31:52",
+      "id": 3504,
+      "title": "这个算法的时间复杂度怎么..."
+    }
+  },
+  "message": "发送消息成功"
+}

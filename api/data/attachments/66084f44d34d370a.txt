@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1192 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:30:55 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:30:54",
+      "id": 7345,
+      "text": "我今天吃了多少卡"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:30:55",
+      "ragUsed": false,
+      "id": 7346,
+      "text": "我没法直接知道你吃了多少卡，因为本轮没有提供你今天吃了什么、各吃了多少。热量要靠具体食物和分量来估算。\n\n你可以把今天吃的东西按「食物＋大概分量」列给我，比如「一碗米饭、两个鸡蛋、一杯全脂牛奶」，我就能帮你逐项估算并加总。",
+      "source": "deepseek",
+      "intent": "query",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3458,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "我没法直接知道你吃了多少卡，因为本轮没有提供你今天吃了什么、各吃了多少。热量要靠具体食物和分量来估算。  你可以把今天吃的东西按「食物＋大概分量」列给我，比如「一碗米饭、两个鸡蛋、一杯全脂牛奶」，我就能帮你逐项估算并加总。",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:30:55.950668215",
+      "createTime": "2026-11-27T22:30:54",
+      "updateTime": "2026-11-27T22:30:54",
+      "id": 3458,
+      "title": "我今天吃了多少卡"
+    }
+  },
+  "message": "发送消息成功"
+}

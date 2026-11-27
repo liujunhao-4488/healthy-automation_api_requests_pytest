@@ -1,0 +1,56 @@
+HTTP 200　（耗时 1419 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:31:02 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:31:01",
+      "id": 7357,
+      "text": "米饭的升糖指数高吗"
+    },
+    "assistantMessage": {
+      "knowledgeRoute": "ingredient",
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:31:02",
+      "ragUsed": false,
+      "id": 7358,
+      "text": "米饭的升糖指数（GI）是 73，属于高 GI 食物（通常 GI≥70 算高）。这意味着它消化吸收较快，餐后血糖上升会比较明显。\n\n如果血糖控制是关注点，可以试试把部分白米饭换成糙米、杂粮饭或杂豆饭，或者先吃蔬菜和蛋白质、最后吃米饭，也可以把米饭放凉一点做成隔夜饭再加热，抗性淀粉增多后升糖会略缓一些。",
+      "source": "deepseek",
+      "intent": "knowledge",
+      "retrievalStatus": "ingredient"
+    },
+    "conversationId": 3464,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "米饭的升糖指数（GI）是 73，属于高 GI 食物（通常 GI≥70 算高）。这意味着它消化吸收较快，餐后血糖上升会比较明显。  如果血糖控制是关注点，可以试试把部分白米饭换成糙米、杂粮饭或杂豆饭，或者先吃蔬菜和蛋白质、最后吃米饭，也可以…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:31:02.524985615",
+      "createTime": "2026-11-27T22:31:01",
+      "updateTime": "2026-11-27T22:31:01",
+      "id": 3464,
+      "title": "米饭的升糖指数高吗"
+    }
+  },
+  "message": "发送消息成功"
+}

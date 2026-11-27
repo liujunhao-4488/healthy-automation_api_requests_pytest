@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_cross_user_delete_denied        0.01s

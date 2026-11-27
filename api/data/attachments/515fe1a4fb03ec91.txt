@@ -1,0 +1,55 @@
+HTTP 200　（耗时 3747 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:31:10 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:31:06",
+      "id": 7363,
+      "text": "我想控糖应该注意什么"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:31:10",
+      "ragUsed": false,
+      "id": 7364,
+      "text": "控糖的核心是「控制血糖波动速度」，重点不在于完全不吃碳水，而在于选对种类、搭配好、吃对顺序。对你这样BMI 22.8、没有慢性病、活动量中等的25岁男性来说，控糖更多是预防性的日常习惯，不需要走极端。\n\n具体可以注意这几件事：\n\n一是主食别只吃精白米面。把一部分白米饭、白馒头换成糙米、燕麦、荞麦、杂豆或薯类，同样一碗饭，升糖速度会慢不少。全谷物占主食的三分之一到一半就够，不用全换。\n\n二是每餐保证有蛋白质和蔬菜。先吃菜和肉蛋豆制品，最后吃主食，这个顺序能明显削平餐后血糖峰值。蔬菜每天至少一斤，深色占一半。\n\n三是少喝含糖饮料、少吃甜点和精制糖。液体糖升糖最快，是最值得先砍掉的一项。水果可以吃，放在两餐之间，一次一个拳头大小，别榨汁。\n\n四是规律三餐、别长时间空腹后暴食。饥一顿饱一顿对血糖波动的影响，有时比吃什么还大。\n\n五是饭后动一动。餐后散步15到20分钟，对餐后血糖的改善很直接，也符合你中度活动水平的底子。\n\n你的档案里没有糖尿病或其他慢病，也没有记录过敏和忌口，所以上面是通用性的预防建议，不需要按病人标准严格限制碳水。如果之后体检发现空腹血糖或糖化血红蛋白异常，具体方案请以医生的诊断为准。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3467,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "控糖的核心是「控制血糖波动速度」，重点不在于完全不吃碳水，而在于选对种类、搭配好、吃对顺序。对你这样BMI 22.8、没有慢性病、活动量中等的25岁男性来说，控糖更多是预防性的日常习惯，不需要走极端。  具体可以注意这几件事：  一是主食…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:31:10.668582895",
+      "createTime": "2026-11-27T22:31:06",
+      "updateTime": "2026-11-27T22:31:06",
+      "id": 3467,
+      "title": "我想控糖应该注意什么"
+    }
+  },
+  "message": "发送消息成功"
+}

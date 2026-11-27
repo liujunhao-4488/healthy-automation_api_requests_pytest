@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1684 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:33:32 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:33:31",
+      "id": 7581,
+      "text": "菠菜为什么要焯水"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:33:32",
+      "ragUsed": false,
+      "id": 7582,
+      "text": "菠菜焯水主要是为了减少草酸，同时改善口感和安全性。\n\n草酸会影响钙、铁等矿物质的吸收，摄入过多还会增加肾结石的风险。菠菜草酸含量偏高，用沸水焯烫约30秒到1分钟，就能溶出相当一部分草酸，涩味也会明显减轻。焯完把水倒掉，不要拿这锅水做汤。\n\n另外，焯水能去除部分表面农残和杂质，也能让菠菜更软、颜色更绿，后面炒或拌都更好操作。如果做菠菜豆腐这类搭配，焯水后草酸少了，和豆腐里的钙结合的机会也就少了，这道菜可以放心吃。\n\n小提示：水要宽、火要旺，焯的时间别太长，捞出后可过一下凉水保持口感；肾功能不全或结石病史的人，菠菜建议焯水后再吃，且不宜大量频繁食用，具体请以医生的建议为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3571,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "菠菜焯水主要是为了减少草酸，同时改善口感和安全性。  草酸会影响钙、铁等矿物质的吸收，摄入过多还会增加肾结石的风险。菠菜草酸含量偏高，用沸水焯烫约30秒到1分钟，就能溶出相当一部分草酸，涩味也会明显减轻。焯完把水倒掉，不要拿这锅水做汤。 …",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:33:32.990097682",
+      "createTime": "2026-11-27T22:33:31",
+      "updateTime": "2026-11-27T22:33:31",
+      "id": 3571,
+      "title": "菠菜为什么要焯水"
+    }
+  },
+  "message": "发送消息成功"
+}

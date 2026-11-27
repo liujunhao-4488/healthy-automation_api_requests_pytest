@@ -1,0 +1,55 @@
+HTTP 200　（耗时 2481 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:32:56 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:32:53",
+      "id": 7531,
+      "text": "我在吃华法林，能多吃点菠菜吗？"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:32:56",
+      "ragUsed": false,
+      "id": 7532,
+      "text": "不建议突然“多吃”菠菜。华法林通过抑制维生素K发挥作用，而菠菜是维生素K含量很高的蔬菜，短时间内大量增加会让药效下降、INR 波动，增加血栓风险；反过来突然大幅减少也有风险。关键在于“稳定”而不是“忌口”或“猛补”。\n\n比较稳妥的做法是：菠菜可以吃，但保持每周的量大致恒定，不要这周不吃、下周天天一大盘；如果确实想改变习惯，先和医生或抗凝门诊沟通，按安排复查 INR。同时留意其他高维生素K食物（如羽衣甘蓝、西兰花、芥蓝、香菜、动物肝脏、绿茶等），也尽量维持日常摄入的稳定，而不是完全禁食。\n\n另外，华法林的饮食注意事项还涉及避免大量饮酒、慎用影响凝血的保健品（如鱼油、银杏、维生素K补充剂、部分中草药），这些具体请以医生的诊断和处方为准。",
+      "source": "deepseek",
+      "intent": "chat",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3552,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "不建议突然“多吃”菠菜。华法林通过抑制维生素K发挥作用，而菠菜是维生素K含量很高的蔬菜，短时间内大量增加会让药效下降、INR 波动，增加血栓风险；反过来突然大幅减少也有风险。关键在于“稳定”而不是“忌口”或“猛补”。  比较稳妥的做法是：…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:32:56.192519813",
+      "createTime": "2026-11-27T22:32:53",
+      "updateTime": "2026-11-27T22:32:53",
+      "id": 3552,
+      "title": "我在吃华法林，能多吃点菠..."
+    }
+  },
+  "message": "发送消息成功"
+}

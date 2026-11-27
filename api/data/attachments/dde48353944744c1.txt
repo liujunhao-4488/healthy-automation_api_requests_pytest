@@ -1,0 +1,55 @@
+HTTP 200　（耗时 5 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:32:35 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": [
+    {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:32:33",
+      "id": 7501,
+      "text": "我能吃海虾吗"
+    },
+    {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:32:35",
+      "id": 7502,
+      "text": "能不能吃海虾，主要取决于你有没有海鲜过敏，以及目前的健康状况。如果你对虾蟹类不过敏、也没有痛风急性发作或医生明确要求限制的情况，海虾是可以吃的，它蛋白质高、脂肪低，是很好的优质蛋白来源。\n\n需要注意两点：一是如果以前吃虾出现过皮疹、嘴唇肿、喉咙发紧等过敏反应，就应完全避免，并留意虾类可能出现在调味料、汤底和加工食品中；二是有高尿酸或痛风的人，虾属于中等嘌呤食物，急性发作期建议暂时不吃，缓解期可少量吃，同时少喝虾汤、少配啤酒。\n\n如果你有具体的身体状况（比如过敏史、尿酸偏高、孕期等），可以告诉我，我再帮你细化。涉及疾病的具体判断，请以医生的诊断和处方为准。"
+    },
+    {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:32:35",
+      "id": 7503,
+      "text": "那鸡胸肉呢"
+    },
+    {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:32:36",
+      "id": 7504,
+      "text": "鸡胸肉可以吃，它脂肪低、蛋白质高，是很好消化的优质蛋白来源，比海虾更不容易涉及过敏和嘌呤问题。做法上建议蒸、煮、煎或少油烤，避免油炸和重口味酱料；注意别煮得过老，口感会柴。"
+    }
+  ],
+  "message": "获取消息成功"
+}

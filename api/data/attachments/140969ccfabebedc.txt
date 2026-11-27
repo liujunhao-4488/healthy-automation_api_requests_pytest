@@ -1,0 +1,55 @@
+HTTP 200　（耗时 1593 ms）
+
+【响应头】
+Vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Fri, 27 Nov 2026 22:31:12 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+【响应体】
+{
+  "code": 200,
+  "data": {
+    "userMessage": {
+      "role": "user",
+      "cards": [],
+      "messageType": "text",
+      "createTime": "2026-11-27T22:31:10",
+      "id": 7365,
+      "text": "我该吃多少鸡胸肉"
+    },
+    "assistantMessage": {
+      "role": "assistant",
+      "cards": [],
+      "messageType": "text",
+      "sources": [],
+      "createTime": "2026-11-27T22:31:12",
+      "ragUsed": false,
+      "id": 7366,
+      "text": "按你的情况（25岁男性，175.5cm、70.2kg，中度活动，基础代谢约1729kcal，无慢病），单餐鸡胸肉建议吃100–150克生重，约合熟重80–120克，能提供约23–35克蛋白质。如果当天其他餐蛋白质来源较少（如早餐只有粥和鸡蛋），可以吃到150–180克生重；如果还吃了鸡蛋、牛奶、豆制品或鱼虾，100克左右就够了。\n\n这样建议是因为你体重正常、无慢性病，按中度活动估算每天总热量约2600–2700kcal，蛋白质每天约需80–110克，分散到三餐每餐25–35克比较合适，鸡胸肉正好是低脂高蛋白的选择，不会给热量或血脂带来负担。注意烹调时少油少盐，避免油炸或重酱汁，否则低脂优势会被抵消。",
+      "source": "deepseek",
+      "intent": "advice",
+      "retrievalStatus": "not_attempted"
+    },
+    "conversationId": 3468,
+    "contextMessage": null,
+    "conversation": {
+      "summary": "按你的情况（25岁男性，175.5cm、70.2kg，中度活动，基础代谢约1729kcal，无慢病），单餐鸡胸肉建议吃100–150克生重，约合熟重80–120克，能提供约23–35克蛋白质。如果当天其他餐蛋白质来源较少（如早餐只有粥和鸡…",
+      "messageCount": 2,
+      "lastMessageAt": "2026-11-27T22:31:12.274559928",
+      "createTime": "2026-11-27T22:31:10",
+      "updateTime": "2026-11-27T22:31:10",
+      "id": 3468,
+      "title": "我该吃多少鸡胸肉"
+    }
+  },
+  "message": "发送消息成功"
+}

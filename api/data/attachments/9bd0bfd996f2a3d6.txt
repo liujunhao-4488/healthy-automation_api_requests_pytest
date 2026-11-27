@@ -1,0 +1,15 @@
+POST http://127.0.0.1:5000/api/kb/search
+
+【请求头】
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate
+Accept: */*
+Connection: keep-alive
+Content-Type: application/json
+Content-Length: 132
+
+【请求体】
+{
+  "query": "痛风急性发作期和缓解期饮食有什么不同",
+  "topK": 3
+}

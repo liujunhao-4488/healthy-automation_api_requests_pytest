@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_detail_returns_details_of_the_record  0.01s

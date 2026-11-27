@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_totals_are_summed_from_details  0.01s

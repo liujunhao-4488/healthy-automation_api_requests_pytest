@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_register_fail[密码太短]         0.00s

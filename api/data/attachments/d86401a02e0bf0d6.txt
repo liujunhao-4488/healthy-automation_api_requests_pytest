@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_health_info_requires_analysis_on_envelope_top  0.00s

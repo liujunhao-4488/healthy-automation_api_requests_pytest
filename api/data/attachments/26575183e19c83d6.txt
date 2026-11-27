@@ -1,0 +1,2 @@
+
+└─ ✔ PASSED  test_notification_endpoints_require_token[列表]  0.00s
